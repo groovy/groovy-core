@@ -156,9 +156,9 @@ public class SimpleTemplateEngine extends TemplateEngine {
                 public Writer writeTo(Writer writer) {
                     Binding binding;
                     if (map == null)
-                        binding = new Binding();
+                        binding = new Binding(true);
                     else
-                        binding = new Binding(map);
+                        binding = new Binding(map, true);
                     Script scriptObject = InvokerHelper.createScript(script.getClass(), binding);
                     PrintWriter pw = new PrintWriter(writer);
                     scriptObject.setProperty("out", pw);

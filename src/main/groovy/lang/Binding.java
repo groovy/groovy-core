@@ -28,13 +28,40 @@ import java.util.Map;
  * @version $Revision$
  */
 public class Binding extends GroovyObjectSupport {
+
     private Map variables;
 
+    private final boolean returnEmptyStringForMissingVariables;
+
     public Binding() {
+        this(false);
     }
 
+    /**
+     * @param returnEmptyStringForMissingVariables whether to return an empty
+     * <code>String</code> for missing script variables rather than throw a
+     * {@link MissingPropertyException} (useful for templates)
+     */
+    public Binding(boolean returnEmptyStringForMissingVariables) {
+        this(null, returnEmptyStringForMissingVariables);
+    }
+
+    /**
+     * @param variables the initial binding variables
+     */
     public Binding(Map variables) {
+        this(variables, false);
+    }
+
+    /**
+     * @param variables the initial binding variables
+     * @param returnEmptyStringForMissingVariables whether to return an empty
+     * <code>String</code> for missing script variables rather than throw a
+     * {@link MissingPropertyException} (useful for templates)
+     */
+    public Binding(Map variables, boolean returnEmptyStringForMissingVariables) {
         this.variables = variables;
+        this.returnEmptyStringForMissingVariables = returnEmptyStringForMissingVariables;
     }
 
     /**
@@ -48,20 +75,33 @@ public class Binding extends GroovyObjectSupport {
     }
 
     /**
+     * Gets the binding variable.
+     *
+     * <p>If the variable is not present a
+     * <code>MissingPropertyException</code> is thrown unless the binding was
+     * constructed with <code>returnEmptyStringForMissingVariables == true</code>,
+     * in which case an empty <code>String</code> is returned.
+     *
      * @param name the name of the variable to lookup
      * @return the variable value
+     * @throws MissingPropertyException if the variable is not found and this
+     * binding was constructed with
+     * <code>returnEmptyStringForMissingVariables == false</code>
      */
-    public Object getVariable(String name) {
-        if (variables == null)
-            throw new MissingPropertyException(name, this.getClass());
+    public Object getVariable(String name) throws MissingPropertyException {
 
-        Object result = variables.get(name);
+        if (variables != null && variables.containsKey(name)) {
 
-        if (result == null && !variables.containsKey(name)) {
-            throw new MissingPropertyException(name, this.getClass());
+            return variables.get(name);
+
+        } else {
+
+            if (returnEmptyStringForMissingVariables) {
+                return "";
+            } else {
+                throw new MissingPropertyException(name, this.getClass());
+            }
         }
-
-        return result;
     }
 
     /**
@@ -107,5 +147,4 @@ public class Binding extends GroovyObjectSupport {
             setVariable(property, newValue);
         }
     }
-
 }

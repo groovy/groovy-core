@@ -55,6 +55,11 @@ class SimpleTemplateTest extends GroovyTestCase {
     assertEquals('123', simpleCall(text))
     }
 
+    void testWithMissingBindingVariable(){
+    def text = '${notAlwaysAvailable}'
+    assertEquals('', simpleCall(text))
+    }
+
     String simpleCall(input){
         bindingCall([:], input)
     }
