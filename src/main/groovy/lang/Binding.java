@@ -38,8 +38,8 @@ public class Binding extends GroovyObjectSupport {
     }
 
     /**
-     * @param returnNullForMissingVariables whether to return an empty
-     * <code>String</code> for missing script variables rather than throw a
+     * @param returnNullForMissingVariables whether to return <code>null</code>
+     * for missing script variables rather than throw a
      * {@link MissingPropertyException} (useful for templates)
      */
     public Binding(boolean returnNullForMissingVariables) {
@@ -55,8 +55,8 @@ public class Binding extends GroovyObjectSupport {
 
     /**
      * @param variables the initial binding variables
-     * @param returnNullForMissingVariables whether to return an empty
-     * <code>String</code> for missing script variables rather than throw a
+     * @param returnNullForMissingVariables whether to return <code>null</code>
+     * for missing script variables rather than throw a
      * {@link MissingPropertyException} (useful for templates)
      */
     public Binding(Map variables, boolean returnNullForMissingVariables) {
@@ -80,7 +80,7 @@ public class Binding extends GroovyObjectSupport {
      * <p>If the variable is not present a
      * <code>MissingPropertyException</code> is thrown unless the binding was
      * constructed with <code>returnNullForMissingVariables == true</code>,
-     * in which case an empty <code>String</code> is returned.
+     * in which case <code>null</code> is returned.
      *
      * @param name the name of the variable to lookup
      * @return the variable value
