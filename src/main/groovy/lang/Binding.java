@@ -31,19 +31,19 @@ public class Binding extends GroovyObjectSupport {
 
     private Map variables;
 
-    private final boolean returnEmptyStringForMissingVariables;
+    private final boolean returnNullForMissingVariables;
 
     public Binding() {
         this(false);
     }
 
     /**
-     * @param returnEmptyStringForMissingVariables whether to return an empty
+     * @param returnNullForMissingVariables whether to return an empty
      * <code>String</code> for missing script variables rather than throw a
      * {@link MissingPropertyException} (useful for templates)
      */
-    public Binding(boolean returnEmptyStringForMissingVariables) {
-        this(null, returnEmptyStringForMissingVariables);
+    public Binding(boolean returnNullForMissingVariables) {
+        this(null, returnNullForMissingVariables);
     }
 
     /**
@@ -55,13 +55,13 @@ public class Binding extends GroovyObjectSupport {
 
     /**
      * @param variables the initial binding variables
-     * @param returnEmptyStringForMissingVariables whether to return an empty
+     * @param returnNullForMissingVariables whether to return an empty
      * <code>String</code> for missing script variables rather than throw a
      * {@link MissingPropertyException} (useful for templates)
      */
-    public Binding(Map variables, boolean returnEmptyStringForMissingVariables) {
+    public Binding(Map variables, boolean returnNullForMissingVariables) {
         this.variables = variables;
-        this.returnEmptyStringForMissingVariables = returnEmptyStringForMissingVariables;
+        this.returnNullForMissingVariables = returnNullForMissingVariables;
     }
 
     /**
@@ -79,14 +79,14 @@ public class Binding extends GroovyObjectSupport {
      *
      * <p>If the variable is not present a
      * <code>MissingPropertyException</code> is thrown unless the binding was
-     * constructed with <code>returnEmptyStringForMissingVariables == true</code>,
+     * constructed with <code>returnNullForMissingVariables == true</code>,
      * in which case an empty <code>String</code> is returned.
      *
      * @param name the name of the variable to lookup
      * @return the variable value
      * @throws MissingPropertyException if the variable is not found and this
      * binding was constructed with
-     * <code>returnEmptyStringForMissingVariables == false</code>
+     * <code>returnNullForMissingVariables == false</code>
      */
     public Object getVariable(String name) throws MissingPropertyException {
 
@@ -96,8 +96,8 @@ public class Binding extends GroovyObjectSupport {
 
         } else {
 
-            if (returnEmptyStringForMissingVariables) {
-                return "";
+            if (returnNullForMissingVariables) {
+                return null;
             } else {
                 throw new MissingPropertyException(name, this.getClass());
             }
