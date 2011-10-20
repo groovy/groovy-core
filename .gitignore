@@ -1,5 +1,6 @@
 target
 out
+bin
 src/main/org/codehaus/groovy/antlr/parser/GroovyLexer.java
 src/main/org/codehaus/groovy/antlr/parser/GroovyLexer.smap
 src/main/org/codehaus/groovy/antlr/parser/GroovyRecognizer.java
