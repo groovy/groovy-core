@@ -56,6 +56,13 @@ class NullObjectTest extends GroovyTestCase {
         assert null.hello() == "Greeting from null"
         null.setMetaClass(oldMC)
     }
+
+    void testNullBigDecimalAddOperator() {
+        BigDecimal a = null
+        BigDecimal b = null
+        BigDecimal c = a+b
+        assert c == null
+    }
 }
 
 class MyCategory {

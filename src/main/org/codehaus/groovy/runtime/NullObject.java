@@ -106,6 +106,9 @@ public class NullObject extends GroovyObjectSupport {
      * @return the concatenated string
      */
     public Object plus(String s) {
+        if (is(s)) {
+            return null;
+        }
         return getMetaClass().invokeMethod(this, "toString", new Object[]{}) + s;
     }
 
