@@ -34,7 +34,7 @@ class ConditionalInterruptTest extends GroovyTestCase {
         def instance = c.newInstance()
         def message = shouldFail(InterruptedException) {
             instance.myMethod()
-        }
+        }?.message
         assert message == 'Execution interrupted. The following condition failed: { visited = true }'
         assert instance.visited
     }
@@ -53,7 +53,7 @@ class ConditionalInterruptTest extends GroovyTestCase {
         def instance = c.newInstance()
         def message = shouldFail(CustomException) {
             instance.myMethod()
-        }
+        }?.message
         assert message == 'Execution interrupted. The following condition failed: { visited = true }'
         assert instance.visited
     }

@@ -27,7 +27,7 @@ class StringAsClassTest extends GroovyTestCase{
     void testFails () {
         def message = shouldFail {
             assertEquals "NOSUCHCLASS" as Class, ArrayList
-        }
+        }?.message
         assert message.contains('java.lang.ClassNotFoundException: NOSUCHCLASS')
     }
 }

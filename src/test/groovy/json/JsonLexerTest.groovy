@@ -83,7 +83,7 @@ class JsonLexerTest extends GroovyTestCase {
 
         def msg = shouldFail(JsonException) {
             lexer.nextToken()
-        }
+        }?.message
 
         assert msg.contains("trua")
         assert msg.contains("constant 'true'")

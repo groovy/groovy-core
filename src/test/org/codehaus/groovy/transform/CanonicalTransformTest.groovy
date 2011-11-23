@@ -45,7 +45,7 @@ class CanonicalTransformTest extends GroovyShellTestCase {
                     String bar
                 }
             """
-        }
+        }?.message
         assert msg.contains("@Canonical class 'Foo' can't also be @Immutable")
     }
 
@@ -72,7 +72,7 @@ class CanonicalTransformTest extends GroovyShellTestCase {
                 // Fail here
                 new Foo('a', 'b', 'c')
             """
-        }
+        }?.message
         assert msg.contains('Could not find matching constructor')
     }
 
@@ -359,7 +359,7 @@ class CanonicalTransformTest extends GroovyShellTestCase {
                 @groovy.transform.Canonical class Simple { }
                 new Simple(missing:'Name')
             """
-        }
+        }?.message
         assert msg.contains('No such property: missing for class: Simple')
     }
 
