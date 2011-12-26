@@ -670,6 +670,8 @@ public class AntlrParserPlugin extends ASTHelper implements ParserPlugin, Groovy
         ClassNode oldNode = classNode;
         enumClass.addAnnotations(annotations);
         classNode = enumClass;
+        configureAST(classNode, enumNode);
+
         assertNodeType(OBJBLOCK, node);
         objectBlock(node);
         classNode = oldNode;

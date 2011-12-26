@@ -39,4 +39,19 @@ class AntlrParserPluginTest extends GroovyTestCase {
         assert result[2].lastColumnNumber == 14
 
     }
+
+    void testEnumLineNumbers() {
+
+        def result = new AstBuilder().buildFromString(org.codehaus.groovy.control.CompilePhase.CONVERSION, false,  '''
+            enum Color {
+
+            }
+        ''')
+
+        assert result[1].getClass() == org.codehaus.groovy.ast.ClassNode
+        assert result[1].lineNumber == 2
+        assert result[1].lastLineNumber == 4
+        assert result[1].columnNumber == 13
+        assert result[1].lastColumnNumber == 14
+    }
 }
