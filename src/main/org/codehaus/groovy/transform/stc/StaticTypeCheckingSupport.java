@@ -57,7 +57,7 @@ abstract class StaticTypeCheckingSupport {
      * we use this one as a wildcard.
      */
     final static ClassNode UNKNOWN_PARAMETER_TYPE = ClassHelper.make("<unknown parameter type>");
-    
+
     /**
      * This comparator is used when we return the list of methods from DGM which name correspond to a given
      * name. As we also lookup for DGM methods of superclasses or interfaces, it may be possible to find
@@ -135,33 +135,33 @@ abstract class StaticTypeCheckingSupport {
         List<Class> classes = new LinkedList<Class>();
         Collections.addAll(classes, DefaultGroovyMethods.DGM_LIKE_CLASSES);
         Collections.addAll(classes, DefaultGroovyMethods.additionals);
-		for (Class dgmLikeClass : classes) {
-			ClassNode cn = ClassHelper.makeWithoutCaching(dgmLikeClass, true);
-			for (MethodNode metaMethod : cn.getMethods()) {
-				Parameter[] types = metaMethod.getParameters();
-				if (metaMethod.isStatic() && metaMethod.isPublic() && types.length > 0) {
-					Parameter[] parameters = new Parameter[types.length - 1];
-					System.arraycopy(types, 1, parameters, 0, parameters.length);
-					MethodNode node = new MethodNode(
-							metaMethod.getName(),
-							metaMethod.getModifiers(),
-							metaMethod.getReturnType(),
-							parameters,
-							ClassNode.EMPTY_ARRAY, null);
-					node.setGenericsTypes(metaMethod.getGenericsTypes());
-					ClassNode declaringClass = types[0].getType();
-					String declaringClassName = declaringClass.getName();
-					node.setDeclaringClass(declaringClass);
+        for (Class dgmLikeClass : classes) {
+            ClassNode cn = ClassHelper.makeWithoutCaching(dgmLikeClass, true);
+            for (MethodNode metaMethod : cn.getMethods()) {
+                Parameter[] types = metaMethod.getParameters();
+                if (metaMethod.isStatic() && metaMethod.isPublic() && types.length > 0) {
+                    Parameter[] parameters = new Parameter[types.length - 1];
+                    System.arraycopy(types, 1, parameters, 0, parameters.length);
+                    MethodNode node = new MethodNode(
+                            metaMethod.getName(),
+                            metaMethod.getModifiers(),
+                            metaMethod.getReturnType(),
+                            parameters,
+                            ClassNode.EMPTY_ARRAY, null);
+                    node.setGenericsTypes(metaMethod.getGenericsTypes());
+                    ClassNode declaringClass = types[0].getType();
+                    String declaringClassName = declaringClass.getName();
+                    node.setDeclaringClass(declaringClass);
 
-					List<MethodNode> nodes = methods.get(declaringClassName);
-					if (nodes == null) {
-						nodes = new LinkedList<MethodNode>();
-						methods.put(declaringClassName, nodes);
-					}
-					nodes.add(node);
-				}
-			}
-		}
+                    List<MethodNode> nodes = methods.get(declaringClassName);
+                    if (nodes == null) {
+                        nodes = new LinkedList<MethodNode>();
+                        methods.put(declaringClassName, nodes);
+                    }
+                    nodes.add(node);
+                }
+            }
+        }
         return methods;
     }
 
@@ -471,7 +471,7 @@ abstract class StaticTypeCheckingSupport {
                 return WideningCategories.isBigIntCategory(rightRedirect);
             }
         }
-        
+
         // if rightExpression is null and leftExpression is not a primitive type, it's ok
         boolean rightExpressionIsNull = rightExpression instanceof ConstantExpression && ((ConstantExpression) rightExpression).getValue()==null;
         if (rightExpressionIsNull && !isPrimitiveType(left)) {
