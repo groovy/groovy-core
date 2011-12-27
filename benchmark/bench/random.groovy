@@ -1,8 +1,8 @@
 /*
-	The Computer Language Shootout
-	http://shootout.alioth.debian.org/
+    The Computer Language Shootout
+    http://shootout.alioth.debian.org/
 
-	contributed by Jochen Hinrichsen
+    contributed by Jochen Hinrichsen
 */
 
 def IM = 139968
@@ -11,13 +11,13 @@ def IC = 29573
 def last = 42D
 
 def gen_random(Double max) {
-	last = (last * IA + IC) % IM
-	max * last / IM
+    last = (last * IA + IC) % IM
+    max * last / IM
 }
 
 def n = (args.length == 0 ? 1 : args[0].toInteger()) - 1
 while (n--) {
-	gen_random(100D)
+    gen_random(100D)
 }
 
 // TODO groovy does not support varargs
