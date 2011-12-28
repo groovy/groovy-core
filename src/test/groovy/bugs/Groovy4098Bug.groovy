@@ -87,7 +87,7 @@ class Groovy4098Bug extends GroovyTestCase {
         assert metaProperty.getProperty(this) == "five normal"
         def msg = shouldFail {
             metaProperty.setProperty(this, "five mop")
-        }
+        }?.message
         assert msg == "Cannot set read-only property: propertyFive"
     }
 
@@ -98,7 +98,7 @@ class Groovy4098Bug extends GroovyTestCase {
         assert metaProperty.getProperty(this) == "six normal"
         def msg = shouldFail {
             metaProperty.setProperty(this, "six mop")
-        }
+        }?.message
         assert msg == "Cannot set the property 'propertySix' because the backing field is final."
     }
 

@@ -39,7 +39,7 @@ class SwingBuilderTableTest extends GroovySwingTestCase {
             def swing = new SwingBuilder()
             def msg = shouldFail {
                 swing.propertyColumn()
-            }
+            }?.message
             assert msg.contains('propertyColumn must be a child of a tableModel')
             msg = shouldFail {
                 swing.table {
@@ -47,7 +47,7 @@ class SwingBuilderTableTest extends GroovySwingTestCase {
                         propertyColumn()
                     }
                 }
-            }
+            }?.message
             assert msg.contains("Must specify a property for a propertyColumn"):   \
               "Instead found message: " + msg
             swing.table {
@@ -76,7 +76,7 @@ class SwingBuilderTableTest extends GroovySwingTestCase {
             def swing = new SwingBuilder()
             def msg = shouldFail {
                 swing.closureColumn()
-            }
+            }?.message
             assert msg.contains('closureColumn must be a child of a tableModel')
             msg = shouldFail {
                 swing.table {
@@ -84,7 +84,7 @@ class SwingBuilderTableTest extends GroovySwingTestCase {
                         closureColumn()
                     }
                 }
-            }
+            }?.message
             assert msg.contains("Must specify 'read' Closure property for a closureColumn"):   \
               "Instead found message: " + msg
             def closure = {x -> x }

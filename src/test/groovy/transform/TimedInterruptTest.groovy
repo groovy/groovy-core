@@ -43,7 +43,7 @@ class TimedInterruptTest extends GroovyTestCase {
         system.use {
             def e = shouldFail(TimeoutException) {
                 instance.myMethod()
-            }
+            }?.message
             assert e.contains('Execution timed out after 1 units')
         }
     }
@@ -81,7 +81,7 @@ class TimedInterruptTest extends GroovyTestCase {
         system.use {
             def e = shouldFail(CustomException) {
                 instance.myMethod()
-            }
+            }?.message
             assert e.contains('Execution timed out after 1 units')
         }
     }
@@ -118,7 +118,7 @@ class TimedInterruptTest extends GroovyTestCase {
         system.use {
             def e = shouldFail(TimeoutException) {
                 instance.myMethod()
-            }
+            }?.message
             assert e.contains('Execution timed out after 1 units')
         }
     }
@@ -186,7 +186,7 @@ class TimedInterruptTest extends GroovyTestCase {
         system.use {
             def e = shouldFail(TimeoutException) {
                 instance.myMethod()
-            }
+            }?.message
             assert e.contains('Execution timed out after 1 units')
         }
     }
@@ -225,7 +225,7 @@ class TimedInterruptTest extends GroovyTestCase {
         system.use {
             def e = shouldFail(TimeoutException) {
                 instance.run()
-            }
+            }?.message
             assert e.contains('Execution timed out after 1 units')
         }
     }
@@ -262,7 +262,7 @@ class TimedInterruptTest extends GroovyTestCase {
         system.use {
             def e = shouldFail(TimeoutException) {
                 instance.run()
-            }
+            }?.message
             assert e.contains('Execution timed out after 1 units')
         }
     }
@@ -299,7 +299,7 @@ class TimedInterruptTest extends GroovyTestCase {
         system.use {
             def e = shouldFail(TimeoutException) {
                 instance.run()
-            }
+            }?.message
             assert e.contains('Execution timed out after 1 units')
         }
     }
@@ -364,7 +364,7 @@ class TimedInterruptTest extends GroovyTestCase {
         system.use {
             def e = shouldFail(TimeoutException) {
                 instance.myMethod()
-            }
+            }?.message
             assert e.contains('Execution timed out after 18000000 units')
         }
     }

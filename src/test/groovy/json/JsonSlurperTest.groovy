@@ -25,7 +25,7 @@ class JsonSlurperTest extends GroovyTestCase {
     void testJsonShouldStartWithCurlyOrBracket() {
         def msg = shouldFail(JsonException) {
             parser.parseText("true")
-        }
+        }?.message
 
         assert msg.contains('A JSON payload should start with')
     }

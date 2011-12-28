@@ -133,7 +133,7 @@ class ListenerListASTTest extends GroovyTestCase {
                     Vector<TestListener> listeners2
                 }
             """)
-        }
+        }?.message
 
         assert message.contains('Class b.TestClass already has method fireEventOccurred')
     }
@@ -207,7 +207,7 @@ class ListenerListASTTest extends GroovyTestCase {
                     def listeners
                 }
             """)
-        }
+        }?.message
         assert message.contains('@groovy.beans.ListenerList can only annotate collection properties')
     }
 
@@ -221,7 +221,7 @@ class ListenerListASTTest extends GroovyTestCase {
                     List listeners
                 }
             """)
-        }
+        }?.message
         assert message.contains('@groovy.beans.ListenerList fields must have a generic type')
     }
 
@@ -235,7 +235,7 @@ class ListenerListASTTest extends GroovyTestCase {
                     List<? super Object> listeners
                 }
             """)
-        }
+        }?.message
         assert message.contains('@groovy.beans.ListenerList fields with generic wildcards not yet supported')
     }
 

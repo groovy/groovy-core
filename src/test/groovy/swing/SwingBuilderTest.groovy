@@ -628,7 +628,7 @@ class SwingBuilderTest extends GroovySwingTestCase {
         def swing = new SwingBuilder()
         def message = shouldFail{
             swing.boxLayout()
-        }
+        }?.message
         assert message.contains('Must be nested inside a Container')
         // default is X_AXIS
         swing.panel(id:'panel'){

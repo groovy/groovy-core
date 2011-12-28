@@ -213,25 +213,24 @@ public class GroovyTestCase extends TestCase {
     /**
      * Asserts that the given code closure fails when it is evaluated
      *
-     * @param code
-     * @return the message of the thrown Throwable
+     * @param code  the closure that should fail
+     * @return the thrown Throwable
      */
-    protected String shouldFail(Closure code) {
-        boolean failed = false;
-        String result = null;
+    protected Throwable shouldFail(Closure code) {
+        Throwable th = null;
         try {
             code.call();
         }
         catch (GroovyRuntimeException gre) {
-            failed = true;
-            result = ScriptBytecodeAdapter.unwrap(gre).getMessage();
+            th = ScriptBytecodeAdapter.unwrap(gre);
         }
         catch (Throwable e) {
-            failed = true;
-            result = e.getMessage();
+            th = e;
         }
-        assertTrue("Closure " + code + " should have failed", failed);
-        return result;
+        if (th == null) {
+	        fail("Closure " + code + " should have failed");
+        }
+        return th;
     }
 
     /**
@@ -240,9 +239,9 @@ public class GroovyTestCase extends TestCase {
      *
      * @param clazz the class of the expected exception
      * @param code  the closure that should fail
-     * @return the message of the expected Throwable
+     * @return the expected Throwable
      */
-    protected String shouldFail(Class clazz, Closure code) {
+    protected Throwable shouldFail(Class clazz, Closure code) {
         Throwable th = null;
         try {
             code.call();
@@ -257,7 +256,7 @@ public class GroovyTestCase extends TestCase {
         } else if (!clazz.isInstance(th)) {
             fail("Closure " + code + " should have failed with an exception of type " + clazz.getName() + ", instead got Exception " + th);
         }
-        return th.getMessage();
+        return th;
     }
 
     /**

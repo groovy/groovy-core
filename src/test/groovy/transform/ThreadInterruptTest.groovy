@@ -128,7 +128,7 @@ class ThreadInterruptTest extends GroovyTestCase {
         def mocker = new StubFor(Thread.class)
         mocker.demand.currentThread(1..Integer.MAX_VALUE) { new InterruptingThread() }
         mocker.use {
-            def message = shouldFail(InterruptedException) { c.newInstance().myMethod() }
+            def message = shouldFail(InterruptedException) { c.newInstance().myMethod() }?.message
             assert message == 'Execution interrupted. The current thread has been interrupted.'
         }
     }

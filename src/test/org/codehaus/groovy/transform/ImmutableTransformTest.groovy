@@ -84,7 +84,7 @@ class ImmutableTransformTest extends GroovyShellTestCase {
                     String bar
                 }
             """
-        }
+        }?.message
         assert msg.contains("@Canonical class 'Foo' can't also be @Immutable")
     }
 
@@ -146,7 +146,7 @@ class ImmutableTransformTest extends GroovyShellTestCase {
                 @Immutable class Simple { }
                 new Simple(missing:'Name')
             """
-        }
+        }?.message
         assert msg.contains('No such property: missing for class: Simple')
     }
 

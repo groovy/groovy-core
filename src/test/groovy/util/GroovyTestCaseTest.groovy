@@ -30,14 +30,13 @@ class GroovyTestCaseTest extends GroovyTestCase {
 
 // ----------------
 
-    void testShouldFailWithMessage() {
-        def msg = shouldFail { throw new RuntimeException('x') }
-        assertEquals 'x', msg
+    void testShouldFailReturnsException() {
+        def throwable = shouldFail { throw new MyException(new NullPointerException()) }        
+        assertEquals MyException, throwable?.class
     }
-    void testShouldFailWithMessageForClass() {
-        def msg = shouldFail(RuntimeException.class) { throw new RuntimeException('x') }
-        println msg
-        assertEquals 'x', msg
+    void testShouldFailForClassReturnsException() {
+    	def throwable = shouldFail(RuntimeException.class) { throw new MyException(new RuntimeException('x')) }
+    	assertEquals MyException, throwable?.class
     }
 
     void testShouldFail() {
@@ -51,6 +50,15 @@ class GroovyTestCaseTest extends GroovyTestCase {
             new Foo().createBarWithNestedException()
         }
     }
+    
+    void testShouldFailOnUnexpectedExceptionShouldFail() {
+    	shouldFail {
+    		shouldFail(MyException) {
+    			throw new NullPointerException()
+    		}
+    	}
+    }
+    	
 }
 
 class Foo {

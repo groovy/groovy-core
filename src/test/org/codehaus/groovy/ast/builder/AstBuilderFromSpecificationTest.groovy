@@ -47,7 +47,7 @@ public class AstBuilderFromSpecificationTest extends GroovyTestCase {
                     constant "this method"
                 }
             }
-        }
+        }?.message
         assertTrue("Unhelpful error message: $message", message.contains('methodCall could not be invoked'))
         assertTrue("Unhelpful error message: $message", message.contains('Expected to receive'))
         assertTrue("Unhelpful error message: $message", message.contains('but found'))
@@ -65,7 +65,7 @@ public class AstBuilderFromSpecificationTest extends GroovyTestCase {
                     empty()
                 }
             }
-        }
+        }?.message
         assertTrue("Unhelpful error message: $message", message.contains('methodCall could not be invoked'))
         assertTrue("Unhelpful error message: $message", message.contains('Expected to receive'))
         assertTrue("Unhelpful error message: $message", message.contains('but found'))
@@ -1762,7 +1762,7 @@ public class AstBuilderFromSpecificationTest extends GroovyTestCase {
                     constant "illegal value"
                 }
             }
-        }
+        }?.message
         assertEquals("Wrong exception message",
                 "methodCall could not be invoked. Expected to receive parameters [class org.codehaus.groovy.ast.expr.Expression, class org.codehaus.groovy.ast.expr.Expression, class org.codehaus.groovy.ast.expr.Expression] but found [class org.codehaus.groovy.ast.expr.VariableExpression, class org.codehaus.groovy.ast.expr.ConstantExpression, class org.codehaus.groovy.ast.expr.ArgumentListExpression, class org.codehaus.groovy.ast.expr.ConstantExpression]",
                 msg)
@@ -1778,7 +1778,7 @@ public class AstBuilderFromSpecificationTest extends GroovyTestCase {
                     // missing argument list!
                 }
             }
-        }
+        }?.message
         assertEquals("Wrong exception message",
                 "methodCall could not be invoked. Expected to receive parameters [class org.codehaus.groovy.ast.expr.Expression, class org.codehaus.groovy.ast.expr.Expression, class org.codehaus.groovy.ast.expr.Expression] but found [class org.codehaus.groovy.ast.expr.VariableExpression, class org.codehaus.groovy.ast.expr.ConstantExpression]",
                 msg)

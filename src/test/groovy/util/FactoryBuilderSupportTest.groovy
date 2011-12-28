@@ -747,7 +747,7 @@ class FactoryBuilderSupportTest extends GroovyTestCase {
     void testErrorMessage_checkValueIsType() {
         def msg = shouldFail(Exception) {
             FactoryBuilderSupport.checkValueIsType('message', 'prop', Integer)
-        }
+        }?.message
         assert msg.contains('prop')
         assert msg.contains('Integer')
         assert msg.contains('String')
@@ -756,7 +756,7 @@ class FactoryBuilderSupportTest extends GroovyTestCase {
     void testErrorMessage_checkValueIsTypeNotString() {
         def msg = shouldFail(Exception) {
             FactoryBuilderSupport.checkValueIsTypeNotString(123G, 'prop', Integer)
-        }
+        }?.message
         assert msg.contains('prop')
         assert msg.contains('Integer')
         assert msg.contains('String')
