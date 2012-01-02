@@ -1,9 +1,9 @@
 /*
-    The Computer Language Shootout
-    http://shootout.alioth.debian.org/
-
-    contributed by Jochen Hinrichsen
-*/
+ * The Computer Language Shootout
+ * http://shootout.alioth.debian.org/
+ *
+ * contributed by Jochen Hinrichsen
+ */
 
 def IM = 139968
 def IA = 3877
@@ -20,15 +20,8 @@ while (n--) {
     gen_random(100D)
 }
 
-// TODO groovy does not support varargs
-// def s = new java.io.PrintStream(System.out)
-// s.printf("%.9f", gen_random(100D))
-
 def nf = java.text.NumberFormat.getInstance()
 nf.setMaximumFractionDigits(9)
 nf.setMinimumFractionDigits(9)
 nf.setGroupingUsed(false)
 println nf.format(gen_random(100D))
-
-// EOF
-
