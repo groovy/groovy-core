@@ -20,10 +20,7 @@ import groovy.lang.GroovyRuntimeException;
 
 import groovy.transform.CompilationUnitAware;
 import org.codehaus.groovy.GroovyBugError;
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.CompileUnit;
-import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.classgen.*;
 import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 import org.codehaus.groovy.control.io.InputStreamReaderSource;
@@ -202,6 +199,13 @@ public class CompilationUnit extends ProcessingUnit {
                              ClassNode classNode) throws CompilationFailedException {
                 InnerClassCompletionVisitor iv = new InnerClassCompletionVisitor();
                 iv.visitClass(classNode);
+            }
+        }, Phases.CANONICALIZATION);
+        addPhaseOperation(new PrimaryClassNodeOperation() {
+            public void call(SourceUnit source, GeneratorContext context,
+                             ClassNode classNode) throws CompilationFailedException {
+                EnumCompletionVisitor ecv = new EnumCompletionVisitor(CompilationUnit.this, source);
+                ecv.visitClass(classNode);
             }
         }, Phases.CANONICALIZATION);
 
@@ -963,10 +967,13 @@ public class CompilationUnit extends ProcessingUnit {
                 ClassNode classNode = (ClassNode) classNodes.next();
                 context = classNode.getModule().getContext();
                 if (context == null || context.phase < phase || (context.phase == phase && !context.phaseComplete)) {
-                    if (body instanceof CompilationUnitAware) {
-                        ((CompilationUnitAware)body).setCompilationUnit(this);
+                    int offset = 1;
+                    Iterator<InnerClassNode> iterator = classNode.getInnerClasses();
+                    while (iterator.hasNext()) {
+                        iterator.next();
+                        offset++;
                     }
-                    body.call(context, new GeneratorContext(this.ast), classNode);
+                    body.call(context, new GeneratorContext(this.ast, offset), classNode);
                 }
             } catch (CompilationFailedException e) {
                 // fall through, getErrorReporter().failIfErrors() will trigger

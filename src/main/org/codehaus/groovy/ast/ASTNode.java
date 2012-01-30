@@ -114,7 +114,7 @@ public class ASTNode {
     }
     
     /**
-     * Copies all node meta data from one node to the other
+     * Copies all node meta data from the other node to this one
      * @param other - the other node
      */
     public void copyNodeMetaData(ASTNode other) {
@@ -139,6 +139,7 @@ public class ASTNode {
      * Sets the node meta data but allows overwriting values.
      *
      * @param key   - the meta data key
+     * @param key - the meta data key
      * @param value - the meta data value
      * @return the old node meta data value for this key
      * @throws GroovyBugError if key is null
@@ -157,6 +158,5 @@ public class ASTNode {
     public void removeNodeMetaData(Object key) {
         if (key==null) throw new GroovyBugError("Tried to remove meta data with null key "+this+".");
         metaDataMap.remove(key);
-        if (metaDataMap.size()==0) metaDataMap=null;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2010 the original author or authors.
+ * Copyright 2003-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,14 +32,16 @@ import org.codehaus.groovy.control.CompilationFailedException
  * Your subclass has to implement <code>void verifyStubs()</code>.
  * <p/>
  *
- * All the sample Java and Groovy sources to be joint-compiled must be put in <code>src/test-resources/stubgenerator</code>,
+ * All the sample Java and Groovy sources to be joint-compiled must be either:
+ * <ul>
+ * <li>put in <code>src/test-resources/stubgenerator</code>,
  * under a directory whose name is the name of the subclass you created, with the first letter lowercase,
  * and the suffix Test removed.
- * <p/>
- *
  * Example: for the test <code>CircularLanguageReferenceTest</code>,
  * you should put your resources in <code>src/test-resources/stubgenerator/circularLanguageReference</code>.
- * <p/>
+ * <li>provided via the <code>Map<String, String> provideSources()</code> method. Example: see one of the
+ * existing tests which use this approach, e.g. <code>DuplicateMethodAdditionInStubsTest</code>.
+ * </ul>
  *
  * From within the <code>verifyStubs()</code> method, you can make various assertions on the stubs.
  * QDox is used for parsing the Java sources (both the generated stub Java sources, as well as the original Java source,
@@ -118,6 +120,8 @@ abstract class StubTestCase extends GroovyTestCase {
         def nameWithoutTest = this.class.simpleName - 'Test'
         def folder = nameWithoutTest[0].toLowerCase() + nameWithoutTest[1..-1]
 
+        // TODO following works for gradle build - find something that works for both
+//        return new File("target/resources/test/stubgenerator/${folder}")
         def testDirectory = new File(StubTestCase.class.classLoader.getResource('.').toURI())
         return new File(testDirectory, "../../src/test-resources/stubgenerator/${folder}")
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2010 the original author or authors.
+ * Copyright 2003-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.runtime;
 
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -324,6 +325,22 @@ public class DateGroovyMethods extends DefaultGroovyMethodsSupport {
     }
 
     /**
+     * Add number of days to this Timestamp and returns the new Timestamp object.
+     *
+     * @param self a Timestamp
+     * @param days the number of days to increase
+     * @return the new Timestamp
+     */
+    public static Timestamp plus(Timestamp self, int days) {
+        Calendar calendar = (Calendar) Calendar.getInstance().clone();
+        calendar.setTime(self);
+        calendar.add(Calendar.DAY_OF_YEAR, days);
+        Timestamp ts = new Timestamp(calendar.getTime().getTime());
+        ts.setNanos(self.getNanos());
+        return ts;
+    }
+
+    /**
      * Subtract a number of days from this date and returns the new date.
      *
      * @param self a Date
@@ -345,6 +362,17 @@ public class DateGroovyMethods extends DefaultGroovyMethodsSupport {
      */
     public static java.sql.Date minus(java.sql.Date self, int days) {
         return new java.sql.Date(minus((Date) self, days).getTime());
+    }
+
+    /**
+     * Subtract a number of days from this Timestamp and returns the new Timestamp object.
+     *
+     * @param self a Timestamp
+     * @param days the number of days to subtract
+     * @return the new Timestamp
+     */
+    public static Timestamp minus(Timestamp self, int days) {
+        return plus(self, -days);
     }
 
     /**
@@ -518,6 +546,7 @@ public class DateGroovyMethods extends DefaultGroovyMethodsSupport {
     /**
      * Common code for {@link #clearTime(java.util.Calendar)} and {@link #clearTime(java.util.Date)}
      * and {@link #clearTime(java.sql.Date)}
+     *
      * @param self a Calendar to adjust
      */
     private static void clearTimeCommon(final Calendar self) {
@@ -528,31 +557,35 @@ public class DateGroovyMethods extends DefaultGroovyMethodsSupport {
     }
 
     /**
-     * Clears the time portion of this Date instance; Util where it makes sense to
-     * compare month/day/year only portions of a Date
+     * Clears the time portion of this Date instance; useful utility where
+     * it makes sense to compare month/day/year only portions of a Date.
      *
      * @param self a Date
+     * @return the Date but with the time portion cleared
      * @since 1.6.7
      */
-    public static void clearTime(final Date self) {
+    public static Date clearTime(final Date self) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(self);
         clearTimeCommon(calendar);
         self.setTime(calendar.getTime().getTime());
+        return self;
     }
 
     /**
      * Clears the time portion of this java.sql.Date instance; useful utility
-     * where it makes sense to compare month/day/year only portions of a Date
+     * where it makes sense to compare month/day/year only portions of a Date.
      *
      * @param self a java.sql.Date
+     * @return the java.sql.Date but with the time portion cleared
      * @since 1.6.7
      */
-    public static void clearTime(final java.sql.Date self) {
+    public static java.sql.Date clearTime(final java.sql.Date self) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(self);
         clearTimeCommon(calendar);
         self.setTime(calendar.getTime().getTime());
+        return self;
     }
 
     /**
@@ -560,10 +593,12 @@ public class DateGroovyMethods extends DefaultGroovyMethodsSupport {
      * where it makes sense to compare month/day/year only portions of a Calendar.
      *
      * @param self a Calendar
+     * @return the Calendar but with the time portion cleared
      * @since 1.6.7
      */
-    public static void clearTime(final Calendar self) {
+    public static Calendar clearTime(final Calendar self) {
         clearTimeCommon(self);
+        return self;
     }
 
     /**

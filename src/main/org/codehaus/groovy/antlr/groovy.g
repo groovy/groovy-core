@@ -415,7 +415,7 @@ tokens {
     }
     
     private void dumpTree(AST ast, String offset) {
-    	dump(ast, offset);
+        dump(ast, offset);
         for (AST node = ast.getFirstChild(); node != null; node = node.getNextSibling()) {
             dumpTree(node, offset+"\t");
         }
@@ -765,6 +765,7 @@ wildcardType
 typeArgumentsDiamond
 {Token first = LT(1);}
     :   LT! GT! nls!
+    {#typeArgumentsDiamond = #(create(TYPE_ARGUMENTS, "TYPE_ARGUMENTS",first,LT(1)), #typeArgumentsDiamond);}
     ;
 
 // Type arguments to a class or interface type
@@ -2209,7 +2210,7 @@ handler {Token first = LT(1);}
  */
 commandArguments[AST head]
 {
-	Token first = LT(1);
+    Token first = LT(1);
 }
     :
         commandArgument ( options {greedy=true;}: COMMA! nls! commandArgument )*
@@ -2230,7 +2231,7 @@ commandArguments[AST head]
 
 commandArgumentsGreedy[AST head]
 { 
-	AST prev = #head;
+    AST prev = #head;
 }
     :
        

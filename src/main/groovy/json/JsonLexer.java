@@ -105,12 +105,17 @@ public class JsonLexer implements Iterator<JsonToken> {
                 StringBuilder currentContent = new StringBuilder("\"");
                 // consume the first double quote starting the string
                 reader.read();
+                boolean isEscaped = false;
                 for (;;) {
                     int read = reader.read();
                     if (read == -1) return null;
-                    currentContent.append((char) read);
 
-                    if (currentContent.charAt(currentContent.length() - 1) == '"' && currentContent.charAt(currentContent.length() - 2) != '\\' &&
+                    isEscaped = (!isEscaped && currentContent.charAt(currentContent.length() - 1) == '\\');
+
+                    char charRead = (char) read;
+                    currentContent.append(charRead);
+
+                    if (charRead == '"' && !isEscaped &&
                             possibleTokenType.matching(currentContent.toString())) {
                         token.setEndLine(reader.getLine());
                         token.setEndColumn(reader.getColumn());
@@ -169,29 +174,7 @@ public class JsonLexer implements Iterator<JsonToken> {
      * @return input text without the escaping
      */
     public static String unescape(String input) {
-        // presence of a backslash
-        if (input.indexOf(92) > -1) {
-            Matcher m = p.matcher(input
-                    .replaceAll("\\\\b", "\b")
-                    .replaceAll("\\\\f", "\f")
-                    .replaceAll("\\\\n", "\n")
-                    .replaceAll("\\\\r", "\r")
-                    .replaceAll("\\\\t", "\t")
-                    .replaceAll("\\\\\\\\", "\\\\")
-                    .replaceAll("\\\\/", "/")
-                    .replaceAll("\\\\\"", "\""));
-
-            // replace unicode escapes
-            StringBuffer sb = new StringBuffer();
-            while (m.find()) {
-                m.appendReplacement(sb, new String(new char[] { (char)Integer.valueOf(m.group(1), 16).intValue() }));
-            }
-            m.appendTail(sb);
-
-            return sb.toString();
-        } else {
-            return input;
-        }
+        return StringEscapeUtils.unescapeJavaScript(input);
     }
 
     /**

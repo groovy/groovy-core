@@ -748,7 +748,11 @@ public class Groovyc extends MatchingTask {
                                     StringTokenizer st = new StringTokenizer(value, " ");
                                     while (st.hasMoreTokens()) {
                                         String optionStr = st.nextToken();
-                                        jointOptions.add(optionStr.replace("-X", "-FX"));
+                                        String replaced = optionStr.replace("-X", "-FX");
+                                        if(optionStr == replaced) {
+                                            replaced = optionStr.replace("-W", "-FW"); // GROOVY-5063
+                                        }
+                                        jointOptions.add(replaced);
                                     }
                                 }
                             }
@@ -796,7 +800,7 @@ public class Groovyc extends MatchingTask {
                         if (tmpExtension.startsWith("*.")) tmpExtension = tmpExtension.substring(1);
                         commandLineList.add("-Dgroovy.default.scriptExtension=" + tmpExtension);
                     }
-                    commandLineList.add("org.codehaus.groovy.tools.FileSystemCompiler");
+                    commandLineList.add(FileSystemCompilerFacade.class.getName());
                 }
                 commandLineList.add("--classpath");
                 commandLineList.add(classpath.toString());
@@ -900,7 +904,7 @@ public class Groovyc extends MatchingTask {
                         }
 
                         if (!fileNameErrors) {
-                            FileSystemCompiler.doCompilation(configuration, makeCompileUnit(), filenames);
+                            FileSystemCompiler.doCompilation(configuration, makeCompileUnit(), filenames, false);
                         }
 
                     } catch (Exception re) {

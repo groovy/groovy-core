@@ -32,6 +32,7 @@ import org.codehaus.groovy.syntax.RuntimeParserException;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.*;
 
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 /**
@@ -400,12 +401,30 @@ public class AsmClassGenerator extends ClassGenerator {
         onLineNumber(fieldNode, "visitField: " + fieldNode.getName());
         ClassNode t = fieldNode.getType();
         String signature = BytecodeHelper.getGenericsBounds(t);
+
+        Expression initialValueExpression = fieldNode.getInitialValueExpression();
+        ConstantExpression cexp = initialValueExpression instanceof ConstantExpression? (ConstantExpression) initialValueExpression :null;
+        if (cexp!=null) {
+            cexp = Verifier.transformToPrimitiveConstantIfPossible(cexp);
+        }
+        Object value = cexp!=null && ClassHelper.isStaticConstantInitializerType(cexp.getType())
+                && cexp.getType().equals(t)
+                ?cexp.getValue() // GROOVY-5150
+                :null;
+        if (value!=null) {
+            // byte, char and short require an extra cast
+            if (ClassHelper.byte_TYPE.equals(t) || ClassHelper.short_TYPE.equals(t)) {
+                value = ((Number) value).intValue();
+            } else if (ClassHelper.char_TYPE.equals(t)) {
+                value = Integer.valueOf((Character)value);
+            }
+        }
         FieldVisitor fv = cv.visitField(
                 fieldNode.getModifiers(),
                 fieldNode.getName(),
                 BytecodeHelper.getTypeDescription(t),
                 signature, 
-                null);
+                value);
         visitAnnotations(fieldNode, fv);
         fv.visitEnd();
     }
@@ -721,6 +740,9 @@ public class AsmClassGenerator extends ClassGenerator {
             argumentList = new ArrayList();
             argumentList.add(arguments);
         }
+        for (Expression expression : argumentList) {
+            if (expression instanceof SpreadExpression) return false;
+        }
 
         ConstructorNode cn = getMatchingConstructor(constructors, argumentList);
         if (cn==null) return false;
@@ -743,7 +765,7 @@ public class AsmClassGenerator extends ClassGenerator {
     private void makeMOPBasedConstructorCall(List<ConstructorNode> constructors, ConstructorCallExpression call, ClassNode callNode) {
         MethodVisitor mv = controller.getMethodVisitor();
         OperandStack operandStack = controller.getOperandStack();
-        
+
         call.getArguments().visit(this);
         // keep Object[] on stack
         mv.visitInsn(DUP);
@@ -925,8 +947,9 @@ public class AsmClassGenerator extends ClassGenerator {
 
     private void visitAttributeOrProperty(PropertyExpression expression, MethodCallerMultiAdapter adapter) {
         MethodVisitor mv = controller.getMethodVisitor();
-        
+
         Expression objectExpression = expression.getObjectExpression();
+        ClassNode classNode = controller.getClassNode();
         if (isThisOrSuper(objectExpression)) {
             // let's use the field expression if it's available
             String name = expression.getPropertyAsString();
@@ -934,13 +957,32 @@ public class AsmClassGenerator extends ClassGenerator {
                 FieldNode field = null;
                 boolean privateSuperField = false;
                 if (isSuperExpression(objectExpression)) {
-                    field = controller.getClassNode().getSuperClass().getDeclaredField(name);
+                    field = classNode.getSuperClass().getDeclaredField(name);
                     if (field != null && ((field.getModifiers() & ACC_PRIVATE) != 0)) {
                     	privateSuperField = true;
                     }
                 } else {
                 	if (controller.isNotExplicitThisInClosure(expression.isImplicitThis())) {
-                        field = controller.getClassNode().getDeclaredField(name);
+                        field = classNode.getDeclaredField(name);
+                        if (field==null && classNode instanceof InnerClassNode) {
+                            ClassNode outer = classNode.getOuterClass();
+                            FieldNode outerClassField;
+                            while (outer!=null) {
+                                outerClassField = outer.getDeclaredField(name);
+                                if (outerClassField!=null && outerClassField.isStatic() && outerClassField.isFinal()) {
+                                    if (outer!=classNode.getOuterClass() && Modifier.isPrivate(outerClassField.getModifiers())) {
+                                        throw new GroovyBugError("Trying to access private constant field ["+outerClassField.getDeclaringClass()+"#"+outerClassField.getName()+"] from inner class");
+                                    }
+                                    PropertyExpression pexp = new PropertyExpression(
+                                            new ClassExpression(outer),
+                                            expression.getProperty()
+                                    );
+                                    pexp.visit(controller.getAcg());
+                                    return;
+                                }
+                                outer = outer.getSuperClass();
+                            }
+                        }
                 	}
                 }
                 if (field != null && !privateSuperField) {//GROOVY-4497: don't visit super field if it is private 
@@ -970,7 +1012,7 @@ public class AsmClassGenerator extends ClassGenerator {
             // into this.this$0.this$0, where this.this$0 returns 
             // A.B and this.this$0.this$0 return A.
             ClassNode type = objectExpression.getType();
-            ClassNode iterType = controller.getClassNode();
+            ClassNode iterType = classNode;
             mv.visitVarInsn(ALOAD, 0);
             while (!iterType.equals(type)) {
                 String ownerName = BytecodeHelper.getClassInternalName(iterType);
@@ -1268,7 +1310,7 @@ public class AsmClassGenerator extends ClassGenerator {
     }
 
     protected void createSyntheticStaticFields() {
-        MethodVisitor mv = controller.getMethodVisitor();
+        MethodVisitor mv;
         for (String staticFieldName : referencedClasses.keySet()) {
             // generate a field node
             FieldNode fn = controller.getClassNode().getDeclaredField(staticFieldName);
@@ -1338,23 +1380,30 @@ public class AsmClassGenerator extends ClassGenerator {
     public void visitClassExpression(ClassExpression expression) {
         ClassNode type = expression.getType();
         MethodVisitor mv = controller.getMethodVisitor();
-
-        if (ClassHelper.isPrimitiveType(type)) {
-            ClassNode objectType = ClassHelper.getWrapper(type);
-            mv.visitFieldInsn(GETSTATIC, BytecodeHelper.getClassInternalName(objectType), "TYPE", "Ljava/lang/Class;");
-        } else {
-            String staticFieldName = getStaticFieldName(type);
-            referencedClasses.put(staticFieldName,type);
-
-            String internalClassName = controller.getInternalClassName();
+        if (BytecodeHelper.isClassLiteralPossible(type)) {
             if (controller.getClassNode().isInterface()) {
-                internalClassName = BytecodeHelper.getClassInternalName(controller.getInterfaceClassLoadingClass());
-                mv.visitFieldInsn(GETSTATIC, internalClassName, staticFieldName, "Ljava/lang/Class;");
+                InterfaceHelperClassNode interfaceClassLoadingClass = controller.getInterfaceClassLoadingClass();
+                if (BytecodeHelper.isClassLiteralPossible(interfaceClassLoadingClass)) {
+                    BytecodeHelper.visitClassLiteral(mv, interfaceClassLoadingClass);
+                    controller.getOperandStack().push(ClassHelper.CLASS_Type);
+                    return;
+                }
             } else {
-                mv.visitMethodInsn(INVOKESTATIC, internalClassName, "$get$" + staticFieldName, "()Ljava/lang/Class;");
+                BytecodeHelper.visitClassLiteral(mv, type);
+                controller.getOperandStack().push(ClassHelper.CLASS_Type);
+                return;
             }
         }
-        
+        String staticFieldName = getStaticFieldName(type);
+        referencedClasses.put(staticFieldName, type);
+
+        String internalClassName = controller.getInternalClassName();
+        if (controller.getClassNode().isInterface()) {
+            internalClassName = BytecodeHelper.getClassInternalName(controller.getInterfaceClassLoadingClass());
+            mv.visitFieldInsn(GETSTATIC, internalClassName, staticFieldName, "Ljava/lang/Class;");
+        } else {
+            mv.visitMethodInsn(INVOKESTATIC, internalClassName, "$get$" + staticFieldName, "()Ljava/lang/Class;");
+        }
         controller.getOperandStack().push(ClassHelper.CLASS_Type);
     }
 

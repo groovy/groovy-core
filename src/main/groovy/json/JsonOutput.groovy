@@ -24,6 +24,7 @@ import java.text.DateFormat
  * This class can also be used as a category, so as to add <code>toJson()</code> methods to various types.
  *
  * @author Guillaume Laforge
+ * @author Roshan Dawrani
  * @since 1.8.0
  */
 class JsonOutput {
@@ -68,50 +69,7 @@ class JsonOutput {
      * @return a properly encoded string with escape sequences
      */
     static String toJson(String s) {
-        if (!s) {
-            '""'
-        } else {
-            def result = new StringBuilder('"')
-
-            s.each { c ->
-                switch (c) {
-                    case '"':
-                        result.append('\\"')
-                        break
-                    case '\\':
-                        result.append('\\\\')
-                        break
-                    case '/':
-                        result.append('\\/')
-                        break
-                    case '\b':
-                        result.append('\\b')
-                        break
-                    case '\f':
-                        result.append('\\f')
-                        break
-                    case '\n':
-                        result.append('\\n')
-                        break
-                    case '\r':
-                        result.append('\\r')
-                        break
-                    case '\t':
-                        result.append('\\t')
-                        break
-                    default:
-                        // control chars below space
-                        if (c < ' ') {
-                            result.append('\\u' + Integer.toHexString((int)c).padLeft(4, '0'))
-                        } else {
-                            result.append(c)
-                        }
-                }
-            }
-
-            result.append('"')
-            result.toString()
-        }
+        "\"${StringEscapeUtils.escapeJava(s)}\""
     }
 
     /**
@@ -132,6 +90,20 @@ class JsonOutput {
      */
     static String toJson(Calendar cal) {
         "\"${dateFormat.format(cal.time)}\""
+    }
+
+    /**
+     * @return the string representation of an uuid
+     */
+    static String toJson(UUID uuid) {
+        "\"${uuid.toString()}\""
+    }
+
+    /**
+     * @return the string representation of the URL
+     */
+    static String toJson(URL url) {
+        "\"${url.toString()}\""
     }
 
     /**
@@ -167,7 +139,12 @@ class JsonOutput {
      * @return a JSON object representation for a map
      */
     static String toJson(Map m) {
-        "{" + m.collect { k, v -> toJson(k.toString()) + ':' + toJson(v) }.join(',') + "}"
+        "{" + m.collect { k, v ->
+                if (k == null) {
+                    throw new IllegalArgumentException('Null key for a Map not allowed')
+                }
+                toJson(k.toString()) + ':' + toJson(v)
+        }.join(',') + "}"
     }
 
     /**

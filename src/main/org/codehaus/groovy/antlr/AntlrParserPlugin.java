@@ -670,6 +670,7 @@ public class AntlrParserPlugin extends ASTHelper implements ParserPlugin, Groovy
         ClassNode oldNode = classNode;
         enumClass.addAnnotations(annotations);
         classNode = enumClass;
+        configureAST(classNode, enumNode);
         assertNodeType(OBJBLOCK, node);
         objectBlock(node);
         classNode = oldNode;
@@ -845,6 +846,10 @@ public class AntlrParserPlugin extends ASTHelper implements ParserPlugin, Groovy
         int modifiers = Opcodes.ACC_PUBLIC;
         if (isType(MODIFIERS, node)) {
             modifiers = modifiers(node, annotations, modifiers);
+            checkNoInvalidModifier(constructorDef, "Constructor", modifiers, Opcodes.ACC_STATIC, "static");
+            checkNoInvalidModifier(constructorDef, "Constructor", modifiers, Opcodes.ACC_FINAL, "final");
+            checkNoInvalidModifier(constructorDef, "Constructor", modifiers, Opcodes.ACC_ABSTRACT, "abstract");
+            checkNoInvalidModifier(constructorDef, "Constructor", modifiers, Opcodes.ACC_NATIVE, "native");
             node = node.getNextSibling();
         }
 
@@ -1203,10 +1208,8 @@ public class AntlrParserPlugin extends ASTHelper implements ParserPlugin, Groovy
                 statement = variableDef(node);
                 break;
 
-
             case LABELED_STAT:
-                statement = labelledStatement(node);
-                break;
+                return labelledStatement(node);
 
             case LITERAL_assert:
                 statement = assertStatement(node);
@@ -2854,9 +2857,8 @@ public class AntlrParserPlugin extends ASTHelper implements ParserPlugin, Groovy
 
     private ClassNode addTypeArguments(ClassNode basicType, AST node) {
         List<GenericsType> typeArgumentList = getTypeArgumentsList(node);
-        if (typeArgumentList.size() > 0) {
-            basicType.setGenericsTypes(typeArgumentList.toArray(new GenericsType[typeArgumentList.size()]));
-        }
+        // a 0-length type argument list means we face the diamond operator
+        basicType.setGenericsTypes(typeArgumentList.toArray(new GenericsType[typeArgumentList.size()]));
         return basicType;
     }
 
