@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2007 the original author or authors.
+ * Copyright 2003-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,11 +61,21 @@ public class GroovyRowResult extends GroovyObjectSupport implements Map {
             // if property exists and value is null, return null
             if (result.containsKey(propertyUpper)) 
                 return null;
-            throw new MissingPropertyException(property, GroovyRowResult.class);
+            return getPropertyIgnoreCase(property);
         }
         catch (Exception e) {
             throw new MissingPropertyException(property, GroovyRowResult.class, e);
         }
+    }
+
+    private Object getPropertyIgnoreCase(String property) {
+        for (Object key : result.keySet()) {
+            if (!(key instanceof String))
+                continue;
+            if (property.equalsIgnoreCase((String)key))
+                return result.get(key);
+        }
+        throw new MissingPropertyException(property, GroovyRowResult.class);
     }
 
     /**
