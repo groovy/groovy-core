@@ -22,47 +22,47 @@ class XmlUtilTest extends TestXmlSupport {
          */
         def charsetStringsToTest = ["UTF-8", "ISO-8859-1"]
 
-            charsetStringsToTest.each { charsetStringToTest ->
+        charsetStringsToTest.each { charsetStringToTest ->
 
-                Charset charsetToTest = Charset.forName(charsetStringToTest)
+            Charset charsetToTest = Charset.forName(charsetStringToTest)
 
-                //we can only test the charset, we use in our system. We typically want to test
-                //the two encodings used most of the time
-                if(charsetToTest.equals(Charset.defaultCharset())) {
+            //we can only test the charset, we use in our system. We typically want to test
+            //the two encodings used most of the time
+            if(charsetToTest.equals(Charset.defaultCharset())) {
 
-                    //we need to specify the charset manually, so that the test will not break on systems, which do have a
-                    //different default charset.
-                    def sourceXML = new String("<?xml version=\"1.0\" encoding=\"${charsetStringToTest}\"?>\n<root>text Üäcontent</root>".getBytes(), charsetToTest)
-                    def sourceXMLWithUmlauts = new String("<?xml version=\"1.0\" encoding=\"${charsetStringToTest}\"?>\n<Schlüssel>text Üä content</Schlüssel>".getBytes(), charsetToTest)
-
-
-                    def sourceGPath = new XmlSlurper().parseText(sourceXML)
-                    def sourceGPathWithUmlauts = new XmlSlurper().parseText(sourceXMLWithUmlauts)
-
-                    def sourceGPathSerializedViaXMLUtil =  groovy.xml.XmlUtil.serialize(sourceGPath).toString().trim()
-                    def sourceGPathWithUmlautsSerializedViaXMLUtil =  groovy.xml.XmlUtil.serialize(sourceGPathWithUmlauts).toString().trim()
+                //we need to specify the charset manually, so that the test will not break on systems, which do have a
+                //different default charset.
+                def sourceXML = new String("<?xml version=\"1.0\" encoding=\"${charsetStringToTest}\"?>\n<root>text Üäcontent</root>".getBytes(), charsetToTest)
+                def sourceXMLWithUmlauts = new String("<?xml version=\"1.0\" encoding=\"${charsetStringToTest}\"?>\n<Schlüssel>text Üä content</Schlüssel>".getBytes(), charsetToTest)
 
 
-                    //we set the encoding to UTF-8, since groovy.xml.XmlUtil.serialize can only output UTF-8
-                    def sourceGPathSerializedManuallyViaStreamingMarkupBuilder = new groovy.xml.StreamingMarkupBuilder().with {
-                        encoding = charsetStringToTest
-                        '<?xml version="1.0" encoding="UTF-8"?>\n' + bindNode(sourceGPath)
-                        }.toString().trim()
+                def sourceGPath = new XmlSlurper().parseText(sourceXML)
+                def sourceGPathWithUmlauts = new XmlSlurper().parseText(sourceXMLWithUmlauts)
 
-                    def sourceGPathWithUmlautsSerializedManuallyViaStreamingMarkupBuilder = new groovy.xml.StreamingMarkupBuilder().with {
-                        encoding = charsetStringToTest
-                        '<?xml version="1.0" encoding="UTF-8"?>\n' + bindNode(sourceGPathWithUmlauts)
-                        }.toString().trim()
+                def sourceGPathSerializedViaXMLUtil =  groovy.xml.XmlUtil.serialize(sourceGPath).toString().trim()
+                def sourceGPathWithUmlautsSerializedViaXMLUtil =  groovy.xml.XmlUtil.serialize(sourceGPathWithUmlauts).toString().trim()
 
 
-                    //XMLUtil <==> Manual StreamingMarkupBuilder
-                    assert sourceGPathSerializedManuallyViaStreamingMarkupBuilder.equals(sourceGPathSerializedViaXMLUtil)
-                    assert sourceGPathWithUmlautsSerializedManuallyViaStreamingMarkupBuilder.equals(sourceGPathWithUmlautsSerializedViaXMLUtil)
+                //we set the encoding to UTF-8, since groovy.xml.XmlUtil.serialize can only output UTF-8
+                def sourceGPathSerializedManuallyViaStreamingMarkupBuilder = new groovy.xml.StreamingMarkupBuilder().with {
+                    encoding = charsetStringToTest
+                    '<?xml version="1.0" encoding="UTF-8"?>\n' + bindNode(sourceGPath)
+                    }.toString().trim()
+
+                def sourceGPathWithUmlautsSerializedManuallyViaStreamingMarkupBuilder = new groovy.xml.StreamingMarkupBuilder().with {
+                    encoding = charsetStringToTest
+                    '<?xml version="1.0" encoding="UTF-8"?>\n' + bindNode(sourceGPathWithUmlauts)
+                    }.toString().trim()
 
 
-                    //Source might have different encoding, e.g. ISO-8850-1. Since XmlUtil can only output UTF-8, we cannot check agains
-                    //sourceXML.
-                }
+                //XMLUtil <==> Manual StreamingMarkupBuilder
+                assert sourceGPathSerializedManuallyViaStreamingMarkupBuilder.equals(sourceGPathSerializedViaXMLUtil)
+                assert sourceGPathWithUmlautsSerializedManuallyViaStreamingMarkupBuilder.equals(sourceGPathWithUmlautsSerializedViaXMLUtil)
+
+
+                //Source might have different encoding, e.g. ISO-8850-1. Since XmlUtil can only output UTF-8, we cannot check agains
+                //sourceXML.
             }
+        }
     }
 }
