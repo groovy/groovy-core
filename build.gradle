@@ -288,3 +288,18 @@ task wrapper(type: Wrapper) {
 //    distributionUrl = "http://repo.gradle.org/gradle/distributions-snapshots/gradle-${gradleVersion}-bin.zip"
     gradleVersion = '1.0-milestone-6'
 }
+
+
+idea {
+    project {
+        //if you want to set specific jdk and language level
+        if(isJava6) {
+            jdkName = '1.6'
+            languageLevel = '1.6'
+        }
+
+        module {
+            downloadJavadoc = true
+        }
+    }
+}
