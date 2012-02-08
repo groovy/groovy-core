@@ -45,12 +45,12 @@ class XmlUtilTest extends TestXmlSupport {
 
                 //we set the encoding to UTF-8, since groovy.xml.XmlUtil.serialize can only output UTF-8
                 def sourceGPathSerializedManuallyViaStreamingMarkupBuilder = new groovy.xml.StreamingMarkupBuilder().with {
-                    encoding = charsetStringToTest
+                    encoding = 'UTF-8'
                     '<?xml version="1.0" encoding="UTF-8"?>\n' + bindNode(sourceGPath)
                     }.toString().trim()
 
                 def sourceGPathWithUmlautsSerializedManuallyViaStreamingMarkupBuilder = new groovy.xml.StreamingMarkupBuilder().with {
-                    encoding = charsetStringToTest
+                    encoding = 'UTF-8'
                     '<?xml version="1.0" encoding="UTF-8"?>\n' + bindNode(sourceGPathWithUmlauts)
                     }.toString().trim()
 
