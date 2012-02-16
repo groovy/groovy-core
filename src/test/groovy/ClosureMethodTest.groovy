@@ -232,6 +232,23 @@ class ClosureMethodTest extends GroovyTestCase {
         assert value == 10
     }
 
+    void testOneArgListInject() {
+        // Check basic functionality
+        def value = [ 1, 2, 3 ].inject { c, item -> c + item }
+        assert value == 6
+
+        // Check a use-case
+        value = [ [ 'tim', 'dave', 'chris' ],
+                  [ 'stuart', 'harry', 'tim' ],
+                  [ 'bert', 'tim', 'ernie' ] ]
+        assert value.inject { a, b -> a.intersect( b ) } == ['tim']
+
+        // Check edges
+        assert       [].inject { a, b -> a + b } == null
+        assert    [ 1 ].inject { a, b -> a + b } == 1
+        assert [ 1, 2 ].inject { a, b -> a + b } == 3
+    }
+
     void testObjectInject() {
         def value = [1:1, 2:2, 3:3].inject('counting: ') { str, item -> str + item.value }
         assert value == "counting: 123"
