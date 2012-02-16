@@ -3611,6 +3611,33 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
 
 
     /**
+     * Performs the same function as the version of inject that takes an initial value, but
+     * uses the head of the Collection as the initial value, and iterates over the tail.
+     * <pre class="groovyTestCase">
+     * assert 1 * 2 * 3 * 4 == [ 1, 2, 3, 4 ].inject { acc, val -> acc * val }
+     * assert ['b'] == [['a','b'], ['b','c'], ['d','b']].inject { acc, val -> acc.intersect( val ) }
+     * LinkedHashSet set = [ 't', 'i', 'm' ]
+     * assert 'tim' == set.inject { a, b -> a + b }
+     * </pre>
+     *
+     * @param self         a Collection
+     * @param initialValue some initial value
+     * @param closure      a closure
+     * @return the result of the last closure call or null if called on an empty Collection
+     * @see #inject(Collection, Object, Closure)
+     */
+    public static <T, V extends T> T inject(Collection<T> self, Closure<V> closure ) {
+        if( self.size() == 0 ) {
+            return null ;
+        }
+        List<T> list = asList( self ) ;
+        if( list.size() == 1 ) {
+            return list.get( 0 ) ;
+        }
+        return (T) inject( drop( list, 1 ), head( list ), closure ) ;
+    }
+
+    /**
      * Iterates through the given Collection, passing in the initial value to
      * the 2-arg closure along with the first item. The result is passed back (injected) into
      * the closure along with the second item. The new result is injected back into
