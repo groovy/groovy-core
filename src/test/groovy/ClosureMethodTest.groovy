@@ -249,6 +249,29 @@ class ClosureMethodTest extends GroovyTestCase {
         assert [ 1, 2 ].inject { a, b -> a + b } == 3
     }
 
+    void testOneArgObjectInject() {
+        def value = ([1, 2, 3, 4] as Object[]).inject { c, item -> c + item }
+        assert value == 10
+
+        value = ([] as Object[]).inject { c, item -> c + item }
+        assert value == null
+
+        value = ([ 1 ] as Object[]).inject { c, item -> c + item }
+        assert value == 1
+
+        def i = 1
+        def iter = [ hasNext:{ -> i < 5 }, next:{ -> i++ } ] as Iterator
+        assert iter.inject { a, b -> a * b } == 24
+
+        i = 1
+        iter = [ hasNext:{ -> false }, next:{ -> i++ } ] as Iterator
+        assert iter.inject { a, b -> a * b } == null
+
+        i = 1
+        iter = [ hasNext:{ -> i <= 1 }, next:{ -> i++ } ] as Iterator
+        assert iter.inject { a, b -> a * b } == 1
+    }
+
     void testObjectInject() {
         def value = [1:1, 2:2, 3:3].inject('counting: ') { str, item -> str + item.value }
         assert value == "counting: 123"

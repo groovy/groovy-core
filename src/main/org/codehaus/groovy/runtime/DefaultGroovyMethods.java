@@ -3743,6 +3743,27 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     }
 
     /**
+     * Iterates through the given Object, passing in the first value to
+     * the closure along with the first item. The result is passed back (injected) into
+     * the closure along with the second item. The new result is injected back into
+     * the closure along with the third item and so on until further iteration of
+     * the object is not possible. Also known as foldLeft in functional parlance.
+     *
+     * @param self         an Object
+     * @param closure      a closure
+     * @return the result of the last closure call
+     * @see #inject(Collection, Object, Closure)
+     */
+    public static <T, V extends T> T inject(Object self, Closure<V> closure) {
+        Iterator iter = InvokerHelper.asIterator(self);
+        if( !iter.hasNext() ) {
+            return null ;
+        }
+        Object initialValue = iter.next() ;
+        return (T) inject(iter, initialValue, closure);
+    }
+
+    /**
      * Iterates through the given Object, passing in the initial value to
      * the closure along with the first item. The result is passed back (injected) into
      * the closure along with the second item. The new result is injected back into
