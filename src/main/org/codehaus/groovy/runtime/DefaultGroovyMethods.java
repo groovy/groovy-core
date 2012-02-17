@@ -3782,6 +3782,20 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     }
 
     /**
+     * Iterates through the given array as with inject(Object[],initialValue,closure), but
+     * using the first element of the array as the initialValue, and then iterating
+     * the remaining elements of the array.
+     *
+     * @param self         an Object[]
+     * @param closure      a closure
+     * @return the result of the last closure call or null for an empty array
+     * @see #inject(Object[], Object, Closure)
+     */
+    public static <T, V extends T> T inject(Object[] self, Closure<V> closure) {
+        return inject( (Object)self, closure ) ;
+    }
+
+    /**
      * Iterates through the given array, passing in the initial value to
      * the closure along with the first item. The result is passed back (injected) into
      * the closure along with the second item. The new result is injected back into
