@@ -3621,7 +3621,6 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * </pre>
      *
      * @param self         a Collection
-     * @param initialValue some initial value
      * @param closure      a closure
      * @return the result of the last closure call or null if called on an empty Collection
      * @see #inject(Collection, Object, Closure)
