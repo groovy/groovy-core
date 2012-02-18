@@ -24,8 +24,12 @@ import groovy.lang.Script;
 import java.io.*;
 import java.math.BigInteger;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -53,6 +57,9 @@ public class GroovyMain {
 
     // arguments to the script
     private List args;
+
+    // selectors for 
+    private static enum ARGS_TYPE { GROOVYCMD, SCRIPT };
 
     // is this a file on disk
     private boolean isScriptFile;
@@ -105,18 +112,38 @@ public class GroovyMain {
         Options options = buildOptions();
 
         try {
-            CommandLine cmd = parseCommandLine(options, args);
+            //first split up the args into args for the groovy command line and for a possible script, which should
+            //be invoked.
+            Map<ARGS_TYPE, List<String>> splittedArgs = splitArgsByArgTypeWithOptions(options, args);
+            List<String> groovyCmdLineArgs = splittedArgs.get(ARGS_TYPE.GROOVYCMD);
+            CommandLine groovyCmdLine = parseCommandLine(options, groovyCmdLineArgs.toArray(new String[groovyCmdLineArgs.size()]));
 
-            if (cmd.hasOption('h')) {
+            //there should not be any leftover args, which are not allowed by the options
+            //Therefore we are introducing a convention, as seen in printHelp()
+            //Convention:
+            //    1. first specify all options for the 'groovy' command.
+            //    2. specify an optinal scriptName (File, URL).
+            //    3. specify args for the given scriptName.
+            //
+            //We need to do this, so that the groovy script, we want to invoke, can have CLI-options with the
+            //same parameter abbreviations than the 'groovy' command itself.
+            //
+            //See also: GROOVY-5191 http://jira.codehaus.org/browse/GROOVY-5191
+            //
+
+            if (groovyCmdLine.hasOption('h') || !groovyCmdLine.getArgList().isEmpty()) {
                 printHelp(out, options);
-            } else if (cmd.hasOption('v')) {
+            } else if (groovyCmdLine.hasOption('v')) {
                 String version = GroovySystem.getVersion();
                 out.println("Groovy Version: " + version + " JVM: " + System.getProperty("java.version") + 
                         " Vendor: " + System.getProperty("java.vm.vendor")  + " OS: " + System.getProperty("os.name"));
             } else {
                 // If we fail, then exit with an error so scripting frameworks can catch it
                 // TODO: pass printstream(s) down through process
-                if (!process(cmd)) {
+
+                //the process must know, which args belong to the groovyCmdLine and which to the script
+                List<String> scriptArgs = splittedArgs.get(ARGS_TYPE.SCRIPT);
+                if (!process(groovyCmdLine, scriptArgs)) {
                     System.exit(1);
                 }
             }
@@ -133,7 +160,7 @@ public class GroovyMain {
         formatter.printHelp(
             pw,
             80,
-            "groovy [options] [args]",
+            "groovy [options] [scriptName scriptArgs]",
             "options:",
             options,
             2,
@@ -155,6 +182,75 @@ public class GroovyMain {
     private static CommandLine parseCommandLine(Options options, String[] args) throws ParseException {
         CommandLineParser parser = new PosixParser();
         return parser.parse(options, args, true);
+    }
+
+
+
+    /**
+     * Parse the command line args array given the options, which should be used for the 'groovy' command and split
+     * the args array into an args array for the groovy command and the scriptName which should run().
+     *
+     *
+     *
+     * @param options the options parser.
+     * @param args    the command line args.
+     * @return A Map selectable by  ARGS_TYPE containing String[] args array for each ARGS_TYPE
+     * @throws ParseException if there was a problem.
+     */
+    private static Map<ARGS_TYPE, List<String>> splitArgsByArgTypeWithOptions(Options options, String[] args) throws ParseException {
+        CommandLineParser parser = new PosixParser();
+
+        //We must distinguish, if the args should belong to the groovy command line options,
+        //or the actual groovy script. Otherwise we will not be able to reuse command line options
+        //for our scriptname, which we would like to run. (e.g. you were not be able to reuse the --help option for your
+        //groovy script. Another examples is the (--encoding, -c ) option. If you would run your groovy script
+        //with the --encoding option, you will not be able to specify your own --encoding option in your groovy.script.
+        CommandLine fullCommandLine = parser.parse(options, args, true);
+        List leftOverArgsWithoutOptions = fullCommandLine.getArgList();
+
+        //try to fetch a scriptname
+        String scriptName = null;
+        if(!fullCommandLine.hasOption('e')) {
+            if(leftOverArgsWithoutOptions.isEmpty()) {
+                throw new ParseException("neither -e or filename provided");
+            } else {
+                scriptName = (String) leftOverArgsWithoutOptions.remove(0);
+                if (scriptName.endsWith(".java")) {
+                    throw new ParseException("error: cannot compile file with .java extension: " + scriptName);
+                }
+            }
+        }
+
+        //now, since we either know the scriptName, we can order the args and know, which args
+        //should be given for the 'groovy' command, and which args should be used for the actual
+        //groovy command.
+        List<String> argsList = Arrays.asList(args);
+        List<String> argsForGroovyCommand = null;
+        List<String> argsForScriptNameIncludingScriptName = null;
+
+        //idea: all args before 'scriptName' are for the groovy command. If no scriptName is given, all args are
+        //for the GroovyCommand.
+        if(scriptName == null) {
+            argsForGroovyCommand = argsList;
+        } else {
+            //find the index of the scriptname
+            int argsCount = argsList.size();
+            int i = 0;
+            for(i = 0; i < argsCount; i++) {
+                if(argsList.get(i).equals(scriptName)) break;
+            }
+
+            //we include the scriptName for the scriptNameArgs, so that all later checks can stay the same.
+            argsForGroovyCommand =  argsList.subList(0, i);
+            argsForScriptNameIncludingScriptName = argsList.subList(i, argsCount);
+        }
+
+        //now, we can return a new parsed CommandLine for the 'groovy' command and pass the new String[] args Array
+        //for the actual scriptName
+        Map<ARGS_TYPE, List<String>> splittedArgsByType = new LinkedHashMap<ARGS_TYPE, List<String>>(2);
+        splittedArgsByType.put(ARGS_TYPE.GROOVYCMD, argsForGroovyCommand);
+        splittedArgsByType.put(ARGS_TYPE.SCRIPT, argsForScriptNameIncludingScriptName);
+        return splittedArgsByType;
     }
 
     /**
@@ -263,12 +359,15 @@ public class GroovyMain {
     /**
      * Process the users request.
      *
-     * @param line the parsed command line.
+     * @param line the parsed command line, which is used for the 'GroovyMain' class.
+     * @param scriptArgs the scriptArgs, which should be passed to the 'scriptFile' if given in groovyCmdLine.
      * @throws ParseException if invalid options are chosen
      */
-    private static boolean process(CommandLine line) throws ParseException {
-        List args = line.getArgList();
-        
+    private static boolean process(CommandLine line, List<String> scriptArgs) throws ParseException {
+        //make mutable copy
+        List<String> args = new ArrayList<String>(scriptArgs.size());
+        args.addAll(scriptArgs);
+
         if (line.hasOption('D')) {
             String[] values = line.getOptionValues('D');
 
@@ -324,7 +423,7 @@ public class GroovyMain {
         if (line.hasOption("indy")) {
             main.conf.getOptimizationOptions().put("indy", true);
         }
-        
+
         main.args = args;
 
         return main.run();
