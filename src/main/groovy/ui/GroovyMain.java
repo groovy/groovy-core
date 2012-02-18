@@ -211,13 +211,8 @@ public class GroovyMain {
         //try to fetch a scriptname
         String scriptName = null;
         if(!fullCommandLine.hasOption('e')) {
-            if(leftOverArgsWithoutOptions.isEmpty()) {
-                throw new ParseException("neither -e or filename provided");
-            } else {
+            if(!leftOverArgsWithoutOptions.isEmpty()) {
                 scriptName = (String) leftOverArgsWithoutOptions.remove(0);
-                if (scriptName.endsWith(".java")) {
-                    throw new ParseException("error: cannot compile file with .java extension: " + scriptName);
-                }
             }
         }
 
@@ -225,8 +220,8 @@ public class GroovyMain {
         //should be given for the 'groovy' command, and which args should be used for the actual
         //groovy command.
         List<String> argsList = Arrays.asList(args);
-        List<String> argsForGroovyCommand = null;
-        List<String> argsForScriptNameIncludingScriptName = null;
+        List<String> argsForGroovyCommand = new ArrayList<String>();
+        List<String> argsForScriptNameIncludingScriptName = new ArrayList<String>();
 
         //idea: all args before 'scriptName' are for the groovy command. If no scriptName is given, all args are
         //for the GroovyCommand.
