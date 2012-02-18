@@ -59,7 +59,11 @@ public class GroovyMain {
     private List args;
 
     // selectors for 
-    private static enum ARGS_TYPE { GROOVYCMD, SCRIPT };
+    private static enum ARGS_TYPE {
+        GROOVYCMD, //everything for the 'groovy' command
+        FILE_SCRIPT, //scriptArgs, if a file is given and not -e, -n, -p
+        CLI_SCRIPT //cli args, if -e, -n, -p is given
+    };
 
     // is this a file on disk
     private boolean isScriptFile;
@@ -131,7 +135,7 @@ public class GroovyMain {
             //See also: GROOVY-5191 http://jira.codehaus.org/browse/GROOVY-5191
             //
 
-            if (groovyCmdLine.hasOption('h') || !groovyCmdLine.getArgList().isEmpty()) {
+            if (groovyCmdLine.hasOption('h')) {
                 printHelp(out, options);
             } else if (groovyCmdLine.hasOption('v')) {
                 String version = GroovySystem.getVersion();
@@ -142,8 +146,7 @@ public class GroovyMain {
                 // TODO: pass printstream(s) down through process
 
                 //the process must know, which args belong to the groovyCmdLine and which to the script
-                List<String> scriptArgs = splittedArgs.get(ARGS_TYPE.SCRIPT);
-                if (!process(groovyCmdLine, scriptArgs)) {
+                if (!process(groovyCmdLine, splittedArgs)) {
                     System.exit(1);
                 }
             }
@@ -189,8 +192,6 @@ public class GroovyMain {
     /**
      * Parse the command line args array given the options, which should be used for the 'groovy' command and split
      * the args array into an args array for the groovy command and the scriptName which should run().
-     *
-     *
      *
      * @param options the options parser.
      * @param args    the command line args.
@@ -244,7 +245,8 @@ public class GroovyMain {
         //for the actual scriptName
         Map<ARGS_TYPE, List<String>> splittedArgsByType = new LinkedHashMap<ARGS_TYPE, List<String>>(2);
         splittedArgsByType.put(ARGS_TYPE.GROOVYCMD, argsForGroovyCommand);
-        splittedArgsByType.put(ARGS_TYPE.SCRIPT, argsForScriptNameIncludingScriptName);
+        splittedArgsByType.put(ARGS_TYPE.FILE_SCRIPT, argsForScriptNameIncludingScriptName);
+        splittedArgsByType.put(ARGS_TYPE.CLI_SCRIPT, leftOverArgsWithoutOptions);
         return splittedArgsByType;
     }
 
@@ -355,13 +357,13 @@ public class GroovyMain {
      * Process the users request.
      *
      * @param line the parsed command line, which is used for the 'GroovyMain' class.
-     * @param scriptArgs the scriptArgs, which should be passed to the 'scriptFile' if given in groovyCmdLine.
+     * @param splittedArgs the splittedArgs Map, which contains all args combinations for a given type. The final type
+     *                     is determined inside the process method.
      * @throws ParseException if invalid options are chosen
      */
-    private static boolean process(CommandLine line, List<String> scriptArgs) throws ParseException {
-        //make mutable copy
-        List<String> args = new ArrayList<String>(scriptArgs.size());
-        args.addAll(scriptArgs);
+    private static boolean process(CommandLine line, Map<ARGS_TYPE, List<String>> splittedArgs) throws ParseException {
+        //make mutable copy of args
+        List<String> args = new ArrayList<String>();
 
         if (line.hasOption('D')) {
             String[] values = line.getOptionValues('D');
@@ -379,8 +381,16 @@ public class GroovyMain {
         main.isScriptFile = !line.hasOption('e');
         main.debug = line.hasOption('d');
         main.conf.setDebug(main.debug);
-        main.processFiles = line.hasOption('p') || line.hasOption('n');
         main.autoOutput = line.hasOption('p');
+        main.processFiles = line.hasOption('p') || line.hasOption('n');
+        if(main.processFiles) {
+            //if we have processFiles, use the CLI-Args
+            args.addAll(splittedArgs.get(ARGS_TYPE.CLI_SCRIPT));
+        } else {
+            //otherwise use the file-args.
+            args.addAll(splittedArgs.get(ARGS_TYPE.FILE_SCRIPT));
+        }
+        
         main.editFiles = line.hasOption('i');
         if (main.editFiles) {
             main.backupExtension = line.getOptionValue('i');
