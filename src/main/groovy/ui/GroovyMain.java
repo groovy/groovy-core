@@ -124,9 +124,9 @@ public class GroovyMain {
 
             //there should not be any leftover args, which are not allowed by the options
             //Therefore we are introducing a convention, as seen in printHelp()
-            //Convention:
+            //Convention: "groovy [options] [scriptName scriptArgs]"
             //    1. first specify all options for the 'groovy' command.
-            //    2. specify an optinal scriptName (File, URL).
+            //    2. specify an optional scriptName (File, URL).
             //    3. specify args for the given scriptName.
             //
             //We need to do this, so that the groovy script, we want to invoke, can have CLI-options with the
