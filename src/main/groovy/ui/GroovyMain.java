@@ -243,7 +243,7 @@ public class GroovyMain {
 
         //now, we can return a new parsed CommandLine for the 'groovy' command and pass the new String[] args Array
         //for the actual scriptName
-        Map<ARGS_TYPE, List<String>> splittedArgsByType = new LinkedHashMap<ARGS_TYPE, List<String>>(2);
+        Map<ARGS_TYPE, List<String>> splittedArgsByType = new LinkedHashMap<ARGS_TYPE, List<String>>(3);
         splittedArgsByType.put(ARGS_TYPE.GROOVYCMD, argsForGroovyCommand);
         splittedArgsByType.put(ARGS_TYPE.FILE_SCRIPT, argsForScriptNameIncludingScriptName);
         splittedArgsByType.put(ARGS_TYPE.CLI_SCRIPT, leftOverArgsWithoutOptions);
