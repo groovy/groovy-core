@@ -383,7 +383,7 @@ public class GroovyMain {
         main.conf.setDebug(main.debug);
         main.autoOutput = line.hasOption('p');
         main.processFiles = line.hasOption('p') || line.hasOption('n');
-        if(main.processFiles) {
+        if(!main.isScriptFile || main.processFiles) {
             //if we have processFiles, use the CLI-Args
             args.addAll(splittedArgs.get(ARGS_TYPE.CLI_SCRIPT));
         } else {
