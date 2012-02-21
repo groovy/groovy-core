@@ -3622,12 +3622,13 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      *
      * @param self         a Collection
      * @param closure      a closure
-     * @return the result of the last closure call or null if called on an empty Collection
+     * @return the result of the last closure call
+     * @throws NoSuchElementException if the collection is empty.
      * @see #inject(Collection, Object, Closure)
      */
     public static <T, V extends T> T inject(Collection<T> self, Closure<V> closure ) {
-        if( self.size() == 0 ) {
-            return null ;
+        if( self.isEmpty() ) {
+            throw new NoSuchElementException( "Cannot call inject() on an empty collection without passing an initial value." ) ;
         }
         List<T> list = asList( self ) ;
         if( list.size() == 1 ) {
@@ -3751,12 +3752,13 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @param self         an Object
      * @param closure      a closure
      * @return the result of the last closure call
+     * @throws NoSuchElementException if the collection is empty.
      * @see #inject(Collection, Object, Closure)
      */
     public static <T, V extends T> T inject(Object self, Closure<V> closure) {
         Iterator iter = InvokerHelper.asIterator(self);
         if( !iter.hasNext() ) {
-            return null ;
+            throw new NoSuchElementException( "Cannot call inject() over an empty iterable without passing an initial value." ) ;
         }
         Object initialValue = iter.next() ;
         return (T) inject(iter, initialValue, closure);
@@ -3788,7 +3790,8 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      *
      * @param self         an Object[]
      * @param closure      a closure
-     * @return the result of the last closure call or null for an empty array
+     * @return the result of the last closure call
+     * @throws NoSuchElementException if the array is empty.
      * @see #inject(Object[], Object, Closure)
      */
     public static <T, V extends T> T inject(Object[] self, Closure<V> closure) {

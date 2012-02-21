@@ -244,7 +244,12 @@ class ClosureMethodTest extends GroovyTestCase {
         assert value.inject { a, b -> a.intersect( b ) } == ['tim']
 
         // Check edges
-        assert       [].inject { a, b -> a + b } == null
+        try {
+            [].inject { a, b -> a + b } == null
+            fail( "inject(Closure) on an emtpy list should throw a NoSuchElementException" )
+        }
+        catch ( NoSuchElementException e ) {
+        }
         assert    [ 1 ].inject { a, b -> a + b } == 1
         assert [ 1, 2 ].inject { a, b -> a + b } == 3
     }
@@ -253,8 +258,12 @@ class ClosureMethodTest extends GroovyTestCase {
         def value = ([1, 2, 3, 4] as Object[]).inject { c, item -> c + item }
         assert value == 10
 
-        value = ([] as Object[]).inject { c, item -> c + item }
-        assert value == null
+        try {
+            ([] as Object[]).inject { c, item -> c + item }
+            fail( "inject(Closure) on an emtpy Object[] should throw a NoSuchElementException" )
+        }
+        catch ( NoSuchElementException e ) {
+        }
 
         value = ([ 1 ] as Object[]).inject { c, item -> c + item }
         assert value == 1
@@ -263,9 +272,13 @@ class ClosureMethodTest extends GroovyTestCase {
         def iter = [ hasNext:{ -> i < 5 }, next:{ -> i++ } ] as Iterator
         assert iter.inject { a, b -> a * b } == 24
 
-        i = 1
-        iter = [ hasNext:{ -> false }, next:{ -> i++ } ] as Iterator
-        assert iter.inject { a, b -> a * b } == null
+        try {
+            iter = [ hasNext:{ -> false }, next:{ -> null } ] as Iterator
+            iter.inject { a, b -> a * b }
+            fail( "inject(Closure) on an exhaused iterator should throw a NoSuchElementException" )
+        }
+        catch ( NoSuchElementException e ) {
+        }
 
         i = 1
         iter = [ hasNext:{ -> i <= 1 }, next:{ -> i++ } ] as Iterator
