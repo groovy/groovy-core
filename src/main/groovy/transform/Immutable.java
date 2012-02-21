@@ -127,4 +127,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 @GroovyASTTransformationClass("org.codehaus.groovy.transform.ImmutableASTTransformation")
 public @interface Immutable {
+    Class[] knownImmutableClasses() default {};
 }

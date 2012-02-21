@@ -422,4 +422,54 @@ class ImmutableTransformTest extends GroovyShellTestCase {
             }
             '''
     }
+
+    void testKnownImmutableClassesWithNamedParameters() {
+        assertScript '''
+                @groovy.transform.Immutable(knownImmutableClasses = [Address])
+                class Person {
+                    String first, last
+                    Address address
+                }
+
+                @groovy.transform.ToString class Address {
+                    String street
+                }
+
+                assert new Person(first: 'John', last: 'Doe', address: new Address(street: 'Street')).toString() == 'Person(John, Doe, Address(Street))'
+                '''
+    }
+
+    void testKnownImmutableClassesWithExplicitConstructor() {
+        assertScript '''
+                    @groovy.transform.Immutable(knownImmutableClasses = [Address])
+                    class Person {
+                        String first, last
+                        Address address
+                    }
+
+                    @groovy.transform.ToString class Address {
+                        String street
+                    }
+
+                    assert new Person('John', 'Doe', new Address(street: 'Street')).toString() == 'Person(John, Doe, Address(Street))'
+                    '''
+    }
+
+    void testKnownImmutableClassesMissing() {
+        shouldFail(RuntimeException) {
+            evaluate '''
+                    @groovy.transform.ToString class Address {
+                        String street
+                    }
+
+                    @groovy.transform.Immutable
+                    class Person {
+                        String first, last
+                        Address address
+                    }
+
+                    new Person(first: 'John', last: 'Doe', address: new Address(street: 'Street'))
+                '''
+        }
+    }
 }
