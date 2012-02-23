@@ -288,6 +288,8 @@ public class GroovyTestCase extends TestCase {
             orig = e;
             th = orig.getCause();
         }
+        
+        if (orig != null && th == null) fail("Catched exception does not have a cause (indicates that the cause is nonexistent or unknown). Maybe you should use 'shouldFail' instead?");
 
         while (th != null && !clazz.isInstance(th) && th != th.getCause() && level < MAX_NESTED_EXCEPTIONS) {
             th = th.getCause();
