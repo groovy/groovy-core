@@ -232,6 +232,59 @@ class ClosureMethodTest extends GroovyTestCase {
         assert value == 10
     }
 
+    void testOneArgListInject() {
+        // Check basic functionality
+        def value = [ 1, 2, 3 ].inject { c, item -> c + item }
+        assert value == 6
+
+        // Check a use-case
+        value = [ [ 'tim', 'dave', 'chris' ],
+                  [ 'stuart', 'harry', 'tim' ],
+                  [ 'bert', 'tim', 'ernie' ] ]
+        assert value.inject { a, b -> a.intersect( b ) } == ['tim']
+
+        // Check edges
+        try {
+            [].inject { a, b -> a + b } == null
+            fail( "inject(Closure) on an emtpy list should throw a NoSuchElementException" )
+        }
+        catch ( NoSuchElementException e ) {
+        }
+        assert    [ 1 ].inject { a, b -> a + b } == 1
+        assert [ 1, 2 ].inject { a, b -> a + b } == 3
+    }
+
+    void testOneArgObjectInject() {
+        def value = ([1, 2, 3, 4] as Object[]).inject { c, item -> c + item }
+        assert value == 10
+
+        try {
+            ([] as Object[]).inject { c, item -> c + item }
+            fail( "inject(Closure) on an emtpy Object[] should throw a NoSuchElementException" )
+        }
+        catch ( NoSuchElementException e ) {
+        }
+
+        value = ([ 1 ] as Object[]).inject { c, item -> c + item }
+        assert value == 1
+
+        def i = 1
+        def iter = [ hasNext:{ -> i < 5 }, next:{ -> i++ } ] as Iterator
+        assert iter.inject { a, b -> a * b } == 24
+
+        try {
+            iter = [ hasNext:{ -> false }, next:{ -> null } ] as Iterator
+            iter.inject { a, b -> a * b }
+            fail( "inject(Closure) on an exhaused iterator should throw a NoSuchElementException" )
+        }
+        catch ( NoSuchElementException e ) {
+        }
+
+        i = 1
+        iter = [ hasNext:{ -> i <= 1 }, next:{ -> i++ } ] as Iterator
+        assert iter.inject { a, b -> a * b } == 1
+    }
+
     void testObjectInject() {
         def value = [1:1, 2:2, 3:3].inject('counting: ') { str, item -> str + item.value }
         assert value == "counting: 123"
