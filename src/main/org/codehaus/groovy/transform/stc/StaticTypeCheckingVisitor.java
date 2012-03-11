@@ -15,23 +15,31 @@
  */
 package org.codehaus.groovy.transform.stc;
 
+import groovy.lang.GroovyRuntimeException;
 import groovy.lang.IntRange;
 import groovy.lang.ObjectRange;
+import groovy.transform.TypeChecked;
+import groovy.transform.TypeCheckingMode;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.ast.tools.GenericsUtils;
+import org.codehaus.groovy.ast.tools.WideningCategories;
 import org.codehaus.groovy.classgen.ReturnAdder;
+import org.codehaus.groovy.classgen.asm.BytecodeHelper;
 import org.codehaus.groovy.classgen.asm.InvocationWriter;
+import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.ErrorCollector;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
+import org.codehaus.groovy.runtime.EncodingGroovyMethods;
 import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.codehaus.groovy.transform.StaticTypesTransformation;
 import org.codehaus.groovy.util.ListHashMap;
 import org.objectweb.asm.Opcodes;
 
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -50,6 +58,12 @@ import static org.codehaus.groovy.transform.stc.StaticTypeCheckingSupport.*;
 public class StaticTypeCheckingVisitor extends ClassCodeVisitorSupport {
     private static final ClassNode ITERABLE_TYPE = ClassHelper.make(Iterable.class);
     private final static List<MethodNode> EMPTY_METHODNODE_LIST = Collections.emptyList();
+    private static final ClassNode TYPECHECKED_CLASSNODE = ClassHelper.make(TypeChecked.class);
+    private static final ClassNode[] TYPECHECKING_ANNOTATIONS = new ClassNode[]{TYPECHECKED_CLASSNODE};
+    private static final ClassNode TYPECHECKING_INFO_NODE = ClassHelper.make(TypeChecked.TypeCheckingInfo.class);
+    private static final int CURRENT_SIGNATURE_PROTOCOL_VERSION = 1;
+    private static final Expression CURRENT_SIGNATURE_PROTOCOL = new ConstantExpression(CURRENT_SIGNATURE_PROTOCOL_VERSION, true);
+
     public static final MethodNode CLOSURE_CALL_NO_ARG;
     public static final MethodNode CLOSURE_CALL_ONE_ARG;
     public static final MethodNode CLOSURE_CALL_VARGS;
@@ -181,6 +195,7 @@ public class StaticTypeCheckingVisitor extends ClassCodeVisitorSupport {
 
     @Override
     public void visitClass(final ClassNode node) {
+        if (shouldSkipClassNode(node)) return;
         ClassNode oldCN = classNode;
         classNode = node;
         Set<MethodNode> oldVisitedMethod = alreadyVisitedMethods;
@@ -193,6 +208,56 @@ public class StaticTypeCheckingVisitor extends ClassCodeVisitorSupport {
         }
         alreadyVisitedMethods = oldVisitedMethod;
         classNode = oldCN;
+        node.putNodeMetaData(StaticTypesMarker.INFERRED_TYPE, node);
+    }
+
+    protected boolean shouldSkipClassNode(final ClassNode node) {
+        Object type = node.getNodeMetaData(StaticTypesMarker.INFERRED_TYPE);
+        if (type!=null) {
+            // transformation has already been run on this class node
+            // prevent it from running twice
+            return true;
+        }
+        if (isSkipMode(node)) return true;
+        return false;
+    }
+
+    /**
+     * Returns the list of type checking annotations class nodes. Subclasses may override this method
+     * in order to provide additional classes which must be looked up when checking if a method or
+     * a class node should be skipped.
+     *
+     * The default implementation returns {@link TypeChecked}.
+     *
+     * @return array of class nodes
+     */
+    protected ClassNode[] getTypeCheckingAnnotations() {
+        return TYPECHECKING_ANNOTATIONS;
+    }
+
+    public boolean isSkipMode(final AnnotatedNode node) {
+        if (node==null) return false;
+        for (ClassNode tca : getTypeCheckingAnnotations()) {
+            List<AnnotationNode> annotations = node.getAnnotations(tca);
+            if (annotations != null) {
+                for (AnnotationNode annotation : annotations) {
+                    Expression value = annotation.getMember("value");
+                    if (value != null) {
+                        if (value instanceof ConstantExpression) {
+                            ConstantExpression ce = (ConstantExpression) value;
+                            if (TypeCheckingMode.SKIP.toString().equals(ce.getValue().toString())) return true;
+                        } else if (value instanceof PropertyExpression) {
+                            PropertyExpression pe = (PropertyExpression) value;
+                            if (TypeCheckingMode.SKIP.toString().equals(pe.getPropertyAsString())) return true;
+                        }
+                    }
+                }
+            }
+        }
+        if (node instanceof MethodNode) {
+            return isSkipMode(node.getDeclaringClass());
+        }
+        return false;
     }
 
     @Override
@@ -218,7 +283,12 @@ public class StaticTypeCheckingVisitor extends ClassCodeVisitorSupport {
             DynamicVariable dyn = (DynamicVariable) vexp.getAccessedVariable();
             // first, we must check the 'with' context
             String dynName = dyn.getName();
-            for (ClassNode node : withReceiverList) {
+
+            List<ClassNode> checkList = new LinkedList<ClassNode>(withReceiverList);
+            // force checking on classNode for ast injected properties
+            checkList.add(classNode);
+
+            for (ClassNode node : checkList) {
                 if (node.getProperty(dynName) != null) {
                     storeType(vexp, node.getProperty(dynName).getType());
                     return;
@@ -1075,6 +1145,7 @@ public class StaticTypeCheckingVisitor extends ClassCodeVisitorSupport {
 
 	@Override
     public void visitMethod(final MethodNode node) {
+        if (isSkipMode(node)) return;
         // alreadyVisitedMethods prevents from visiting the same method multiple times
         // and prevents from infinite loops
         if (alreadyVisitedMethods.contains(node)) return;
@@ -1087,6 +1158,25 @@ public class StaticTypeCheckingVisitor extends ClassCodeVisitorSupport {
         // may use this visitor without the annotation being explicitely set
         if (!methodsToBeVisited.isEmpty() && !methodsToBeVisited.contains(node)) return;
         super.visitMethod(node);
+        addTypeCheckingInfoAnnotation(node);
+    }
+
+    protected void addTypeCheckingInfoAnnotation(final MethodNode node) {
+        // if a returned inferred type is available and no @TypeCheckingInfo is on node, then add an
+        // annotation to the method node
+        ClassNode rtype = (ClassNode) node.getNodeMetaData(StaticTypesMarker.INFERRED_RETURN_TYPE);
+        if (rtype!=null && rtype.getAnnotations(TYPECHECKING_INFO_NODE).isEmpty()) {
+            AnnotationNode anno = new AnnotationNode(TYPECHECKING_INFO_NODE);
+            anno.setMember("version", CURRENT_SIGNATURE_PROTOCOL);
+            SignatureCodec codec = SignatureCodecFactory.getCodec(CURRENT_SIGNATURE_PROTOCOL_VERSION);
+            String genericsSignature = codec.encode(rtype);
+            if (genericsSignature!=null) {
+                ConstantExpression signature = new ConstantExpression(genericsSignature);
+                signature.setType(STRING_TYPE);
+                anno.setMember("inferredType", signature);
+                node.addAnnotation(anno);
+            }
+        }
     }
 
     @Override
@@ -1165,11 +1255,11 @@ public class StaticTypeCheckingVisitor extends ClassCodeVisitorSupport {
                         classNode = directMethodCallCandidate.getDeclaringClass();
                         for (ClassNode node: source.getAST().getClasses()) {
                             if (isClassInnerClassOrEqualTo(classNode, node)) {
-                                // visit is authorized because the classnode belongs to the same source unit
-                                visitMethod(directMethodCallCandidate);
+                                silentlyVisitMethodNode(directMethodCallCandidate);
                                 break;
                             }
                         }
+                        pickInferredTypeFromMethodAnnotation(directMethodCallCandidate);
                         classNode = currentClassNode;
                         ClassNode returnType = getType(directMethodCallCandidate);
                         if (returnType.isUsingGenerics() && !returnType.isEnum()) {
@@ -1187,6 +1277,32 @@ public class StaticTypeCheckingVisitor extends ClassCodeVisitorSupport {
                 lastImplicitItType = rememberLastItType;
                 withReceiverList.removeFirst();
             }
+        }
+    }
+
+    private void pickInferredTypeFromMethodAnnotation(final MethodNode node) {
+        if (node.getNodeMetaData(StaticTypesMarker.INFERRED_RETURN_TYPE)==null
+            && !node.getAnnotations(TYPECHECKING_INFO_NODE).isEmpty()) {
+            List<AnnotationNode> annotations = node.getAnnotations(TYPECHECKING_INFO_NODE);
+            AnnotationNode head = annotations.get(0);
+            int version = Integer.valueOf(head.getMember("version").getText());
+            String signature = head.getMember("inferredType").getText();
+            SignatureCodec codec = SignatureCodecFactory.getCodec(version);
+            ClassNode result = codec.decode(signature);
+            node.putNodeMetaData(StaticTypesMarker.INFERRED_RETURN_TYPE, result);
+        }
+    }
+    
+    private void silentlyVisitMethodNode(final MethodNode directMethodCallCandidate) {
+        // visit is authorized because the classnode belongs to the same source unit
+        ErrorCollector currentCollector = errorCollector;
+        // create a dummy collector, we don't want errors to be reported for this visit
+        errorCollector = new ErrorCollector(new CompilerConfiguration());
+        try {
+            visitMethod(directMethodCallCandidate);
+        } finally {
+            // restore error collector
+            errorCollector = currentCollector;
         }
     }
 
@@ -1370,14 +1486,11 @@ public class StaticTypeCheckingVisitor extends ClassCodeVisitorSupport {
                         for (ClassNode node: source.getAST().getClasses()) {
                             if (isClassInnerClassOrEqualTo(classNode, node)) {
                                 // visit is authorized because the classnode belongs to the same source unit
-                                visitMethod(directMethodCallCandidate);
+                                silentlyVisitMethodNode(directMethodCallCandidate);
                                 break;
                             }
                         }
-                        // todo: if no visit was done, we should try to obtain type information in a different
-                        // manner, for example creating a dedicated visitor. But this is not necessarily trivial:
-                        // choose the correct visitor type, make use AST doesn't get polluted with type info or
-                        // even transformed... Deal with precompiled classes...
+                        pickInferredTypeFromMethodAnnotation(directMethodCallCandidate);
                         classNode = currentClassNode;
                         ClassNode returnType = getType(directMethodCallCandidate);
                         if (isUsingGenericsOrIsArrayUsingGenerics(returnType)) {
@@ -1612,7 +1725,7 @@ public class StaticTypeCheckingVisitor extends ClassCodeVisitorSupport {
         ClassNode rightRedirect = right.redirect();
 
         Expression leftExpression = expr.getLeftExpression();
-        if (op == ASSIGN) {
+        if (op == ASSIGN || op == ASSIGNMENT_OPERATOR) {
             if (leftRedirect.isArray() && !rightRedirect.isArray()) return leftRedirect;
             if (leftRedirect.implementsInterface(Collection_TYPE) && rightRedirect.implementsInterface(Collection_TYPE)) {
                 // because of type inferrence, we must perform an additional check if the right expression
@@ -2325,6 +2438,196 @@ public class StaticTypeCheckingVisitor extends ClassCodeVisitorSupport {
             if (var instanceof VariableExpression) {
                 VariableExpression ve = (VariableExpression) var;
                 varOrigType.put(ve, (ClassNode) ve.getNodeMetaData(StaticTypesMarker.INFERRED_TYPE));
+            }
+        }
+    }
+
+    // ------------------- codecs for method return type signatures ------------------------------
+
+    protected static interface SignatureCodec {
+        String encode(ClassNode node);
+        ClassNode decode(String signature);
+    }
+
+    private static class SignatureCodecVersion1 implements SignatureCodec {
+
+        private void doEncode(final ClassNode node, DataOutputStream dos) throws IOException {
+            dos.writeUTF(node.getClass().getSimpleName());
+            if (node instanceof UnionTypeClassNode) {
+                UnionTypeClassNode union = (UnionTypeClassNode) node;
+                ClassNode[] delegates = union.getDelegates();
+                dos.writeInt(delegates.length);
+                for (ClassNode delegate : delegates) {
+                    doEncode(delegate, dos);
+                }
+                return;
+            } else if (node instanceof LowestUpperBoundClassNode) {
+                LowestUpperBoundClassNode lub = (LowestUpperBoundClassNode) node;
+                dos.writeUTF(lub.getLubName());
+                doEncode(lub.getUnresolvedSuperClass(), dos);
+                ClassNode[] interfaces = lub.getInterfaces();
+                if (interfaces==null) {
+                    dos.writeInt(-1);
+                } else {
+                    dos.writeInt(interfaces.length);
+                    for (ClassNode anInterface : interfaces) {
+                        doEncode(anInterface, dos);
+                    }
+                }
+                return;
+            }
+            if (node.isArray()) {
+                dos.writeBoolean(true);
+                doEncode(node.getComponentType(), dos);
+            } else {
+                dos.writeBoolean(false);
+                dos.writeUTF(BytecodeHelper.getTypeDescription(node));
+                dos.writeBoolean(node.isUsingGenerics());
+                GenericsType[] genericsTypes = node.getGenericsTypes();
+                if (genericsTypes == null) {
+                    dos.writeInt(-1);
+                } else {
+                    dos.writeInt(genericsTypes.length);
+                    for (GenericsType type : genericsTypes) {
+                        dos.writeBoolean(type.isPlaceholder());
+                        dos.writeBoolean(type.isWildcard());
+                        doEncode(type.getType(), dos);
+                        ClassNode lb = type.getLowerBound();
+                        if (lb == null) {
+                            dos.writeBoolean(false);
+                        } else {
+                            dos.writeBoolean(true);
+                            doEncode(lb, dos);
+                        }
+                        ClassNode[] upperBounds = type.getUpperBounds();
+                        if (upperBounds == null) {
+                            dos.writeInt(-1);
+                        } else {
+                            dos.writeInt(upperBounds.length);
+                            for (ClassNode bound : upperBounds) {
+                                doEncode(bound, dos);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        public String encode(final ClassNode node) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(128);
+            DataOutputStream dos = new DataOutputStream(baos);
+            StringWriter wrt = new StringWriter();
+            String encoded = null;
+            try {
+                doEncode(node, dos);
+                EncodingGroovyMethods.encodeBase64(baos.toByteArray()).writeTo(wrt);
+                encoded = wrt.toString();
+            } catch (IOException e) {
+                throw new GroovyRuntimeException("Unable to serialize type information",e);
+            }
+            return encoded;
+        }
+
+        private ClassNode doDecode(final DataInputStream dis) throws IOException {
+            String classNodeType = dis.readUTF();
+            if (UnionTypeClassNode.class.getSimpleName().equals(classNodeType)) {
+                int len = dis.readInt();
+                ClassNode[] delegates = new ClassNode[len];
+                for (int i=0; i<len;i++) {
+                    delegates[i] = doDecode(dis);
+                }
+                return new UnionTypeClassNode(delegates);
+            } else if (WideningCategories.LowestUpperBoundClassNode.class.getSimpleName().equals(classNodeType)) {
+                String name = dis.readUTF();
+                ClassNode upper = doDecode(dis);
+                int len = dis.readInt();
+                ClassNode[] interfaces = null;
+                if (len>=0) {
+                    interfaces = new ClassNode[len];
+                    for (int i=0;i<len;i++) {
+                        interfaces[i] = doDecode(dis);
+                    }
+                }
+                return new LowestUpperBoundClassNode(name, upper, interfaces);
+            }
+            boolean makeArray = dis.readBoolean();
+            if (makeArray) {
+                return doDecode(dis).makeArray();
+            }
+            String typedesc = dis.readUTF();
+            char typeCode = typedesc.charAt(0);
+            ClassNode result = OBJECT_TYPE;
+            if (typeCode=='L') {
+                // object type
+                String className = typedesc.replace('/', '.').substring(1, typedesc.length() - 1);
+                try {
+                    result = ClassHelper.make(Class.forName(className)).getPlainNodeReference();
+                } catch (ClassNotFoundException e) {
+                    result = ClassHelper.make(className);
+                }
+                result.setUsingGenerics(dis.readBoolean());
+                int len = dis.readInt();
+                if (len>=0) {
+                    GenericsType[] gts = new GenericsType[len];
+                    for (int i=0; i<len;i++) {
+                        boolean placeholder = dis.readBoolean();
+                        boolean wildcard = dis.readBoolean();
+                        ClassNode type = doDecode(dis);
+                        boolean low = dis.readBoolean();
+                        ClassNode lb = null;
+                        if (low) {
+                            lb = doDecode(dis);
+                        }
+                        int upc = dis.readInt();
+                        ClassNode[] ups = null;
+                        if (upc>=0) {
+                            ups = new ClassNode[upc];
+                            for (int j=0; j<upc;j++) {
+                                ups[j] = doDecode(dis);
+                            }
+                        }
+                        GenericsType gt = new GenericsType(
+                                type, ups, lb
+                        );
+                        gt.setPlaceholder(placeholder);
+                        gt.setWildcard(wildcard);
+                        gts[i] = gt;
+                    }
+                    result.setGenericsTypes(gts);
+                }
+            } else {
+                // primitive type
+                switch (typeCode) {
+                    case 'I': result=int_TYPE; break;
+                    case 'Z': result=boolean_TYPE; break;
+                    case 'B': result=byte_TYPE; break;
+                    case 'C': result=char_TYPE; break;
+                    case 'S': result=short_TYPE; break;
+                    case 'D': result=double_TYPE; break;
+                    case 'F': result=float_TYPE; break;
+                    case 'J': result=long_TYPE; break;
+                    case 'V': result=VOID_TYPE; break;
+                }
+            }
+            return result;
+        }
+        
+        public ClassNode decode(final String signature) {
+            DataInputStream dis = new DataInputStream(
+                    new ByteArrayInputStream(EncodingGroovyMethods.decodeBase64(signature)));
+            try {
+                return doDecode(dis);
+            } catch (IOException e) {
+                throw new GroovyRuntimeException("Unable to read type information",e);
+            }
+        }
+    }
+
+    protected static class SignatureCodecFactory {
+        static SignatureCodec getCodec(int version) {
+            switch (version) {
+                case 1: return new SignatureCodecVersion1();
+                default: return null;
             }
         }
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2012 the original author or authors.
+ * Copyright 2003-2009 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.tools.groovydoc;
+package groovy.transform;
 
-import org.codehaus.groovy.runtime.ResourceGroovyMethods;
-
-import java.io.File;
-
-public class FileOutputTool implements OutputTool {
-    public void makeOutputArea(String filename) {
-        File dir = new File(filename);
-        dir.mkdirs();
-    }
-
-    public void writeToOutput(String fileName, String text) throws Exception {
-        File file = new File(fileName);
-        file.getParentFile().mkdirs();
-        ResourceGroovyMethods.write(file, text);
-    }
+/**
+ * This enumeration can be used whenever it is preferred to annotate a class as
+ * {@link TypeChecked} in general, but where only one or more methods are "dynamic". This allows the user
+ * to annotate the class itself then annotate only the methods which require exclusion.
+ *
+ * @author Cedric Champeau
+ */
+public enum TypeCheckingMode {
+    PASS,
+    SKIP
 }
