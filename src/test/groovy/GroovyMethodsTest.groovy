@@ -285,6 +285,19 @@ class GroovyMethodsTest extends GroovySwingTestCase {
         assert answer == ["Bob"]
     }
 
+    void testIteratorGrep() {
+        // Set our initial value
+        def a = 1
+        // Define an iterator around this value
+        def iter = [ hasNext:{ true }, next:{ a++ } ] as Iterator
+
+        // Define a new iterator that will just emit odd numbers
+        def oddIter = iter.grep { it % 2 }
+
+        // Check it's working
+        assert [ 1, 3, 5 ] == oddIter.take( 3 ).collect()        
+    }
+
     void testCollectionToList() {
         def c = [1, 2, 3, 4, 5] // but it's a list
         def l = c.toList()
