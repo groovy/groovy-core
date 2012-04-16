@@ -1,10 +1,10 @@
-
+import junit.framework.AssertionFailedError
 
 /**
-    Testing the notYetImplemented feature of GroovyTestCase.
-    Todo: testing all other features.
-    @author Dierk Koenig
-*/
+ Testing the notYetImplemented feature of GroovyTestCase.
+ Todo: testing all other features.
+ @author Dierk Koenig
+ */
 
 class GroovyTestCaseTest extends GroovyTestCase {
 
@@ -50,6 +50,16 @@ class GroovyTestCaseTest extends GroovyTestCase {
         shouldFail(MyException) {
             new Foo().createBarWithNestedException()
         }
+    }
+
+    void testShouldFailWithCause() {
+        def msg = shouldFail(AssertionFailedError) {
+            shouldFailWithCause(Exception) {
+                throw new Exception()
+            }
+        }
+
+        assertEquals "Catched exception does not have a cause (indicates that the cause is nonexistent or unknown). Maybe you should use 'shouldFail' instead?", msg
     }
 }
 
