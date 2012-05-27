@@ -31,7 +31,7 @@ import org.codehaus.groovy.util.StringUtil
  * @author Tim Yates
  * @author Dinko Srkoc
  */
-class GroovyMethodsTest extends GroovySwingTestCase {
+class GroovyMethodsTest extends GroovyTestCase {
     void testCollect() {
         assert [2, 4, 6].collect {it * 2} == [4, 8, 12]
         def answer = [2, 4, 6].collect(new Vector()) {it * 2}
@@ -70,7 +70,7 @@ class GroovyMethodsTest extends GroovySwingTestCase {
     }
 
     void testAsCoercion() {
-        if (headless) return
+        if (HeadlessTestSupport.headless) return
 
         def d0 = new Dimension(100, 200)
         assert d0 == new Dimension(width: 100, height: 200)
