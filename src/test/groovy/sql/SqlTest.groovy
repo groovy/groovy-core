@@ -172,7 +172,7 @@ class SqlTest extends GroovyTestCase {
 }
 
 class SqlSubclass extends Sql {
-    def connection
+    Connection connection
 
     SqlSubclass(Sql base) {
         super(base)
