@@ -39,6 +39,10 @@ import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.SourceUnit
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.util.TraceClassVisitor
+import javax.swing.JFrame
+import java.awt.Color
+
+import java.awt.FlowLayout
 
 /**
  * This object is a GUI for looking at the AST that Groovy generates. 
@@ -183,11 +187,45 @@ public class AstBrowser {
         jTree.addTreeSelectionListener({ TreeSelectionEvent e ->
 
             propertyTable.model.rows.clear()
+            propertyTable.columnModel.getColumn(1).cellRenderer = new ComponentOrDefaultRenderer()
+            propertyTable.columnModel.getColumn(1).cellEditor = new ComponentOrTextEditor()
             TreeNode node = jTree.lastSelectedPathComponent
             if (node instanceof TreeNodeWithProperties) {
-
-                node.properties.each {
-                    propertyTable.model.rows << ["name": it[0], "value": it[1], "type": it[2]]
+                for (it in node.properties) {
+                    def propList = it
+                    if (propList[2] == "ListHashMap") {
+                        //If the class is a ListHashMap, make it accessible in a new frame through a button
+                        def btnPanel = swing.panel (background: Color.white, layout: new FlowLayout(1, -8, -8)) {
+                            button(
+                                text: "See key/value pairs",
+                                actionPerformed: {
+                                    def mapTable
+                                    swing.frame(title: propList[0], defaultCloseOperation: JFrame.DISPOSE_ON_CLOSE,
+                                                size: [800, 600], show: true, locationRelativeTo: null  ) {
+                                        lookAndFeel("system")
+                                        panel {
+                                            scrollPane() {
+                                                mapTable = swing.table() {
+                                                    tableModel(list: [[:]]) {
+                                                        propertyColumn(header: 'Name', propertyName: 'name')
+                                                        propertyColumn(header: 'Value', propertyName: 'value')
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    propList[1].substring(1, propList[1].length() - 1).tokenize(',').each {
+                                        def kv = it.tokenize(':')
+                                        if (kv)
+                                            mapTable.model.rows << ["name": kv[0], "value": kv[1]]
+                                    }
+                                })
+                        }
+                        btnPanel.updateUI()
+                        propertyTable.model.rows << ["name": propList[0], "value": btnPanel, "type": propList[2]]
+                    } else {
+                        propertyTable.model.rows << ["name": it[0], "value": it[1], "type": it[2]]
+                    }
                 }
 
                 if (inputArea && rootElement) {

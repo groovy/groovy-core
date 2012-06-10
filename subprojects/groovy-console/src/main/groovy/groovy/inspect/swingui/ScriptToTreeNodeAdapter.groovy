@@ -122,7 +122,7 @@ class ScriptToTreeNodeAdapter {
      * Creates the property table for the node so that the properties view can display nicely.
      */
     private List<List<String>> getPropertyTable(node) {
-        node.metaClass.properties?.
+        List<List<String>> r = node.metaClass.properties?.
             findAll { it.getter }?.
             collect {
                 def name = it.name.toString()
@@ -146,6 +146,7 @@ class ScriptToTreeNodeAdapter {
                 [name, value, type]
             }?.
             sort() { it[0] }
+        return r
     }
 
     /**
