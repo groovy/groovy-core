@@ -162,4 +162,8 @@ public class ASTNode {
         if (key==null) throw new GroovyBugError("Tried to remove meta data with null key "+this+".");
         metaDataMap.remove(key);
     }
+
+    public ListHashMap getMetaDataMap() {
+        return metaDataMap;
+    }
 }
