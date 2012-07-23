@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2011 the original author or authors.
+ * Copyright 2003-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ public class TemplateTest extends TestCase {
     public void testBinding() throws CompilationFailedException, ClassNotFoundException, IOException {
         Map binding = new HashMap();
         binding.put("sam", "pullara");
+        Map bindingForCompare = new HashMap(binding);
 
         Template template1 = new SimpleTemplateEngine().createTemplate("<%= sam %><% print sam %>");
         assertEquals("pullarapullara", template1.make(binding).toString());
@@ -48,6 +49,8 @@ public class TemplateTest extends TestCase {
 
         Template template3 = new GStringTemplateEngine().createTemplate("<%= sam + \" \" + sam %><% out << sam %>");
         assertEquals("pullara pullarapullara", template3.make(binding).toString());
+
+        assertEquals(bindingForCompare, binding);
     }
 
 }
