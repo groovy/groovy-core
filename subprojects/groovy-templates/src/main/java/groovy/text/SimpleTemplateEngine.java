@@ -24,6 +24,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Map;
+import java.util.LinkedHashMap;
 
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -155,10 +156,12 @@ public class SimpleTemplateEngine extends TemplateEngine {
                  */
                 public Writer writeTo(Writer writer) {
                     Binding binding;
-                    if (map == null)
+                    if (map == null) {
                         binding = new Binding();
-                    else
-                        binding = new Binding(map);
+                    } else {
+                        // Binding modifies the Map object so a copy is made to avoid polluting the caller's instance
+                        binding = new Binding(new LinkedHashMap(map));
+                    }
                     Script scriptObject = InvokerHelper.createScript(script.getClass(), binding);
                     PrintWriter pw = new PrintWriter(writer);
                     scriptObject.setProperty("out", pw);
