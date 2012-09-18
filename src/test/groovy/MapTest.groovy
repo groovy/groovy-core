@@ -219,4 +219,15 @@ class MapTest extends GroovyTestCase {
             default: assert true
         }
     }
+
+    void testMapMinusKeys() {
+        assert [:] - [] == [:]
+        assert [:] - ['a'] == [:]
+
+        def map = [a:1, b:2, c:3]
+        assert map - ['a'] == [b:2, c:3]
+        assert map - ['a', 'c'] == [b:2]
+        assert map - ['d'] == [a:1, b:2, c:3]
+        assert map - ['a', 'c', 'd'] == [b:2]
+    }
 }

@@ -106,6 +106,7 @@ import java.util.regex.Pattern;
  * @author Tim Yates
  * @author Dinko Srkoc
  * @author Andre Steingress
+ * @author Rob Fletcher
  */
 public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
 
@@ -8395,6 +8396,24 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
                     }
                 }
             }
+        }
+        return ansMap;
+    }
+
+    /**
+     * Create a Map composed of the entries of the first map minus the
+     * entries of the given map.
+     *
+     * @param self     a map object
+     * @param removeMe the keys to remove from the map
+     * @return the resulting map
+     * @since 2.0.3
+     */
+    public static <K,V> Map<K,V> minus(Map<K,V> self, Collection<K> removeMe) {
+        final Map<K,V> ansMap = createSimilarMap(self);
+        ansMap.putAll(self);
+        for (K key : removeMe) {
+            ansMap.remove(key);
         }
         return ansMap;
     }
