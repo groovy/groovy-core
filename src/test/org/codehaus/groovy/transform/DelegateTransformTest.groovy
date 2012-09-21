@@ -21,6 +21,7 @@ import gls.CompilableTestSupport
  * @author Alex Tkachman
  * @author Guillaume Laforge
  * @author Paul King
+ * @author Andre Steingress
  */
 class DelegateTransformTest extends CompilableTestSupport {
 
@@ -230,6 +231,192 @@ class DelegateTransformTest extends CompilableTestSupport {
             }
             new ListWrapper()
         '''
+    }
+
+    // GROOVY-5446
+    void testDelegateShouldCarryOverMethodAnnotations() {
+        assertScript """
+            import java.lang.annotation.*
+
+            @Retention(RetentionPolicy.RUNTIME)
+            @Target([ElementType.METHOD])
+            public @interface SomeAnnotation {}
+
+            class A {
+                @SomeAnnotation
+                def method() { "Test" }
+            }
+
+            class A_Delegate {
+                @Delegate(methodAnnotations = true)
+                A a = new A()
+            }
+
+            def originalMethod = A.getMethod('method', [] as Class[])
+            def originalAnno = originalMethod.declaredAnnotations[0]
+
+            def delegateMethod = A_Delegate.getMethod('method', [] as Class[])
+            def delegateAnno = delegateMethod.declaredAnnotations[0]
+
+            assert delegateAnno == originalAnno
+            """
+    }
+
+    void testDelegateShouldCarryOverAnnotationTypeElements() {
+        assertScript """
+            import java.lang.annotation.*
+
+            @Retention(RetentionPolicy.RUNTIME)
+            @Target([ElementType.METHOD])
+            public @interface SomeAnnotation {
+                int intElement() default 0
+                String stringElement() default ""
+                Class classElement() default Object.class
+                SomeEnum enumElement() default SomeEnum.ENUM1
+
+                enum SomeEnum {
+                    ENUM1, ENUM2
+                }
+            }
+
+            class A {
+                @SomeAnnotation(intElement = 42, stringElement = 'test', classElement = Integer.class, enumElement = SomeAnnotation.SomeEnum.ENUM2)
+                def method() { "Test" }
+            }
+
+            class A_Delegate {
+                @Delegate(methodAnnotations = true)
+                A a = new A()
+            }
+
+            def originalMethod = A.getMethod('method', [] as Class[])
+            def originalAnno = originalMethod.declaredAnnotations[0]
+
+            def delegateMethod = A_Delegate.getMethod('method', [] as Class[])
+            def delegateAnno = delegateMethod.declaredAnnotations[0]
+
+            assert 42 == delegateAnno.intElement()
+            assert 'test' == delegateAnno.stringElement()
+            assert Integer.class == delegateAnno.classElement()
+            assert SomeAnnotation.SomeEnum.ENUM2 == delegateAnno.enumElement()
+            """
+    }
+
+    void testMethodAnnotationsShouldNotBeCarriedOverByDefault() {
+        assertScript """
+                import java.lang.annotation.*
+
+                @Retention(RetentionPolicy.RUNTIME)
+                @Target([ElementType.METHOD])
+                public @interface SomeAnnotation {}
+
+                class A {
+                    @SomeAnnotation
+                    def method() { "Test" }
+                }
+
+                class A_Delegate {
+                    @Delegate
+                    A a = new A()
+                }
+
+                def originalMethod = A.getMethod('method', [] as Class[])
+                def originalAnno = originalMethod.declaredAnnotations[0]
+
+                def delegateMethod = A_Delegate.getMethod('method', [] as Class[])
+                assert delegateMethod.declaredAnnotations.length == 0
+                """
+    }
+
+    // GROOVY-5446
+    void testDelegateShouldCarryOverParameterAnnotations() {
+        assertScript """
+            import java.lang.annotation.*
+
+            @Retention(RetentionPolicy.RUNTIME)
+            @Target([ElementType.PARAMETER])
+            public @interface SomeAnnotation {
+            }
+
+            class A {
+                def method(@SomeAnnotation def param) { "Test" }
+            }
+
+            class A_Delegate {
+                @Delegate(parameterAnnotations = true)
+                A a = new A()
+            }
+
+            def originalMethod = A.getMethod('method', [Object.class] as Class[])
+            def originalAnno = originalMethod.parameterAnnotations[0][0]
+
+            def delegateMethod = A_Delegate.getMethod('method', [Object.class] as Class[])
+            def delegateAnno = delegateMethod.parameterAnnotations[0][0]
+
+            assert delegateAnno == originalAnno
+                """
+    }
+
+    void testDelegateShouldCarryOverClosureAnnotationTypeElements() {
+        assertScript """
+                import java.lang.annotation.*
+
+                @Retention(RetentionPolicy.RUNTIME)
+                @Target([ElementType.METHOD])
+                public @interface SomeAnnotation {
+                    Class value()
+                }
+
+                class A {
+
+                    Integer count = 1
+
+                    @SomeAnnotation({ count == 1 })
+                    def method() { "Test" }
+                }
+
+                class A_Delegate {
+
+                    @Delegate(methodAnnotations = true)
+                    A a = new A()
+                }
+
+                def delegate = new A_Delegate()
+
+                def originalMethod = A.getMethod('method', [] as Class[])
+                def originalAnno = originalMethod.declaredAnnotations[0]
+
+                def delegateMethod = A_Delegate.getMethod('method', [] as Class[])
+                def delegateAnno = delegateMethod.declaredAnnotations[0]
+
+                assert delegateAnno.value().newInstance(delegate, delegate).call()
+                """
+    }
+
+    void testParameterAnnotationsShouldNotBeCarriedOverByDefault() {
+        assertScript """
+                import java.lang.annotation.*
+
+                @Retention(RetentionPolicy.RUNTIME)
+                @Target([ElementType.PARAMETER])
+                public @interface SomeAnnotation {
+                }
+
+                class A {
+                    def method(@SomeAnnotation def param) { "Test" }
+                }
+
+                class A_Delegate {
+                    @Delegate
+                    A a = new A()
+                }
+
+                def originalMethod = A.getMethod('method', [Object.class] as Class[])
+                def originalAnno = originalMethod.parameterAnnotations[0][0]
+
+                def delegateMethod = A_Delegate.getMethod('method', [Object.class] as Class[])
+                assert delegateMethod.parameterAnnotations[0].length == 0
+        """
     }
 }
 

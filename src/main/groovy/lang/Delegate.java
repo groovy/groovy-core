@@ -132,4 +132,14 @@ public @interface Delegate {
      * @return true if owner class should delegate to methods annotated with @Deprecated
      */
     boolean deprecated() default false;
+
+    /**
+     * @return true if generated delegate methods should keep method annotations
+     */
+    boolean methodAnnotations() default false;
+
+    /**
+     * @return true if generated delegate methods should keep parameter annotations
+     */
+    boolean parameterAnnotations() default false;
 }

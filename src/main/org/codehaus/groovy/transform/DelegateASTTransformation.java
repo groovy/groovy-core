@@ -30,11 +30,9 @@ import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.objectweb.asm.Opcodes;
 
+import java.lang.annotation.Retention;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Handles generation of code for the <code>@Delegate</code> annotation
@@ -42,11 +40,16 @@ import java.util.Set;
  * @author Alex Tkachman
  * @author Guillaume Laforge
  * @author Paul King
+ * @author Andre Steingress
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 public class DelegateASTTransformation implements ASTTransformation, Opcodes {
     private static final ClassNode DEPRECATED_TYPE = ClassHelper.make(Deprecated.class);
     private static final ClassNode GROOVYOBJECT_TYPE = ClassHelper.make(GroovyObject.class);
+
+    private static final String MEMBER_INTERFACES = "interfaces";
+    private static final String MEMBER_PARAMETER_ANNOTATIONS = "parameterAnnotations";
+    private static final String MEMBER_METHOD_ANNOTATIONS = "methodAnnotations";
 
     public void visit(ASTNode[] nodes, SourceUnit source) {
         if (nodes.length != 2 || !(nodes[0] instanceof AnnotationNode) || !(nodes[1] instanceof AnnotatedNode)) {
@@ -79,7 +82,7 @@ public class DelegateASTTransformation implements ASTTransformation, Opcodes {
 
             final List<MethodNode> ownerMethods = getAllMethods(owner);
             for (MethodNode mn : fieldMethods) {
-                addDelegateMethod(fieldNode, owner, ownerMethods, mn, deprecated);
+                addDelegateMethod(node, fieldNode, owner, ownerMethods, mn, deprecated);
             }
 
             for (PropertyNode prop : type.getProperties()) {
@@ -90,7 +93,7 @@ public class DelegateASTTransformation implements ASTTransformation, Opcodes {
                 addSetterIfNeeded(fieldNode, owner, prop, name);
             }
 
-            final Expression interfacesElement = node.getMember("interfaces");
+            final Expression interfacesElement = node.getMember(MEMBER_INTERFACES);
             if (hasBooleanValue(interfacesElement, false)) return;
 
             final Set<ClassNode> allInterfaces = type.getAllInterfaces();
@@ -154,7 +157,7 @@ public class DelegateASTTransformation implements ASTTransformation, Opcodes {
         }
     }
 
-    private void addDelegateMethod(FieldNode fieldNode, ClassNode owner, List<MethodNode> ownMethods, MethodNode candidate, boolean deprecated) {
+    private void addDelegateMethod(AnnotationNode node, FieldNode fieldNode, ClassNode owner, List<MethodNode> ownMethods, MethodNode candidate, boolean deprecated) {
         if (!candidate.isPublic() || candidate.isStatic() || 0 != (candidate.getModifiers () & Opcodes.ACC_SYNTHETIC))
             return;
 
@@ -184,13 +187,23 @@ public class DelegateASTTransformation implements ASTTransformation, Opcodes {
                 break;
             }
         }
+
         if (existingNode == null || existingNode.getCode() == null) {
+
+            final Expression parameterAnnotationsElement = node.getMember(MEMBER_PARAMETER_ANNOTATIONS);
+            final boolean includeParameterAnnotations = hasBooleanValue(parameterAnnotationsElement, true);
+
+            final List<AnnotationNode> methodAnnotations = candidate.getAnnotations();
             final ArgumentListExpression args = new ArgumentListExpression();
             final Parameter[] params = candidate.getParameters();
             final Parameter[] newParams = new Parameter[params.length];
             for (int i = 0; i < newParams.length; i++) {
+                List<AnnotationNode> paramAnnotations = params[i].getAnnotations();
                 Parameter newParam = new Parameter(nonGeneric(params[i].getType()), params[i].getName());
                 newParam.setInitialExpression(params[i].getInitialExpression());
+
+                if (includeParameterAnnotations) newParam.addAnnotations(copyAnnotatedNodeAnnotations(paramAnnotations, newParam));
+
                 newParams[i] = newParam;
                 args.addExpression(new VariableExpression(newParam));
             }
@@ -205,8 +218,48 @@ public class DelegateASTTransformation implements ASTTransformation, Opcodes {
                                     new VariableExpression(fieldNode),
                                     candidate.getName(),
                                     args)));
+
             newMethod.setGenericsTypes(candidate.getGenericsTypes());
+
+            final Expression methodAnnotationsElement = node.getMember(MEMBER_METHOD_ANNOTATIONS);
+            if (hasBooleanValue(methodAnnotationsElement, true)) {
+                newMethod.addAnnotations(copyAnnotatedNodeAnnotations(methodAnnotations, newMethod));
+            }
         }
+    }
+
+    private List<AnnotationNode> copyAnnotatedNodeAnnotations(final List<AnnotationNode> candidateAnnotations, final AnnotatedNode annotatedNode) {
+        final ArrayList<AnnotationNode> delegateAnnotations = new ArrayList<AnnotationNode>();
+        final ClassNode retentionClassNode = ClassHelper.makeWithoutCaching(Retention.class);
+
+        for (AnnotationNode annotation : candidateAnnotations)  {
+
+            List<AnnotationNode> annotations = annotation.getClassNode().getAnnotations(retentionClassNode);
+            if (annotations.isEmpty()) continue;
+
+            AnnotationNode retentionPolicyAnnotation = annotations.get(0);
+            Expression valueExpression = retentionPolicyAnnotation.getMember("value");
+            if (!(valueExpression instanceof PropertyExpression)) continue;
+
+            PropertyExpression propertyExpression = (PropertyExpression) valueExpression;
+            boolean processAnnotation =
+                    propertyExpression.getProperty() instanceof ConstantExpression &&
+                            (
+                                    "RUNTIME".equals(((ConstantExpression) (propertyExpression.getProperty())).getValue()) ||
+                                    "CLASS".equals(((ConstantExpression) (propertyExpression.getProperty())).getValue())
+                            );
+
+            if (processAnnotation)  {
+                AnnotationNode newAnnotation = new AnnotationNode(annotation.getClassNode());
+                for (Map.Entry<String, Expression> member : annotation.getMembers().entrySet())  {
+                    newAnnotation.addMember(member.getKey(), member.getValue());
+                }
+                newAnnotation.setSourcePosition(annotatedNode);
+
+                delegateAnnotations.add(newAnnotation);
+            }
+        }
+        return delegateAnnotations;
     }
 
     private ClassNode nonGeneric(ClassNode type) {
