@@ -53,10 +53,14 @@ public class ConstantExpression extends Expression {
             if (keepPrimitive) {
                 if (value instanceof Integer) {
                     setType(ClassHelper.int_TYPE);
+                } else if (value instanceof Long) {
+                    setType(ClassHelper.long_TYPE);
                 } else if (value instanceof Boolean) {
                     setType(ClassHelper.boolean_TYPE);
                 } else if (value instanceof Double) {
                     setType(ClassHelper.double_TYPE);
+                } else if (value instanceof Float) {
+                    setType(ClassHelper.float_TYPE);
                 } else {
                     setType(ClassHelper.make(value.getClass()));
                 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2009 the original author or authors.
+ * Copyright 2003-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -187,7 +187,7 @@ class MethodCallsSTCTest extends StaticTypeCheckingTestCase {
             B c = new B<Integer>()
             String[] args = ['a','b','c']
             assert c.identity(args) == args
-        ''', 'Cannot call groovy.transform.stc.MethodCallsSTCTest$MyMethodCallTestClass2#identity([Ljava.lang.Integer;) with arguments [[Ljava.lang.String;]'
+        ''', 'Cannot call groovy.transform.stc.MethodCallsSTCTest$MyMethodCallTestClass2#identity(java.lang.Integer[]) with arguments [java.lang.String[]]'
     }
 
     void testMethodCallFromSuperOwner() {
@@ -500,6 +500,339 @@ class MethodCallsSTCTest extends StaticTypeCheckingTestCase {
         ''', '#m(java.lang.String)'
     }
 
+    void testShouldNotFailWithAmbiguousMethodSelection() {
+        assertScript '''
+            StringBuffer sb = new StringBuffer()
+            sb.append('foo')
+        '''
+    }
+
+    void testShouldBeAbleToCallMethodUsingDoubleWithDoubleFloatLongIntShortOrByte() {
+        assertScript '''
+            double square(double x) { x*x }
+            assert square(2.0d) == 4.0d
+            assert square(2.0f) == 4.0d
+            assert square(2L) == 4.0d
+            assert square(2) == 4.0d
+            assert square((short)2) == 4.0d
+            assert square((byte)2) == 4.0d
+        '''
+    }
+
+    void testShouldNotBeAbleToCallMethodUsingFloatWithDouble() {
+        shouldFailWithMessages '''
+            float square(float x) { x*x }
+            assert square(2.0d) == 4.0d
+        ''', '#square(double)'
+    }
+
+    void testShouldNotBeAbleToCallMethodUsingLongWithFloatOrDouble() {
+        shouldFailWithMessages '''
+            float square(long x) { x*x }
+            assert square(2.0d) == 4.0d
+            assert square(2.0f) == 4.0d
+        ''', '#square(double)', '#square(float)'
+    }
+
+    void testShouldNotAllowMethodCallFromStaticContext() {
+        shouldFailWithMessages '''
+            class A {
+                void instanceMethod() {}
+
+                static void staticMethod() {
+                    instanceMethod() // calling instance method from static context
+                }
+            }
+            A.staticMethod()
+        ''', 'Non static method A#instanceMethod cannot be called from static context'
+    }
+
+    void testShouldNotAllowMethodCallFromStaticConstructor() {
+        shouldFailWithMessages '''
+            class A {
+                void instanceMethod() {}
+
+                static {
+                    instanceMethod() // calling instance method from static context
+                }
+            }
+            new A()
+        ''', 'Non static method A#instanceMethod cannot be called from static context'
+    }
+
+    void testShouldNotAllowMethodCallFromStaticField() {
+        shouldFailWithMessages '''
+            class A {
+                boolean instanceMethod() { true }
+
+                static FOO = instanceMethod()
+            }
+            new A()
+        ''', 'Non static method A#instanceMethod cannot be called from static context'
+    }
+
+    // GROOVY-5495
+    void testShouldFindMethodFromSuperInterface() {
+        assertScript '''
+            class ClassUnderTest {
+                void methodFromString(SecondInterface si) {
+                    si.methodFromSecondInterface();
+                    si.methodFromFirstInterface();
+                }
+            }
+
+            interface FirstInterface {
+                void methodFromFirstInterface();
+            }
+
+            interface SecondInterface extends FirstInterface {
+                void methodFromSecondInterface();
+            }
+
+            new ClassUnderTest()
+            '''
+    }
+
+    void testShouldNotBeAmbiguousCall() {
+        assertScript '''
+            (0..10).find { int x -> x < 5 }
+        '''
+    }
+
+
+    void testEqualsCalledOnInterface() {
+        assertScript '''
+            Serializable ser = (Serializable) new Integer(1)
+            if (ser !=null) { // ser.equals(null)
+                println 'ok'
+                int hash = ser.hashCode()
+                String str = ser.toString()
+                try {
+                    ser.notify()
+                } catch (e) {}
+                try {
+                    ser.notifyAll()
+                } catch (e) {}
+
+                try {
+                    ser.wait()
+                } catch (e) {}
+
+            }
+
+        '''
+    }
+
+    // GROOVY-5534
+    void testSafeDereference() {
+        assertScript '''
+        def foo() {
+           File bar
+           bar?.name
+        }
+
+        assert foo() == null
+        '''
+    }
+
+    // GROOVY-5540
+    void testChoosePublicMethodInHierarchy() {
+        assertScript '''import groovy.transform.stc.MethodCallsSTCTest.Child2
+            class A {
+                int delegate() {
+                    @ASTTest(phase=INSTRUCTION_SELECTION, value={
+                        def md = node.rightExpression.getNodeMetaData(DIRECT_METHOD_CALL_TARGET)
+                        assert md.declaringClass.nameWithoutPackage == 'MethodCallsSTCTest$ChildWithPublic'
+                    })
+                    int res = new Child2().m()
+                    res
+                }
+            }
+            assert new A().delegate() == 2
+        '''
+    }
+
+    // GROOVY-5580
+    void testGetNameAsPropertyFromSuperInterface() {
+        assertScript '''interface Upper { String getName() }
+        interface Lower extends Upper {}
+        String foo(Lower impl) {
+            impl.name // getName() called with the property notation
+        }
+        assert foo({ 'bar' } as Lower) == 'bar'
+        '''
+    }
+
+    void testGetNameAsPropertyFromSuperInterfaceUsingConcreteImpl() {
+        assertScript '''interface Upper { String getName() }
+        interface Lower extends Upper {}
+        class Foo implements Lower { String getName() { 'bar' } }
+        String foo(Foo impl) {
+            impl.name // getName() called with the property notation
+        }
+        assert foo(new Foo()) == 'bar'
+        '''
+    }
+
+    void testGetNameAsPropertyFromSuperInterfaceUsingConcreteImplSubclass() {
+        assertScript '''interface Upper { String getName() }
+        interface Lower extends Upper {}
+        class Foo implements Lower { String getName() { 'bar' } }
+        class Bar extends Foo {}
+        String foo(Bar impl) {
+            impl.name // getName() called with the property notation
+        }
+        assert foo(new Bar()) == 'bar'
+        '''
+    }
+
+    // GROOVY-5580: getName variant
+    void testGetNameFromSuperInterface() {
+        assertScript '''interface Upper { String getName() }
+        interface Lower extends Upper {}
+        String foo(Lower impl) {
+            impl.getName()
+        }
+        assert foo({ 'bar' } as Lower) == 'bar'
+        '''
+    }
+
+    void testGetNameFromSuperInterfaceUsingConcreteImpl() {
+        assertScript '''interface Upper { String getName() }
+        interface Lower extends Upper {}
+        class Foo implements Lower { String getName() { 'bar' } }
+        String foo(Foo impl) {
+             impl.getName()
+        }
+        assert foo(new Foo()) == 'bar'
+        '''
+    }
+
+    void testGetNameFromSuperInterfaceUsingConcreteImplSubclass() {
+        assertScript '''interface Upper { String getName() }
+        interface Lower extends Upper {}
+        class Foo implements Lower { String getName() { 'bar' } }
+        class Bar extends Foo {}
+        String foo(Bar impl) {
+             impl.getName()
+        }
+        assert foo(new Bar()) == 'bar'
+        '''
+    }
+
+    void testSpreadArgsForbiddenInMethodCall() {
+        shouldFailWithMessages '''
+            void foo(String a, String b, int c, double d1, double d2) {}
+            void bar(String[] args, int c, double[] nums) {
+                foo(*args, c, *nums)
+            }
+        ''',
+                'The spread operator cannot be used as argument of method or closure calls with static type checking because the number of arguments cannot be determined at compile time',
+                'The spread operator cannot be used as argument of method or closure calls with static type checking because the number of arguments cannot be determined at compile time',
+                'Cannot find matching method'
+    }
+
+    void testSpreadArgsForbiddenInStaticMethodCall() {
+        shouldFailWithMessages '''
+            static void foo(String a, String b, int c, double d1, double d2) {}
+            static void bar(String[] args, int c, double[] nums) {
+                foo(*args, c, *nums)
+            }
+        ''',
+                'The spread operator cannot be used as argument of method or closure calls with static type checking because the number of arguments cannot be determined at compile time',
+                'The spread operator cannot be used as argument of method or closure calls with static type checking because the number of arguments cannot be determined at compile time',
+                'Cannot find matching method'
+    }
+
+    void testSpreadArgsForbiddenInConstructorCall() {
+        shouldFailWithMessages '''
+            class SpreadInCtor {
+                SpreadInCtor(String a, String b) { }
+            }
+
+            new SpreadInCtor(*['A', 'B'])
+        ''',
+                'The spread operator cannot be used as argument of method or closure calls with static type checking because the number of arguments cannot be determined at compile time',
+                'Cannot find matching method'
+    }
+
+    void testSpreadArgsForbiddenInClosureCall() {
+        shouldFailWithMessages '''
+            def closure = { String a, String b, String c -> println "$a $b $c" }
+            def strings = ['A', 'B', 'C']
+            closure(*strings)
+        ''',
+                'The spread operator cannot be used as argument of method or closure calls with static type checking because the number of arguments cannot be determined at compile time'
+    }
+
+    void testBoxingShouldCostMore() {
+        assertScript '''
+            int foo(int x) { 1 }
+            int foo(Integer x) { 2 }
+            int bar() {
+                foo(1)
+            }
+            assert bar() == 1
+        '''
+    }
+
+    // GROOVY-5645
+    void testSuperCallWithVargs() {
+        assertScript '''
+            class Base {
+                int foo(int x, Object... args) { 1 }
+                int foo(Object... args) { 2 }
+            }
+            class Child extends Base {
+                void bar() {
+                    assert foo(1, 'a') == 1
+                    super.foo(1, 'a') == 1
+                }
+            }
+            new Child().bar()
+        '''
+    }
+
+    void testVargsSelection() {
+        assertScript '''
+            int foo(int x, Object... args) { 1 }
+            int foo(Object... args) { 2 }
+            assert foo(1) == 1
+            assert foo() == 2
+            assert foo(1,2) == 1
+        '''
+    }
+
+    // GROOVY-5702
+    void testShouldFindInterfaceMethod() {
+        assertScript '''
+
+            interface OtherCloseable {
+                void close()
+            }
+
+            abstract class MyCloseableChannel implements OtherCloseable {  }
+
+            class Test {
+                static void test(MyCloseableChannel mc) {
+                    mc?.close()
+                }
+            }
+
+            Test.test(null)
+        '''
+    }
+    void testShouldFindInheritedInterfaceMethod() {
+        assertScript '''
+            interface Top { void close() }
+            interface Middle extends Top {}
+            interface Bottom extends Middle {}
+            void foo(Bottom obj) {
+               obj.close()
+            }
+        '''
+    }
+
     static class MyMethodCallTestClass {
 
         static int mul(int... args) { args.toList().inject(1) { x,y -> x*y } }
@@ -522,5 +855,16 @@ class MethodCallsSTCTest extends StaticTypeCheckingTestCase {
     static class GroovyPage {
         public final void printHtmlPart(final int partNumber) {}
         public final void createTagBody(int bodyClosureIndex, Closure<?> bodyClosure) {}
+    }
+
+    public static class BaseWithProtected {
+        protected int m() { 1 }
+    }
+
+    public static class ChildWithPublic extends BaseWithProtected {
+        public int m() { 2 }
+    }
+
+    public static class Child2 extends ChildWithPublic {
     }
 }

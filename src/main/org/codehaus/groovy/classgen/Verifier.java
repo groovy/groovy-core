@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2010 the original author or authors.
+ * Copyright 2003-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.classgen.asm.BytecodeHelper;
 import org.codehaus.groovy.classgen.asm.MopWriter;
 import org.codehaus.groovy.classgen.asm.OptimizingStatementWriter.ClassNodeSkip;
+import org.codehaus.groovy.classgen.asm.WriterController;
 import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.syntax.RuntimeParserException;
 import org.codehaus.groovy.syntax.Token;
@@ -48,6 +49,7 @@ public class Verifier implements GroovyClassVisitor, Opcodes {
 
     public static final String STATIC_METACLASS_BOOL = "__$stMC";
     public static final String SWAP_INIT = "__$swapInit";
+    public static final String INITIAL_EXPRESSION = "INITIAL_EXPRESSION";
 
     public static final String __TIMESTAMP = "__timeStamp";
     public static final String __TIMESTAMP__ = "__timeStamp__239_neverHappen";
@@ -166,8 +168,8 @@ public class Verifier implements GroovyClassVisitor, Opcodes {
         addInitialization(node);
         checkReturnInObjectInitializer(node.getObjectInitializerStatements());
         node.getObjectInitializerStatements().clear();
-        addCovariantMethods(node);
         node.visitContents(this);
+        addCovariantMethods(node);
     }
 
     private FieldNode checkFieldDoesNotExist(ClassNode node, String fieldName) {
@@ -207,6 +209,12 @@ public class Verifier implements GroovyClassVisitor, Opcodes {
         node.addConstructor(constructor);
     }
 
+    private static boolean isInnerClassOf(ClassNode a, ClassNode b) {
+        if (a.redirect()==b) return true;
+        if (b.redirect() instanceof InnerClassNode) return isInnerClassOf(a, b.redirect().getOuterClass());
+        return false;
+    }
+    
     private void addStaticMetaClassField(final ClassNode node, final String classInternalName) {
         String _staticClassInfoFieldName = "$staticClassInfo";
         while (node.getDeclaredField(_staticClassInfoFieldName) != null)
@@ -226,7 +234,7 @@ public class Verifier implements GroovyClassVisitor, Opcodes {
                     public void visit(MethodVisitor mv) {
                         mv.visitVarInsn(ALOAD, 0);
                         mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Object", "getClass", "()Ljava/lang/Class;");
-                        if (BytecodeHelper.isClassLiteralPossible(node)) {
+                        if (BytecodeHelper.isClassLiteralPossible(node) || BytecodeHelper.isSameCompilationUnit(classNode, node)) {
                             BytecodeHelper.visitClassLiteral(mv,node);
                         } else {
                             mv.visitMethodInsn(INVOKESTATIC, classInternalName, "$get$$class$" + classInternalName.replaceAll("\\/", "\\$"), "()Ljava/lang/Class;");
@@ -667,6 +675,7 @@ public class Verifier implements GroovyClassVisitor, Opcodes {
         addDefaultParameters(methods, new DefaultArgsAction() {
             public void call(ArgumentListExpression arguments, Parameter[] newParams, MethodNode method) {
                 MethodCallExpression expression = new MethodCallExpression(VariableExpression.THIS_EXPRESSION, method.getName(), arguments);
+                expression.setMethodTarget(method);
                 expression.setImplicitThis(true);
                 Statement code = null;
                 if (method.isVoidMethod()) {
@@ -674,8 +683,19 @@ public class Verifier implements GroovyClassVisitor, Opcodes {
                 } else {
                     code = new ReturnStatement(expression);
                 }
-
                 MethodNode newMethod = new MethodNode(method.getName(), method.getModifiers(), method.getReturnType(), newParams, method.getExceptions(), code);
+                // GROOVY-5681
+                for (Expression argument : arguments.getExpressions()) {
+                    if (argument instanceof CastExpression) {
+                        argument = ((CastExpression) argument).getExpression();
+                    }
+                    if (argument instanceof ConstructorCallExpression) {
+                        ClassNode type = argument.getType();
+                        if (type instanceof InnerClassNode && ((InnerClassNode) type).isAnonymous()) {
+                            type.setEnclosingMethod(newMethod);
+                        }
+                    }
+                }
                 List<AnnotationNode> annotations = method.getAnnotations();
                 if(annotations != null) {
                     newMethod.addAnnotations(annotations);
@@ -778,7 +798,8 @@ public class Verifier implements GroovyClassVisitor, Opcodes {
         }
 
         for (Parameter parameter : parameters) {
-            // remove default expression
+            // remove default expression and store it as node metadata
+            parameter.putNodeMetaData(Verifier.INITIAL_EXPRESSION, parameter.getInitialExpression());
             parameter.setInitialExpression(null);
         }
     }
@@ -957,7 +978,7 @@ public class Verifier implements GroovyClassVisitor, Opcodes {
                 if (initialValueExpression instanceof ConstantExpression) {
                     ConstantExpression cexp = (ConstantExpression) initialValueExpression;
                     cexp = transformToPrimitiveConstantIfPossible(cexp);
-                    if (ClassHelper.isStaticConstantInitializerType(cexp.getType()) && cexp.getType().equals(fieldNode.getType())) {
+                    if (fieldNode.isFinal() && ClassHelper.isStaticConstantInitializerType(cexp.getType()) && cexp.getType().equals(fieldNode.getType())) {
                         return; // GROOVY-5150: primitive type constants will be initialized directly
                     }
                     staticList.add(0, statement);
@@ -1258,11 +1279,7 @@ public class Verifier implements GroovyClassVisitor, Opcodes {
 
     private boolean isAssignable(ClassNode node, ClassNode testNode) {
         if (testNode.isInterface()) {
-            if (node.isInterface()) {
-                if (node.isDerivedFrom(testNode)) return true;
-            } else {
-                if (node.implementsInterface(testNode)) return true;
-            }
+            if (node.equals(testNode) || node.implementsInterface(testNode)) return true;
         } else {
             if (node.isDerivedFrom(testNode)) return true;
         }
@@ -1369,14 +1386,7 @@ public class Verifier implements GroovyClassVisitor, Opcodes {
                 name, mods, ClassHelper.VOID_TYPE,
                 Parameter.EMPTY_ARRAY, ClassNode.EMPTY_ARRAY, methodCode);
 
-        methodCode.addStatement(new BytecodeSequence(new BytecodeInstruction() {
-            @Override
-            public void visit(MethodVisitor mv) {
-                final String classInternalName = BytecodeHelper.getClassInternalName(node);
-                mv.visitInsn(ACONST_NULL);
-                mv.visitFieldInsn(PUTSTATIC, classInternalName, "$callSiteArray", "Ljava/lang/ref/SoftReference;");
-            }
-        }));
+        methodCode.addStatement(new SwapInitStatement());
         for (FieldNode fn : node.getFields()) {
             if (!fn.isStatic() || !fn.isSynthetic() || !fn.getName().startsWith("$const$")) continue;
             if (fn.getInitialExpression()==null) continue;
@@ -1424,6 +1434,34 @@ public class Verifier implements GroovyClassVisitor, Opcodes {
             result.setType(type);
         }
         return result;
+    }
+
+    private static class SwapInitStatement extends BytecodeSequence {
+
+        private WriterController controller;
+
+        public SwapInitStatement() {
+            super(new SwapInitInstruction());
+            ((SwapInitInstruction)getInstructions().get(0)).statement = this;
+        }
+
+        @Override
+        public void visit(final GroovyCodeVisitor visitor) {
+            if (visitor instanceof AsmClassGenerator) {
+                AsmClassGenerator generator = (AsmClassGenerator) visitor;
+                controller = generator.getController();
+            }
+            super.visit(visitor);
+        }
+
+        private static class SwapInitInstruction extends BytecodeInstruction {
+            SwapInitStatement statement;
+
+            @Override
+            public void visit(final MethodVisitor mv) {
+                statement.controller.getCallSiteWriter().makeCallSiteArrayInitializer();
+            }
+        }
     }
 
 }

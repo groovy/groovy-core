@@ -15,13 +15,22 @@
  */
 package org.codehaus.groovy.transform.stc;
 
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClassRegistry;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.tools.GenericsUtils;
 import org.codehaus.groovy.ast.tools.WideningCategories;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.DefaultGroovyStaticMethods;
+import org.codehaus.groovy.runtime.m12n.ExtensionModule;
+import org.codehaus.groovy.runtime.m12n.ExtensionModuleRegistry;
+import org.codehaus.groovy.runtime.m12n.MetaInfExtensionModule;
+import org.codehaus.groovy.runtime.metaclass.MetaClassRegistryImpl;
+import org.objectweb.asm.Opcodes;
 
 import java.util.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Matcher;
 
 import static org.codehaus.groovy.ast.ClassHelper.*;
@@ -30,12 +39,13 @@ import static org.codehaus.groovy.syntax.Types.*;
 /**
  * Static support methods for {@link StaticTypeCheckingVisitor}.
  */
-abstract class StaticTypeCheckingSupport {
-    final static Map<String, List<MethodNode>> VIRTUAL_DGM_METHODS = getDGMMethods();
+public abstract class StaticTypeCheckingSupport {
     final static ClassNode
             Collection_TYPE = makeWithoutCaching(Collection.class);
+    final static ClassNode Deprecated_TYPE = makeWithoutCaching(Deprecated.class);
     final static ClassNode Matcher_TYPE = makeWithoutCaching(Matcher.class);
     final static ClassNode ArrayList_TYPE = makeWithoutCaching(ArrayList.class);
+    final static ExtensionMethodCache EXTENSION_METHOD_CACHE = new ExtensionMethodCache();
     final static Map<ClassNode, Integer> NUMBER_TYPES = Collections.unmodifiableMap(
             new HashMap<ClassNode, Integer>() {{
                 put(ClassHelper.byte_TYPE, 0);
@@ -52,12 +62,17 @@ abstract class StaticTypeCheckingSupport {
                 put(ClassHelper.Double_TYPE, 5);
             }});
 
+    final static ClassNode GSTRING_STRING_CLASSNODE = WideningCategories.lowestUpperBound(
+            ClassHelper.STRING_TYPE,
+            ClassHelper.GSTRING_TYPE
+    );
+
     /**
      * This is for internal use only. When an argument method is null, we cannot determine its type, so
      * we use this one as a wildcard.
      */
     final static ClassNode UNKNOWN_PARAMETER_TYPE = ClassHelper.make("<unknown parameter type>");
-    
+
     /**
      * This comparator is used when we return the list of methods from DGM which name correspond to a given
      * name. As we also lookup for DGM methods of superclasses or interfaces, it may be possible to find
@@ -75,7 +90,12 @@ abstract class StaticTypeCheckingSupport {
                     for (int i = 0; i < o1ps.length && allEqual; i++) {
                         allEqual = o1ps[i].getType().equals(o2ps[i].getType());
                     }
-                    if (allEqual) return 0;
+                    if (allEqual) {
+                        if (o1 instanceof ExtensionMethodNode && o2 instanceof ExtensionMethodNode) {
+                            return compare(((ExtensionMethodNode) o1).getExtensionMethodNode(), ((ExtensionMethodNode) o2).getExtensionMethodNode());
+                        }
+                        return 0;
+                    }
                 } else {
                     return o1ps.length - o2ps.length;
                 }
@@ -100,7 +120,7 @@ abstract class StaticTypeCheckingSupport {
      * @param callArguments arguments of the method
      * @return true if the name is "with" and arguments consist of a single closure
      */
-    static boolean isWithCall(final String name, final Expression callArguments) {
+    public static boolean isWithCall(final String name, final Expression callArguments) {
         boolean isWithCall = "with".equals(name) && callArguments instanceof ArgumentListExpression;
         if (isWithCall) {
             ArgumentListExpression argList = (ArgumentListExpression) callArguments;
@@ -116,55 +136,12 @@ abstract class StaticTypeCheckingSupport {
      * @return the target variable
      */
     static Variable findTargetVariable(VariableExpression ve) {
-        final Variable accessedVariable = ve.getAccessedVariable();
+        final Variable accessedVariable = ve.getAccessedVariable() != null ? ve.getAccessedVariable() : ve;
         if (accessedVariable != ve) {
             if (accessedVariable instanceof VariableExpression)
                 return findTargetVariable((VariableExpression) accessedVariable);
         }
         return accessedVariable;
-    }
-
-    /**
-     * Returns a map which contains, as the key, the name of a class. The value
-     * consists of a list of MethodNode, one for each default groovy method found
-     * which is applicable for this class.
-     * @return
-     */
-    private static Map<String, List<MethodNode>> getDGMMethods() {
-        Map<String, List<MethodNode>> methods = new HashMap<String, List<MethodNode>>();
-        List<Class> classes = new LinkedList<Class>();
-        Collections.addAll(classes, DefaultGroovyMethods.DGM_LIKE_CLASSES);
-        Collections.addAll(classes, DefaultGroovyMethods.additionals);
-        classes.add(ObjectArrayStaticTypesHelper.class);
-		for (Class dgmLikeClass : classes) {
-			ClassNode cn = ClassHelper.makeWithoutCaching(dgmLikeClass, true);
-			for (MethodNode metaMethod : cn.getMethods()) {
-				Parameter[] types = metaMethod.getParameters();
-				if (metaMethod.isStatic() && metaMethod.isPublic() && types.length > 0) {
-					Parameter[] parameters = new Parameter[types.length - 1];
-					System.arraycopy(types, 1, parameters, 0, parameters.length);
-					MethodNode node = new ExtensionMethodNode(
-                            metaMethod,
-							metaMethod.getName(),
-							metaMethod.getModifiers(),
-							metaMethod.getReturnType(),
-							parameters,
-							ClassNode.EMPTY_ARRAY, null);
-					node.setGenericsTypes(metaMethod.getGenericsTypes());
-					ClassNode declaringClass = types[0].getType();
-					String declaringClassName = declaringClass.getName();
-					node.setDeclaringClass(declaringClass);
-
-					List<MethodNode> nodes = methods.get(declaringClassName);
-					if (nodes == null) {
-						nodes = new LinkedList<MethodNode>();
-						methods.put(declaringClassName, nodes);
-					}
-					nodes.add(node);
-				}
-			}
-		}
-        return methods;
     }
 
 
@@ -175,7 +152,7 @@ abstract class StaticTypeCheckingSupport {
     }
 
     static void findDGMMethodsForClassNode(ClassNode clazz, String name, TreeSet<MethodNode> accumulator) {
-        List<MethodNode> fromDGM = VIRTUAL_DGM_METHODS.get(clazz.getName());
+        List<MethodNode> fromDGM = EXTENSION_METHOD_CACHE.getExtensionMethods().get(clazz.getName());
         if (fromDGM != null) {
             for (MethodNode node : fromDGM) {
                 if (node.getName().equals(name)) accumulator.add(node);
@@ -208,15 +185,19 @@ abstract class StaticTypeCheckingSupport {
      * @return -1 if arguments do not match, 0 if arguments are of the exact type and >0 when one or more argument is
      * not of the exact type but still match
      */
-    static int allParametersAndArgumentsMatch(Parameter[] params, ClassNode[] args) {
-        if (params==null) return args.length==0?0:-1;
+    public static int allParametersAndArgumentsMatch(Parameter[] params, ClassNode[] args) {
+        if (params==null) {
+            params = Parameter.EMPTY_ARRAY;
+        }
         int dist = 0;
+        if (args.length<params.length) return -1;
         // we already know the lengths are equal
         for (int i = 0; i < params.length; i++) {
             ClassNode paramType = params[i].getType();
-            if (!isAssignableTo(args[i], paramType)) return -1;
+            ClassNode argType = args[i];
+            if (!isAssignableTo(argType, paramType)) return -1;
             else {
-                if (!paramType.equals(args[i])) dist+=getDistance(args[i], paramType);
+                if (!paramType.equals(argType)) dist+=getDistance(argType, paramType);
             }
         }
         return dist;
@@ -272,7 +253,7 @@ abstract class StaticTypeCheckingSupport {
         ClassNode vargsBase = params[params.length - 1].getType().getComponentType();
         for (int i = params.length; i < args.length; i++) {
             if (!isAssignableTo(args[i],vargsBase)) return -1;
-            else if (!args[i].equals(vargsBase)) dist++;
+            else if (!args[i].equals(vargsBase)) dist+=getDistance(args[i], vargsBase);
         }
         return dist;
     }
@@ -293,7 +274,7 @@ abstract class StaticTypeCheckingSupport {
         ClassNode ptype = params[params.length - 1].getType().getComponentType();
         ClassNode arg = args[args.length - 1];
         if (isNumberType(ptype) && isNumberType(arg) && !ptype.equals(arg)) return -1;
-        return isAssignableTo(arg, ptype)?(ptype.equals(arg)?0:1):-1;
+        return isAssignableTo(arg, ptype)?getDistance(arg,ptype):-1;
     }
 
     /**
@@ -310,8 +291,41 @@ abstract class StaticTypeCheckingSupport {
         }
         if (isPrimitiveType(toBeAssignedTo)) toBeAssignedTo = getWrapper(toBeAssignedTo);
         if (isPrimitiveType(type)) type = getWrapper(type);
+        if (ClassHelper.Double_TYPE==toBeAssignedTo) {
+            return type.isDerivedFrom(Number_TYPE);
+        }
+        if (ClassHelper.Float_TYPE==toBeAssignedTo) {
+            return type.isDerivedFrom(Number_TYPE) && ClassHelper.Double_TYPE!=type;
+        }
+        if (ClassHelper.Long_TYPE==toBeAssignedTo) {
+            return type.isDerivedFrom(Number_TYPE)
+                    && ClassHelper.Double_TYPE!=type
+                    && ClassHelper.Float_TYPE!=type;
+        }
+        if (ClassHelper.Integer_TYPE==toBeAssignedTo) {
+            return type.isDerivedFrom(Number_TYPE)
+                    && ClassHelper.Double_TYPE!=type
+                    && ClassHelper.Float_TYPE!=type
+                    && ClassHelper.Long_TYPE!=type;
+        }
+        if (ClassHelper.Short_TYPE==toBeAssignedTo) {
+            return type.isDerivedFrom(Number_TYPE)
+                    && ClassHelper.Double_TYPE!=type
+                    && ClassHelper.Float_TYPE!=type
+                    && ClassHelper.Long_TYPE!=type
+                    && ClassHelper.Integer_TYPE!=type;
+        }
+        if (ClassHelper.Byte_TYPE==toBeAssignedTo) {
+            return type == ClassHelper.Byte_TYPE;
+        }
         if (type.isArray() && toBeAssignedTo.isArray()) {
-            return type.getComponentType().equals(toBeAssignedTo.getComponentType());
+            return isAssignableTo(type.getComponentType(),toBeAssignedTo.getComponentType());
+        }
+        if (type.isDerivedFrom(GSTRING_TYPE) && STRING_TYPE.equals(toBeAssignedTo)) {
+            return true;
+        }
+        if (toBeAssignedTo.isDerivedFrom(GSTRING_TYPE) && STRING_TYPE.equals(type)) {
+            return true;
         }
         if (implementsInterfaceOrIsSubclassOf(type, toBeAssignedTo)) {
             if (OBJECT_TYPE.equals(toBeAssignedTo)) return true;
@@ -466,7 +480,7 @@ abstract class StaticTypeCheckingSupport {
         }
     }
 
-    static boolean isAssignment(int op) {
+    public static boolean isAssignment(int op) {
         switch (op) {
             case ASSIGN:
             case LOGICAL_OR_EQUAL:
@@ -516,10 +530,10 @@ abstract class StaticTypeCheckingSupport {
                return true;
            }
             if (BigInteger_TYPE==leftRedirect) {
-                return WideningCategories.isBigIntCategory(rightRedirect);
+                return WideningCategories.isBigIntCategory(getUnwrapper(rightRedirect));
             }
         }
-        
+
         // if rightExpression is null and leftExpression is not a primitive type, it's ok
         boolean rightExpressionIsNull = rightExpression instanceof ConstantExpression && ((ConstantExpression) rightExpression).getValue()==null;
         if (rightExpressionIsNull && !isPrimitiveType(left)) {
@@ -583,7 +597,14 @@ abstract class StaticTypeCheckingSupport {
             return true;
         }
 
+        if (GROOVY_OBJECT_TYPE.equals(leftRedirect) && isBeingCompiled(right)) {
+            return true;
+        }
         return false;
+    }
+
+    public static boolean isBeingCompiled(ClassNode node) {
+        return node.getCompileUnit() != null;
     }
 
     static boolean checkPossibleLooseOfPrecision(ClassNode left, ClassNode right, Expression rightExpr) {
@@ -660,7 +681,7 @@ abstract class StaticTypeCheckingSupport {
         if (parameters != null) {
             for (int i = 0, parametersLength = parameters.length; i < parametersLength; i++) {
                 final ClassNode parameter = parameters[i];
-                sb.append(parameter.toString(false));
+                sb.append(prettyPrintType(parameter));
                 if (i < parametersLength - 1) sb.append(", ");
             }
         }
@@ -668,7 +689,14 @@ abstract class StaticTypeCheckingSupport {
         return sb.toString();
     }
 
-    static boolean implementsInterfaceOrIsSubclassOf(ClassNode type, ClassNode superOrInterface) {
+    static String prettyPrintType(ClassNode type) {
+        if (type.isArray()) {
+            return prettyPrintType(type.getComponentType())+"[]";
+        }
+        return type.toString(false);
+    }
+
+    public static boolean implementsInterfaceOrIsSubclassOf(ClassNode type, ClassNode superOrInterface) {
         boolean result = type.equals(superOrInterface)
                 || type.isDerivedFrom(superOrInterface)
                 || type.implementsInterface(superOrInterface)
@@ -676,21 +704,71 @@ abstract class StaticTypeCheckingSupport {
         if (result) {
             return true;
         }
+        if (superOrInterface instanceof WideningCategories.LowestUpperBoundClassNode) {
+            WideningCategories.LowestUpperBoundClassNode cn = (WideningCategories.LowestUpperBoundClassNode) superOrInterface;
+            result = implementsInterfaceOrIsSubclassOf(type, cn.getSuperClass());
+            if (result) {
+                for (ClassNode interfaceNode : cn.getInterfaces()) {
+                    result = type.implementsInterface(interfaceNode);
+                    if (!result) break;
+                }
+            }
+            if (result) return true;
+        } else if (superOrInterface instanceof UnionTypeClassNode) {
+            UnionTypeClassNode union = (UnionTypeClassNode) superOrInterface;
+            for (ClassNode delegate : union.getDelegates()) {
+                if (implementsInterfaceOrIsSubclassOf(type, delegate)) return true;
+            }
+        }
         if (type.isArray() && superOrInterface.isArray()) {
             return implementsInterfaceOrIsSubclassOf(type.getComponentType(), superOrInterface.getComponentType());
+        }
+        if (GROOVY_OBJECT_TYPE.equals(superOrInterface) && !type.isInterface() && isBeingCompiled(type)) {
+            return true;
         }
         return false;
     }
 
+    static int getPrimitiveDistance(ClassNode primA, ClassNode primB) {
+        return Math.abs(NUMBER_TYPES.get(primA)-NUMBER_TYPES.get(primB));
+    }
+
     static int getDistance(final ClassNode receiver, final ClassNode compare) {
-        if (receiver.equals(compare)||receiver == UNKNOWN_PARAMETER_TYPE) return 0;
-        if (compare.isInterface() && receiver.implementsInterface(compare)) {
-            int dist = getMaximumInterfaceDistance(receiver, compare);
+        int dist = 0;
+        ClassNode unwrapReceiver = ClassHelper.getUnwrapper(receiver);
+        ClassNode unwrapCompare = ClassHelper.getUnwrapper(compare);
+        if (ClassHelper.isPrimitiveType(unwrapReceiver)
+                && ClassHelper.isPrimitiveType(unwrapCompare)
+                && unwrapReceiver!=unwrapCompare) {
+            dist = getPrimitiveDistance(unwrapReceiver, unwrapCompare);
+        }
+        if (isPrimitiveType(receiver) && !isPrimitiveType(compare)) {
+            dist = (dist+1)<<1;
+        }
+        if (unwrapCompare.equals(unwrapReceiver)) return dist;
+        if (receiver.isArray() && !compare.isArray()) {
+            // Object[] vs Object
+            dist += 256;
+        }
+
+        if (receiver == UNKNOWN_PARAMETER_TYPE) {
             return dist;
         }
-        ClassNode superClass = compare.getSuperClass();
-        if (superClass ==null) return 2;
-        return 1+getDistance(receiver, superClass);
+
+        ClassNode ref = receiver;
+        while (ref!=null) {
+            if (compare.equals(ref)) {
+                break;
+            }
+            if (compare.isInterface() && ref.implementsInterface(compare)) {
+                dist += getMaximumInterfaceDistance(ref, compare);
+                break;
+            }
+            ref = ref.getSuperClass();
+            if (ref == null) dist += 2;
+            dist = (dist+1)<<1;
+        }
+        return dist;
     }
 
     private static int getMaximumInterfaceDistance(ClassNode c, ClassNode interfaceClass) {
@@ -829,8 +907,10 @@ abstract class StaticTypeCheckingSupport {
         List<MethodNode> bestChoices = new LinkedList<MethodNode>();
         int bestDist = Integer.MAX_VALUE;
         ClassNode actualReceiver;
-        for (MethodNode m : methods) {
-            actualReceiver = receiver!=null?receiver:m.getDeclaringClass();
+        Collection<MethodNode> choicesLeft = removeCovariants(methods);
+        for (MethodNode m : choicesLeft) {
+            final ClassNode declaringClass = m.getDeclaringClass();
+            actualReceiver = receiver!=null?receiver: declaringClass;
             // todo : corner case
             /*
                 class B extends A {}
@@ -846,7 +926,7 @@ abstract class StaticTypeCheckingSupport {
             if (params.length > args.length && ! isVargs(params)) {
                 // GROOVY-5231
                 int dist = allParametersAndArgumentsMatchWithDefaultParams(params, args);
-                if (dist>=0 && !actualReceiver.equals(m.getDeclaringClass())) dist+=getDistance(actualReceiver, m.getDeclaringClass());
+                if (dist>=0 && !actualReceiver.equals(declaringClass)) dist+=getDistance(actualReceiver, declaringClass);
                 if (dist>=0 && dist<bestDist) {
                     bestChoices.clear();
                     bestChoices.add(m);
@@ -856,10 +936,19 @@ abstract class StaticTypeCheckingSupport {
                 }
             } else if (params.length == args.length) {
                 int allPMatch = allParametersAndArgumentsMatch(params, args);
-                int lastArgMatch = isVargs(params)?lastArgMatchesVarg(params, args):-1;
-                if (lastArgMatch>=0) lastArgMatch++; // ensure exact matches are preferred over vargs
+                boolean firstParamMatches = true;
+                // check first parameters
+                if (args.length > 0) {
+                    Parameter[] firstParams = new Parameter[params.length - 1];
+                    System.arraycopy(params, 0, firstParams, 0, firstParams.length);
+                    firstParamMatches = allParametersAndArgumentsMatch(firstParams, args) >= 0;
+                }
+                int lastArgMatch = isVargs(params) && firstParamMatches?lastArgMatchesVarg(params, args):-1;
+                if (lastArgMatch>=0) {
+                    lastArgMatch += 256-params.length; // ensure exact matches are preferred over vargs
+                }
                 int dist = allPMatch>=0?Math.max(allPMatch, lastArgMatch):lastArgMatch;
-                if (dist>=0 && !actualReceiver.equals(m.getDeclaringClass())) dist+=getDistance(actualReceiver, m.getDeclaringClass());
+                if (dist>=0 && !actualReceiver.equals(declaringClass)) dist+=getDistance(actualReceiver, declaringClass);
                 if (dist>=0 && dist<bestDist) {
                     bestChoices.clear();
                     bestChoices.add(m);
@@ -889,11 +978,11 @@ abstract class StaticTypeCheckingSupport {
                         //      that case is handled above already
                         // (3) there is more than one argument for the vargs array
                         int dist = excessArgumentsMatchesVargsParameter(params, args);
-                        if (dist >= 0 && !actualReceiver.equals(m.getDeclaringClass())) dist++;
+                        if (dist >= 0 && !actualReceiver.equals(declaringClass)) dist+=getDistance(actualReceiver, declaringClass);
                         // varargs methods must not be preferred to methods without varargs
                         // for example :
                         // int sum(int x) should be preferred to int sum(int x, int... y)
-                        dist++;
+                        dist+=256-params.length;
                         if (params.length < args.length && dist >= 0) {
                             if (dist >= 0 && dist < bestDist) {
                                 bestChoices.clear();
@@ -910,24 +999,78 @@ abstract class StaticTypeCheckingSupport {
         return bestChoices;
     }
 
+    private static Collection<MethodNode> removeCovariants(Collection<MethodNode> collection) {
+        if (collection.size()<=1) return collection;
+        List<MethodNode> toBeRemoved = new LinkedList<MethodNode>();
+        List<MethodNode> list = new LinkedList<MethodNode>(new HashSet<MethodNode>(collection));
+        for (int i=0;i<list.size()-1;i++) {
+            MethodNode one = list.get(i);
+            if (toBeRemoved.contains(one)) continue;
+            for (int j=i+1;j<list.size();j++) {
+                MethodNode two = list.get(j);
+                if (toBeRemoved.contains(two)) continue;
+                if (one.getName().equals(two.getName()) && one.getDeclaringClass()==two.getDeclaringClass()) {
+                    Parameter[] onePars = one.getParameters();
+                    Parameter[] twoPars = two.getParameters();
+                    if (onePars.length == twoPars.length) {
+                        boolean sameTypes = true;
+                        for (int k = 0; k < onePars.length; k++) {
+                            Parameter onePar = onePars[k];
+                            Parameter twoPar = twoPars[k];
+                            if (!onePar.getType().equals(twoPar.getType())) {
+                                sameTypes = false;
+                                break;
+                            }
+                        }
+                        if (sameTypes) {
+                            ClassNode oneRT = one.getReturnType();
+                            ClassNode twoRT = two.getReturnType();
+                            if (oneRT.isDerivedFrom(twoRT) || oneRT.implementsInterface(twoRT)) {
+                                toBeRemoved.add(two);
+                            } else if (twoRT.isDerivedFrom(oneRT) || twoRT.implementsInterface(oneRT)) {
+                                toBeRemoved.add(one);
+                            }
+                        }
+                    }
+                }                
+            }
+        }
+        if (toBeRemoved.isEmpty()) return list;
+        List<MethodNode> result = new LinkedList<MethodNode>(list);
+        result.removeAll(toBeRemoved);
+        return result;
+    }
+    
     /**
      * Given a receiver and a method node, parameterize the method arguments using
      * available generic type information.
-     * @param receiver
-     * @param m
-     * @return
+     *
+     * @param receiver the class
+     * @param m the method
+     * @return the parameterized arguments
      */
     public static Parameter[] parameterizeArguments(final ClassNode receiver, final MethodNode m) {
-        GenericsType[] redirectReceiverTypes = receiver.redirect().getGenericsTypes();
-        if (redirectReceiverTypes==null) {
-            // we must perform an additional check for methods like Collections#sort which define generics
-            // at the method level
-            redirectReceiverTypes = m.getGenericsTypes();
+        MethodNode mn = m;
+        ClassNode actualReceiver = receiver;
+        /*if (m instanceof ExtensionMethodNode) {
+            ExtensionMethodNode emn = (ExtensionMethodNode) m;
+            mn = emn.getExtensionMethodNode();
+            actualReceiver = emn.getDeclaringClass();
+        }*/
+        List<GenericsType> redirectTypes = new ArrayList<GenericsType>();
+//        if (mn.getGenericsTypes()!=null) Collections.addAll(redirectTypes,mn.getGenericsTypes());
+        if (actualReceiver.redirect().getGenericsTypes()!=null) {
+            Collections.addAll(redirectTypes,actualReceiver.redirect().getGenericsTypes());
         }
-        if (redirectReceiverTypes==null) return m.getParameters();
-        Parameter[] methodParameters = m.getParameters();
+
+        if (redirectTypes.isEmpty()) {
+            return m.getParameters();
+        }
+        GenericsType[] redirectReceiverTypes = redirectTypes.toArray(new GenericsType[redirectTypes.size()]);
+
+        Parameter[] methodParameters = mn.getParameters();
         Parameter[] params = new Parameter[methodParameters.length];
-        GenericsType[] receiverParameterizedTypes = receiver.getGenericsTypes();
+        GenericsType[] receiverParameterizedTypes = actualReceiver.getGenericsTypes();
         if (receiverParameterizedTypes==null) {
             receiverParameterizedTypes = redirectReceiverTypes;
         }
@@ -956,6 +1099,15 @@ abstract class StaticTypeCheckingSupport {
                 params[i] = methodParameter;
             }
         }
+        /*if (m instanceof ExtensionMethodNode) {
+            // the parameter array we're using is the one from the extension
+            // but we want to return an array for the regular method
+            Parameter[] result = new Parameter[params.length-1];
+            // 0 is the receiver
+            // 1..n are what we want to return
+            System.arraycopy(params, 1, result, 0, result.length);
+            return result;
+        }*/
         return params;
     }
 
@@ -970,5 +1122,173 @@ abstract class StaticTypeCheckingSupport {
     private static class ObjectArrayStaticTypesHelper {
         public static <T> T getAt(T[] arr, int index) { return null;} 
         public static <T,U extends T> void putAt(T[] arr, int index, U object) { }
-    } 
+    }
+
+    /**
+     * This class is used to make extension methods lookup faster. Basically, it will only
+     * collect the list of extension methods (see {@link ExtensionModule} if the list of
+     * extension modules has changed. It avoids recomputing the whole list each time we perform
+     * a method lookup.
+     */
+    private static class ExtensionMethodCache {
+
+        private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+        private List<ExtensionModule> modules = Collections.emptyList();
+        private Map<String, List<MethodNode>> cachedMethods = null;
+
+        public Map<String, List<MethodNode>> getExtensionMethods() {
+            lock.readLock().lock();
+            MetaClassRegistry registry = GroovySystem.getMetaClassRegistry();
+            if (registry instanceof MetaClassRegistryImpl) {
+                MetaClassRegistryImpl impl = (MetaClassRegistryImpl) registry;
+                ExtensionModuleRegistry moduleRegistry = impl.getModuleRegistry();
+                if (!modules.equals(moduleRegistry.getModules())) {
+                    lock.readLock().unlock();
+                    lock.writeLock().lock();
+                    try {
+                        if (!modules.equals(moduleRegistry.getModules())) {
+                            modules = moduleRegistry.getModules();
+                            cachedMethods = getDGMMethods(registry);
+                        }
+                    } finally {
+                        lock.writeLock().unlock();
+                        lock.readLock().lock();
+                    }
+                } else if (cachedMethods==null) {
+                    lock.readLock().unlock();
+                    lock.writeLock().lock();
+                    try {
+                        cachedMethods = getDGMMethods(registry);
+                    } finally {
+                        lock.writeLock().unlock();
+                        lock.readLock().lock();
+                    }
+                }
+            }
+            try {
+                return Collections.unmodifiableMap(cachedMethods);
+            } finally {
+                lock.readLock().unlock();
+            }
+        }
+
+        /**
+         * Returns a map which contains, as the key, the name of a class. The value
+         * consists of a list of MethodNode, one for each default groovy method found
+         * which is applicable for this class.
+         * @return
+         * @param registry
+         */
+        private static Map<String, List<MethodNode>> getDGMMethods(final MetaClassRegistry registry) {
+           Set<Class> instanceExtClasses = new LinkedHashSet<Class>();
+           Set<Class> staticExtClasses = new LinkedHashSet<Class>();
+            if (registry instanceof MetaClassRegistryImpl) {
+                MetaClassRegistryImpl impl = (MetaClassRegistryImpl) registry;
+                List<ExtensionModule> modules = impl.getModuleRegistry().getModules();
+                for (ExtensionModule module : modules) {
+                    if (module instanceof MetaInfExtensionModule) {
+                        MetaInfExtensionModule extensionModule = (MetaInfExtensionModule) module;
+                        instanceExtClasses.addAll(extensionModule.getInstanceMethodsExtensionClasses());
+                        staticExtClasses.addAll(extensionModule.getStaticMethodsExtensionClasses());
+                    }
+                }
+            }
+            Map<String, List<MethodNode>> methods = new HashMap<String, List<MethodNode>>();
+            Collections.addAll(instanceExtClasses, DefaultGroovyMethods.DGM_LIKE_CLASSES);
+            Collections.addAll(instanceExtClasses, DefaultGroovyMethods.additionals);
+            staticExtClasses.add(DefaultGroovyStaticMethods.class);
+            instanceExtClasses.add(ObjectArrayStaticTypesHelper.class);
+            List<Class> allClasses = new ArrayList<Class>(instanceExtClasses.size()+staticExtClasses.size());
+            allClasses.addAll(instanceExtClasses);
+            allClasses.addAll(staticExtClasses);
+            for (Class dgmLikeClass : allClasses) {
+                ClassNode cn = ClassHelper.makeWithoutCaching(dgmLikeClass, true);
+                for (MethodNode metaMethod : cn.getMethods()) {
+                    Parameter[] types = metaMethod.getParameters();
+                    if (metaMethod.isStatic() && metaMethod.isPublic() && types.length > 0
+                            && metaMethod.getAnnotations(Deprecated_TYPE).isEmpty()) {
+                        Parameter[] parameters = new Parameter[types.length - 1];
+                        System.arraycopy(types, 1, parameters, 0, parameters.length);
+                        MethodNode node = new ExtensionMethodNode(
+                                metaMethod,
+                                metaMethod.getName(),
+                                metaMethod.getModifiers(),
+                                metaMethod.getReturnType(),
+                                parameters,
+                                ClassNode.EMPTY_ARRAY, null);
+                        if (staticExtClasses.contains(dgmLikeClass)) {
+                            node.setModifiers(node.getModifiers() | Opcodes.ACC_STATIC);
+                        }
+                        node.setGenericsTypes(metaMethod.getGenericsTypes());
+                        ClassNode declaringClass = types[0].getType();
+                        String declaringClassName = declaringClass.getName();
+                        node.setDeclaringClass(declaringClass);
+
+                        List<MethodNode> nodes = methods.get(declaringClassName);
+                        if (nodes == null) {
+                            nodes = new LinkedList<MethodNode>();
+                            methods.put(declaringClassName, nodes);
+                        }
+                        nodes.add(node);
+                    }
+                }
+            }
+            return methods;
+        }
+
+    }
+
+    /**
+     * @return true if the class node is either a GString or the LUB of String and GString.
+     */
+    public static boolean isGStringOrGStringStringLUB(ClassNode node) {
+        return ClassHelper.GSTRING_TYPE.equals(node)
+                || GSTRING_STRING_CLASSNODE.equals(node);
+    }
+
+    /**
+     * @param node the node to be tested
+     * @return true if the node is using generics types and one of those types is a gstring or string/gstring lub
+     */
+    public static boolean isParameterizedWithGStringOrGStringString(ClassNode node) {
+        if (node.isArray()) return isParameterizedWithGStringOrGStringString(node.getComponentType());
+        if (node.isUsingGenerics()) {
+            GenericsType[] genericsTypes = node.getGenericsTypes();
+            if (genericsTypes!=null) {
+                for (GenericsType genericsType : genericsTypes) {
+                    if (isGStringOrGStringStringLUB(genericsType.getType())) return true;
+                }
+            }
+        }
+        return node.getSuperClass() != null && isParameterizedWithGStringOrGStringString(node.getUnresolvedSuperClass());
+    }
+
+    /**
+     * @param node the node to be tested
+     * @return true if the node is using generics types and one of those types is a string
+     */
+    public static boolean isParameterizedWithString(ClassNode node) {
+        if (node.isArray()) return isParameterizedWithString(node.getComponentType());
+        if (node.isUsingGenerics()) {
+            GenericsType[] genericsTypes = node.getGenericsTypes();
+            if (genericsTypes!=null) {
+                for (GenericsType genericsType : genericsTypes) {
+                    if (STRING_TYPE.equals(genericsType.getType())) return true;
+                }
+            }
+        }
+        return node.getSuperClass() != null && isParameterizedWithString(node.getUnresolvedSuperClass());
+    }
+
+    public static boolean missesGenericsTypes(ClassNode cn) {
+        if (cn.isArray()) return missesGenericsTypes(cn.getComponentType());
+        if (cn.redirect().isUsingGenerics() && !cn.isUsingGenerics()) return true;
+        if (cn.isUsingGenerics()) {
+            if (cn.getGenericsTypes()==null) return true;
+            for (GenericsType genericsType : cn.getGenericsTypes()) {
+                if (genericsType.isPlaceholder()) return true;
+            }
+        }
+        return false;
+    }
 }

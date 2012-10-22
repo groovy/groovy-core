@@ -20,6 +20,7 @@ import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.messages.SimpleMessage;
 
@@ -27,6 +28,9 @@ import groovy.lang.GroovyClassLoader;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * This visitor walks the AST tree and collects references to Annotations that
@@ -77,25 +81,20 @@ public class ASTTransformationCollectorCodeVisitor extends ClassCodeVisitorSuppo
             addTransformsToClassNode(annotation, transformClassAnnotation);
         }
     }
-    
+
     private void addTransformsToClassNode(AnnotationNode annotation, Annotation transformClassAnnotation) {
-        String[] transformClassNames = getTransformClassNames(transformClassAnnotation);
-        Class[] transformClasses = getTransformClasses(transformClassAnnotation);
+        List<String> transformClassNames = getTransformClassNames(annotation, transformClassAnnotation);
 
-        if(transformClassNames.length == 0 && transformClasses.length == 0) {
-            source.getErrorCollector().addError(new SimpleMessage("@GroovyASTTransformationClass in " + 
+        if(transformClassNames.isEmpty()) {
+            source.getErrorCollector().addError(new SimpleMessage("@GroovyASTTransformationClass in " +
                     annotation.getClassNode().getName() + " does not specify any transform class names/classes", source));
-        }
-
-        if(transformClassNames.length > 0 && transformClasses.length > 0) {
-            source.getErrorCollector().addError(new SimpleMessage("@GroovyASTTransformationClass in " + 
-                    annotation.getClassNode().getName() +  " should specify transforms only by class names or by classes and not by both", source));
         }
 
         for (String transformClass : transformClassNames) {
             try {
                 Class klass = transformLoader.loadClass(transformClass, false, true, false);
-                verifyClassAndAddTransform(annotation, klass);
+                verifyAndAddTransform(annotation, klass);
+
             } catch (ClassNotFoundException e) {
                 source.getErrorCollector().addErrorAndContinue(
                         new SimpleMessage(
@@ -104,18 +103,36 @@ public class ASTTransformationCollectorCodeVisitor extends ClassCodeVisitorSuppo
                                 source));
             }
         }
-        for (Class klass : transformClasses) {
-            verifyClassAndAddTransform(annotation, klass);
+    }
+
+    private void verifyAndAddTransform(AnnotationNode annotation, Class klass) {
+        verifyClass(annotation, klass);
+        verifyCompilePhase(annotation, klass);
+        addTransform(annotation, klass);
+    }
+
+    private void verifyCompilePhase(AnnotationNode annotation, Class klass) {
+        GroovyASTTransformation transformationClass = (GroovyASTTransformation) klass.getAnnotation(GroovyASTTransformation.class);
+        if (transformationClass != null)  {
+            CompilePhase specifiedCompilePhase = transformationClass.phase();
+            if (specifiedCompilePhase.getPhaseNumber() < CompilePhase.SEMANTIC_ANALYSIS.getPhaseNumber())  {
+                source.getErrorCollector().addError(
+                        new SimpleMessage(
+                                annotation.getClassNode().getName() + " is defined to be run in compile phase " + specifiedCompilePhase + ". Local AST transformations must run in " + CompilePhase.SEMANTIC_ANALYSIS + " or later!",
+                                source));
+            }
         }
     }
-    
-    private void verifyClassAndAddTransform(AnnotationNode annotation, Class klass) {
-        if (ASTTransformation.class.isAssignableFrom(klass)) {
-            classNode.addTransform(klass, annotation);
-        } else {
-            source.getErrorCollector().addError(new SimpleMessage("Not an ASTTransformation: " + 
+
+    private void verifyClass(AnnotationNode annotation, Class klass) {
+        if (!ASTTransformation.class.isAssignableFrom(klass)) {
+            source.getErrorCollector().addError(new SimpleMessage("Not an ASTTransformation: " +
                     klass.getName() + " declared by " + annotation.getClassNode().getName(), source));
         }
+    }
+
+    private void addTransform(AnnotationNode annotation, Class klass)  {
+        classNode.addTransform(klass, annotation);
     }
 
     private static Annotation getTransformClassAnnotation(ClassNode annotatedType) {
@@ -128,28 +145,34 @@ public class ASTTransformationCollectorCodeVisitor extends ClassCodeVisitorSuppo
             if (ann.annotationType().getName().equals(GroovyASTTransformationClass.class.getName())){
                 return ann;
             }
-        }  
+        }
 
         return null;
     }
 
-    private String[] getTransformClassNames(Annotation transformClassAnnotation) {
+    private List<String> getTransformClassNames(AnnotationNode annotation, Annotation transformClassAnnotation) {
+        List<String> result = new ArrayList<String>();
+
         try {
             Method valueMethod = transformClassAnnotation.getClass().getMethod("value");
-            return (String[]) valueMethod.invoke(transformClassAnnotation);
-        } catch (Exception e) {
-            source.addException(e);
-            return new String[0];
-        }
-    }
+            String[] names = (String[]) valueMethod.invoke(transformClassAnnotation);
+            result.addAll(Arrays.asList(names));
 
-    private Class[] getTransformClasses(Annotation transformClassAnnotation) {
-        try {
             Method classesMethod = transformClassAnnotation.getClass().getMethod("classes");
-            return (Class[]) classesMethod.invoke(transformClassAnnotation);
+            Class[] classes = (Class[]) classesMethod.invoke(transformClassAnnotation);
+            for (Class klass : classes) {
+                result.add(klass.getName());
+            }
+
+            if(names.length > 0 && classes.length > 0) {
+                source.getErrorCollector().addError(new SimpleMessage("@GroovyASTTransformationClass in " +
+                        annotation.getClassNode().getName() +
+                        " should specify transforms only by class names or by classes and not by both", source));
+            }
         } catch (Exception e) {
             source.addException(e);
-            return new Class[0];
         }
+
+        return result;
     }
 }

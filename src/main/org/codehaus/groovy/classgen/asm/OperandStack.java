@@ -27,6 +27,7 @@ import org.codehaus.groovy.ast.expr.CastExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.tools.WideningCategories;
 import org.codehaus.groovy.classgen.ClassGeneratorException;
 import org.codehaus.groovy.runtime.ScriptBytecodeAdapter;
 import org.objectweb.asm.Label;
@@ -196,9 +197,15 @@ public class OperandStack {
         MethodVisitor mv = controller.getMethodVisitor();
         int size = stack.size();
         ClassNode type = stack.get(size-1);
-        if (BytecodeHelper.box(mv, type)) {
-            type = ClassHelper.getWrapper(type);
-            BytecodeHelper.doCast(mv, type);
+        if (ClassHelper.isPrimitiveType(type) && ClassHelper.VOID_TYPE!=type) {
+            ClassNode wrapper = ClassHelper.getWrapper(type);
+            BytecodeHelper.doCastToWrappedType(mv, type, wrapper);
+            type = wrapper;
+        } else {
+            if (BytecodeHelper.box(mv, type)) {
+                type = ClassHelper.getWrapper(type);
+                BytecodeHelper.doCast(mv, type);
+            }
         }
         stack.set(size-1, type);
         return type;
@@ -301,7 +308,9 @@ public class OperandStack {
     private void doConvertAndCast(ClassNode targetType, boolean coerce) {
         int size = stack.size();
         try {
-            if (size==0) throw new ArrayIndexOutOfBoundsException("size==0");
+            if (size==0) {
+                throw new ArrayIndexOutOfBoundsException("size==0");
+            }
         } catch (ArrayIndexOutOfBoundsException ai) {
             throw ai;
         }
@@ -346,18 +355,41 @@ public class OperandStack {
         if (ClassHelper.isNumberType(top) && primTarget && ClassHelper.isNumberType(targetType)) {
             BytecodeHelper.doCastToPrimitive(mv, top, targetType);
         } else {
-            BytecodeHelper.doCast(mv,targetType);
+            top = stack.get(size-1);
+            if (!implementsInterfaceOrSubclassOf(top, targetType)) {
+                BytecodeHelper.doCast(mv,targetType);
+            }
         }
         replace(targetType);
     }
 
     private void castToTypeIfNecessary(final ClassNode sourceType, final ClassNode targetType) {
-        if (!sourceType.isDerivedFrom(targetType) && !sourceType.implementsInterface(targetType)) {
+        if (!implementsInterfaceOrSubclassOf(sourceType, targetType)) {
             MethodVisitor mv = controller.getMethodVisitor();
             (new ClassExpression(targetType)).visit(controller.getAcg());
             remove(1);
             castToTypeMethod.call(mv);
         }
+    }
+
+    /**
+     * Determines if the source class implements an interface or subclasses the target type.
+     * This method takes the {@link org.codehaus.groovy.ast.tools.WideningCategories.LowestUpperBoundClassNode lowest
+     * upper bound class node} type into account, allowing to remove unnecessary casts.
+     * @param source
+     * @param targetType
+     * @return
+     */
+    private static boolean implementsInterfaceOrSubclassOf(final ClassNode source, final ClassNode targetType) {
+        if (source.isDerivedFrom(targetType) || source.implementsInterface(targetType)) return true;
+        if (targetType instanceof WideningCategories.LowestUpperBoundClassNode) {
+            WideningCategories.LowestUpperBoundClassNode lub = (WideningCategories.LowestUpperBoundClassNode) targetType;
+            if (implementsInterfaceOrSubclassOf(source, lub.getSuperClass())) return true;
+            for (ClassNode classNode : lub.getInterfaces()) {
+                if (source.implementsInterface(classNode)) return true;
+            }
+        }
+        return false;
     }
 
     private boolean convertFromInt(ClassNode target) {
@@ -502,8 +534,7 @@ public class OperandStack {
                     ) {
                 ClassNode primType = ClassHelper.getUnwrapper(type);
                 pushPrimitiveConstant(mv, value, primType);
-                BytecodeHelper.box(mv, primType); // does not change this.stack field contents
-                BytecodeHelper.doCast(mv, type);
+                type = primType;
             } else {
                 mv.visitLdcInsn(value);
                 BytecodeHelper.box(mv, ClassHelper.getUnwrapper(type)); // does not change this.stack field contents
@@ -638,6 +669,7 @@ public class OperandStack {
         ClassNode type = variable.getType();
         // value is on stack
         if (variable.isHolder()) {
+            doGroovyCast(type);
             box();
             mv.visitVarInsn(ALOAD, idx);
             mv.visitTypeInsn(CHECKCAST, "groovy/lang/Reference");

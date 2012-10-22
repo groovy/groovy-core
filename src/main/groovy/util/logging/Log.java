@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2010 the original author or authors.
+ * Copyright 2003-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,13 @@
  */
 package groovy.util.logging;
 
+import groovy.lang.GroovyClassLoader;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.transform.GroovyASTTransformationClass;
+import org.codehaus.groovy.transform.LogASTTransformation;
 import org.codehaus.groovy.transform.LogASTTransformation.LoggingStrategy;
 import org.objectweb.asm.Opcodes;
 
@@ -67,13 +69,21 @@ public @interface Log {
     /**
      * This class contains the logic of how to weave a Java Util Logging logger into the host class.
      */
-    public static class JavaUtilLoggingStrategy implements LoggingStrategy {
+    public static class JavaUtilLoggingStrategy extends LogASTTransformation.AbstractLoggingStrategy {
+
+        private static final ClassNode LOGGER_CLASSNODE = ClassHelper.make(java.util.logging.Logger.class);
+        private static final ClassNode LEVEL_CLASSNODE = ClassHelper.make(java.util.logging.Level.class);
+
+        protected JavaUtilLoggingStrategy(final GroovyClassLoader loader) {
+            super(loader);
+        }
+
         public FieldNode addLoggerFieldToClass(ClassNode classNode, String logFieldName) {
             return classNode.addField(logFieldName,
                         Opcodes.ACC_FINAL | Opcodes.ACC_TRANSIENT | Opcodes.ACC_STATIC | Opcodes.ACC_PRIVATE,
-                        new ClassNode("java.util.logging.Logger", Opcodes.ACC_PUBLIC, ClassHelper.OBJECT_TYPE),
+                        LOGGER_CLASSNODE,
                         new MethodCallExpression(
-                                new ClassExpression(new ClassNode("java.util.logging.Logger", Opcodes.ACC_PUBLIC, ClassHelper.OBJECT_TYPE)),
+                                new ClassExpression(LOGGER_CLASSNODE),
                                 "getLogger",
                                 new ConstantExpression(classNode.getName())));
         }
@@ -83,9 +93,8 @@ public @interface Log {
         }
 
         public Expression wrapLoggingMethodCall(Expression logVariable, String methodName, Expression originalExpression) {
-            ClassNode levelClass = new ClassNode("java.util.logging.Level", 0, ClassHelper.OBJECT_TYPE);
             AttributeExpression logLevelExpression = new AttributeExpression(
-                    new ClassExpression(levelClass),
+                    new ClassExpression(LEVEL_CLASSNODE),
                     new ConstantExpression(methodName.toUpperCase()));
 
             ArgumentListExpression args = new ArgumentListExpression();

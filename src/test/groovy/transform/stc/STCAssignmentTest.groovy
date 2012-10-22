@@ -250,6 +250,8 @@ class STCAssignmentTest extends StaticTypeCheckingTestCase {
     void testMultipleAssignment1() {
         assertScript '''
             def (x,y) = [1,2]
+            assert x == 1
+            assert y == 2
         '''
     }
 
@@ -258,6 +260,8 @@ class STCAssignmentTest extends StaticTypeCheckingTestCase {
             int x
             int y
             (x,y) = [1,2]
+            assert x == 1
+            assert y == 2
         '''
     }
 
@@ -282,6 +286,8 @@ class STCAssignmentTest extends StaticTypeCheckingTestCase {
             int x
             int y
             (x,y) = [1,2,3]
+            assert x == 1
+            assert y == 2
         '''
     }
 
@@ -307,7 +313,7 @@ class STCAssignmentTest extends StaticTypeCheckingTestCase {
     void testTernaryOperatorAssignementShouldFailBecauseOfIncompatibleGenericTypes() {
         shouldFailWithMessages '''
             List<Integer> foo = true?new LinkedList<String>():new LinkedList<Integer>();
-        ''', 'Incompatible generic argument types. Cannot assign java.util.LinkedList <? extends java.lang.Comparable> to: java.util.List <Integer>'
+        ''', 'Incompatible generic argument types. Cannot assign java.util.LinkedList <? extends java.io.Serializable <? extends java.io.Serializable>> to: java.util.List <Integer>'
     }
 
     void testCastStringToChar() {
@@ -349,6 +355,22 @@ class STCAssignmentTest extends StaticTypeCheckingTestCase {
     void testCastStringToCharWithCast() {
         assertScript '''
             def c = (char) 'a'
+        '''
+    }
+
+    void testCastCharToByte() {
+        assertScript '''
+            void foo(char c) {
+                byte b = (byte) c
+            }
+        '''
+    }
+
+    void testCastCharToInt() {
+        assertScript '''
+            void foo(char c) {
+                int b = (int) c
+            }
         '''
     }
 
@@ -720,5 +742,18 @@ class STCAssignmentTest extends StaticTypeCheckingTestCase {
         ''', 'Inconvertible types: cannot cast [Ljava.lang.String; to [Ljava.util.Set;'
     }
 
+    // GROOVY-5535
+    void testAssignToNullInsideIf() {
+        assertScript '''
+            Date foo() {
+                Date result = new Date()
+                if (true) {
+                    result = null
+                }
+                return result
+            }
+            assert foo() == null
+        '''
+    }
 }
 

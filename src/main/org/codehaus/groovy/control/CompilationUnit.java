@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2010 the original author or authors.
+ * Copyright 2003-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.codehaus.groovy.control;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyRuntimeException;
 
-import groovy.transform.CompilationUnitAware;
 import org.codehaus.groovy.GroovyBugError;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.classgen.*;
@@ -83,6 +82,7 @@ public class CompilationUnit extends ProcessingUnit {
     protected ResolveVisitor resolveVisitor;
     protected StaticImportVisitor staticImportVisitor;
     protected OptimizerVisitor optimizer;
+    protected ClassNodeResolver classNodeResolver;
 
     LinkedList[] phaseOperations;
     LinkedList[] newPhaseOperations;
@@ -197,7 +197,7 @@ public class CompilationUnit extends ProcessingUnit {
             @Override
             public void call(SourceUnit source, GeneratorContext context,
                              ClassNode classNode) throws CompilationFailedException {
-                InnerClassCompletionVisitor iv = new InnerClassCompletionVisitor();
+                InnerClassCompletionVisitor iv = new InnerClassCompletionVisitor(CompilationUnit.this, source);
                 iv.visitClass(classNode);
             }
         }, Phases.CANONICALIZATION);
@@ -217,6 +217,7 @@ public class CompilationUnit extends ProcessingUnit {
             }
         }
         this.classgenCallback = null;
+        this.classNodeResolver = new ClassNodeResolver();
     }
 
     /**
@@ -478,6 +479,14 @@ public class CompilationUnit extends ProcessingUnit {
         this.progressCallback = callback;
     }
 
+    public ClassgenCallback getClassgenCallback() {
+        return classgenCallback;
+    }
+
+    public ProgressCallback getProgressCallback() {
+        return progressCallback;
+    }
+
     //---------------------------------------------------------------------------
     // ACTIONS
 
@@ -611,6 +620,7 @@ public class CompilationUnit extends ProcessingUnit {
                 VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(source);
                 scopeVisitor.visitClass(node);
 
+                resolveVisitor.setClassNodeResolver(classNodeResolver);
                 resolveVisitor.startResolving(node, source);
             }
 
@@ -740,7 +750,7 @@ public class CompilationUnit extends ProcessingUnit {
             } catch (GroovyRuntimeException rpe) {
                 ASTNode node = rpe.getNode();
                 getErrorCollector().addError(
-                        new SyntaxException(rpe.getMessage(), null, node.getLineNumber(), node.getColumnNumber()),
+                        new SyntaxException(rpe.getMessage(), node.getLineNumber(), node.getColumnNumber(), node.getLastLineNumber(), node.getLastColumnNumber()),
                         source
                 );
             }
@@ -762,13 +772,13 @@ public class CompilationUnit extends ProcessingUnit {
             // Prep the generator machinery
             //
             ClassVisitor visitor = createClassVisitor();
-
+            
             String sourceName = (source == null ? classNode.getModule().getDescription() : source.getName());
             // only show the file name and its extension like javac does in its stacktraces rather than the full path
             // also takes care of both \ and / depending on the host compiling environment
             if (sourceName != null)
                 sourceName = sourceName.substring(Math.max(sourceName.lastIndexOf('\\'), sourceName.lastIndexOf('/')) + 1);
-            ClassGenerator generator = new AsmClassGenerator(source, context, visitor, sourceName);
+            AsmClassGenerator generator = new AsmClassGenerator(source, context, visitor, sourceName);
 
             //
             // Run the generation and create the class (if required)
@@ -795,11 +805,52 @@ public class CompilationUnit extends ProcessingUnit {
         }
     };
 
-
     protected ClassVisitor createClassVisitor() {
-        return new ClassWriter(ClassWriter.COMPUTE_MAXS);
-    }
+        CompilerConfiguration config = getConfiguration();
+        int computeMaxStackAndFrames = ClassWriter.COMPUTE_MAXS;
+        if (Boolean.TRUE.equals(config.getOptimizationOptions().get("indy"))) {
+            computeMaxStackAndFrames += ClassWriter.COMPUTE_FRAMES;
+        }
+        return new ClassWriter(computeMaxStackAndFrames) {
+            private ClassNode getClassNode(String name) {
+                // try classes under compilation
+                CompileUnit cu = getAST();
+                ClassNode cn = cu.getClass(name);
+                if (cn!=null) return cn;
+                // try inner classes
+                cn = cu.getGeneratedInnerClass(name);
+                if (cn!=null) return cn;
+                // try class loader classes
+                try {
+                    cn = ClassHelper.make(
+                            cu.getClassLoader().loadClass(name,false,true),
+                            false);
+                } catch (Exception e) {
+                    throw new GroovyBugError(e);
+                }
+                return cn;
+            }
+            private ClassNode getCommonSuperClassNode(ClassNode c, ClassNode d) {
+                // adapted from ClassWriter code
+                if (c.isDerivedFrom(d)) return d;
+                if (d.isDerivedFrom(c)) return c;
+                if (c.isInterface() || d.isInterface()) return ClassHelper.OBJECT_TYPE;
+                do {
+                    c = c.getSuperClass();
+                } while (c!=null && !d.isDerivedFrom(c));
+                if (c==null) return ClassHelper.OBJECT_TYPE;
+                return c;
+            }
+            @Override
+            protected String getCommonSuperClass(String arg1, String arg2) {
+                ClassNode a = getClassNode(arg1.replace('/', '.')); 
+                ClassNode b = getClassNode(arg2.replace('/', '.'));
+                return getCommonSuperClassNode(a,b).getName().replace('.','/');
+            }
 
+        };
+    }
+    
     //---------------------------------------------------------------------------
     // PHASE HANDLING
 
@@ -1032,4 +1083,14 @@ public class CompilationUnit extends ProcessingUnit {
     private void changeBugText(GroovyBugError e, SourceUnit context) {
         e.setBugText("exception in phase '" + getPhaseDescription() + "' in source unit '" + ((context != null) ? context.getName() : "?") + "' " + e.getBugText());
     }
+    
+    public ClassNodeResolver getClassNodeResolver() {
+        return classNodeResolver;
+    }
+
+
+    public void setClassNodeResolver(ClassNodeResolver classNodeResolver) {
+        this.classNodeResolver = classNodeResolver;
+    }
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2009 the original author or authors.
+ * Copyright 2008-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,13 +95,11 @@ public class BindableASTTransformation implements ASTTransformation, Opcodes {
 
         ClassNode declaringClass = parent.getDeclaringClass();
         if (parent instanceof FieldNode) {
-            if ((((FieldNode)parent).getModifiers() & Opcodes.ACC_FINAL) != 0) {
-                source.getErrorCollector().addErrorAndContinue(
-                            new SyntaxErrorMessage(new SyntaxException(
-                                "@groovy.beans.Bindable cannot annotate a final property.",
-                                node.getLineNumber(),
-                                node.getColumnNumber()),
-                                source));
+            if ((((FieldNode) parent).getModifiers() & Opcodes.ACC_FINAL) != 0) {
+                source.getErrorCollector().addErrorAndContinue(new SyntaxErrorMessage(
+                        new SyntaxException("@groovy.beans.Bindable cannot annotate a final property.",
+                                node.getLineNumber(), node.getColumnNumber(), node.getLastLineNumber(), node.getLastColumnNumber()),
+                        source));
             }
 
             if (VetoableASTTransformation.hasVetoableAnnotation(parent.getDeclaringClass())) {
@@ -120,12 +118,10 @@ public class BindableASTTransformation implements ASTTransformation, Opcodes {
             if (propertyNode.getName().equals(fieldName)) {
                 if (field.isStatic()) {
                     //noinspection ThrowableInstanceNeverThrown
-                    source.getErrorCollector().addErrorAndContinue(
-                                new SyntaxErrorMessage(new SyntaxException(
-                                    "@groovy.beans.Bindable cannot annotate a static property.",
-                                    node.getLineNumber(),
-                                    node.getColumnNumber()),
-                                    source));
+                    source.getErrorCollector().addErrorAndContinue(new SyntaxErrorMessage(
+                            new SyntaxException("@groovy.beans.Bindable cannot annotate a static property.",
+                                    node.getLineNumber(), node.getColumnNumber(), node.getLastLineNumber(), node.getLastColumnNumber()),
+                            source));
                 } else {
                     if (needsPropertyChangeSupport(declaringClass, source)) {
                         addPropertyChangeSupport(declaringClass);
@@ -136,12 +132,10 @@ public class BindableASTTransformation implements ASTTransformation, Opcodes {
             }
         }
         //noinspection ThrowableInstanceNeverThrown
-        source.getErrorCollector().addErrorAndContinue(
-                new SyntaxErrorMessage(new SyntaxException(
-                        "@groovy.beans.Bindable must be on a property, not a field.  Try removing the private, protected, or public modifier.",
-                        node.getLineNumber(),
-                        node.getColumnNumber()),
-                        source));
+        source.getErrorCollector().addErrorAndContinue(new SyntaxErrorMessage(
+                new SyntaxException("@groovy.beans.Bindable must be on a property, not a field.  Try removing the private, protected, or public modifier.",
+                        node.getLineNumber(), node.getColumnNumber(), node.getLastLineNumber(), node.getLastColumnNumber()),
+                source));
     }
 
     private void addListenerToClass(SourceUnit source, AnnotationNode node, ClassNode classNode) {
@@ -267,9 +261,9 @@ public class BindableASTTransformation implements ASTTransformation, Opcodes {
 
     /**
      * Snoops through the declaring class and all parents looking for methods
-     * void addPropertyChangeListener(PropertyChangeListener),
-     * void removePropertyChangeListener(PropertyChangeListener), and
-     * void firePropertyChange(String, Object, Object).  If any are defined all
+     * <code>void addPropertyChangeListener(PropertyChangeListener)</code>,
+     * <code>void removePropertyChangeListener(PropertyChangeListener)</code>, and
+     * <code>void firePropertyChange(String, Object, Object)</code>. If any are defined all
      * must be defined or a compilation error results.
      *
      * @param declaringClass the class to search
@@ -316,14 +310,18 @@ public class BindableASTTransformation implements ASTTransformation, Opcodes {
      * Adds the necessary field and methods to support property change support.
      * <p/>
      * Adds a new field:
+     * <pre>
      * <code>protected final java.beans.PropertyChangeSupport this$PropertyChangeSupport = new java.beans.PropertyChangeSupport(this)</code>"
+     * </pre>
      * <p/>
      * Also adds support methods:
+     * <pre>
      * <code>public void addPropertyChangeListener(java.beans.PropertyChangeListener)</code>
      * <code>public void addPropertyChangeListener(String, java.beans.PropertyChangeListener)</code>
      * <code>public void removePropertyChangeListener(java.beans.PropertyChangeListener)</code>
      * <code>public void removePropertyChangeListener(String, java.beans.PropertyChangeListener)</code>
      * <code>public java.beans.PropertyChangeListener[] getPropertyChangeListeners()</code>
+     * </pre>
      *
      * @param declaringClass the class to which we add the support field and methods
      */

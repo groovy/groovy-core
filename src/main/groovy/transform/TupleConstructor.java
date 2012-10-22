@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2011 the original author or authors.
+ * Copyright 2008-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ import java.lang.annotation.Target;
  * including all of the parameters - giving a no-arg constructor which can be used with the map-style naming conventions.
  * <p/>
  * The order of parameters is given by the properties of any super classes with most super first
- * (if {@code includeSuperProperties} is set) followed by the properties of the class followed by the
+ * (if {@code includeSuperProperties} is set) followed by the properties of the class followed
  * by the fields of the class (if {@code includeFields} is set). Within each grouping the order
  * is as attributes appear within the respective class.
  * <p/>
@@ -62,39 +62,41 @@ import java.lang.annotation.Target;
 @GroovyASTTransformationClass("org.codehaus.groovy.transform.TupleConstructorASTTransformation")
 public @interface TupleConstructor {
     /**
-     * Comma separated list of field and/or property names to exclude from the constructor.
-     * Must not be used if 'includes' is used.
+     * List of field and/or property names to exclude from the constructor.
+     * Must not be used if 'includes' is used. For convenience, a String with comma separated names
+     * can be used in addition to an array (using Groovy's literal list notation) of String values.
      */
-    String excludes() default "";
+    String[] excludes() default {};
 
     /**
-     * Comma separated list of field and/or property names to include within the constructor.
-     * Must not be used if 'excludes' is used.
+     * List of field and/or property names to include within the constructor.
+     * Must not be used if 'excludes' is used. For convenience, a String with comma separated names
+     * can be used in addition to an array (using Groovy's literal list notation) of String values.
      */
-    String includes() default "";
+    String[] includes() default {};
 
     /**
-     * Include fields in the constructor
+     * Include fields in the constructor.
      */
     boolean includeFields() default false;
 
     /**
-     * Include properties in the constructor
+     * Include properties in the constructor.
      */
     boolean includeProperties() default true;
 
     /**
-     * Include fields from super classes in the constructor
+     * Include fields from super classes in the constructor.
      */
     boolean includeSuperFields() default false;
 
     /**
-     * Include properties from super classes in the constructor
+     * Include properties from super classes in the constructor.
      */
     boolean includeSuperProperties() default false;
 
     /**
-     * Should super properties be called within a call to the parent constructor
+     * Should super properties be called within a call to the parent constructor.
      * rather than set as properties
      */
     boolean callSuper() default false;

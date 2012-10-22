@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2007 the original author or authors.
+ * Copyright 2003-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ public class ASTNode {
     private int columnNumber = -1;
     private int lastLineNumber = -1;
     private int lastColumnNumber = -1;
-    private ListHashMap metaDataMap = new ListHashMap(); 
+    private ListHashMap metaDataMap = new ListHashMap();
 
     public void visit(GroovyCodeVisitor visitor) {
         throw new RuntimeException("No visit() method implemented for class: " + getClass().getName());
@@ -139,7 +139,6 @@ public class ASTNode {
      * Sets the node meta data but allows overwriting values.
      *
      * @param key   - the meta data key
-     * @param key - the meta data key
      * @param value - the meta data value
      * @return the old node meta data value for this key
      * @throws GroovyBugError if key is null

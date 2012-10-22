@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2010 the original author or authors.
+ * Copyright 2003-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 /*
  * @todo multi threaded compiling of the same class but with different roots
  * for compilation... T1 compiles A, which uses B, T2 compiles B... mark A and B
- * as parsed and then synchronize compilation. Problems: How to synchronize? 
- * How to get error messages?   
+ * as parsed and then synchronize compilation. Problems: How to synchronize?
+ * How to get error messages?
  *
  */
 package groovy.lang;
@@ -27,7 +27,7 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.classgen.Verifier;
 import org.codehaus.groovy.control.*;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 
@@ -66,22 +66,22 @@ public class GroovyClassLoader extends URLClassLoader {
     protected final Map<String, Class> sourceCache = new HashMap<String, Class>();
     private final CompilerConfiguration config;
     private Boolean recompile;
-    // use 1000000 as offset to avoid conflicts with names form the GroovyShell 
+    // use 1000000 as offset to avoid conflicts with names form the GroovyShell
     private static int scriptNameCounter = 1000000;
 
     private GroovyResourceLoader resourceLoader = new GroovyResourceLoader() {
         public URL loadGroovySource(final String filename) throws MalformedURLException {
             return AccessController.doPrivileged(new PrivilegedAction<URL>() {
                 public URL run() {
-                	for (String extension : config.getScriptExtensions()) {
-                		try {
-                			URL ret = getSourceFile(filename, extension);
-                			if (ret != null)
-                				return ret;
-                		} catch (Throwable t) { //
-                		}
-                	}
-            		return null;
+                    for (String extension : config.getScriptExtensions()) {
+                        try {
+                            URL ret = getSourceFile(filename, extension);
+                            if (ret != null)
+                                return ret;
+                        } catch (Throwable t) { //
+                        }
+                    }
+                    return null;
                 }
             });
         }
@@ -217,7 +217,7 @@ public class GroovyClassLoader extends URLClassLoader {
         scriptNameCounter++;
         return "script" + scriptNameCounter + ".groovy";
     }
-
+    
     /**
      * @deprecated Prefer using methods taking a Reader rather than an InputStream to avoid wrong encoding issues.
      */
@@ -229,8 +229,8 @@ public class GroovyClassLoader extends URLClassLoader {
             public GroovyCodeSource run() {
                 try {
                     String scriptText = config.getSourceEncoding() != null ?
-                            DefaultGroovyMethods.getText(in, config.getSourceEncoding()) :
-                            DefaultGroovyMethods.getText(in);
+                            IOGroovyMethods.getText(in, config.getSourceEncoding()) :
+                            IOGroovyMethods.getText(in);
                     return new GroovyCodeSource(scriptText, fileName, "/groovy/script");
                 } catch (IOException e) {
                     throw new RuntimeException("Impossible to read the content of the input stream for file named: " + fileName, e);
@@ -252,17 +252,13 @@ public class GroovyClassLoader extends URLClassLoader {
      * @return the main class defined in the given script
      */
     public Class parseClass(GroovyCodeSource codeSource, boolean shouldCacheSource) throws CompilationFailedException {
-        Class answer;
         synchronized (sourceCache) {
-            answer = sourceCache.get(codeSource.getName());
+            Class answer = sourceCache.get(codeSource.getName());
             if (answer != null) return answer;
-            if (shouldCacheSource) {
-                answer = doParseClass(codeSource);
-                sourceCache.put(codeSource.getName(), answer);
-            }
+            answer = doParseClass(codeSource);
+            if (shouldCacheSource) sourceCache.put(codeSource.getName(), answer);
+            return answer;
         }
-        if (!shouldCacheSource) answer = doParseClass(codeSource);
-        return answer;
     }
 
     private Class doParseClass(GroovyCodeSource codeSource) {
@@ -729,24 +725,25 @@ public class GroovyClassLoader extends URLClassLoader {
             // found a source, compile it if newer
             if ((oldClass != null && isSourceNewer(source, oldClass)) || (oldClass == null)) {
                 synchronized (sourceCache) {
-                    sourceCache.remove(className);
+                    String name = source.toExternalForm();
+                    sourceCache.remove(name);
                     if (isFile(source)) {
                         try {
-                            return doParseClass(new GroovyCodeSource(new File(source.toURI()), config.getSourceEncoding()));
+                            return parseClass(new GroovyCodeSource(new File(source.toURI()), config.getSourceEncoding()));
                         } catch (URISyntaxException e) {
                           // do nothing and fall back to the other version
                         }
-                    }
-                    return parseClass(source.openStream(), makeFileName(className));
+                    } 
+                    return parseClass(source.openStream(), name);
                 }
             }
         }
         return oldClass;
     }
 
-    private String makeFileName(String className) {
-      className = className.replace('.','/');
-      return className+".groovy";
+    @Override
+    public Class<?> loadClass(String name) throws ClassNotFoundException {
+        return loadClass(name, false);
     }
 
     /**

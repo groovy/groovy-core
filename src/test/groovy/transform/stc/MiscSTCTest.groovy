@@ -58,6 +58,7 @@ class MiscSTCTest extends StaticTypeCheckingTestCase {
             def cl = { String it -> it.toUpperCase() }
             assert cl('test')=='TEST'
         }
+        method()
         '''
     }
 
@@ -199,6 +200,21 @@ class MiscSTCTest extends StaticTypeCheckingTestCase {
         assertScript '''
             void lookup(Class clazz) { }
             lookup(Date)
+        '''
+    }
+
+    // GROOVY-5699
+    void testIntRangeInference() {
+        assertScript '''
+            @ASTTest(phase=INSTRUCTION_SELECTION, value={
+                assert node.getNodeMetaData(INFERRED_TYPE) == make(IntRange)
+            })
+            def range = 1..10
+
+            @ASTTest(phase=INSTRUCTION_SELECTION, value={
+                assert node.getNodeMetaData(INFERRED_TYPE) == int_TYPE
+            })
+            def from = range.fromInt
         '''
     }
 

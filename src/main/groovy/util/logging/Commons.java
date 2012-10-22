@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2010 the original author or authors.
+ * Copyright 2003-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
  */
 package groovy.util.logging;
 
-import org.codehaus.groovy.ast.ClassHelper;
+import groovy.lang.GroovyClassLoader;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.expr.*;
@@ -58,13 +58,21 @@ public @interface Commons {
     String value() default "log";
     Class<? extends LogASTTransformation.LoggingStrategy> loggingStrategy() default CommonsLoggingStrategy.class;
 
-    public  static class CommonsLoggingStrategy implements LogASTTransformation.LoggingStrategy {
+    public  static class CommonsLoggingStrategy extends LogASTTransformation.AbstractLoggingStrategy {
+
+        private static final String LOGGER_NAME = "org.apache.commons.logging.Log";
+        private static final String LOGGERFACTORY_NAME = "org.apache.commons.logging.LogFactory";
+
+        protected CommonsLoggingStrategy(final GroovyClassLoader loader) {
+            super(loader);
+        }
+
         public FieldNode addLoggerFieldToClass(ClassNode classNode, String logFieldName) {
             return classNode.addField(logFieldName,
                     Opcodes.ACC_FINAL | Opcodes.ACC_TRANSIENT | Opcodes.ACC_STATIC | Opcodes.ACC_PRIVATE,
-                    new ClassNode("org.apache.commons.logging.Log", Opcodes.ACC_PUBLIC, ClassHelper.OBJECT_TYPE),
+                    classNode(LOGGER_NAME),
                     new MethodCallExpression(
-                            new ClassExpression(new ClassNode("org.apache.commons.logging.LogFactory", Opcodes.ACC_PUBLIC, ClassHelper.OBJECT_TYPE)),
+                            new ClassExpression(classNode(LOGGERFACTORY_NAME)),
                             "getLog",
                             new ClassExpression(classNode)));
         }

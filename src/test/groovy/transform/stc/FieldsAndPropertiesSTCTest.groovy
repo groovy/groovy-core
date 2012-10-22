@@ -49,6 +49,8 @@ class FieldsAndPropertiesSTCTest extends StaticTypeCheckingTestCase {
             HashMap map = [:]
             map['a'] = 1
             map.b = 2
+            assert map.get('a') == 1
+            assert map.get('b') == 2
         '''
     }
 
@@ -124,18 +126,6 @@ class FieldsAndPropertiesSTCTest extends StaticTypeCheckingTestCase {
         '''
     }
 
-    void testAttributeWithInheritance() {
-        shouldFailWithMessages '''
-            class A {
-                int x
-            }
-            class B extends A {
-            }
-            B b = new B()
-            b.@x = 2
-        ''', 'No such property: x for class: B'
-    }
-
     void testFieldTypeWithInheritance() {
         shouldFailWithMessages '''
             class A {
@@ -208,6 +198,172 @@ class FieldsAndPropertiesSTCTest extends StaticTypeCheckingTestCase {
             }
 
             Person.create()
+        '''
+    }
+
+    // GROOVY-5443
+    void testFieldInitShouldPass() {
+        assertScript '''
+            class Foo {
+                int x = 1
+            }
+            1
+        '''
+    }
+
+    // GROOVY-5443
+    void testFieldInitShouldNotPassBecauseOfIncompatibleTypes() {
+        shouldFailWithMessages '''
+            class Foo {
+                int x = new Date()
+            }
+            1
+        ''', 'Cannot assign value of type java.util.Date to variable of type int'
+    }
+
+    // GROOVY-5443
+    void testFieldInitShouldNotPassBecauseOfIncompatibleTypesWithClosure() {
+        shouldFailWithMessages '''
+            class Foo {
+                Closure<List> cls = { Date aDate ->  aDate.getTime() }
+            }
+            1
+        ''', 'Incompatible generic argument types. Cannot assign groovy.lang.Closure <java.lang.Long> to: groovy.lang.Closure <List>'
+    }
+
+    // GROOVY-5517
+    void testShouldFindStaticPropertyEvenIfObjectImplementsMap() {
+        assertScript '''
+            class MyHashMap extends HashMap {
+                public static int version = 666
+            }
+            def map = new MyHashMap()
+            map['foo'] = 123
+            Object value = map.foo
+            assert value == 123
+            value = map['foo']
+            assert value == 123
+            int v = MyHashMap.version
+            assert v == 666
+        '''
+    }
+
+    void testListDotProperty() {
+        assertScript '''class Elem { int value }
+            List<Elem> list = new LinkedList<Elem>()
+            list.add(new Elem(value:123))
+            list.add(new Elem(value:456))
+            assert list.value == [ 123, 456 ]
+            list.add(new Elem(value:789))
+            assert list.value == [ 123, 456, 789 ]
+        '''
+
+        assertScript '''class Elem { String value }
+            List<Elem> list = new LinkedList<Elem>()
+            list.add(new Elem(value:'123'))
+            list.add(new Elem(value:'456'))
+            assert list.value == [ '123', '456' ]
+            list.add(new Elem(value:'789'))
+            assert list.value == [ '123', '456', '789' ]
+        '''
+    }
+
+    void testClassPropertyOnInterface() {
+        assertScript '''
+            Class test(Serializable arg) {
+                Class<?> clazz = arg.class
+                clazz
+            }
+            assert test('foo') == String
+        '''
+        assertScript '''
+            Class test(Serializable arg) {
+                Class<?> clazz = arg.getClass()
+                clazz
+            }
+            assert test('foo') == String
+        '''
+    }
+
+    void testSetterUsingPropertyNotation() {
+        assertScript '''
+            class A {
+                boolean ok = false;
+                void setFoo(String foo) { ok = foo == 'foo' }
+            }
+            def a = new A()
+            a.foo = 'foo'
+            assert a.ok
+        '''
+    }
+
+    void testSetterUsingPropertyNotationOnInterface() {
+        assertScript '''
+                interface FooAware { void setFoo(String arg) }
+                class A implements FooAware {
+                    void setFoo(String foo) { }
+                }
+                void test(FooAware a) {
+                    a.foo = 'foo'
+                }
+                def a = new A()
+                test(a)
+            '''
+    }
+
+    // GROOVY-5700
+    void testInferenceOfMapDotProperty() {
+        assertScript '''
+            def m = [retries: 10]
+            @ASTTest(phase=INSTRUCTION_SELECTION, value={
+                assert node.getNodeMetaData(INFERRED_TYPE) == Integer_TYPE
+            })
+            def r1 = m['retries']
+
+            @ASTTest(phase=INSTRUCTION_SELECTION, value={
+                assert node.getNodeMetaData(INFERRED_TYPE) == Integer_TYPE
+            })
+            def r2 = m.retries
+        '''
+    }
+
+    void testInferenceOfListDotProperty() {
+        assertScript '''class Foo { int x }
+            def list = [new Foo(x:1), new Foo(x:2)]
+            @ASTTest(phase=INSTRUCTION_SELECTION, value={
+                def iType = node.getNodeMetaData(INFERRED_TYPE)
+                assert iType == make(List)
+                assert iType.isUsingGenerics()
+                assert iType.genericsTypes[0].type == Integer_TYPE
+            })
+            def r2 = list.x
+            assert r2 == [ 1,2 ]
+        '''
+    }
+
+    void testTypeCheckerDoesNotThinkPropertyIsReadOnly() {
+        assertScript '''
+            // a base class defining a read-only property
+            class Top {
+                private String foo = 'foo'
+                String getFoo() { foo }
+                String getFooFromTop() { foo }
+            }
+
+            // a subclass defining it's own field
+            class Bottom extends Top {
+                private String foo
+
+                Bottom(String msg) {
+                    this.foo = msg
+                }
+
+                public String getFoo() { this.foo }
+            }
+
+            def b = new Bottom('bar')
+            assert b.foo == 'bar'
+            assert b.fooFromTop == 'foo'
         '''
     }
 

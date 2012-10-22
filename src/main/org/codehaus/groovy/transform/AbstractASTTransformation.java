@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,17 +22,16 @@ import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.ListExpression;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.StringGroovyMethods;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.objectweb.asm.Opcodes;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public abstract class AbstractASTTransformation implements Opcodes, ASTTransformation {
     private SourceUnit sourceUnit;
@@ -55,11 +54,38 @@ public abstract class AbstractASTTransformation implements Opcodes, ASTTransform
         return null;
     }
 
+    protected String getMemberStringValue(AnnotationNode node, String name) {
+        final Expression member = node.getMember(name);
+        if (member != null && member instanceof ConstantExpression) {
+            Object result = ((ConstantExpression) member).getValue();
+            if (result != null) return result.toString();
+        }
+        return null;
+    }
+
+    protected List<String> getMemberList(AnnotationNode anno, String name) {
+        List<String> list;
+        Expression expr = anno.getMember(name);
+        if (expr != null && expr instanceof ListExpression) {
+            list = new ArrayList<String>();
+            final ListExpression listExpression = (ListExpression) expr;
+            for (Expression itemExpr : listExpression.getExpressions()) {
+                if (itemExpr != null && itemExpr instanceof ConstantExpression) {
+                    Object value = ((ConstantExpression) itemExpr).getValue();
+                    if (value != null) list.add(value.toString());
+                }
+            }
+        } else {
+            list = tokenize(getMemberStringValue(anno, name));
+        }
+        return list;
+    }
+
     protected void addError(String msg, ASTNode expr) {
-        int line = expr.getLineNumber();
-        int col = expr.getColumnNumber();
-        sourceUnit.getErrorCollector().addErrorAndContinue(
-                new SyntaxErrorMessage(new SyntaxException(msg + '\n', line, col), sourceUnit)
+        sourceUnit.getErrorCollector().addErrorAndContinue(new SyntaxErrorMessage(
+                new SyntaxException(msg + '\n', expr.getLineNumber(), expr.getColumnNumber(),
+                        expr.getLastLineNumber(), expr.getLastColumnNumber()),
+                sourceUnit)
         );
     }
 
@@ -76,6 +102,6 @@ public abstract class AbstractASTTransformation implements Opcodes, ASTTransform
     }
 
     protected List<String> tokenize(String rawExcludes) {
-        return rawExcludes == null ? new ArrayList<String>() : DefaultGroovyMethods.tokenize(rawExcludes, ", ");
+        return rawExcludes == null ? new ArrayList<String>() : StringGroovyMethods.tokenize(rawExcludes, ", ");
     }
 }

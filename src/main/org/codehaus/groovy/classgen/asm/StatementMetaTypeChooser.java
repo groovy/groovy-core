@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2009 the original author or authors.
+ * Copyright 2003-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 
-import static org.codehaus.groovy.ast.ClassHelper.OBJECT_TYPE;
-
 /**
  * A {@link TypeChooser} which is aware of statement metadata.
  *
@@ -36,15 +34,15 @@ public class StatementMetaTypeChooser implements TypeChooser {
         if (exp instanceof ClassExpression) return ClassHelper.CLASS_Type;
         OptimizingStatementWriter.StatementMeta meta = (OptimizingStatementWriter.StatementMeta) exp.getNodeMetaData(OptimizingStatementWriter.StatementMeta.class);
         ClassNode type = null;
-        if (meta!=null) type = meta.type;
-        if (type!=null) return type;
+        if (meta != null) type = meta.type;
+        if (type != null) return type;
         if (exp instanceof VariableExpression) {
             VariableExpression ve = (VariableExpression) exp;
             if (ve.isClosureSharedVariable()) return ve.getType();
             type = ve.getOriginType();
             if (ve.getAccessedVariable() instanceof FieldNode) {
                 FieldNode fn = (FieldNode) ve.getAccessedVariable();
-                if (!fn.getDeclaringClass().equals(current)) return OBJECT_TYPE;
+                if (!fn.getDeclaringClass().equals(current)) return fn.getOriginType();
             }
         } else if (exp instanceof Variable) {
             Variable v = (Variable) exp;

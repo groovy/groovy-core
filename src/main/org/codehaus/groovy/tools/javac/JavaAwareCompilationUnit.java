@@ -35,9 +35,9 @@ import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.control.SourceUnit;
 
 /**
- * Created by IntelliJ IDEA. 
- * User: Alex.Tkachman 
- * Date: May 31, 2007 Time: 6:48:28 PM 
+ * Created by IntelliJ IDEA.
+ * User: Alex.Tkachman
+ * Date: May 31, 2007 Time: 6:48:28 PM
  */
 public class JavaAwareCompilationUnit extends CompilationUnit {
     private List<String> javaSources;
@@ -45,26 +45,31 @@ public class JavaAwareCompilationUnit extends CompilationUnit {
     private JavaCompilerFactory compilerFactory = new JavacCompilerFactory();
     private File generationGoal;
     private boolean keepStubs;
-    
+
     public JavaAwareCompilationUnit(CompilerConfiguration configuration) {
-        this(configuration,null);
+        this(configuration,null,null);
     }
-    
+
     public JavaAwareCompilationUnit(CompilerConfiguration configuration, GroovyClassLoader groovyClassLoader) {
-        super(configuration,null,groovyClassLoader);
+        this(configuration,groovyClassLoader,null);
+    }
+
+    public JavaAwareCompilationUnit(CompilerConfiguration configuration, GroovyClassLoader groovyClassLoader,
+                                    GroovyClassLoader transformClassLoader) {
+        super(configuration,null,groovyClassLoader,transformClassLoader);
         javaSources = new LinkedList<String>();
         Map options = configuration.getJointCompilationOptions();
         generationGoal = (File) options.get("stubDir");
         boolean useJava5 = configuration.getTargetBytecode().equals(CompilerConfiguration.POST_JDK5);
         stubGenerator = new JavaStubGenerator(generationGoal,false,useJava5);
         keepStubs = Boolean.TRUE.equals(options.get("keepStubs"));
-        
+
         addPhaseOperation(new PrimaryClassNodeOperation() {
             public void call(SourceUnit source, GeneratorContext context, ClassNode node) throws CompilationFailedException {
                 if (javaSources.size() != 0) {
-                	VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(source);
-                	scopeVisitor.visitClass(node);
-                	new JavaAwareResolveVisitor(JavaAwareCompilationUnit.this).startResolving(node,source);
+                    VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(source);
+                    scopeVisitor.visitClass(node);
+                    new JavaAwareResolveVisitor(JavaAwareCompilationUnit.this).startResolving(node,source);
                 }
             }
         },Phases.CONVERSION);
@@ -91,12 +96,12 @@ public class JavaAwareCompilationUnit extends CompilationUnit {
                 JavaCompiler compiler = compilerFactory.createCompiler(getConfiguration());
                 compiler.compile(javaSources, this);
             } finally {
-                if (!keepStubs) stubGenerator.clean(); 
+                if (!keepStubs) stubGenerator.clean();
                 javaSources.clear();
             }
         }
     }
-    
+
     public void configure(CompilerConfiguration configuration) {
         super.configure(configuration);
         // GroovyClassLoader should be able to find classes compiled from java

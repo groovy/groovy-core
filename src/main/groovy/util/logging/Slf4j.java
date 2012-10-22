@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2010 the original author or authors.
+ * Copyright 2003-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.codehaus.groovy.ast.ClassHelper;
+import groovy.lang.GroovyClassLoader;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.expr.*;
@@ -58,13 +58,20 @@ public @interface Slf4j {
     String value() default "log";
     Class<? extends LogASTTransformation.LoggingStrategy> loggingStrategy() default Slf4jLoggingStrategy.class;
 
-    public static class Slf4jLoggingStrategy implements LogASTTransformation.LoggingStrategy {
+    public static class Slf4jLoggingStrategy extends LogASTTransformation.AbstractLoggingStrategy {
+        private static final String LOGGER_NAME = "org.slf4j.Logger";
+        private static final String FACTORY_NAME = "org.slf4j.LoggerFactory";
+
+        protected Slf4jLoggingStrategy(final GroovyClassLoader loader) {
+            super(loader);
+        }
+
         public FieldNode addLoggerFieldToClass(ClassNode classNode, String logFieldName) {
             return classNode.addField(logFieldName,
                     Opcodes.ACC_FINAL | Opcodes.ACC_TRANSIENT | Opcodes.ACC_STATIC | Opcodes.ACC_PRIVATE,
-                    new ClassNode("org.slf4j.Logger", Opcodes.ACC_PUBLIC, ClassHelper.OBJECT_TYPE),
+                    classNode(LOGGER_NAME),
                     new MethodCallExpression(
-                            new ClassExpression(new ClassNode("org.slf4j.LoggerFactory", Opcodes.ACC_PUBLIC, ClassHelper.OBJECT_TYPE)),
+                            new ClassExpression(classNode(FACTORY_NAME)),
                             "getLogger",
                             new ClassExpression(classNode)));
 

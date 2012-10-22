@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2010 the original author or authors.
+ * Copyright 2003-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package org.codehaus.groovy.runtime;
 
 import groovy.lang.*;
-import groovy.xml.XmlUtil;
 import org.codehaus.groovy.runtime.metaclass.MetaClassRegistryImpl;
 import org.codehaus.groovy.runtime.metaclass.MissingMethodExecutionFailed;
 import org.codehaus.groovy.runtime.powerassert.PowerAssertionError;
@@ -25,10 +24,25 @@ import org.codehaus.groovy.runtime.wrappers.PojoWrapper;
 import org.w3c.dom.Element;
 
 import java.beans.Introspector;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -249,12 +263,12 @@ public class InvokerHelper {
             return -number;
         }
         if (value instanceof Short) {
-        	Short number = (Short) value;
-        	return Short.valueOf((short) -number.shortValue());
+            Short number = (Short) value;
+            return Short.valueOf((short) -number.shortValue());
         }
         if (value instanceof Byte) {
-        	Byte number = (Byte) value;
-        	return Byte.valueOf((byte) -number.byteValue());
+            Byte number = (Byte) value;
+            return Byte.valueOf((byte) -number.byteValue());
         }
         if (value instanceof ArrayList) {
             // value is an list.
@@ -274,8 +288,8 @@ public class InvokerHelper {
                 value instanceof BigInteger ||
                 value instanceof BigDecimal ||
                 value instanceof Double ||
-                value instanceof Float || 
-                value instanceof Short || 
+                value instanceof Float ||
+                value instanceof Short ||
                 value instanceof Byte) {
             return value;
         }
@@ -454,7 +468,7 @@ public class InvokerHelper {
     }
 
     /**
-     * Writes the given object to the given stream
+     * Writes an object to a Writer using Groovy's default representation for the object.
      */
     public static void write(Writer out, Object object) throws IOException {
         if (object instanceof String) {
@@ -484,6 +498,44 @@ public class InvokerHelper {
             reader.close();
         } else {
             out.write(toString(object));
+        }
+    }
+
+    /**
+     * Appends an object to an Appendable using Groovy's default representation for the object.
+     */
+    public static void append(Appendable out, Object object) throws IOException {
+        if (object instanceof String) {
+            out.append((String) object);
+        } else if (object instanceof Object[]) {
+            out.append(toArrayString((Object[]) object));
+        } else if (object instanceof Map) {
+            out.append(toMapString((Map) object));
+        } else if (object instanceof Collection) {
+            out.append(toListString((Collection) object));
+        } else if (object instanceof Writable) {
+            Writable writable = (Writable) object;
+            StringWriter stringWriter = new StringWriter();
+            writable.writeTo(stringWriter);
+            out.append(stringWriter.toString());
+        } else if (object instanceof InputStream || object instanceof Reader) {
+            // Copy stream to stream
+            Reader reader;
+            if (object instanceof InputStream) {
+                reader = new InputStreamReader((InputStream) object);
+            } else {
+                reader = (Reader) object;
+            }
+            char[] chars = new char[8192];
+            int i;
+            while ((i = reader.read(chars)) != -1) {
+                for (int j = 0; j < i; j++) {
+                    out.append(chars[j]);
+                }
+            }
+            reader.close();
+        } else {
+            out.append(toString(object));
         }
     }
 
@@ -522,7 +574,18 @@ public class InvokerHelper {
             return formatMap((Map) arguments, verbose, maxSize);
         }
         if (arguments instanceof Element) {
-            return XmlUtil.serialize((Element) arguments);
+            try {
+                Method serialize = Class.forName("groovy.xml.XmlUtil").getMethod("serialize", Element.class);
+                return (String) serialize.invoke(null, arguments);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
         }
         if (arguments instanceof String) {
             if (verbose) {
@@ -546,7 +609,7 @@ public class InvokerHelper {
         if (map.isEmpty()) {
             return "[:]";
         }
-        StringBuffer buffer = new StringBuffer("[");
+        StringBuilder buffer = new StringBuilder("[");
         boolean first = true;
         for (Object o : map.entrySet()) {
             if (first) {
@@ -571,12 +634,12 @@ public class InvokerHelper {
         return buffer.toString();
     }
 
-    private static int sizeLeft(int maxSize, StringBuffer buffer) {
+    private static int sizeLeft(int maxSize, StringBuilder buffer) {
         return maxSize == -1 ? maxSize : Math.max(0, maxSize - buffer.length());
     }
 
     private static String formatList(Collection collection, boolean verbose, int maxSize) {
-        StringBuffer buffer = new StringBuffer("[");
+        StringBuilder buffer = new StringBuilder("[");
         boolean first = true;
         for (Object item : collection) {
             if (first) {
@@ -608,7 +671,7 @@ public class InvokerHelper {
         if (arguments == null) {
             return "null";
         }
-        StringBuffer argBuf = new StringBuffer();
+        StringBuilder argBuf = new StringBuilder();
         for (int i = 0; i < arguments.length; i++) {
             if (i > 0) {
                 argBuf.append(", ");
@@ -673,7 +736,7 @@ public class InvokerHelper {
         }
         String sbdry = "[";
         String ebdry = "]";
-        StringBuffer argBuf = new StringBuffer(sbdry);
+        StringBuilder argBuf = new StringBuilder(sbdry);
         for (int i = 0; i < arguments.length; i++) {
             if (i > 0) {
                 argBuf.append(", ");
@@ -710,11 +773,11 @@ public class InvokerHelper {
         }
         if (value instanceof String) {
             // value is a regular expression.
-            return DefaultGroovyMethods.bitwiseNegate(value.toString());
+            return StringGroovyMethods.bitwiseNegate(value.toString());
         }
         if (value instanceof GString) {
             // value is a regular expression.
-            return DefaultGroovyMethods.bitwiseNegate(value.toString());
+            return StringGroovyMethods.bitwiseNegate(value.toString());
         }
         if (value instanceof ArrayList) {
             // value is an list.

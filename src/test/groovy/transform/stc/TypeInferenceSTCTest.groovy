@@ -23,6 +23,7 @@ import org.codehaus.groovy.classgen.GeneratorContext
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.transform.stc.StaticTypesMarker
+import org.codehaus.groovy.ast.tools.WideningCategories
 
 /**
  * Unit tests for static type checking : type inference.
@@ -268,6 +269,7 @@ class TypeInferenceSTCTest extends StaticTypeCheckingTestCase {
             a.with {
                 x = 2 // should be recognized as a.x at compile time
             }
+            assert a.x == 2
         '''
     }
 
@@ -300,6 +302,8 @@ class TypeInferenceSTCTest extends StaticTypeCheckingTestCase {
                     x = '2' // should be recognized as b.x at compile time
                 }
             }
+            assert a.x == 0
+            assert b.x == '2'
         '''
     }
 
@@ -312,6 +316,7 @@ class TypeInferenceSTCTest extends StaticTypeCheckingTestCase {
             a.with {
                 it.x = 2 // should be recognized as a.x at compile time
             }
+            assert a.x == 2
         '''
     }
 
@@ -324,6 +329,7 @@ class TypeInferenceSTCTest extends StaticTypeCheckingTestCase {
             a.with { it ->
                 it.x = 2 // should be recognized as a.x at compile time
             }
+            assert a.x == 2
         '''
     }
 
@@ -351,6 +357,7 @@ class TypeInferenceSTCTest extends StaticTypeCheckingTestCase {
              b.with {
                  x = 2 // should be recognized as b.x at compile time
              }
+             assert b.x == 2
          '''
     }
 
@@ -413,7 +420,9 @@ class TypeInferenceSTCTest extends StaticTypeCheckingTestCase {
                 o = 'String'
             }
         '''
-        assert method.code.statements[0].expression.leftExpression.getNodeMetaData(StaticTypesMarker.DECLARATION_INFERRED_TYPE) == ClassHelper.make(Comparable)
+        def inft = method.code.statements[0].expression.leftExpression.getNodeMetaData(StaticTypesMarker.DECLARATION_INFERRED_TYPE)
+        assert inft instanceof WideningCategories.LowestUpperBoundClassNode
+        assert inft.interfaces as Set == [ClassHelper.make(Comparable), ClassHelper.make(Serializable)] as Set
 
         assertScript '''
             void method() {
@@ -431,7 +440,8 @@ class TypeInferenceSTCTest extends StaticTypeCheckingTestCase {
                 o = 2
             }
         '''
-        assert method.code.statements[0].expression.leftExpression.getNodeMetaData(StaticTypesMarker.DECLARATION_INFERRED_TYPE) == ClassHelper.Number_TYPE
+        inft = method.code.statements[0].expression.leftExpression.getNodeMetaData(StaticTypesMarker.DECLARATION_INFERRED_TYPE)
+        assert inft  == ClassHelper.long_TYPE
 
         assertScript '''
             void method() {
@@ -495,6 +505,54 @@ class TypeInferenceSTCTest extends StaticTypeCheckingTestCase {
         assertScript '''
             String str = new Object() // type checker will not complain, anything assignable to a String
             str.toUpperCase() // should not complain
+        '''
+    }
+
+    void testDefTypeAfterLongThenIntAssignments() {
+        assertScript '''
+            def o
+            o = 1L
+            o = 2
+            @ASTTest(phase=INSTRUCTION_SELECTION, value= {
+                assert node.rightExpression.accessedVariable.getNodeMetaData(DECLARATION_INFERRED_TYPE) == long_TYPE
+            })
+            def z = o
+        '''
+    }
+
+    // GROOVY-5519
+    void testInferThrowable() {
+        assertScript '''
+            try {
+                throw new RuntimeException('ok')
+            } catch (e) {
+                handleError(e)
+            }
+            void handleError(Throwable e) {
+                assert e.message == 'ok'
+            }
+        '''
+    }
+
+    void testInferMapValueType() {
+        assertScript '''
+            Map<String, Integer> map = new HashMap<String,Integer>()
+            map['foo'] = 123
+            map['bar'] = 246
+            Integer foo = map['foo']
+            assert foo == 123
+            Integer bar = map.get('bar')
+            assert bar == 246
+        '''
+    }
+
+    // GROOVY-5522
+    void testTypeInferenceWithArrayAndFind() {
+        assertScript '''
+            File findFile() {
+                new File[0].find { File f -> f.hidden }
+            }
+            findFile()
         '''
     }
 }

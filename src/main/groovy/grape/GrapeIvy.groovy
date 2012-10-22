@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2011 the original author or authors.
+ * Copyright 2003-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,8 +40,14 @@ import org.apache.ivy.plugins.resolver.IBiblioResolver
 import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
 import org.codehaus.groovy.reflection.ReflectionUtils
-//import java.util.zip.ZipFile
-//import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
+import java.util.zip.ZipEntry
+import javax.xml.parsers.DocumentBuilderFactory
+import org.codehaus.groovy.runtime.metaclass.MetaClassRegistryImpl
+import java.util.jar.JarFile
+
+import org.codehaus.groovy.reflection.CachedClass
+import org.codehaus.groovy.reflection.ClassInfo
 
 /**
  * @author Danno Ferrin
@@ -247,8 +253,9 @@ class GrapeIvy implements GrapeEngine {
 
             for (URI uri in resolve(loader, args, dependencies)) {
                 //TODO check artifact type, jar vs library, etc
-//                processServices(new File(uri));
-                loader.addURL(uri.toURL())
+                File file = new File(uri)
+                processCategoryMethods(uri, loader, file)
+                processOtherServices(file, loader);
             }
         } catch (Exception e) {
             // clean-up the state first
@@ -265,25 +272,76 @@ class GrapeIvy implements GrapeEngine {
         return null
     }
 
-//    void processServices(File f) {
-//        System.out.println('Processing ' + f.getCanonicalPath())
-//        ZipFile zf = new ZipFile(f)
-//        ZipEntry dgmMethods = zf.getEntry("META-INF/services/groovy/defaultGroovyMethods")
-//        if (dgmMethods == null) return
-//        InputStream is = zf.getInputStream(dgmMethods)
-//        List<String> classNames = is.text.readLines()
-//        classNames.each {
-//            println it.trim()
-//        }
-//    }
+    private processCategoryMethods(URI uri, ClassLoader loader, File file) {
+        URL url = uri.toURL()
+        loader.addURL(url)
+        // register extension methods if jar
+        if (file.name.toLowerCase().endsWith(".jar")) {
+            def mcRegistry = GroovySystem.metaClassRegistry
+            if (mcRegistry instanceof MetaClassRegistryImpl) {
+                // should always be the case
+                JarFile jar = new JarFile(file)
+                def entry = jar.getEntry(MetaClassRegistryImpl.MODULE_META_INF_FILE)
+                if (entry) {
+                    Properties props = new Properties()
+                    props.load(jar.getInputStream(entry))
+                    Map<CachedClass, List<MetaMethod>> metaMethods = new HashMap<CachedClass, List<MetaMethod>>()
+                    mcRegistry.registerExtensionModuleFromProperties(props, loader, metaMethods)
+                    // add old methods to the map
+                    metaMethods.each { CachedClass c, List<MetaMethod> methods ->
+                        // GROOVY-5543: if a module was loaded using grab, there are chances that subclasses
+                        // have their own ClassInfo, and we must change them as well!
+                        def classesToBeUpdated = ClassInfo.allClassInfo.findAll {
+                            boolean found = false
+                            CachedClass current = it.cachedClass
+                            while (!found && current != null) {
+                                if (current == c || current.interfaces.contains(c)) {
+                                    found = true
+                                }
+                                current = current.cachedSuperClass
+                            }
+                            found
+                        }.collect { it.cachedClass }
+                        classesToBeUpdated*.addNewMopMethods(methods)
+                    }
+                }
+
+            }
+        }
+    }
+
+    void processOtherServices(File f, ClassLoader loader) {
+        ZipFile zf = new ZipFile(f)
+        ZipEntry serializedCategoryMethods = zf.getEntry("META-INF/services/org.codehaus.groovy.runtime.SerializedCategoryMethods")
+        if (serializedCategoryMethods != null) {
+            processSerializedCategoryMethods(zf.getInputStream(serializedCategoryMethods))
+        }
+        ZipEntry pluginRunners = zf.getEntry("META-INF/services/org.codehaus.groovy.plugins.Runners")
+        if (pluginRunners != null) {
+            processRunners(zf.getInputStream(pluginRunners), f.getName(), loader)
+        }
+    }
+
+    void processSerializedCategoryMethods(InputStream is) {
+        is.text.readLines().each {
+            println it.trim() // TODO implement this or delete it
+        }
+    }
+
+    void processRunners(InputStream is, String name, ClassLoader loader) {
+        is.text.readLines().each {
+            GroovySystem.RUNNER_REGISTRY[name] = loader.loadClass(it.trim()).newInstance()
+        }
+    }
 
     public ResolveReport getDependencies(Map args, IvyGrabRecord... grabRecords) {
         ResolutionCacheManager cacheManager = ivyInstance.resolutionCacheManager
 
+        def millis = System.currentTimeMillis()
         def md = new DefaultModuleDescriptor(ModuleRevisionId
-                .newInstance("caller", "all-caller", "working"), "integration", null, true)
+                .newInstance("caller", "all-caller", "working" + millis.toString()[-2..-1]), "integration", null, true)
         md.addConfiguration(new Configuration('default'))
-        md.setLastModified(System.currentTimeMillis())
+        md.setLastModified(millis)
 
         addExcludesIfNeeded(args, md)
 
@@ -292,10 +350,10 @@ class GrapeIvy implements GrapeEngine {
                     grabRecord.mrid, grabRecord.force, grabRecord.changing, grabRecord.transitive)
             def conf = grabRecord.conf ?: ['*']
             conf.each {dd.addDependencyConfiguration('default', it)}
-            if (grabRecord.classifier) {
+            if (grabRecord.classifier || grabRecord.ext) {
                 def dad = new DefaultDependencyArtifactDescriptor(dd,
-                        grabRecord.mrid.name, grabRecord.type ?: 'jar', grabRecord.ext ?: 'jar', null, [classifier:grabRecord.classifier])
-                conf.each { dad.addConfiguration(it)  }
+                      grabRecord.mrid.name, grabRecord.type ?: 'jar', grabRecord.ext ?: 'jar', null, grabRecord.classifier ? [classifier:grabRecord.classifier] : null)
+                conf.each { dad.addConfiguration(it) }
                 dd.addDependencyArtifact('default', dad)
             }
             md.addDependency(dd)
@@ -331,7 +389,24 @@ class GrapeIvy implements GrapeEngine {
                     break
             } } ] as IvyListener)
         }
-        ResolveReport report = ivyInstance.resolve(md, resolveOptions)
+
+        ResolveReport report = null
+        int attempt = 8 // max of 8 times
+        while (true) {
+            try {
+                report = ivyInstance.resolve(md, resolveOptions)
+                break
+            } catch(IOException ioe) {
+                if (attempt--) {
+                    if (reportDownloads)
+                        System.err.println "Grab Error: retrying..."
+                    sleep attempt > 4 ? 350 : 1000
+                    continue
+                }
+                throw new RuntimeException("Error grabbing grapes -- $ioe.message")
+            }
+        }
+
         if (report.hasError()) {
             throw new RuntimeException("Error grabbing Grapes -- $report.allProblemMessages")
         }
@@ -356,19 +431,27 @@ class GrapeIvy implements GrapeEngine {
                 if (moduleDir.name == module) moduleDir.eachFileMatch(ivyFilePattern) { File ivyFile ->
                     def m = ivyFilePattern.matcher(ivyFile.name)
                     if (m.matches() && m.group(1) == rev) {
-                        def root = new XmlParser(false, false).parse(ivyFile)
                         // TODO handle other types? e.g. 'dlls'
                         def jardir = new File(moduleDir, 'jars')
                         if (!jardir.exists()) return
-                        root.publications.artifact.each {
-                            def name = it.@name + "-$rev"
-                            def classifier = it.'@m:classifier'
-                            if (classifier) name += "-$classifier"
-                            name += ".${it.@ext}"
-                            def jarfile = new File(jardir, name)
-                            if (jarfile.exists()) {
-                                println "Deleting ${jarfile.name}"
-                                jarfile.delete()
+                        def dbf = DocumentBuilderFactory.newInstance()
+                        def db = dbf.newDocumentBuilder()
+                        def root = db.parse(ivyFile).documentElement
+                        def publis = root.getElementsByTagName('publications')
+                        for (int i=0; i<publis.length;i++) {
+                            def artifacts = publis.item(i).getElementsByTagName('artifact')
+                            for (int j=0; j<artifacts.length; j++) {
+                                def artifact = artifacts.item(j)
+                                def attrs = artifact.attributes
+                                def name = attrs.getNamedItem('name')+ "-$rev"
+                                def classifier = attrs.getNamedItemNS("m", "classifier")
+                                if (classifier) name += "-$classifier"
+                                name += ".${attrs.getNamedItem('ext')}"
+                                def jarfile = new File(jardir, name)
+                                if (jarfile.exists()) {
+                                    println "Deleting ${jarfile.name}"
+                                    jarfile.delete()
+                                }
                             }
                         }
                         ivyFile.delete()

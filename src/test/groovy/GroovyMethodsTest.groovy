@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2009 the original author or authors.
+ * Copyright 2003-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,8 @@ import org.codehaus.groovy.util.StringUtil
  * @author Mike Dillon
  * @author Tim Yates
  * @author Dinko Srkoc
- * @version $Revision$
  */
-class GroovyMethodsTest extends GroovySwingTestCase {
+class GroovyMethodsTest extends GroovyTestCase {
     void testCollect() {
         assert [2, 4, 6].collect {it * 2} == [4, 8, 12]
         def answer = [2, 4, 6].collect(new Vector()) {it * 2}
@@ -71,7 +70,7 @@ class GroovyMethodsTest extends GroovySwingTestCase {
     }
 
     void testAsCoercion() {
-        if (headless) return
+        if (HeadlessTestSupport.headless) return
 
         def d0 = new Dimension(100, 200)
         assert d0 == new Dimension(width: 100, height: 200)
@@ -349,7 +348,7 @@ class GroovyMethodsTest extends GroovySwingTestCase {
     }
 
     void testFileSize() {
-        assert new File('build.properties').size()
+        assert new File('gradle.properties').size()
     }
 
     void testMatcherSize() {
@@ -697,25 +696,25 @@ class GroovyMethodsTest extends GroovySwingTestCase {
     }
 
     void testFileWithReader() {
-        def f = new File('build.properties')
+        def f = new File('gradle.properties')
         def expected = f.text
         assert expected == f.withReader { r -> r.text }
     }
 
     void testFileWithInputStream() {
-        def f = new File('build.properties')
+        def f = new File('gradle.properties')
         def buf = new byte[f.size()]
         assert buf.size() == f.withInputStream { i -> i.read(buf) }
     }
 
     void testUrlReader() {
-        def u = new File('build.properties').toURL()
+        def u = new File('gradle.properties').toURL()
         def expected = u.text
         assert expected == u.withReader { r -> r.text }
     }
 
     void testUrlWithInputStream() {
-        def f = new File('build.properties')
+        def f = new File('gradle.properties')
         def u = f.toURL()
         def buf = new byte[f.size()]
         assert buf.size() == u.withInputStream { i -> i.read(buf) } 
@@ -801,14 +800,6 @@ class GroovyMethodsTest extends GroovySwingTestCase {
         sb[6..<6] = 'xy'
         result = sb.toString()
         assert result == 'fooabcxyz'
-    }
-
-    void testThreadNaming() {
-        def t = Thread.start("MyNamedThread"){
-            sleep 200 // give ourselves time to find the thread
-        }
-        assert Thread.allStackTraces.keySet().any{ thread -> thread.name == 'MyNamedThread' }
-        t.join()
     }
 
     void testDefiningQueue() {
@@ -1110,6 +1101,98 @@ class GroovyMethodsTest extends GroovySwingTestCase {
             assert clazz.isInstance( object.drop( 5 ) )
         }
     }
+
+    void testContainsForPrimitiveArrays() {
+        boolean[] bools = [false]
+        byte[] bytes = [1, 3]
+        short[] shorts = [1, 3]
+        int[] ints = [1, 3]
+        long[] longs = [1, 3]
+        float[] floats = [1.0f, 3.0f]
+        double[] doubles = [1.0d, 3.0d]
+        char[] chars = ['a' as char, 'c' as char]
+
+        assert bools.contains(false)
+        assert !bools.contains(true)
+        assert bytes.contains(3)
+        assert !bytes.contains(2)
+        assert shorts.contains(3)
+        assert !shorts.contains(2)
+        assert ints.contains(3)
+        assert !ints.contains(2)
+        assert longs.contains(3)
+        assert !longs.contains(2)
+        assert longs.contains(3)
+        assert !longs.contains(2)
+        assert floats.contains(3.0f)
+        assert !floats.contains(2.0f)
+        assert doubles.contains(3.0d)
+        assert !doubles.contains(2.0d)
+        assert chars.contains('c' as char)
+        assert !chars.contains('b' as char)
+    }
+
+    void testCollectEntriesIterator() {
+        def items = ['a', 'bb', 'ccc'].iterator()
+        def map = items.collectEntries { [it, it.size()] }
+        assert map == [a: 1, bb: 2, ccc: 3]
+    }
+
+    void testCollectEntriesIterable() {
+        def things = new Things()
+        def map = things.collectEntries { [it.toLowerCase(), it.toUpperCase()] }
+        assert map == [a: 'A', b: 'B', c: 'C']
+    }
+
+    void testArrayContains() {
+        String[] vowels = ['a', 'e', 'i', 'o', 'u']
+        assert vowels.contains('u')
+        assert !vowels.contains('x')
+    }
+
+    void testListTakeWhile() {
+        def data = [
+            new ArrayList( [ 1, 3, 2 ] ),
+            new LinkedList( [ 1, 3, 2 ] ),
+            new Stack() {{ addAll( [ 1, 3, 2 ] ) }},
+            new Vector( [ 1, 3, 2 ] ),
+        ]
+        data.each {
+            assert it.takeWhile{ it < 0 } == []
+            assert it.takeWhile{ it < 1 } == []
+            assert it.takeWhile{ it < 3 } == [ 1 ]
+            assert it.takeWhile{ it < 4 } == [ 1, 3, 2 ]
+        }
+    }
+
+    void testArrayTakeWhile() {
+        String[] items = [ 'ant', 'bee', 'cat' ]
+
+        assert items.takeWhile{ it == '' } == [] as String[]
+        assert items.takeWhile{ it != 'cat' } == [ 'ant', 'bee' ] as String[]
+        assert items.takeWhile{ it != '' } == [ 'ant', 'bee', 'cat' ] as String[]
+    }
+
+    void testIteratorTakeWhile() {
+        int a = 1
+        Iterator items = [ hasNext:{ true }, next:{ a++ } ] as Iterator
+
+        assert items.takeWhile{ it < 5 }.collect { it } == [ 1, 2, 3, 4 ]
+    }
+
+    void testCharSequenceTakeWhile() {
+        def data = [ 'groovy',      // String
+                     "${'groovy'}", // GString
+                     java.nio.CharBuffer.wrap( 'groovy' ),
+                     new StringBuffer( 'groovy' ),
+                     new StringBuilder( 'groovy' ) ]
+        data.each {
+            // Need toString() as CharBuffer.subSequence returns a java.nio.StringCharBuffer
+            assert it.takeWhile{ it == '' }.toString() == ''
+            assert it.takeWhile{ it != 'v' }.toString() == 'groo'
+            assert it.takeWhile{ it }.toString() == 'groovy'
+        }
+    }
 }
 
 class WackyList extends LinkedList {
@@ -1119,6 +1202,12 @@ class WackyList extends LinkedList {
 
 class WackyHashCode {
     int hashCode() {return 1;}
+}
+
+class Things implements Iterable<String> {
+    Iterator iterator() {
+        ["a", "B", "c"].iterator()
+    }
 }
 
 enum Suit { HEARTS, CLUBS, SPADES, DIAMONDS }

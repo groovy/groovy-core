@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2011 the original author or authors.
+ * Copyright 2008-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,8 +76,25 @@ import java.lang.annotation.Target;
  * <pre>
  * AgedThing(age:5, super:NamedThing(Lassie))
  * </pre>
+ * {@code @ToString} can also be used in conjunction with {@code @Canonical} and {@code @Immutable}.
+ * <p/>
+ * If you want to omit fields or properties referring to <tt>null</tt>, you can use the <tt>ignoreNulls</tt> flag:
+ * <pre>
+ * import groovy.transform.ToString
+ * {@code @ToString(ignoreNulls = true)} class NamedThing {
+ *     String name
+ * }
+ * println new NamedThing(name: null)
+ * </pre>
+ * Which results in:
+ * <pre>
+ * NamedThing()
+ * </pre>
  *
  * @author Paul King
+ * @author Andre Steingress
+ * @see groovy.transform.Immutable
+ * @see groovy.transform.Canonical
  * @since 1.8.0
  */
 @java.lang.annotation.Documented
@@ -86,29 +103,36 @@ import java.lang.annotation.Target;
 @GroovyASTTransformationClass("org.codehaus.groovy.transform.ToStringASTTransformation")
 public @interface ToString {
     /**
-     * Comma separated list of field and/or property names to exclude from generated toString.
-     * Must not be used if 'includes' is used.
+     * List of field and/or property names to exclude from generated toString.
+     * Must not be used if 'includes' is used. For convenience, a String with comma separated names
+     * can be used in addition to an array (using Groovy's literal list notation) of String values.
      */
-    String excludes() default "";
+    String[] excludes() default {};
 
     /**
-     * Comma separated list of field and/or property names to include within the generated toString.
-     * Must not be used if 'excludes' is used.
+     * List of field and/or property names to include within the generated toString.
+     * Must not be used if 'excludes' is used. For convenience, a String with comma separated names
+     * can be used in addition to an array (using Groovy's literal list notation) of String values.
      */
-    String includes() default "";
+    String[] includes() default {};
 
     /**
-     * Whether to include super in generated toString
+     * Whether to include super in generated toString.
      */
     boolean includeSuper() default false;
 
     /**
-     * Whether to include names of properties/fields in generated toString
+     * Whether to include names of properties/fields in generated toString.
      */
     boolean includeNames() default false;
 
     /**
-     * Include fields as well as properties in generated toString
+     * Include fields as well as properties in generated toString.
      */
     boolean includeFields() default false;
+
+    /**
+     * Don't display any fields or properties with value <tt>null</tt>.
+     */
+    boolean ignoreNulls() default false;
 }

@@ -16,13 +16,31 @@ test {
 //        systemProperties "gradle.junit": configurations.testCompile.fileCollection { dep -> dep.name == 'junit' }.singleFile.absolutePath
     }
     classpath = files('src/test') + classpath
-    forkEvery = 1
+//    forkEvery = 10
+//    maxParallelForks = Runtime.runtime.availableProcessors()
     scanForTestClasses = false
     ignoreFailures = false
-    resultText = ''
-    includes = includePattern
+    ext.resultText = ''
+    includes = getIncludePattern()
+    doLast {
+        ant.delete {
+            fileset(dir: '.', includes: '*.class')
+        }
+    }
 }
 
+boolean isRunningOnCI() {
+    new File('.').absolutePath.contains('ci.codehaus.org')
+}
+
+logger.lifecycle "Detected ${isRunningOnCI()?'Continuous Integration environment':'development environment'}"
+
+allprojects {
+    test {
+        forkEvery = isRunningOnCI()?50:200
+        maxParallelForks = isRunningOnCI()?1:Runtime.runtime.availableProcessors()
+    }
+}
 tasks.addRule("Pattern: testSingle<Name> will test **/<Name>.class") {String taskName ->
     if (taskName.startsWith("testSingle")) {
         tasks.add(taskName).dependsOn(test)
@@ -38,54 +56,18 @@ def getIncludePattern() {
             "UberTestCaseGroovySourceSubPackages.class",
             "UberTestCaseJavaSourceCodehausPackages.class",
             "UberTestCaseJavaSourceGroovyPackagesNonSecurity.class",
-            "UberTestCaseTCK.class",
-            "UberTestCaseJavaSourceGroovyPackagesSecurity.class"]
+            "UberTestCaseTCK.class"
+            // temporarily disable security test suite, see GRADLE-2170
+            //,"UberTestCaseJavaSourceGroovyPackagesSecurity.class"
+    ]
     if (System.properties['junit.network']) {
         baseInclude += ['groovy/grape/*Test.class']    
     }
-    if (isJava16()) {
+    if (!isJava15()) {
         baseInclude += [
                 "UberTestCaseGroovySourceSubPackages_VM6.class",
                 "UberTestCaseGroovySourceCodehausPackages_VM6.class"
         ]
     }
     baseInclude
-}
-
-task compareTests << {
-    def uberTestCases = ['UberTestCaseBugs.xml',
-            'UberTestCaseGroovySourceCodehausPackages.xml',
-            'UberTestCaseGroovySourceRootPackage.xml',
-            "UberTestCaseGroovySourceSubPackages.xml",
-            "UberTestCaseJavaSourceCodehausPackages.xml",
-            "UberTestCaseJavaSourceGroovyPackagesNonSecurity.xml",
-            "UberTestCaseTCK.xml",
-            "UberTestCaseGroovySourceSubPackages_VM6.xml",
-            "UberTestCaseJavaSourceGroovyPackagesSecurity.xml"]
-    uberTestCases.each { testCaseName ->
-        compareAntWithGradle("target/test-reports/TEST-$testCaseName" as File, "target/test-results/TEST-$testCaseName" as File)
-    }
-}
-
-def compareAntWithGradle(File antResult, File gradleResult) {
-    Set antTests = testsRun(antResult)
-    Set gradleTests = testsRun(gradleResult)
-    Set commonTests = antTests.intersect(gradleTests)
-    Set antOnly = antTests - commonTests
-    Set gradleOnly = gradleTests - commonTests
-    if (antOnly) {
-        println "Tests only run by Ant: " + antOnly
-    }
-    if (gradleOnly) {
-        println "Tests only run by Gradle: " + gradleOnly
-    }
-}
-
-Set testsRun(File resultsXmlFile) {
-    def testsuite = new XmlParser().parse(resultsXmlFile)
-    Set tests = []
-    testsuite.testcase.each { testcase ->
-        tests.add("${testcase.'@classname'}:${testcase.'@name'}")
-    }
-    tests
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2007 the original author or authors.
+ * Copyright 2003-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ public class CompileUnit {
     private CodeSource codeSource;
     private Map<String, ClassNode> classesToCompile = new HashMap<String, ClassNode>();
     private Map<String, SourceUnit> classNameToSource = new HashMap<String, SourceUnit>();
+    private Map<String, InnerClassNode> generatedInnerClasses = new HashMap();
 
     public CompileUnit(GroovyClassLoader classLoader, CompilerConfiguration config) {
         this(classLoader, null, config);
@@ -142,7 +143,7 @@ public class CompileUnit {
                 txt += "The sources " + nodeSource.getName() + " and " + storedSource.getName() + " are containing both a class of the name " + node.getName() + ".\n";
             }
             nodeSource.getErrorCollector().addErrorAndContinue(
-                    new SyntaxErrorMessage(new SyntaxException(txt, node.getLineNumber(), node.getColumnNumber()), nodeSource)
+                    new SyntaxErrorMessage(new SyntaxException(txt, node.getLineNumber(), node.getColumnNumber(), node.getLastLineNumber(), node.getLastColumnNumber()), nodeSource)
             );
         }
         classes.put(name, node);
@@ -174,5 +175,13 @@ public class CompileUnit {
 
     public Iterator<String> iterateClassNodeToCompile() {
         return classesToCompile.keySet().iterator();
+    }
+
+    public InnerClassNode getGeneratedInnerClass(String name) {
+        return generatedInnerClasses.get(name);
+    }
+    
+    public void addGeneratedInnerClass(InnerClassNode icn) {
+        generatedInnerClasses.put(icn.getName(), icn);
     }
 }

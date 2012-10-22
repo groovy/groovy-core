@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2009 the original author or authors.
+ * Copyright 2003-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package org.codehaus.groovy.transform.stc;
 
 import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
-import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.control.SourceUnit;
 
@@ -28,31 +27,32 @@ import java.util.Set;
  * A visitor which collects the list of variable expressions which are closure shared.
  */
 public class SharedVariableCollector extends ClassCodeVisitorSupport {
-	private final SourceUnit unit;
-	private final Set<VariableExpression> closureSharedExpressions = new LinkedHashSet<VariableExpression>();
-	private boolean visited = false;
-	public SharedVariableCollector(final SourceUnit unit) {
-		this.unit = unit;
-	}
+    private final SourceUnit unit;
+    private final Set<VariableExpression> closureSharedExpressions = new LinkedHashSet<VariableExpression>();
+    private boolean visited = false;
 
-	@Override
-	protected SourceUnit getSourceUnit() {
-		return unit;
-	}
+    public SharedVariableCollector(final SourceUnit unit) {
+        this.unit = unit;
+    }
 
-	public Set<VariableExpression> getClosureSharedExpressions() {
-		return Collections.unmodifiableSet(closureSharedExpressions);
-	}
+    @Override
+    protected SourceUnit getSourceUnit() {
+        return unit;
+    }
 
-	@Override
-	public void visitVariableExpression(final VariableExpression expression) {
-		if (visited) {
-			// we should not visit embedded closures recursively
-			return;
-		}
-		visited = true;
-		if (expression.isClosureSharedVariable()) closureSharedExpressions.add(expression);
-		super.visitVariableExpression(expression);
-	}
+    public Set<VariableExpression> getClosureSharedExpressions() {
+        return Collections.unmodifiableSet(closureSharedExpressions);
+    }
+
+    @Override
+    public void visitVariableExpression(final VariableExpression expression) {
+        if (visited) {
+            // we should not visit embedded closures recursively
+            return;
+        }
+        visited = true;
+        if (expression.isClosureSharedVariable()) closureSharedExpressions.add(expression);
+        super.visitVariableExpression(expression);
+    }
 
 }

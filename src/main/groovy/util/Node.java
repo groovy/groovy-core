@@ -39,7 +39,7 @@ import java.util.*;
  * @author Paul King
  * @version $Revision$
  */
-public class Node implements Serializable {
+public class Node implements Serializable, Cloneable {
 
     static {
         // wrap the standard MetaClass with the delegate
@@ -55,6 +55,23 @@ public class Node implements Serializable {
     private Map attributes;
 
     private Object value;
+
+    /**
+     * Creates a new Node with the same name, no parent, shallow
+     * cloned attributes and if the value is a NodeList, a (deep) clone
+     * of those nodes.
+     *
+     * @return the clone
+     */
+    @Override
+    public Object clone() {
+        Object newValue = value;
+        if (value != null && value instanceof NodeList) {
+            NodeList nodes = (NodeList) value;
+            newValue = nodes.clone();
+        }
+        return new Node(null, name, new HashMap(attributes), newValue);
+    }
 
     /**
      * Creates a new Node named <code>name</code> and if a parent is supplied, adds
@@ -408,7 +425,9 @@ public class Node implements Serializable {
                 Node childNode = (Node) child;
                 List children = childNode.depthFirstRest();
                 answer.add(childNode);
-                answer.addAll(children);
+                if (children.size() > 1 || (children.size() == 1 && !(children.get(0) instanceof String))) answer.addAll(children);
+            } else if (child instanceof String) {
+                answer.add(child);
             }
         }
         return answer;
@@ -431,12 +450,15 @@ public class Node implements Serializable {
         List answer = new NodeList();
         List nextLevelChildren = getDirectChildren();
         while (!nextLevelChildren.isEmpty()) {
-            List<Node> working = new NodeList(nextLevelChildren);
+            List working = new NodeList(nextLevelChildren);
             nextLevelChildren = new NodeList();
-            for (Node childNode : working) {
-                answer.add(childNode);
-                List children = childNode.getDirectChildren();
-                nextLevelChildren.addAll(children);
+            for (Object child : working) {
+                answer.add(child);
+                if (child instanceof Node) {
+                    Node childNode = (Node) child;
+                    List children = childNode.getDirectChildren();
+                    if (children.size() > 1 || (children.size() == 1 && !(children.get(0) instanceof String))) nextLevelChildren.addAll(children);
+                }
             }
         }
         return answer;
@@ -449,6 +471,8 @@ public class Node implements Serializable {
             if (child instanceof Node) {
                 Node childNode = (Node) child;
                 answer.add(childNode);
+            } else if (child instanceof String) {
+                answer.add(child);
             }
         }
         return answer;
