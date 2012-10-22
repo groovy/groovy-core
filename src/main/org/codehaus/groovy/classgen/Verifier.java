@@ -34,6 +34,7 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
@@ -45,7 +46,7 @@ import java.util.*;
  * @author <a href="mailto:james@coredevelopers.net">James Strachan</a>
  * @version $Revision$
  */
-public class Verifier implements GroovyClassVisitor, Opcodes {
+public class Verifier implements GroovyClassVisitor, Opcodes, Serializable {
 
     public static final String STATIC_METACLASS_BOOL = "__$stMC";
     public static final String SWAP_INIT = "__$swapInit";
@@ -1438,7 +1439,7 @@ public class Verifier implements GroovyClassVisitor, Opcodes {
 
     private static class SwapInitStatement extends BytecodeSequence {
 
-        private WriterController controller;
+        private transient WriterController controller;
 
         public SwapInitStatement() {
             super(new SwapInitInstruction());

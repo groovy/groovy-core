@@ -18,6 +18,8 @@ package org.codehaus.groovy.ast;
 import org.codehaus.groovy.GroovyBugError;
 import org.codehaus.groovy.util.ListHashMap;
 
+import java.io.Serializable;
+
 /**
  * Base class for any AST node. This class supports basic information used in all
  * nodes of the AST<ul>
@@ -40,13 +42,13 @@ import org.codehaus.groovy.util.ListHashMap;
  * @author <a href="maito:blackdrag@gmx.org>Jochen "blackdrag" Theodorou</a>
  * @version $Revision$
  */
-public class ASTNode {
+public class ASTNode implements Serializable {
 
     private int lineNumber = -1;
     private int columnNumber = -1;
     private int lastLineNumber = -1;
     private int lastColumnNumber = -1;
-    private ListHashMap metaDataMap = new ListHashMap();
+    private transient ListHashMap metaDataMap = new ListHashMap();
 
     public void visit(GroovyCodeVisitor visitor) {
         throw new RuntimeException("No visit() method implemented for class: " + getClass().getName());

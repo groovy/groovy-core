@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.ast;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -28,7 +29,7 @@ import java.util.Map;
  * @author Jochen Theodorou
  * @version $Revision$
  */
-public class VariableScope  {
+public class VariableScope implements Serializable {
     private Map<String, Variable> declaredVariables = Collections.emptyMap();
     private Map<String, Variable> referencedLocalVariables = Collections.emptyMap();
     private Map<String, Variable> referencedClassVariables = Collections.emptyMap();
