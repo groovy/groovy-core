@@ -30,6 +30,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformation;
 import org.codehaus.groovy.vmplugin.VMPluginFactory;
 import org.objectweb.asm.Opcodes;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.*;
 
@@ -96,17 +97,18 @@ import java.util.*;
  * @version $Revision$
  */
 public class ClassNode extends AnnotatedNode implements Opcodes {
-    private static class MapOfLists {
-        private Map<Object, List<MethodNode>> map = new HashMap<Object, List<MethodNode>>();
-        public List<MethodNode> get(Object key) {
+
+    private static class MapOfLists implements Serializable {
+        private Map<Serializable, List<MethodNode>> map = new HashMap<Serializable, List<MethodNode>>();
+        public List<MethodNode> get(Serializable key) {
             return map.get(key);
         }
-        public List<MethodNode> getNotNull(Object key) {
+        public List<MethodNode> getNotNull(Serializable key) {
             List<MethodNode> ret = get(key);
             if (ret==null) ret = Collections.emptyList();
             return ret;
         }
-        public void put(Object key, MethodNode value) {
+        public void put(Serializable key, MethodNode value) {
             if (map.containsKey(key)) {
                 get(key).add(value);
             } else {
@@ -148,7 +150,7 @@ public class ClassNode extends AnnotatedNode implements Opcodes {
     private Map<CompilePhase, Map<Class<? extends ASTTransformation>, Set<ASTNode>>> transformInstances;
 
     // use this to synchronize access for the lazy init
-    protected Object lazyInitLock = new Object();
+    protected transient Object lazyInitLock = new Object();
 
     // clazz!=null when resolved
     protected Class clazz;

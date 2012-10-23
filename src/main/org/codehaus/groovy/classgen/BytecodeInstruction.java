@@ -18,6 +18,8 @@ package org.codehaus.groovy.classgen;
 
 import org.objectweb.asm.MethodVisitor;
 
+import java.io.Serializable;
+
 /**
  * Helper class used by the class generator. Usually
  * an inner class is produced, that contains bytecode
@@ -25,6 +27,6 @@ import org.objectweb.asm.MethodVisitor;
  *
  * @author Jochen Theodorou
  */
-public abstract class BytecodeInstruction {
+public abstract class BytecodeInstruction implements Serializable {
     public abstract void visit(MethodVisitor mv);
 }

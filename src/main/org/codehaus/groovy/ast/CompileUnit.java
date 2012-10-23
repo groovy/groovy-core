@@ -17,6 +17,7 @@ package org.codehaus.groovy.ast;
 
 import groovy.lang.GroovyClassLoader;
 
+import java.io.Serializable;
 import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,12 +41,12 @@ import org.codehaus.groovy.syntax.SyntaxException;
  * @author <a href="mailto:james@coredevelopers.net">James Strachan </a>
  * @version $Revision$
  */
-public class CompileUnit {
+public class CompileUnit implements Serializable {
 
     private final List<ModuleNode> modules = new ArrayList<ModuleNode>();
     private Map<String, ClassNode> classes = new HashMap<String, ClassNode>();
-    private CompilerConfiguration config;
-    private GroovyClassLoader classLoader;
+    private transient CompilerConfiguration config;
+    private transient GroovyClassLoader classLoader;
     private CodeSource codeSource;
     private Map<String, ClassNode> classesToCompile = new HashMap<String, ClassNode>();
     private Map<String, SourceUnit> classNameToSource = new HashMap<String, SourceUnit>();

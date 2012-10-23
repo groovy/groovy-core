@@ -18,6 +18,7 @@ package org.codehaus.groovy.syntax;
 
 import org.codehaus.groovy.GroovyBugError;
 
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.PrintWriter;
 
@@ -38,7 +39,7 @@ import java.io.PrintWriter;
  *  @version $Id$
  */
 
-public abstract class CSTNode
+public abstract class CSTNode implements Serializable
 {
 
   //---------------------------------------------------------------------------

@@ -17,13 +17,15 @@ package org.codehaus.groovy.ast;
 
 import org.codehaus.groovy.ast.expr.Expression;
 
+import java.io.Serializable;
+
 /**
  * interface to mark a AstNode as Variable. Typically these are 
  * VariableExpression, FieldNode, PropertyNode and Parameter
  * 
  * @author Jochen Theodorou
  */
-public interface Variable {
+public interface Variable extends Serializable {
     
     /**
      * the type of the variable
