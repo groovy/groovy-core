@@ -75,22 +75,6 @@ allprojects {
 
 }
 
-// todo: use the conventional "resources" directory for classpath resources
-task(copyResources, type: Copy) {
-    destinationDir = file("$buildDir/classes")
-    // text files requiring filtering
-    into("main") {
-        from('src/main')
-        include('**/*.txt', '**/*.xml', '**/*.properties', '**/*.html')
-        filter(rootProject.propertiesFilter, org.apache.tools.ant.filters.ReplaceTokens)
-    }
-    // other resources
-    into("main") {
-        from 'src/main'
-        include('**/*.png', '**/*.gif', '**/*.ico', '**/*.css')
-    }
-}
-compileJava.dependsOn(copyResources)
 task(copyTestResources, type: Copy)
         .from('src/test')
         .into("$buildDir/classes/test")
@@ -303,7 +287,7 @@ sourceSets {
                     "org/codehaus/groovy/tools/shell/**/*.properties",
                     "org/codehaus/groovy/tools/shell/**/*.xml",
                     "org/codehaus/groovy/tools/groovydoc/gstringTemplates/**/*.*",
-                    "org/codehaus/groovy/tools/groovy.ico"
+                    "org/codehaus/groovy/tools/groovy.ico", "**/*.html"
         }
     }
     test {
@@ -342,6 +326,10 @@ sourceSets {
         compileClasspath = configurations.examplesRuntime + sourceSets.main.output
         output.classesDir = "$buildDir/examples-classes" as File
     }
+}
+
+processResources {
+    filter(rootProject.propertiesFilter, org.apache.tools.ant.filters.ReplaceTokens)
 }
 
 // remove this from config once GRADLE-854 is fixed.
