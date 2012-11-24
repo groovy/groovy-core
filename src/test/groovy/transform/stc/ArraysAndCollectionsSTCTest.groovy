@@ -461,5 +461,34 @@ class ArraysAndCollectionsSTCTest extends StaticTypeCheckingTestCase {
             array[0].length
         '''
     }
+
+    // GROOVY-5797
+    void testShouldAllowExpressionAsMapPropertyKey() {
+        assertScript '''
+        def m( Map param ) {
+          def map = [ tim:4 ]
+          map[ param.key ]
+        }
+
+        assert m( [ key: 'tim' ] ) == 4
+        '''
+    }
+
+    // GROOVY-5793
+    void testShouldNotForceAsTypeWhenListOfNullAssignedToArray() {
+        assertScript '''
+        Integer[] m() {
+          Integer[] arr = [ null, null ]
+        }
+        assert m().length == 2
+        '''
+    }
+    void testShouldNotForceAsTypeWhenListOfNullAssignedToArrayUnlessPrimitive() {
+        shouldFailWithMessages '''
+        int[] m() {
+          int[] arr = [ null, null ]
+        }
+        ''', 'into array of type'
+    }
 }
 

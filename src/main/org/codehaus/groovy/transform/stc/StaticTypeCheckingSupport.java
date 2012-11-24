@@ -15,7 +15,6 @@
  */
 package org.codehaus.groovy.transform.stc;
 
-import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
 import org.codehaus.groovy.GroovyBugError;
@@ -25,7 +24,6 @@ import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.tools.GenericsUtils;
 import org.codehaus.groovy.ast.tools.WideningCategories;
 import org.codehaus.groovy.control.CompilationUnit;
-import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.DefaultGroovyStaticMethods;
 import org.codehaus.groovy.runtime.m12n.ExtensionModule;
@@ -302,28 +300,28 @@ public abstract class StaticTypeCheckingSupport {
             return type.isDerivedFrom(Number_TYPE);
         }
         if (ClassHelper.Float_TYPE==toBeAssignedTo) {
-            return type.isDerivedFrom(Number_TYPE) && ClassHelper.Double_TYPE!=type;
+            return type.isDerivedFrom(Number_TYPE) && ClassHelper.Double_TYPE!=type.redirect();
         }
         if (ClassHelper.Long_TYPE==toBeAssignedTo) {
             return type.isDerivedFrom(Number_TYPE)
-                    && ClassHelper.Double_TYPE!=type
-                    && ClassHelper.Float_TYPE!=type;
+                    && ClassHelper.Double_TYPE!=type.redirect()
+                    && ClassHelper.Float_TYPE!=type.redirect();
         }
         if (ClassHelper.Integer_TYPE==toBeAssignedTo) {
             return type.isDerivedFrom(Number_TYPE)
-                    && ClassHelper.Double_TYPE!=type
-                    && ClassHelper.Float_TYPE!=type
-                    && ClassHelper.Long_TYPE!=type;
+                    && ClassHelper.Double_TYPE!=type.redirect()
+                    && ClassHelper.Float_TYPE!=type.redirect()
+                    && ClassHelper.Long_TYPE!=type.redirect();
         }
         if (ClassHelper.Short_TYPE==toBeAssignedTo) {
             return type.isDerivedFrom(Number_TYPE)
-                    && ClassHelper.Double_TYPE!=type
-                    && ClassHelper.Float_TYPE!=type
-                    && ClassHelper.Long_TYPE!=type
-                    && ClassHelper.Integer_TYPE!=type;
+                    && ClassHelper.Double_TYPE!=type.redirect()
+                    && ClassHelper.Float_TYPE!=type.redirect()
+                    && ClassHelper.Long_TYPE!=type.redirect()
+                    && ClassHelper.Integer_TYPE!=type.redirect();
         }
         if (ClassHelper.Byte_TYPE==toBeAssignedTo) {
-            return type == ClassHelper.Byte_TYPE;
+            return type.redirect() == ClassHelper.Byte_TYPE;
         }
         if (type.isArray() && toBeAssignedTo.isArray()) {
             return isAssignableTo(type.getComponentType(),toBeAssignedTo.getComponentType());
@@ -551,13 +549,7 @@ public abstract class StaticTypeCheckingSupport {
 
         // anything can be assigned to an Object, String, boolean, Boolean
         // or Class typed variable
-        if (leftRedirect == OBJECT_TYPE ||
-                leftRedirect == STRING_TYPE ||
-                leftRedirect == boolean_TYPE ||
-                leftRedirect == Boolean_TYPE ||
-                leftRedirect == CLASS_Type) {
-            return true;
-        }
+        if (isWildcardLeftHandSide(leftRedirect)) return true;
 
         // char as left expression
         if (leftRedirect == char_TYPE && rightRedirect==STRING_TYPE) {
@@ -605,6 +597,23 @@ public abstract class StaticTypeCheckingSupport {
         }
 
         if (GROOVY_OBJECT_TYPE.equals(leftRedirect) && isBeingCompiled(right)) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Tells if a class is one of the "accept all" classes as the left hand side of an
+     * assignment.
+     * @param node the classnode to test
+     * @return true if it's an Object, String, boolean, Boolean or Class.
+     */
+    public static boolean isWildcardLeftHandSide(final ClassNode node) {
+        if (OBJECT_TYPE.equals(node) ||
+            STRING_TYPE.equals(node) ||
+            boolean_TYPE.equals(node) ||
+            Boolean_TYPE.equals(node) ||
+            CLASS_Type.equals(node)) {
             return true;
         }
         return false;
@@ -1036,6 +1045,15 @@ public abstract class StaticTypeCheckingSupport {
                                 toBeRemoved.add(two);
                             } else if (twoRT.isDerivedFrom(oneRT) || twoRT.implementsInterface(oneRT)) {
                                 toBeRemoved.add(one);
+                            }
+                        } else {
+                            // this is an imperfect solution to determining if two methods are
+                            // equivalent, for example String#compareTo(Object) and String#compareTo(String)
+                            // in that case, Java marks the Object version as synthetic
+                            if (one.isSynthetic() && !two.isSynthetic()) {
+                                toBeRemoved.add(one);
+                            } else if (two.isSynthetic() && !one.isSynthetic()) {
+                                toBeRemoved.add(two);
                             }
                         }
                     }
