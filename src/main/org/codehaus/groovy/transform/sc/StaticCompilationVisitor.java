@@ -30,7 +30,6 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.transform.stc.StaticTypeCheckingSupport;
 import org.codehaus.groovy.transform.stc.StaticTypeCheckingVisitor;
 import org.codehaus.groovy.transform.stc.StaticTypesMarker;
-import org.codehaus.groovy.transform.stc.TypeCheckerPluginFactory;
 import org.objectweb.asm.Opcodes;
 
 import java.util.*;
@@ -68,8 +67,8 @@ public class StaticCompilationVisitor extends StaticTypeCheckingVisitor {
 
     private ClassNode classNode;
 
-    public StaticCompilationVisitor(final SourceUnit unit, final ClassNode node, final TypeCheckerPluginFactory pluginFactory) {
-        super(unit, node, pluginFactory);
+    public StaticCompilationVisitor(final SourceUnit unit, final ClassNode node) {
+        super(unit, node);
     }
 
     @Override
