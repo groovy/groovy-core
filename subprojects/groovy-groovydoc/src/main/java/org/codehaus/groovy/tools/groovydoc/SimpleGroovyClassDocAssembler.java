@@ -599,9 +599,11 @@ public class SimpleGroovyClassDocAssembler extends VisitorAdapter implements Gro
         String typeName = buildName(typeNode);
         if (typeName.indexOf("/") == -1) {
             String slashName = "/" + typeName;
-            for (String name : importedClassesAndPackages) {
+            for (int i = importedClassesAndPackages.size()-1; i >=0; i--) {
+            	String name = importedClassesAndPackages.get(i);
                 if (name.endsWith(slashName)) {
                     typeName = name;
+                    break;
                 }
             }
         }
