@@ -27,7 +27,6 @@ import org.codehaus.groovy.classgen.asm.InvocationWriter;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.InvokerInvocationException;
 import org.objectweb.asm.Opcodes;
@@ -58,7 +57,11 @@ public class GroovyTypeCheckingExtensionSupport extends TypeCheckingExtension {
                 put("methodNotFound", "handleMissingMethod");
                 put("afterVisitMethod", "afterVisitMethod");
                 put("beforeVisitMethod", "beforeVisitMethod");
+                put("afterVisitClass", "afterVisitClass");
+                put("beforeVisitClass", "beforeVisitClass");
                 put("incompatibleAssignment", "handleIncompatibleAssignment");
+                put("setup","setup");
+                put("finish", "finish");
             }}
     );
 
@@ -112,10 +115,26 @@ public class GroovyTypeCheckingExtensionSupport extends TypeCheckingExtension {
             );
             parse.extension = this;
             parse.run();
+            List<Closure> list = eventHandlers.get("setup");
+            if (list != null) {
+                for (Closure closure : list) {
+                    safeCall(closure);
+                }
+            }
         } catch (CompilationFailedException e) {
             throw new GroovyBugError("An unexpected error was thrown during custom type checking", e);
         } catch (UnsupportedEncodingException e) {
             throw new GroovyBugError("Unsupported encoding found in compiler configuration", e);
+        }
+    }
+
+    @Override
+    public void finish() {
+        List<Closure> list = eventHandlers.get("finish");
+        if (list != null) {
+            for (Closure closure : list) {
+                safeCall(closure);
+            }
         }
     }
 
@@ -196,70 +215,23 @@ public class GroovyTypeCheckingExtensionSupport extends TypeCheckingExtension {
     }
 
     public void delegatesTo(ClassNode type) {
-        typeCheckingVisitor.typeCheckingContext.delegationMetadata = new DelegationMetadata(type, Closure.OWNER_FIRST);
+        delegatesTo(type, Closure.OWNER_FIRST);
     }
 
     public void delegatesTo(ClassNode type, int strategy) {
-        typeCheckingVisitor.typeCheckingContext.delegationMetadata = new DelegationMetadata(type, strategy);
+        delegatesTo(type, strategy, typeCheckingVisitor.typeCheckingContext.delegationMetadata);
     }
 
     public void delegatesTo(ClassNode type, int strategy, DelegationMetadata parent) {
         typeCheckingVisitor.typeCheckingContext.delegationMetadata = new DelegationMetadata(type, strategy, parent);
     }
 
-    /**
-     * Compares the value of an AST node property with an expected value. This method handles ClassNode instances
-     * differently, allowing the user to use a Class instead of a ClassNode (for improved readability).
-     *
-     * @param property property to be used as a reference
-     * @param value    value to compare with. May be a Class if the property is a ClassNode.
-     * @return true if both values are equal
-     */
-    private boolean nullSafeEqualsClassNodeAware(Object property, Object value) {
-        if (property == null) return value == null;
-        if (property instanceof ClassNode && value instanceof Class) {
-            return nullSafeEqualsClassNodeAware(property, ClassHelper.make((Class) value));
-        }
-        return property.equals(value);
+    public boolean isAnnotatedBy(ASTNode node, Class annotation) {
+        return isAnnotatedBy(node, ClassHelper.make(annotation));
     }
 
-    /**
-     * This method is used to provide an easy syntax to check if an AST node matches some predicate.
-     *
-     * @param node       the target node
-     * @param predicates a map of predicates, for which the key is a property name and the value is either a value to
-     *                   compare with, or a predicate in the form of a closure
-     * @return <code>boolean</code> true if the node matches all predicates
-     */
-    public <R> R ifMatches(Map<String, ?> predicates, ASTNode node, Closure<R> code) {
-        boolean match = true;
-        Map properties = DefaultGroovyMethods.getProperties(node);
-        for (Map.Entry<String, ?> entry : predicates.entrySet()) {
-            String propertyName = entry.getKey();
-            if (!properties.containsKey(propertyName)) {
-                match = false;
-            } else {
-                Object value = properties.get(propertyName);
-                Object predicate = entry.getValue();
-                if (predicate instanceof Closure) {
-                    Closure clone = ((Closure) predicate).rehydrate(value, this, this);
-                    clone.setResolveStrategy(Closure.DELEGATE_FIRST);
-                    Object result = clone.call(value);
-                    if (result instanceof Boolean) {
-                        match = (Boolean) result;
-                    } else {
-                        match = result == null ? false : DefaultGroovyMethods.asType(result, Boolean.class);
-                    }
-                } else {
-                    match = nullSafeEqualsClassNodeAware(value, predicate);
-                }
-            }
-            if (!match) break;
-        }
-        if (match) {
-            return code.call();
-        }
-        return null;
+    public boolean isAnnotatedBy(ASTNode node, ClassNode annotation) {
+        return node instanceof AnnotatedNode && !((AnnotatedNode)node).getAnnotations(annotation).isEmpty();
     }
 
     public boolean isDynamic(VariableExpression var) {
@@ -362,6 +334,28 @@ public class GroovyTypeCheckingExtensionSupport extends TypeCheckingExtension {
     }
 
     @Override
+    public boolean beforeVisitClass(final ClassNode node) {
+        setHandled(false);
+        List<Closure> list = eventHandlers.get("beforeVisitClass");
+        if (list != null) {
+            for (Closure closure : list) {
+                safeCall(closure, node);
+            }
+        }
+        return handled;
+    }
+
+    @Override
+    public void afterVisitClass(final ClassNode node) {
+        List<Closure> list = eventHandlers.get("afterVisitClass");
+        if (list != null) {
+            for (Closure closure : list) {
+                safeCall(closure, node);
+            }
+        }
+    }
+
+    @Override
     public boolean beforeVisitMethod(final MethodNode node) {
         setHandled(false);
         List<Closure> list = eventHandlers.get("beforeVisitMethod");
@@ -370,7 +364,7 @@ public class GroovyTypeCheckingExtensionSupport extends TypeCheckingExtension {
                 safeCall(closure, node);
             }
         }
-        return false;
+        return handled;
     }
 
     @Override
@@ -416,12 +410,24 @@ public class GroovyTypeCheckingExtensionSupport extends TypeCheckingExtension {
         if (argTypes.length != classes.length) return false;
         boolean match = true;
         for (int i = 0; i < argTypes.length && match; i++) {
-            match = argTypes[i].equals(ClassHelper.make(classes[i]));
+            match = matchWithOrWithourBoxing(argTypes[i], classes[i]);
         }
         return match;
     }
 
-    public boolean argTypeMatches(MethodCall call, Class... classes) {
+    private boolean matchWithOrWithourBoxing(final ClassNode argType, final Class aClass) {
+        final boolean match;
+        ClassNode type = ClassHelper.make(aClass);
+        if (ClassHelper.isPrimitiveType(type) && !ClassHelper.isPrimitiveType(argType)) {
+            type = ClassHelper.getWrapper(type);
+        } else if (ClassHelper.isPrimitiveType(argType) && !ClassHelper.isPrimitiveType(type)) {
+            type = ClassHelper.getUnwrapper(type);
+        }
+        match = argType.equals(type);
+        return match;
+    }
+
+    public boolean argTypesMatches(MethodCall call, Class... classes) {
         ArgumentListExpression argumentListExpression = InvocationWriter.makeArgumentList(call.getArguments());
         ClassNode[] argumentTypes = typeCheckingVisitor.getArgumentTypes(argumentListExpression);
         return argTypesMatches(argumentTypes, classes);
@@ -429,10 +435,10 @@ public class GroovyTypeCheckingExtensionSupport extends TypeCheckingExtension {
 
     public boolean firstArgTypesMatches(ClassNode[] argTypes, Class... classes) {
         if (classes == null) return argTypes == null || argTypes.length == 0;
+        if (argTypes.length<classes.length) return false;
         boolean match = true;
-        int minNumOfArgs = Math.min(argTypes.length, classes.length);
-        for (int i = 0; i < minNumOfArgs && match; i++) {
-            match = argTypes[i].equals(ClassHelper.make(classes[i]));
+        for (int i = 0; i < classes.length && match; i++) {
+            match = matchWithOrWithourBoxing(argTypes[i], classes[i]);
         }
         return match;
     }
@@ -445,7 +451,7 @@ public class GroovyTypeCheckingExtensionSupport extends TypeCheckingExtension {
 
     public boolean argTypeMatches(ClassNode[] argTypes, int index, Class clazz) {
         if (index >= argTypes.length) return false;
-        return argTypes[index].equals(ClassHelper.make(clazz));
+        return matchWithOrWithourBoxing(argTypes[index], clazz);
     }
 
     public boolean argTypeMatches(MethodCall call, int index, Class clazz) {
@@ -457,7 +463,7 @@ public class GroovyTypeCheckingExtensionSupport extends TypeCheckingExtension {
     @SuppressWarnings("unchecked")
     public <R> R withTypeChecker(Closure<R> code) {
         Closure<R> clone = (Closure<R>) code.clone();
-        clone.setDelegate(code);
+        clone.setDelegate(typeCheckingVisitor);
         clone.setResolveStrategy(Closure.DELEGATE_FIRST);
         return clone.call();
     }
