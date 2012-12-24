@@ -326,24 +326,37 @@ public class ClassCompletionVerifier extends ClassCodeVisitorSupport {
             if (!method.getDeclaringClass().equals(node.getDeclaringClass())) continue;
             Parameter[] p1 = node.getParameters();
             Parameter[] p2 = method.getParameters();
-            if (p1.length != p2.length) continue;
-            addErrorIfParamsAndReturnTypeEqual(p2, p1, node, method);
+            addErrorIfMethodSignatureOverlap(p2, p1, node, method);
         }
     }
-
-    private void addErrorIfParamsAndReturnTypeEqual(Parameter[] p2, Parameter[] p1,
-                                                    MethodNode node, MethodNode element) {
-        boolean isEqual = true;
-        for (int i = 0; i < p2.length; i++) {
-            isEqual &= p1[i].getType().equals(p2[i].getType());
-            if (!isEqual) break;
-        }
-        isEqual &= node.getReturnType().equals(element.getReturnType());
-        if (isEqual) {
-            addError("Repetitive method name/signature for " + getDescription(node) +
-                    " in " + getDescription(currentClass) + ".", node);
-        }
-    }
+    
+    private void addErrorIfMethodSignatureOverlap(Parameter[] p2, Parameter[] p1,
+    												MethodNode node, MethodNode element) {
+		if (node.getName().equals(element.getName()))
+		{
+			// Method names equal
+			if (p1.length != p2.length)
+				return;
+			   
+			// Check for no arguments AND differing return types scenario
+			boolean isEqual = true;
+			if (!(p1.length == 0 && p2.length == 0
+				&& !node.getReturnType().equals(element.getReturnType())))
+			{
+ 				// Check for matching parameter lists
+				for (int i = 0; i < p2.length; i++) {
+					isEqual &= p1[i].getType().equals(p2[i].getType());
+				}
+			}
+		   
+			if (isEqual)
+			{
+				// Method signatures overlap
+				addError("Repetitive method name/signature for " + getDescription(node) +
+					" in " + getDescription(currentClass) + ".", node);
+			}
+		}											
+	}
 
     public void visitField(FieldNode node) {
         if (currentClass.getDeclaredField(node.getName()) != node) {
