@@ -285,4 +285,9 @@ public class Node implements Writable {
             }
         }
     }
+
+    @Override
+    public String toString() {
+        return text();
+    }
 }
