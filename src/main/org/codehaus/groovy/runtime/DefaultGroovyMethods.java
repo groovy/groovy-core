@@ -1564,6 +1564,72 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
         return false;
     }
 
+    public static class GreppedIterator<T> implements Iterator<T> {
+        private Iterator<T> delegate ;
+        private T next ;
+        private Object filter ;
+
+        public GreppedIterator( Iterator<T> delegate, Object filter ) {
+            this.delegate = delegate ;
+            this.filter = filter ;
+            this.next = loadNext() ;
+        }
+
+        private T loadNext() {
+            T localNext = null ;
+            MetaClass filterMetaClass = InvokerHelper.getMetaClass( filter ) ;
+            while( localNext == null && delegate.hasNext() ) {
+                T object = delegate.next() ;
+                if( DefaultTypeTransformation.castToBoolean( filterMetaClass.invokeMethod( filter, "isCase", object ) ) ) {
+                    localNext = object ;
+                }
+            }
+            return localNext ;
+        }
+
+        public boolean hasNext() {
+            return this.next != null ;
+        }
+
+        public T next() {
+            T ret = this.next ;
+            this.next = loadNext() ;
+            return ret ;
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException() ;
+        }
+    }
+
+    /**
+     * Takes an Iterator and a filter, and returns a new Iterator which will return only those
+     * objects which match the given filter - calling the <code>{@link #isCase(java.lang.Object, java.lang.Object)}</code>
+     * method used by switch statements.  This method can be used with different
+     * kinds of filters like regular expressions, classes, ranges etc.  It should be noted that this
+     * method will advance the passed Iterator by at least one element, as it caches the next valid item internally.
+     * Example:
+     *
+     * <pre class="groovyTestCase">
+     * // Collect is required as grep and take both return an Iterator when called on an Iterator
+     * assert [ 'a', 'aa' ] == ['a', 'b', 'aa', 'bc', 3, 4.5].iterator().grep( ~/a+/ ).collect()
+     * assert [ 'aa' ]      == ['a', 'b', 'aa', 'bc', 3, 4.5].iterator().grep( ~/../ ).take( 1 ).collect()
+     * assert [ 3, 4.5 ]    == ['a', 'b', 'aa', 'bc', 3, 4.5].iterator().grep( Number ).collect()
+     * assert [ 'a', 'b' ]  == ['a', 'b', 'aa', 'bc', 3, 4.5].iterator().grep{ it.toString().size() == 1 }.take( 2 ).collect()
+     *
+     * def a = 1
+     * def iter = [ hasNext:{ true }, next:{ a++ } ] as Iterator
+     * def oddIter = iter.grep { it % 2 }
+     * assert [ 1, 3, 5 ] == oddIter.take( 3 ).collect()
+     * </pre>
+     * @param self   the Iterator we wish to filter.
+     * @param filter the filter to perform on the object (using the {@link #isCase(java.lang.Object, java.lang.Object)} method).
+     * @return a new Iterator which will just return items in the original that match the filter.
+     */
+    public static <T> Iterator<T> grep( Iterator<T> self, Object filter ) {
+        return new GreppedIterator<T>( self, filter ) ;
+    }
+
     /**
      * Iterates over the collection of items which this Object represents and returns each item that matches
      * the given filter - calling the <code>{@link #isCase(java.lang.Object, java.lang.Object)}</code>
