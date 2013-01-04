@@ -8203,19 +8203,10 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.5.0
      */
     public static <T> Set<T> minus(Set<T> self, Collection<?> removeMe) {
-        Comparator comparator = (self instanceof SortedSet) ? ((SortedSet) self).comparator() : null;
         final Set<T> ansSet = createSimilarSet(self);
         ansSet.addAll(self);
-        if (removeMe != null) {
-            for (T o1 : self) {
-                for (Object o2 : removeMe) {
-                    boolean areEqual = (comparator != null) ? (comparator.compare(o1, o2) == 0) : coercedEquals(o1, o2);
-                    if (areEqual) {
-                        ansSet.remove(o1);
-                    }
-                }
-            }
-        }
+        for (Object o : removeMe)
+            ansSet.remove(o);
         return ansSet;
     }
 
