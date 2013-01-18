@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2010 the original author or authors.
+ * Copyright 2003-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,18 +18,22 @@ package groovy.inspect.swingui
 
 import groovy.text.GStringTemplateEngine
 import groovy.text.Template
-import java.util.concurrent.atomic.AtomicBoolean
 import org.codehaus.groovy.GroovyBugError
+import org.codehaus.groovy.ast.*
+import org.codehaus.groovy.ast.expr.*
+import org.codehaus.groovy.ast.stmt.*
 import org.codehaus.groovy.classgen.BytecodeExpression
 import org.codehaus.groovy.classgen.GeneratorContext
+import org.codehaus.groovy.control.CompilationFailedException
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilationUnit.PrimaryClassNodeOperation
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.SourceUnit
-import org.codehaus.groovy.ast.*
-import org.codehaus.groovy.ast.expr.*
-import org.codehaus.groovy.ast.stmt.*
-import org.codehaus.groovy.control.CompilationFailedException
+
+import java.lang.reflect.Field
+import java.security.AccessController
+import java.security.PrivilegedAction
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * This class controls the conversion from a Groovy script as a String into
@@ -46,6 +50,8 @@ import org.codehaus.groovy.control.CompilationFailedException
  * @author Roshan Dawrani
  */
 class ScriptToTreeNodeAdapter {
+
+    static final String FIELD_META_DATA_MAP = 'metaDataMap'
 
     static Properties classNameToStringForm
     boolean showScriptFreeForm, showScriptClass
@@ -125,7 +131,7 @@ class ScriptToTreeNodeAdapter {
      * Creates the property table for the node so that the properties view can display nicely.
      */
     private List<List<String>> getPropertyTable(node) {
-        node.metaClass.properties?.
+        List<List<String>> propertyTable = node.metaClass.properties?.
             findAll { it.getter }?.
             collect {
                 def name = it.name.toString()
@@ -147,8 +153,44 @@ class ScriptToTreeNodeAdapter {
                 }
                 def type = it.type.simpleName.toString()
                 [name, value, type]
-            }?.
-            sort() { it[0] }
+            }
+
+        if (propertyTable == null) propertyTable = []
+
+        if (node instanceof ASTNode)  {
+            List<List<String>> metaDataMapRows = getMetaDataMapTable(node)
+            if (metaDataMapRows) propertyTable.addAll metaDataMapRows
+        }
+
+        propertyTable.sort { it[0] }
+    }
+
+    /**
+     * Creates a table from the <em>org.codehaus.groovy.ast.ASTNode#metaDataMap</em> map entries.
+     *
+     * @param node the current {@link ASTNode}
+     * @return a list of string lists each representing a "table row"
+     */
+    private List<List<String>> getMetaDataMapTable(ASTNode node) {
+        try {
+            Field metaDataMapField = AccessController.doPrivileged(new PrivilegedAction<Field>() {
+                public Field run() {
+                    Field field = ASTNode.class.getDeclaredField(FIELD_META_DATA_MAP)
+                    field.accessible = true
+                    field
+                }
+            });
+
+            def metaDataMap = metaDataMapField.get(node)
+            if (metaDataMap != null) {
+                return metaDataMap.collect { key, value ->
+                    [ "${FIELD_META_DATA_MAP}[${key}]" as String, value as String, value != null ? value.class.name : "null"]
+                }
+            }
+
+        } catch (SecurityException ex) { /* ignore strict security managers */ }
+
+        return []
     }
 
     /**

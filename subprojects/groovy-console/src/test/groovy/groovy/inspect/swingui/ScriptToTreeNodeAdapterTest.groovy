@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2012 the original author or authors.
+ * Copyright 2003-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,14 @@
  */
 package groovy.inspect.swingui
 
-import org.codehaus.groovy.control.Phases
-import javax.swing.tree.TreeNode
 import junit.framework.AssertionFailedError
+import org.codehaus.groovy.ast.ClassNode
+import org.codehaus.groovy.ast.Parameter
+import org.codehaus.groovy.control.CompilationUnit
+import org.codehaus.groovy.control.Phases
+import org.codehaus.groovy.transform.stc.StaticTypesMarker
+
+import javax.swing.tree.TreeNode
 
 /**
  * Unit test for ScriptToTreeNodeAdapter.
@@ -467,5 +472,34 @@ public class ScriptToTreeNodeAdapterTest extends GroovyTestCase {
                 )
         }
     }
-    
+
+    public void testStaticCompileScript() {
+        def adapter = createAdapter(false, false)
+        def scriptName = "script" + System.currentTimeMillis() + ".groovy"
+
+        CompilationUnit cu = new CompilationUnit()
+        cu.addSource(scriptName, """
+                        @groovy.transform.CompileStatic
+                        class A {
+                            def test() {
+                                return 42
+                            }
+                        }""")
+
+        cu.compile(Phases.INSTRUCTION_SELECTION)
+
+        final classNode = cu.getAST().getClass('A')
+        final methodNode = classNode.getMethod('test', [] as Parameter[])
+
+        final propertyTable = adapter.getPropertyTable(methodNode)
+
+        final key = "${ScriptToTreeNodeAdapter.FIELD_META_DATA_MAP}[${StaticTypesMarker.INFERRED_RETURN_TYPE}]" as String
+
+        def inferredReturnType = propertyTable.find { it[0] == key }
+        assert inferredReturnType
+
+        assert inferredReturnType[0] == key
+        assert inferredReturnType[1] == "int"
+        assert inferredReturnType[2] == ClassNode.name
+    }
 }
