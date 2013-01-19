@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2012 the original author or authors.
+ * Copyright 2008-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,6 +90,25 @@ import java.lang.annotation.Target;
  * <pre>
  * NamedThing()
  * </pre>
+ * <p/>
+ * By default the fully-qualified class name is used as part of the generated toString.
+ * If you want to exclude the package, you can set the includePackage flag to false, e.g.:
+ * <pre>
+ * package my.company
+ * import groovy.transform.ToString
+ * {@code @ToString(includePackage = false)} class NamedThing {
+ *     String name
+ * }
+ * println new NamedThing(name: "Lassie")
+ * </pre>
+ * Which results in:
+ * <pre>
+ * NamedThing(name: Lassie)
+ * </pre>
+ * If the includePackage flag is {@code true} (the default), then the output will be:
+ * <pre>
+ * my.company.NamedThing(name: Lassie)
+ * </pre>
  *
  * @author Paul King
  * @author Andre Steingress
@@ -135,4 +154,19 @@ public @interface ToString {
      * Don't display any fields or properties with value <tt>null</tt>.
      */
     boolean ignoreNulls() default false;
+
+    /**
+     * Whether to include the fully-qualified class name (i.e. including
+     * the package) or just the simple class name in the generated toString.
+     * @since 2.0.6
+     */
+    boolean includePackage() default true;
+
+    /**
+     * Whether to cache toString() calculations. You should only set this to true if
+     * you know the object is immutable (or technically mutable but never changed).
+     * @since 2.1.0
+     */
+    boolean cache() default false;
+
 }

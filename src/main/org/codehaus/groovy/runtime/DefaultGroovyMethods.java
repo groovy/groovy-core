@@ -4893,10 +4893,8 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     public static <T> List<T> getAt(List<T> self, Collection indices) {
         List<T> answer = new ArrayList<T>(indices.size());
         for (Object value : indices) {
-            if (value instanceof Range) {
-                answer.addAll(getAt(self, (Range) value));
-            } else if (value instanceof List) {
-                answer.addAll(getAt(self, (List) value));
+            if (value instanceof Range || value instanceof Collection) {
+                answer.addAll((List<T>)InvokerHelper.invokeMethod(self, "getAt", value));
             } else {
                 int idx = DefaultTypeTransformation.intUnbox(value);
                 answer.add(getAt(self, idx));

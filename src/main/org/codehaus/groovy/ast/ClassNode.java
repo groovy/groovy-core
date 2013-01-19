@@ -325,6 +325,7 @@ public class ClassNode extends AnnotatedNode implements Opcodes {
         if (!usesGenerics && interfaces!=null) {
             for (ClassNode anInterface : interfaces) {
                 usesGenerics = usesGenerics || anInterface.isUsingGenerics();
+                if (usesGenerics) break;
             }
         }
         this.methods = new MapOfLists();
@@ -1400,6 +1401,8 @@ public class ClassNode extends AnnotatedNode implements Opcodes {
 
     public void addTransform(Class<? extends ASTTransformation> transform, ASTNode node) {
         GroovyASTTransformation annotation = transform.getAnnotation(GroovyASTTransformation.class);
+        if (annotation == null) return;
+
         Set<ASTNode> nodes = getTransformInstances().get(annotation.phase()).get(transform);
         if (nodes == null) {
             nodes = new LinkedHashSet<ASTNode>();

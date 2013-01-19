@@ -113,14 +113,15 @@ public class StaticInvocationWriter extends InvocationWriter {
     @Override
     protected boolean writeDirectMethodCall(final MethodNode target, final boolean implicitThis, final Expression receiver, final TupleExpression args) {
         if (target instanceof ExtensionMethodNode) {
-            MethodNode node = ((ExtensionMethodNode) target).getExtensionMethodNode();
+            ExtensionMethodNode emn = (ExtensionMethodNode) target;
+            MethodNode node = emn.getExtensionMethodNode();
             String methodName = target.getName();
 
             MethodVisitor mv = controller.getMethodVisitor();
             int argumentsToRemove = 0;
             List<Expression> argumentList = new LinkedList<Expression>(args.getExpressions());
 
-            if (receiver instanceof ClassExpression) {
+            if (emn.isStaticExtension()) {
                 // it's a static extension method
                 argumentList.add(0, ConstantExpression.NULL);
             } else {
@@ -179,7 +180,11 @@ public class StaticInvocationWriter extends InvocationWriter {
                     Map<MethodNode, MethodNode> bridges = (Map<MethodNode, MethodNode>) declaringClass.redirect().getNodeMetaData(PRIVATE_BRIDGE_METHODS);
                     MethodNode bridge = bridges.get(target);
                     if (bridge != null) {
-                        return writeDirectMethodCall(bridge, implicitThis, receiver, args);
+                        ArgumentListExpression newArgs = new ArgumentListExpression(target.isStatic()?new ConstantExpression(null):receiver);
+                        for (Expression expression : args.getExpressions()) {
+                            newArgs.addExpression(expression);
+                        }
+                        return writeDirectMethodCall(bridge, implicitThis, receiver, newArgs);
                     }
                 }
                 if (declaringClass != classNode) {
