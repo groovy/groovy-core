@@ -20,6 +20,7 @@ import groovy.util.GroovyTestCase;
 class StringGroovyMethodsTest extends GroovyTestCase {
 
     void testModFormatString() {
+        assert 'one: 1' == 'one: %d' % 1
         assert 'one: 1' == '%s: %d' % ['one', 1]
         assert 'two: 2' == '%s: %d' % (['two', 2] as Object[])
     }
