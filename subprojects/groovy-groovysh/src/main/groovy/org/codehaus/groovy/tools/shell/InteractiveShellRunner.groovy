@@ -22,6 +22,7 @@ import jline.History
 import jline.Completor
 import jline.MultiCompletor
 
+import org.codehaus.groovy.tools.shell.commands.ImportCommand
 import org.codehaus.groovy.tools.shell.util.Logger
 
 /**
@@ -47,10 +48,16 @@ class InteractiveShellRunner
         
         this.reader = new ConsoleReader(shell.io.inputStream, new PrintWriter(shell.io.outputStream, true))
 
-        reader.addCompletor(new ReflectionCompletor(shell))
         this.completor = new CommandsMultiCompletor()
         
-        reader.addCompletor(completor)
+        ImportCommand iCom = (ImportCommand) shell.registry.find('import')
+        String[] classes = iCom.classNameCompletor.getCandidates()
+
+        def wordCompletor = new MultiCompletor([
+                // reflectionCompletor completes properties if last char was dot, else variables and some keywords
+                new ReflectionCompletor(shell, classes),
+                this.completor])
+        reader.addCompletor(wordCompletor)
     }
     
     void run() {

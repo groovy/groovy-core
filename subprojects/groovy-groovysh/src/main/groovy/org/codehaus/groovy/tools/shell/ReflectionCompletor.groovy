@@ -3,19 +3,52 @@ package org.codehaus.groovy.tools.shell
 import jline.Completor
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
 import org.codehaus.groovy.runtime.InvokerHelper
+import org.codehaus.groovy.runtime.MethodClosure
+
+import java.lang.reflect.Field
+import java.lang.reflect.Method
+import java.lang.reflect.Modifier
+import java.util.regex.Matcher
+import java.util.regex.Pattern
 
 /**
- * Implements the Completor interface to provide competions for
- * GroovyShell by using reflection on global variables.
+ * Implements the Completor interface to provide completions for
+ * GroovyShell by using reflection on global variables, global
+ * variable names, keywords, and imported Classes
  *
  * @author <a href="mailto:probabilitytrees@gmail.com">Marty Saxton</a>
  */
 class ReflectionCompletor implements Completor {
 
-    private Shell shell;
+    private Groovysh shell;
+    protected String[] classes;
+    protected List<String> preimportedClassNames = [];
 
-    ReflectionCompletor(Shell shell) {
+    ReflectionCompletor(Shell shell, String[] classes) {
         this.shell = shell
+        this.classes = classes
+        preimportedClassNames = matchingClassnames("^(java\\.(lang|io|math|net|util)|groovy\\.(lang|util))", classes)unique()
+    }
+
+    /**
+     * Returns the base names of all classes that have a package name matching the regex pattern
+     * @param packagePattern
+     * @param classes
+     * @return
+     */
+    protected matchingClassnames(String packagePattern, classes) {
+        List<String> result = []
+        Pattern preimportPattern = java.util.regex.Pattern.compile(packagePattern)
+        Pattern classnamePattern = java.util.regex.Pattern.compile("\\.[A-Z][^.\$_]+\$")
+        for (String clazz : classes) {
+            if (preimportPattern.matcher(clazz)) {
+                Matcher matcher = classnamePattern.matcher(clazz)
+                if (matcher.find()) {
+                    result.add(clazz.substring(matcher.start() + 1))
+                }
+            }
+        }
+        return result
     }
 
     int complete(String buffer, int cursor, List candidates) {
@@ -28,6 +61,7 @@ class ReflectionCompletor implements Completor {
         if (lastDot == -1 ) {
             if (identifierStart != -1) {
                 List myCandidates = findMatchingVariables(identifierPrefix)
+                myCandidates.addAll(findMatchingImportedClasses(identifierPrefix, shell.imports))
                 if (myCandidates.size() > 0) {
                     candidates.addAll(myCandidates)
                     return identifierStart
@@ -119,6 +153,46 @@ class ReflectionCompletor implements Completor {
         for (String varName in shell.interp.context.variables.keySet())
             if (varName.startsWith(prefix))
                 matches << varName
+        return matches
+    }
+
+    /**
+     * Build a list of imported classes defined in the shell that
+     * match a given prefix.
+     * @param prefix the prefix to match
+     * @return the list of variables that match the prefix
+     */
+    List<String> findMatchingImportedClasses(String prefix, List<String> imports) {
+        def matches = []
+        // preimported names
+        for (String varName in preimportedClassNames) {
+            if (varName.startsWith(prefix)) {
+                matches << varName
+            }
+        }
+        List<String> classnames = []
+        // imported names, build pattern to use when looping over all known classes
+        StringBuilder pattern = new StringBuilder("(")
+        int counter = 0
+        for(String importSpec in imports) {
+            if (importSpec.contains('*')) {
+                // can be a Classname, * or static property import or "as"
+                pattern.append(importSpec.substring('import '.length()).replace(".", "\\.").replace("*", "[^.\$_]+\$"))
+                counter++
+                if (counter < imports.size()) {
+                    pattern.append("|")
+                }
+            } else {
+                classnames << importSpec.substring(importSpec.lastIndexOf('.') + 1)
+            }
+        }
+        pattern.append(")")
+        for (String varName in classnames) {
+            if (varName.startsWith(prefix)) {
+                matches << varName
+            }
+        }
+
         return matches
     }
 }
