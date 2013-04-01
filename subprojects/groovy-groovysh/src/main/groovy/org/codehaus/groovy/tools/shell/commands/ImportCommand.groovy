@@ -16,15 +16,14 @@
 
 package org.codehaus.groovy.tools.shell.commands
 
-import jline.ArgumentCompletor
-import jline.NullCompletor
-
 import org.codehaus.groovy.control.CompilationFailedException
 
 import org.codehaus.groovy.tools.shell.CommandSupport
+import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.Shell
+import org.codehaus.groovy.tools.shell.util.Logger
 import org.codehaus.groovy.tools.shell.util.SimpleCompletor
-import org.codehaus.groovy.tools.shell.util.ClassNameCompletor
+import jline.ClassNameCompletor
 
 /**
  * The 'import' command.
@@ -35,14 +34,17 @@ import org.codehaus.groovy.tools.shell.util.ClassNameCompletor
 class ImportCommand
     extends CommandSupport
 {
-    ImportCommand(final Shell shell) {
+    def ClassNameCompletor classNameCompletor;
+
+    ImportCommand(final Groovysh shell) {
         super(shell, 'import', '\\i')
+        this.classNameCompletor = new ClassNameCompletor()
     }
-    
+
     protected List createCompletors() {
-        return [
-            new ImportCommandCompletor(shell.interp.classLoader),
-            null
+        return [classNameCompletor,
+                new SimpleCompletor('as'),
+                null
         ]
     }
     
@@ -80,23 +82,5 @@ class ImportCommand
             // Remove the class generated while testing the import syntax
             classLoader.classCache.remove(type?.name)
         }
-    }
-}
-
-/**
- * Completor for the 'import' command.
- *
- * @version $Id$
- * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
- */
-class ImportCommandCompletor
-    extends ArgumentCompletor
-{
-    ImportCommandCompletor(final GroovyClassLoader classLoader) {
-        super([
-            new ClassNameCompletor(classLoader),
-            new SimpleCompletor('as'),
-            new NullCompletor()
-        ])
     }
 }
