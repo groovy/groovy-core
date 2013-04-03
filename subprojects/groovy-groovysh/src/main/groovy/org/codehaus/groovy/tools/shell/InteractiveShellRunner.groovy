@@ -23,6 +23,7 @@ import jline.Completor
 import jline.MultiCompletor
 
 import org.codehaus.groovy.tools.shell.util.Logger
+import org.codehaus.groovy.tools.shell.util.WrappedInputStream
 
 /**
  * Support for running a {@link Shell} interactively using the JLine library.
@@ -39,13 +40,14 @@ class InteractiveShellRunner
     final Closure prompt
     
     final CommandsMultiCompletor completor
+    WrappedInputStream wrappedInputStream
     
     InteractiveShellRunner(final Shell shell, final Closure prompt) {
         super(shell)
         
         this.prompt = prompt
-        
-        this.reader = new ConsoleReader(shell.io.inputStream, new PrintWriter(shell.io.outputStream, true))
+        this.wrappedInputStream = new WrappedInputStream(shell.io.inputStream)
+        this.reader = new ConsoleReader(wrappedInputStream, new PrintWriter(shell.io.outputStream, true))
 
         reader.addCompletor(new ReflectionCompletor(shell))
         this.completor = new CommandsMultiCompletor()
@@ -86,9 +88,9 @@ class InteractiveShellRunner
     
     protected String readLine() {
         try {
-            return reader.readLine(prompt.call())
-        }
-        catch (StringIndexOutOfBoundsException e) {
+            wrappedInputStream.insert(((Groovysh)shell).getIndentPrefix())
+            return reader.readLine(prompt.call() as String)
+        } catch (StringIndexOutOfBoundsException e) {
             log.debug("HACK: Try and work around GROOVY-2152 for now", e)
 
             return "";
