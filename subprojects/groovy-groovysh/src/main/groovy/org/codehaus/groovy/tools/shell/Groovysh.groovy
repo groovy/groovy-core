@@ -21,6 +21,9 @@ import jline.History
 
 import org.codehaus.groovy.tools.shell.util.MessageSource
 import org.codehaus.groovy.tools.shell.util.XmlCommandRegistrar
+import org.codehaus.groovy.antlr.SourceBuffer
+import org.codehaus.groovy.antlr.UnicodeEscapingReader
+import org.codehaus.groovy.antlr.parser.GroovyLexer
 import org.codehaus.groovy.runtime.StackTraceUtils
 import org.codehaus.groovy.tools.shell.util.Preferences
 import org.fusesource.jansi.AnsiRenderer
@@ -52,6 +55,8 @@ class Groovysh extends Shell {
     final Interpreter interp
     
     final List imports = []
+
+    int indentSize = 2
     
     InteractiveShellRunner runner
     
@@ -212,6 +217,67 @@ class Groovysh extends Shell {
        if (GROOVYSHELL_ENV)       return  "@|bold ${GROOVYSHELL_ENV}:|@${lineNum}@|bold >|@ "
 
        return formattedPrompt
+    }
+
+    private class EndAwareGroovyLexer extends GroovyLexer {
+
+        public endReached=false
+
+        public EndAwareGroovyLexer(Reader reader) {
+            super(reader)
+        }
+
+        public int getParenLevel() {
+            return parenLevelStack.size()
+        }
+        // called by nextToken()
+        @Override
+        public void uponEOF() {
+            super.uponEOF()
+            endReached=true
+        }
+    }
+
+    /**
+     * Calculate probably desired indentation based on parenthesis balance and last char,
+     * as well as what the user used last as indentation.
+     * @return a string to indent the next line in the buffer
+     */
+    String getIndentPrefix() {
+        List<String> buffer = this.buffers.current()
+        if (buffer.size() < 1) {
+            return ""
+        }
+        StringBuilder src = new StringBuilder()
+        int lastIndent = 0
+        String lastline
+        for (String line: buffer) {
+            lastline = line
+            src.append(line + '\n')
+            // find indent of last non-empty line
+            if (line.trim().length()) {
+                lastIndent = line.find("^( )*").length()
+            }
+        }
+        boolean lastLineIsCloseParen = lastline.trim() in [")", "]", "}", ">"]
+        SourceBuffer sourceBuffer = new SourceBuffer();
+        Reader unicodeReader = new UnicodeEscapingReader(new StringReader(src.toString()), sourceBuffer);
+
+        // patching GroovyLexer to get access to Paren level and endReached
+        def lexer = new EndAwareGroovyLexer(unicodeReader);
+        unicodeReader.setLexer(lexer);
+
+        while (!lexer.endReached) {
+            lexer.nextToken()
+        }
+        int parenIndent = (lexer.getParenLevel()) * indentSize
+
+        if (lastLineIsCloseParen) {
+            // dedent after closing brackets
+            return " " * Math.max(parenIndent, 0)
+        } else {
+            return " " * Math.max(parenIndent, lastIndent)
+        }
     }
 
     public String renderPrompt() {
