@@ -240,15 +240,18 @@ class TreeNodeBuildingNodeOperation extends PrimaryClassNodeOperation {
         collectAnnotationData(child, "Annotations", classNode)
 
         if (showClosureClasses)  {
-            makeClosureClassTreeNodes(classNode.compileUnit)
+            makeClosureClassTreeNodes(classNode)
         }
     }
 
-    protected void makeClosureClassTreeNodes(CompileUnit compileUnit) {
-        if (compileUnit ==  null || !compileUnit.generatedInnerClasses) return
+    protected void makeClosureClassTreeNodes(ClassNode classNode) {
+        def compileUnit = classNode.compileUnit
+        if (!compileUnit.generatedInnerClasses) return
 
-        compileUnit.generatedInnerClasses.each { String key, InnerClassNode innerClassNode ->
+        def innerClassNodes = compileUnit.generatedInnerClasses.values()
+        innerClassNodes.each { InnerClassNode innerClassNode ->
             if (!innerClassNode.implementsInterface(ClassHelper.GENERATED_CLOSURE_Type)) return
+            if (innerClassNode.outerClass != classNode) return
 
             def child = adapter.make(innerClassNode)
             root.add(child)
