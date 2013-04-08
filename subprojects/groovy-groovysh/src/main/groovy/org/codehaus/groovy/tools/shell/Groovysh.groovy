@@ -20,6 +20,7 @@ import jline.Terminal
 import jline.History
 
 import org.codehaus.groovy.tools.shell.util.MessageSource
+import org.codehaus.groovy.tools.shell.util.PackageHelper
 import org.codehaus.groovy.tools.shell.util.XmlCommandRegistrar
 import org.codehaus.groovy.runtime.StackTraceUtils
 import org.codehaus.groovy.tools.shell.util.Preferences
@@ -59,6 +60,7 @@ class Groovysh extends Shell {
 
     boolean historyFull  // used as a workaround for GROOVY-2177
     String evictedLine  // remembers the command which will get evicted if history is full
+    PackageHelper packageHelper
 
     Groovysh(final ClassLoader classLoader, final Binding binding, final IO io, final Closure registrar) {
         super(io)
@@ -72,6 +74,9 @@ class Groovysh extends Shell {
         interp = new Interpreter(classLoader, binding)
 
         registrar.call(this)
+
+        this.packageHelper = new PackageHelper(classLoader)
+
     }
 
     private static Closure createDefaultRegistrar() {

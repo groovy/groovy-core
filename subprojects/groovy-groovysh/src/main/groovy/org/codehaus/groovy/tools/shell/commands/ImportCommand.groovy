@@ -22,8 +22,10 @@ import org.codehaus.groovy.tools.shell.CommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.Shell
 import org.codehaus.groovy.tools.shell.util.Logger
+import org.codehaus.groovy.tools.shell.util.PackageHelper
 import org.codehaus.groovy.tools.shell.util.SimpleCompletor
-import jline.ClassNameCompletor
+
+import java.util.regex.Pattern
 
 /**
  * The 'import' command.
@@ -34,15 +36,12 @@ import jline.ClassNameCompletor
 class ImportCommand
     extends CommandSupport
 {
-    def ClassNameCompletor classNameCompletor;
-
     ImportCommand(final Groovysh shell) {
         super(shell, 'import', '\\i')
-        this.classNameCompletor = new ClassNameCompletor()
     }
 
     protected List createCompletors() {
-        return [classNameCompletor,
+        return [new ImportCompletor(shell.packageHelper),
                 new SimpleCompletor('as'),
                 null
         ]
@@ -82,5 +81,58 @@ class ImportCommand
             // Remove the class generated while testing the import syntax
             classLoader.classCache.remove(type?.name)
         }
+    }
+}
+
+class ImportCompletor implements jline.Completor {
+
+    PackageHelper packageHelper
+    protected final Logger log = Logger.create(ImportCompletor.class)
+    public final static Pattern PACKNAME_PATTERN = java.util.regex.Pattern.compile("^([a-z]+(\\.[a-z]*)*(\\.[A-Z][^.\$_]*)?)?\$")
+
+
+    public ImportCompletor(PackageHelper packageHelper) {
+        this.packageHelper = packageHelper
+    }
+
+    @Override
+    int complete(String buffer, int cursor, List result) {
+        String current = buffer ? buffer.substring(0, cursor) : ""
+        if (! PACKNAME_PATTERN.matcher(current).find() || current.contains("..")) {
+            return -1
+        }
+        log.debug(buffer)
+        if (current.endsWith('.')) {
+            result.add('* ')
+            result.addAll(packageHelper.getContents(current[0..-2]).collect { String it ->filterMatches(it) })
+            return current.length()
+        }
+        String prefix
+        int lastDot = current.lastIndexOf('.')
+        if (lastDot == -1 || current == '') {
+            prefix = current
+        } else {
+            prefix = current.substring(lastDot + 1)
+        }
+
+        Set candidates = packageHelper.getContents(current.substring(0, Math.max(lastDot, 0)))
+        if (candidates == null || candidates.size() == 0) {
+            return -1
+        }
+
+        log.debug(prefix)
+        Collection<String> matches = candidates.findAll { String it -> it.startsWith(prefix) }
+        if (matches) {
+            result.addAll(matches.collect { String it -> filterMatches(it) })
+            return lastDot <= 0 ? 0 : lastDot + 1
+        }
+        return -1
+    }
+
+    def filterMatches(String it) {
+        if (it[0] in 'A' .. 'Z') {
+           return it + ' '
+        }
+        return it + '.'
     }
 }

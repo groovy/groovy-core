@@ -4,12 +4,11 @@ import jline.Completor
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.codehaus.groovy.runtime.MethodClosure
+import org.codehaus.groovy.tools.shell.util.PackageHelper
 
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
-import java.util.regex.Matcher
-import java.util.regex.Pattern
 
 /**
  * Implements the Completor interface to provide completions for
@@ -21,34 +20,13 @@ import java.util.regex.Pattern
 class ReflectionCompletor implements Completor {
 
     private Groovysh shell;
-    protected String[] classes;
-    protected List<String> preimportedClassNames = [];
+    PackageHelper packageHelper
+    List<String> preimportedClassNames = null
 
-    ReflectionCompletor(Shell shell, String[] classes) {
+
+    ReflectionCompletor(Groovysh shell, PackageHelper packageHelper) {
         this.shell = shell
-        this.classes = classes
-        preimportedClassNames = matchingClassnames("^(java\\.(lang|io|math|net|util)|groovy\\.(lang|util))", classes)unique()
-    }
-
-    /**
-     * Returns the base names of all classes that have a package name matching the regex pattern
-     * @param packagePattern
-     * @param classes
-     * @return
-     */
-    protected matchingClassnames(String packagePattern, classes) {
-        List<String> result = []
-        Pattern preimportPattern = java.util.regex.Pattern.compile(packagePattern)
-        Pattern classnamePattern = java.util.regex.Pattern.compile("\\.[A-Z][^.\$_]+\$")
-        for (String clazz : classes) {
-            if (preimportPattern.matcher(clazz)) {
-                Matcher matcher = classnamePattern.matcher(clazz)
-                if (matcher.find()) {
-                    result.add(clazz.substring(matcher.start() + 1))
-                }
-            }
-        }
-        return result
+        this.packageHelper = packageHelper
     }
 
     int complete(String buffer, int cursor, List candidates) {
@@ -164,23 +142,32 @@ class ReflectionCompletor implements Completor {
      */
     List<String> findMatchingImportedClasses(String prefix, List<String> imports) {
         def matches = []
+        if (preimportedClassNames == null) {
+            preimportedClassNames = []
+            for (packname in org.codehaus.groovy.control.ResolveVisitor.DEFAULT_IMPORTS) {
+                Set<String> packnames = packageHelper.getContents(packname[0..-2])
+                if (packnames) {
+                    preimportedClassNames.addAll(packnames.findAll{it[0] in "A".."Z"})
+                }
+            }
+            preimportedClassNames.add("BigInteger")
+            preimportedClassNames.add("BigDecimal")
+        }
         // preimported names
         for (String varName in preimportedClassNames) {
             if (varName.startsWith(prefix)) {
                 matches << varName
             }
         }
-        List<String> classnames = []
+        Set<String> classnames = [] as Set
         // imported names, build pattern to use when looping over all known classes
         StringBuilder pattern = new StringBuilder("(")
         int counter = 0
-        for(String importSpec in imports) {
-            if (importSpec.contains('*')) {
-                // can be a Classname, * or static property import or "as"
-                pattern.append(importSpec.substring('import '.length()).replace(".", "\\.").replace("*", "[^.\$_]+\$"))
-                counter++
-                if (counter < imports.size()) {
-                    pattern.append("|")
+        for (String importSpec in imports) {
+            if (importSpec.endsWith('*')) {
+                Set<String> packnames = packageHelper.getContents(importSpec.substring('import '.length()))
+                if (packnames) {
+                    classnames.addAll(packnames)
                 }
             } else {
                 classnames << importSpec.substring(importSpec.lastIndexOf('.') + 1)
