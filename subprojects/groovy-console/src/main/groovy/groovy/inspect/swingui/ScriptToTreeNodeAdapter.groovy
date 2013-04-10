@@ -248,7 +248,7 @@ class TreeNodeBuildingNodeOperation extends PrimaryClassNodeOperation {
         def compileUnit = classNode.compileUnit
         if (!compileUnit.generatedInnerClasses) return
 
-        def innerClassNodes = compileUnit.generatedInnerClasses.values()
+        def innerClassNodes = compileUnit.generatedInnerClasses.values().sort { it.name }
         innerClassNodes.each { InnerClassNode innerClassNode ->
             if (!innerClassNode.implementsInterface(ClassHelper.GENERATED_CLOSURE_Type)) return
             if (innerClassNode.outerClass != classNode) return
