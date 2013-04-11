@@ -244,14 +244,6 @@ class TreeNodeBuildingNodeOperation extends PrimaryClassNodeOperation {
         }
     }
 
-    protected ClassNode getOuterClass(InnerClassNode innerClassNode)  {
-        ClassNode outerClass = innerClassNode.outerClass
-        while (outerClass instanceof InnerClassNode)  {
-            outerClass = outerClass.outerClass
-        }
-        return outerClass
-    }
-
     protected void makeClosureClassTreeNodes(ClassNode classNode) {
         def compileUnit = classNode.compileUnit
         if (!compileUnit.generatedInnerClasses) return
@@ -259,7 +251,7 @@ class TreeNodeBuildingNodeOperation extends PrimaryClassNodeOperation {
         def innerClassNodes = compileUnit.generatedInnerClasses.values().sort { it.name }
         innerClassNodes.each { InnerClassNode innerClassNode ->
             if (!innerClassNode.implementsInterface(ClassHelper.GENERATED_CLOSURE_Type)) return
-            if (getOuterClass(innerClassNode) != classNode) return
+            if (innerClassNode.outerMostClass != classNode) return
 
             def child = adapter.make(innerClassNode)
             root.add(child)
