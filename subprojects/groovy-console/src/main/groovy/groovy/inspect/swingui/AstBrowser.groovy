@@ -429,7 +429,7 @@ class AstBrowserUiPreferences {
         horizontalDividerLocation = Math.max(prefs.getInt("horizontalSplitterLocation", 100), 100)
         showScriptFreeForm = prefs.getBoolean("showScriptFreeForm", false)
         showScriptClass = prefs.getBoolean("showScriptClass", true)
-        showClosureClasses = prefs.getBoolean("showClosureClasses", true)
+        showClosureClasses = prefs.getBoolean("showClosureClasses", false)
         showTreeView = prefs.getBoolean("showTreeView", true)
         int phase = prefs.getInt('compilerPhase', Phases.SEMANTIC_ANALYSIS)
         selectedPhase = CompilePhaseAdapter.values().find {
