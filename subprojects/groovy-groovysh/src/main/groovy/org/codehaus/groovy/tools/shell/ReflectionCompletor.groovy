@@ -1,20 +1,32 @@
 package org.codehaus.groovy.tools.shell
 
 import jline.Completor
+import org.codehaus.groovy.control.MultipleCompilationErrorsException
 import org.codehaus.groovy.runtime.InvokerHelper
+import org.codehaus.groovy.runtime.MethodClosure
+import org.codehaus.groovy.tools.shell.util.PackageHelper
+
+import java.lang.reflect.Field
+import java.lang.reflect.Method
+import java.lang.reflect.Modifier
 
 /**
- * Implements the Completor interface to provide competions for
- * GroovyShell by using reflection on global variables.
+ * Implements the Completor interface to provide completions for
+ * GroovyShell by using reflection on global variables, global
+ * variable names, keywords, and imported Classes
  *
  * @author <a href="mailto:probabilitytrees@gmail.com">Marty Saxton</a>
  */
 class ReflectionCompletor implements Completor {
 
-    private Shell shell;
+    private Groovysh shell;
+    PackageHelper packageHelper
+    List<String> preimportedClassNames = null
 
-    ReflectionCompletor(Shell shell) {
+
+    ReflectionCompletor(Groovysh shell, PackageHelper packageHelper) {
         this.shell = shell
+        this.packageHelper = packageHelper
     }
 
     int complete(String buffer, int cursor, List candidates) {
@@ -27,6 +39,7 @@ class ReflectionCompletor implements Completor {
         if (lastDot == -1 ) {
             if (identifierStart != -1) {
                 List myCandidates = findMatchingVariables(identifierPrefix)
+                myCandidates.addAll(findMatchingImportedClasses(identifierPrefix, shell.imports))
                 if (myCandidates.size() > 0) {
                     candidates.addAll(myCandidates)
                     return identifierStart
@@ -40,14 +53,18 @@ class ReflectionCompletor implements Completor {
             if (lastDot == cursor-1 || identifierStart != -1){
                 // evaluate the part before the dot to get an instance
                 String instanceRefExpression = buffer.substring(0, lastDot)
-                def instance = shell.interp.evaluate([instanceRefExpression])
-                if (instance != null) {
-                    // look for public methods/fields that match the prefix
-                    List myCandidates = getPublicFieldsAndMethods(instance, identifierPrefix)
-                    if (myCandidates.size() > 0) {
-                        candidates.addAll(myCandidates)
-                        return lastDot+1
+                try {
+                    def instance = shell.interp.evaluate([instanceRefExpression])
+                    if (instance != null) {
+                        // look for public methods/fields that match the prefix
+                        List myCandidates = getPublicFieldsAndMethods(instance, identifierPrefix)
+                        if (myCandidates.size() > 0) {
+                            candidates.addAll(myCandidates)
+                            return lastDot+1
+                        }
                     }
+                } catch (MultipleCompilationErrorsException e) {
+                    return -1
                 }
             }
         }
@@ -114,6 +131,55 @@ class ReflectionCompletor implements Completor {
         for (String varName in shell.interp.context.variables.keySet())
             if (varName.startsWith(prefix))
                 matches << varName
+        return matches
+    }
+
+    /**
+     * Build a list of imported classes defined in the shell that
+     * match a given prefix.
+     * @param prefix the prefix to match
+     * @return the list of variables that match the prefix
+     */
+    List<String> findMatchingImportedClasses(String prefix, List<String> imports) {
+        def matches = []
+        if (preimportedClassNames == null) {
+            preimportedClassNames = []
+            for (packname in org.codehaus.groovy.control.ResolveVisitor.DEFAULT_IMPORTS) {
+                Set<String> packnames = packageHelper.getContents(packname[0..-2])
+                if (packnames) {
+                    preimportedClassNames.addAll(packnames.findAll{it[0] in "A".."Z"})
+                }
+            }
+            preimportedClassNames.add("BigInteger")
+            preimportedClassNames.add("BigDecimal")
+        }
+        // preimported names
+        for (String varName in preimportedClassNames) {
+            if (varName.startsWith(prefix)) {
+                matches << varName
+            }
+        }
+        Set<String> classnames = [] as Set
+        // imported names, build pattern to use when looping over all known classes
+        StringBuilder pattern = new StringBuilder("(")
+        int counter = 0
+        for (String importSpec in imports) {
+            if (importSpec.endsWith('*')) {
+                Set<String> packnames = packageHelper.getContents(importSpec.substring('import '.length()))
+                if (packnames) {
+                    classnames.addAll(packnames)
+                }
+            } else {
+                classnames << importSpec.substring(importSpec.lastIndexOf('.') + 1)
+            }
+        }
+        pattern.append(")")
+        for (String varName in classnames) {
+            if (varName.startsWith(prefix)) {
+                matches << varName
+            }
+        }
+
         return matches
     }
 }
