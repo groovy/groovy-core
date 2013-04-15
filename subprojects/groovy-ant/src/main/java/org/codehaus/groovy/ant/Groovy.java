@@ -545,12 +545,14 @@ public class Groovy extends Java {
             path = super.createClasspath();
             path.setPath(System.getProperty("java.class.path"));
         }
-        String groovyHome = null;
-        final String[] strings = getSysProperties().getVariables();
-        if (strings != null) {
-            for (String prop : strings) {
-                if (prop.startsWith("-Dgroovy.home=")) {
-                    groovyHome = prop.substring("-Dgroovy.home=".length());
+        String groovyHome = getProject().getProperty("groovy.home");
+        if (groovyHome == null) {
+            final String[] strings = getSysProperties().getVariables();
+            if (strings != null) {
+                for (String prop : strings) {
+                    if (prop.startsWith("-Dgroovy.home=")) {
+                        groovyHome = prop.substring("-Dgroovy.home=".length());
+                    }
                 }
             }
         }
