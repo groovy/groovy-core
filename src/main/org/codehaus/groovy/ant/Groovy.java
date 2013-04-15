@@ -102,6 +102,7 @@ public class Groovy extends Java {
     private CompilerConfiguration configuration = new CompilerConfiguration();
 
     private Commandline cmdline = new Commandline();
+    private Commandline cmdlineJava = new Commandline();
     private boolean contextClassLoader;
 
     /**
@@ -309,6 +310,10 @@ public class Groovy extends Java {
 
     public Commandline.Argument createArg() {
         return cmdline.createArgument();
+    }
+
+    public Commandline.Argument createJvmarg() {
+        return cmdlineJava.createArgument();
     }
 
     /**
@@ -531,6 +536,10 @@ public class Groovy extends Java {
         commandline[0] = tempFile.getCanonicalPath();
         System.arraycopy(args, 0, commandline, 1, args.length);
         super.clearArgs();
+        for (String jvmarg : cmdlineJava.getCommandline()) {
+            final Commandline.Argument argument = super.createJvmarg();
+            argument.setValue(jvmarg);
+        }
         for (String arg : commandline) {
             final Commandline.Argument argument = super.createArg();
             argument.setValue(arg);
