@@ -1,18 +1,18 @@
 /*
- * Copyright 2003-2012 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Copyright 2003-2012 the original author or authors.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 package groovy.util.slurpersupport;
 
 import groovy.lang.Buildable;
@@ -28,43 +28,43 @@ import java.util.Map;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 
 /**
- * Lazy evaluated representation of child nodes.
- *
- * @author John Wilson
- */
+* Lazy evaluated representation of child nodes.
+*
+* @author John Wilson
+*/
 public class NodeChildren extends GPathResult {
     private int size = -1;
 
     /**
-     * @param parent the GPathResult prior to the application of the expression creating this GPathResult
-     * @param name if the GPathResult corresponds to something with a name, e.g. a node
-     * @param namespacePrefix the namespace prefix if any
-     * @param namespaceTagHints the known tag to namespace mappings
-     */
+* @param parent the GPathResult prior to the application of the expression creating this GPathResult
+* @param name if the GPathResult corresponds to something with a name, e.g. a node
+* @param namespacePrefix the namespace prefix if any
+* @param namespaceTagHints the known tag to namespace mappings
+*/
     public NodeChildren(final GPathResult parent, final String name, final String namespacePrefix, final Map<String, String> namespaceTagHints) {
         super(parent, name, namespacePrefix, namespaceTagHints);
     }
 
     /**
-     * @param parent the GPathResult prior to the application of the expression creating this GPathResult
-     * @param name if the GPathResult corresponds to something with a name, e.g. a node
-     * @param namespaceTagHints the known tag to namespace mappings
-     */
+* @param parent the GPathResult prior to the application of the expression creating this GPathResult
+* @param name if the GPathResult corresponds to something with a name, e.g. a node
+* @param namespaceTagHints the known tag to namespace mappings
+*/
     public NodeChildren(final GPathResult parent, final String name, final Map<String, String> namespaceTagHints) {
         this(parent, name, "*", namespaceTagHints);
     }
 
     /**
-     * @param parent the GPathResult prior to the application of the expression creating this GPathResult
-     * @param namespaceTagHints the known tag to namespace mappings
-     */
+* @param parent the GPathResult prior to the application of the expression creating this GPathResult
+* @param namespaceTagHints the known tag to namespace mappings
+*/
     public NodeChildren(final GPathResult parent, final Map<String, String> namespaceTagHints) {
         this(parent, "*", namespaceTagHints);
     }
 
     public Iterator childNodes() {
         return new Iterator() {
-            private final Iterator iter = parent.childNodes();
+            private final Iterator iter = nodeIterator();
             private Iterator childIter = nextChildIter();
 
             public boolean hasNext() {
@@ -92,17 +92,9 @@ public class NodeChildren extends GPathResult {
 
             private Iterator nextChildIter() {
                 while (iter.hasNext()) {
-                    final Node node = (Node) iter.next();
-                    if (name.equals(node.name()) || name.equals("*")) {
-                        final Iterator result = node.childNodes();
-                        if (result.hasNext()) {
-                            if ("*".equals(namespacePrefix) ||
-                                    ("".equals(namespacePrefix) && "".equals(node.namespaceURI())) ||
-                                    node.namespaceURI().equals(namespaceMap.get(namespacePrefix))) {
-                                return result;
-                            }
-                        }
-                    }
+                    final Node node = (Node)iter.next();
+                    final Iterator result = node.childNodes();
+                    if (result.hasNext()) return result;
                 }
                 return null;
             }
@@ -149,17 +141,9 @@ public class NodeChildren extends GPathResult {
         }
     }
 
-    /**
-     * Throws a <code>GroovyRuntimeException</code>, because it is not implemented yet.
-     */
-    public GPathResult parents() {
-        // TODO Auto-generated method stub
-        throw new GroovyRuntimeException("parents() not implemented yet");
-    }
-
     public synchronized int size() {
         if (this.size == -1) {
-            final Iterator iter = iterator();
+            final Iterator iter = nodeIterator();
             this.size = 0;
             while (iter.hasNext()) {
                 iter.next();
@@ -206,8 +190,8 @@ public class NodeChildren extends GPathResult {
     }
 
     /* (non-Javadoc)
-    * @see groovy.lang.Writable#writeTo(java.io.Writer)
-    */
+* @see groovy.lang.Writable#writeTo(java.io.Writer)
+*/
     public Writer writeTo(final Writer out) throws IOException {
         final Iterator iter = nodeIterator();
         while (iter.hasNext()) {

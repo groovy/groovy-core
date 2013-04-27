@@ -1,18 +1,18 @@
 /*
- * Copyright 2003-2012 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Copyright 2003-2012 the original author or authors.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 package groovy.util.slurpersupport;
 
 import groovy.lang.Buildable;
@@ -30,10 +30,10 @@ import java.util.Map;
 import java.util.Stack;
 
 /**
- * Represents a node.
- *
- * @author John Wilson
- */
+* Represents a node.
+*
+* @author John Wilson
+*/
 public class Node implements Writable {
     private final String name;
     private final Map attributes;
@@ -41,57 +41,67 @@ public class Node implements Writable {
     private final String namespaceURI;
     private final List children = new LinkedList();
     private final Stack replacementNodeStack = new Stack();
+    private final Node parent;
 
     /**
-     * @param parent the parent node
-     * @param name the name for the node
-     * @param attributes the attributes for the node
-     * @param attributeNamespaces the namespace mappings for attributes
-     * @param namespaceURI the namespace URI if any
-     */
+* @param parent the parent node
+* @param name the name for the node
+* @param attributes the attributes for the node
+* @param attributeNamespaces the namespace mappings for attributes
+* @param namespaceURI the namespace URI if any
+*/
     public Node(final Node parent, final String name, final Map attributes, final Map attributeNamespaces, final String namespaceURI) {
         this.name = name;
         this.attributes = attributes;
         this.attributeNamespaces = attributeNamespaces;
         this.namespaceURI = namespaceURI;
+        this.parent = parent;
+    }
+    
+    /**
+* Returns the parent of this Node.
+* @return the parent of this Node
+*/
+    public Node parent() {
+        return this.parent;
     }
 
     /**
-     * Returns the name of this Node.
-     * @return the name of this Node
-     */
+* Returns the name of this Node.
+* @return the name of this Node
+*/
     public String name() {
         return this.name;
     }
 
     /**
-     * Returns the URI of the namespace of this Node.
-     * @return the namespace of this Node
-     */
+* Returns the URI of the namespace of this Node.
+* @return the namespace of this Node
+*/
     public String namespaceURI() {
         return this.namespaceURI;
     }
 
     /**
-     * Returns a map of the attributes of this Node.
-     * @return a map of the attributes of this Node
-     */
+* Returns a map of the attributes of this Node.
+* @return a map of the attributes of this Node
+*/
     public Map attributes() {
         return this.attributes;
     }
 
     /**
-     * Returns a list of the children of this Node.
-     * @return a list of the children of this Node
-     */
+* Returns a list of the children of this Node.
+* @return a list of the children of this Node
+*/
     public List children() {
         return this.children;
     }
 
     /**
-     * Adds an object as a new child to this Node.
-     * @param child the object to add as a child
-     */
+* Adds an object as a new child to this Node.
+* @param child the object to add as a child
+*/
     public void addChild(final Object child) {
         this.children.add(child);
     }
@@ -109,9 +119,9 @@ public class Node implements Writable {
     }
 
     /**
-     * Replaces the current body of this Node with the passed object.
-     * @param newValue the new body
-     */
+* Replaces the current body of this Node with the passed object.
+* @param newValue the new body
+*/
     protected void replaceBody(final Object newValue) {
         this.children.clear();
         this.children.add(newValue);
@@ -132,9 +142,9 @@ public class Node implements Writable {
     }
 
     /**
-     * Returns a string containing the text of the children of this Node.
-     * @return a string containing the text of the children of this Node
-     */
+* Returns a string containing the text of the children of this Node.
+* @return a string containing the text of the children of this Node
+*/
     public String text() {
         final StringBuilder sb = new StringBuilder();
         for (Object child : this.children) {
@@ -148,9 +158,9 @@ public class Node implements Writable {
     }
 
     /**
-     * Returns an iterator over the child nodes of this Node.
-     * @return an iterator over the child nodes of this Node
-     */
+* Returns an iterator over the child nodes of this Node.
+* @return an iterator over the child nodes of this Node
+*/
     public Iterator childNodes() {
         return new Iterator() {
             private final Iterator iter = Node.this.children.iterator();
@@ -252,14 +262,14 @@ public class Node implements Writable {
                                     final List newTags, final GroovyObject builder) {
         String tag = findNamespaceTag(pending, namespaceURI); // look in the namespaces whose declaration has already been emitted
         if (tag == null) {
-            tag = findNamespaceTag(current, namespaceURI);  // look in the namespaces who will be declared at the next element
+            tag = findNamespaceTag(current, namespaceURI); // look in the namespaces who will be declared at the next element
 
             if (tag == null) {
                 // we have to declare the namespace - choose a tag
-                tag = findNamespaceTag(local, namespaceURI);  // If the namespace has been declared in the GPath expression use that tag
+                tag = findNamespaceTag(local, namespaceURI); // If the namespace has been declared in the GPath expression use that tag
 
                 if (tag == null || tag.length() == 0) {
-                    tag = findNamespaceTag(tagHints, namespaceURI);  // If the namespace has been used in the parse document use that tag
+                    tag = findNamespaceTag(tagHints, namespaceURI); // If the namespace has been used in the parse document use that tag
                 }
 
                 if (tag == null || tag.length() == 0) { // otherwise make up a new tag and check it has not been used before
