@@ -1,18 +1,18 @@
 /*
- * Copyright 2003-2012 the original author or authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Copyright 2003-2012 the original author or authors.
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 package groovy.util.slurpersupport;
 
@@ -44,10 +44,10 @@ import java.util.Map;
 import java.util.Stack;
 
 /**
- * Base class for representing lazy evaluated GPath expressions.
- *
- * @author John Wilson
- */
+* Base class for representing lazy evaluated GPath expressions.
+*
+* @author John Wilson
+*/
 public abstract class GPathResult extends GroovyObjectSupport implements Writable, Buildable, Iterable {
     protected final GPathResult parent;
     protected final String name;
@@ -56,20 +56,20 @@ public abstract class GPathResult extends GroovyObjectSupport implements Writabl
     protected final Map<String, String> namespaceTagHints;
 
     /**
-     * Creates a new GPathResult named <code>name</code> with the parent <code>parent</code>,
-     * the namespacePrefix <code>namespacePrefix</code> and the namespaceTagHints specified in
-     * the <code>namespaceTagHints</code> Map.
-     *
-     * @param parent the GPathResult prior to the application of the expression creating this GPathResult
-     * @param name if the GPathResult corresponds to something with a name, e.g. a node
-     * @param namespacePrefix the namespace prefix if any
-     * @param namespaceTagHints the known tag to namespace mappings
-     */
+* Creates a new GPathResult named <code>name</code> with the parent <code>parent</code>,
+* the namespacePrefix <code>namespacePrefix</code> and the namespaceTagHints specified in
+* the <code>namespaceTagHints</code> Map.
+*
+* @param parent the GPathResult prior to the application of the expression creating this GPathResult
+* @param name if the GPathResult corresponds to something with a name, e.g. a node
+* @param namespacePrefix the namespace prefix if any
+* @param namespaceTagHints the known tag to namespace mappings
+*/
     public GPathResult(final GPathResult parent, final String name, final String namespacePrefix, final Map<String, String> namespaceTagHints) {
         if (parent == null) {
             // we are the top of the tree
             this.parent = this;
-            this.namespaceMap.put("xml", "http://www.w3.org/XML/1998/namespace");  // The XML namespace is always defined
+            this.namespaceMap.put("xml", "http://www.w3.org/XML/1998/namespace"); // The XML namespace is always defined
         } else {
             this.parent = parent;
             this.namespaceMap.putAll(parent.namespaceMap);
@@ -82,10 +82,10 @@ public abstract class GPathResult extends GroovyObjectSupport implements Writabl
     }
 
     /**
-     * Replaces the MetaClass of this GPathResult.
-     *
-     * @param metaClass the new MetaClass
-     */
+* Replaces the MetaClass of this GPathResult.
+*
+* @param metaClass the new MetaClass
+*/
     @Override
     public void setMetaClass(final MetaClass metaClass) {
         final MetaClass newMetaClass = new DelegatingMetaClass(metaClass) {
@@ -103,17 +103,17 @@ public abstract class GPathResult extends GroovyObjectSupport implements Writabl
     }
 
     /**
-     * Returns the specified Property of this GPathResult.
-     * <p>
-     * Realizes the follow shortcuts:
-     * <ul>
-     * <li><code>'..'</code> for <code>parent()</code>
-     * <li><code>'*'</code> for <code>children()</code>
-     * <li><code>'**'</code> for <code>depthFirst()</code>
-     * <li><code>'@'</code> for attribute access
-     * </ul>
-     * @param property the Property to fetch
-     */
+* Returns the specified Property of this GPathResult.
+* <p>
+* Realizes the follow shortcuts:
+* <ul>
+* <li><code>'..'</code> for <code>parent()</code>
+* <li><code>'*'</code> for <code>children()</code>
+* <li><code>'**'</code> for <code>depthFirst()</code>
+* <li><code>'@'</code> for attribute access
+* </ul>
+* @param property the Property to fetch
+*/
     public Object getProperty(final String property) {
         if ("..".equals(property)) {
             return parent();
@@ -139,11 +139,11 @@ public abstract class GPathResult extends GroovyObjectSupport implements Writabl
     }
 
     /**
-     * Replaces the specified property of this GPathResult with a new value.
-     *
-     * @param property the property of this GPathResult to replace
-     * @param newValue the new value of the property
-     */
+* Replaces the specified property of this GPathResult with a new value.
+*
+* @param property the property of this GPathResult to replace
+* @param newValue the new value of the property
+*/
     public void setProperty(final String property, final Object newValue) {
         if (property.startsWith("@")) {
             if (newValue instanceof String || newValue instanceof GString) {
@@ -174,23 +174,23 @@ public abstract class GPathResult extends GroovyObjectSupport implements Writabl
     }
 
     /**
-     * Overloads the left shift operator to provide an easy way to
-     * lazily append Objects to this GPathResult.
-     *
-     * @param newValue the Object to append
-     * @return <code>this</code>
-     */
+* Overloads the left shift operator to provide an easy way to
+* lazily append Objects to this GPathResult.
+*
+* @param newValue the Object to append
+* @return <code>this</code>
+*/
     public Object leftShift(final Object newValue) {
         appendNode(newValue);
         return this;
     }
 
     /**
-     * Lazily adds the specified Object to this GPathResult.
-     *
-     * @param newValue the Object to add
-     * @return <code>this</code>
-     */
+* Lazily adds the specified Object to this GPathResult.
+*
+* @param newValue the Object to add
+* @return <code>this</code>
+*/
     public Object plus(final Object newValue) {
         this.replaceNode(new Closure(this) {
             public void doCall(Object[] args) {
@@ -212,169 +212,172 @@ public abstract class GPathResult extends GroovyObjectSupport implements Writabl
     protected abstract void appendNode(Object newValue);
 
     /**
-     * Returns the name of this GPathResult.
-     *
-     * @return the name of this GPathResult
-     */
+* Returns the name of this GPathResult.
+*
+* @return the name of this GPathResult
+*/
     public String name() {
         return this.name;
     }
 
     /**
-     * Returns the parent of this GPathResult. If this GPathResult has no parent the GPathResult itself is returned.
-     *
-     * @return the parent or <code>this</code>
-     */
+* Returns the parent of this GPathResult. If this GPathResult has no parent the GPathResult itself is returned.
+*
+* @return the parent or <code>this</code>
+*/
     public GPathResult parent() {
-        return this.parent;
+        if (this == this.parent) {
+            return this;
+        }
+        return new NodeParents(this, this.namespaceTagHints);
     }
 
     /**
-     * Returns the children of this GPathResult as a GPathResult object.
-     *
-     * @return the children of this GPathResult
-     */
+* Returns the children of this GPathResult as a GPathResult object.
+*
+* @return the children of this GPathResult
+*/
     public GPathResult children() {
         return new NodeChildren(this, this.namespaceTagHints);
     }
 
     /**
-     * Returns the namespace mapped to the specified prefix.
-     *
-     * @param prefix the prefix lookup
-     * @return the namespace of the prefix
-     */
+* Returns the namespace mapped to the specified prefix.
+*
+* @param prefix the prefix lookup
+* @return the namespace of the prefix
+*/
     public String lookupNamespace(final String prefix) {
         return this.namespaceTagHints.get(prefix);
     }
 
     /**
-     * Returns the text of this GPathResult.
-     *
-     * @return the GPathResult, converted to a <code>String</code>
-     */
+* Returns the text of this GPathResult.
+*
+* @return the GPathResult, converted to a <code>String</code>
+*/
     public String toString() {
         return text();
     }
 
     /**
-     * Converts the text of this GPathResult to a Integer object.
-     *
-     * @return the GPathResult, converted to a <code>Integer</code>
-     */
+* Converts the text of this GPathResult to a Integer object.
+*
+* @return the GPathResult, converted to a <code>Integer</code>
+*/
     public Integer toInteger() {
         return StringGroovyMethods.toInteger(text());
     }
 
     /**
-     * Converts the text of this GPathResult to a Long object.
-     *
-     * @return the GPathResult, converted to a <code>Long</code>
-     */
+* Converts the text of this GPathResult to a Long object.
+*
+* @return the GPathResult, converted to a <code>Long</code>
+*/
     public Long toLong() {
         return StringGroovyMethods.toLong(text());
     }
 
     /**
-     * Converts the text of this GPathResult to a Float object.
-     *
-     * @return the GPathResult, converted to a <code>Float</code>
-     */
+* Converts the text of this GPathResult to a Float object.
+*
+* @return the GPathResult, converted to a <code>Float</code>
+*/
     public Float toFloat() {
         return StringGroovyMethods.toFloat(text());
     }
 
     /**
-     * Converts the text of this GPathResult to a Double object.
-     *
-     * @return the GPathResult, converted to a <code>Double</code>
-     */
+* Converts the text of this GPathResult to a Double object.
+*
+* @return the GPathResult, converted to a <code>Double</code>
+*/
     public Double toDouble() {
         return StringGroovyMethods.toDouble(text());
     }
 
     /**
-     * Converts the text of this GPathResult to a BigDecimal object.
-     *
-     * @return the GPathResult, converted to a <code>BigDecimal</code>
-     */
+* Converts the text of this GPathResult to a BigDecimal object.
+*
+* @return the GPathResult, converted to a <code>BigDecimal</code>
+*/
     public BigDecimal toBigDecimal() {
         return StringGroovyMethods.toBigDecimal(text());
     }
 
     /**
-     * Converts the text of this GPathResult to a BigInteger object.
-     *
-     * @return the GPathResult, converted to a <code>BigInteger</code>
-     */
+* Converts the text of this GPathResult to a BigInteger object.
+*
+* @return the GPathResult, converted to a <code>BigInteger</code>
+*/
     public BigInteger toBigInteger() {
         return StringGroovyMethods.toBigInteger(text());
     }
 
     /**
-     * Converts the text of this GPathResult to a URL object.
-     *
-     * @return the GPathResult, converted to a <code>URL</code>
-     */
+* Converts the text of this GPathResult to a URL object.
+*
+* @return the GPathResult, converted to a <code>URL</code>
+*/
     public URL toURL() throws MalformedURLException {
         return ResourceGroovyMethods.toURL(text());
     }
 
     /**
-     * Converts the text of this GPathResult to a URI object.
-     *
-     * @return the GPathResult, converted to a <code>URI</code>
-     */
+* Converts the text of this GPathResult to a URI object.
+*
+* @return the GPathResult, converted to a <code>URI</code>
+*/
     public URI toURI() throws URISyntaxException {
         return ResourceGroovyMethods.toURI(text());
     }
 
     /**
-     * Converts the text of this GPathResult to a Boolean object.
-     *
-     * @return the GPathResult, converted to a <code>Boolean</code>
-     */
+* Converts the text of this GPathResult to a Boolean object.
+*
+* @return the GPathResult, converted to a <code>Boolean</code>
+*/
     public Boolean toBoolean() {
         return StringGroovyMethods.toBoolean(text());
     }
 
     /**
-     * Adds the specified map of prefix to namespace mappings to this GPathResult.
-     * Already existing prefixes are overwritten.
-     *
-     * @param newNamespaceMapping the mappings to add
-     * @return <code>this</code>
-     */
+* Adds the specified map of prefix to namespace mappings to this GPathResult.
+* Already existing prefixes are overwritten.
+*
+* @param newNamespaceMapping the mappings to add
+* @return <code>this</code>
+*/
     public GPathResult declareNamespace(final Map newNamespaceMapping) {
         this.namespaceMap.putAll(newNamespaceMapping);
         return this;
     }
 
     /* (non-Javadoc)
-    * @see java.lang.Object#equals(java.lang.Object)
-    */
+* @see java.lang.Object#equals(java.lang.Object)
+*/
     public boolean equals(Object obj) {
         return text().equals(obj.toString());
     }
 
     /**
-     * Supports the subscript operator for a GPathResult.
-     * <pre>
-     * def text = """
-     * &lt;characterList&gt;
-     *   &lt;character/&gt;
-     *   &lt;character&gt;
-     *     &lt;name>Gromit&lt;/name&gt;
-     *   &lt;/character&gt;
-     * &lt;/characterList&gt;"""
-     *
-     * GPathResult characterList = new XmlSlurper().parseText(text)
-     *
-     * assert characterList.character[1].name == 'Gromit'
-     * </pre>
-     * @param index an index
-     * @return the value at the given index
-     */
+* Supports the subscript operator for a GPathResult.
+* <pre>
+* def text = """
+* &lt;characterList&gt;
+* &lt;character/&gt;
+* &lt;character&gt;
+* &lt;name>Gromit&lt;/name&gt;
+* &lt;/character&gt;
+* &lt;/characterList&gt;"""
+*
+* GPathResult characterList = new XmlSlurper().parseText(text)
+*
+* assert characterList.character[1].name == 'Gromit'
+* </pre>
+* @param index an index
+* @return the value at the given index
+*/
     public Object getAt(final int index) {
         if (index < 0) {
             // calculate whole list in this case
@@ -400,31 +403,31 @@ public abstract class GPathResult extends GroovyObjectSupport implements Writabl
     }
 
     /**
-     * Supports the range subscript operator for a GPathResult.
-     * <pre>
-     * def text = """
-     * &lt;characterList>
-     *   &lt;character&gt;Wallace&lt;/character&gt;
-     *   &lt;character&gt;Gromit&lt;/character&gt;
-     *   &lt;character&gt;Shaun&lt;/character&gt;
-     * &lt;/characterList&gt;"""
-     *
-     * GPathResult characterList = new XmlSlurper().parseText(text)
-     *
-     * assert characterList.character[1..2].join(',') == 'Gromit,Shaun'
-     * </pre>
-     * @param range a Range indicating the items to get
-     * @return a new list based on range borders
-     */
+* Supports the range subscript operator for a GPathResult.
+* <pre>
+* def text = """
+* &lt;characterList>
+* &lt;character&gt;Wallace&lt;/character&gt;
+* &lt;character&gt;Gromit&lt;/character&gt;
+* &lt;character&gt;Shaun&lt;/character&gt;
+* &lt;/characterList&gt;"""
+*
+* GPathResult characterList = new XmlSlurper().parseText(text)
+*
+* assert characterList.character[1..2].join(',') == 'Gromit,Shaun'
+* </pre>
+* @param range a Range indicating the items to get
+* @return a new list based on range borders
+*/
     public Object getAt(final IntRange range) {
         return DefaultGroovyMethods.getAt(list(), range);
     }
 
     /**
-     * A helper method to allow GPathResults to work with subscript operators
-     * @param index an index
-     * @param newValue the value to put at the given index
-     */
+* A helper method to allow GPathResults to work with subscript operators
+* @param index an index
+* @param newValue the value to put at the given index
+*/
     public void putAt(final int index, final Object newValue) {
         final GPathResult result = (GPathResult)getAt(index);
         if (newValue instanceof Closure) {
@@ -435,10 +438,10 @@ public abstract class GPathResult extends GroovyObjectSupport implements Writabl
     }
 
     /**
-     * Provides an Iterator over all the nodes of this GPathResult using a depth-first traversal.
-     *
-     * @return the <code>Iterator</code> of (depth-first) ordered GPathResults
-     */
+* Provides an Iterator over all the nodes of this GPathResult using a depth-first traversal.
+*
+* @return the <code>Iterator</code> of (depth-first) ordered GPathResults
+*/
     public Iterator depthFirst() {
         return new Iterator() {
             private final List list = new LinkedList();
@@ -483,10 +486,10 @@ public abstract class GPathResult extends GroovyObjectSupport implements Writabl
     }
 
     /**
-     * Provides an Iterator over all the nodes of this GPathResult using a breadth-first traversal.
-     *
-     * @return the <code>Iterator</code> of (breadth-first) ordered GPathResults
-     */
+* Provides an Iterator over all the nodes of this GPathResult using a breadth-first traversal.
+*
+* @return the <code>Iterator</code> of (breadth-first) ordered GPathResults
+*/
     public Iterator breadthFirst() {
         return new Iterator() {
             private final List list = new LinkedList();
@@ -544,10 +547,10 @@ public abstract class GPathResult extends GroovyObjectSupport implements Writabl
     }
 
     /**
-     * Creates a list of objects representing this GPathResult.
-     *
-     * @return a list representing of this GPathResult
-     */
+* Creates a list of objects representing this GPathResult.
+*
+* @return a list representing of this GPathResult
+*/
     public List list() {
         final Iterator iter = nodeIterator();
         final List result = new LinkedList();
@@ -558,21 +561,21 @@ public abstract class GPathResult extends GroovyObjectSupport implements Writabl
     }
 
     /**
-     * Returns true if the GPathResult is empty, i.e. if, and only if, <code>size()</code> is 0.
-     *
-     * @return true if the GPathResult is empty
-     */
+* Returns true if the GPathResult is empty, i.e. if, and only if, <code>size()</code> is 0.
+*
+* @return true if the GPathResult is empty
+*/
     public boolean isEmpty() {
         return size() == 0;
     }
 
     /**
-     * Creates a Closure representing the body of this GPathResult.
-     *
-     * @return the body of this GPathResult, converted to a <code>Closure</code>
-     */
+* Creates a Closure representing the body of this GPathResult.
+*
+* @return the body of this GPathResult, converted to a <code>Closure</code>
+*/
     public Closure getBody() {
-        return new Closure(this.parent(),this) {
+        return new Closure(this.parent,this) {
             public void doCall(Object[] args) {
                 final GroovyObject delegate = (GroovyObject)getDelegate();
                 final GPathResult thisObject = (GPathResult)getThisObject();
@@ -587,53 +590,58 @@ public abstract class GPathResult extends GroovyObjectSupport implements Writabl
                     } else {
                         delegate.invokeMethod("yield", new Object[]{child});
                     }
-                }                
+                }
             }
         };
     }
 
     /**
-     * Returns the size of this GPathResult.
-     * @return the size of this GPathResult
-     */
+* Returns the size of this GPathResult.
+* @return the size of this GPathResult
+*/
     public abstract int size();
 
     /**
-     * Returns the text of this GPathResult as a <code>String</code>.
-     * @return the text of this GPathResult
-     */
+* Returns the text of this GPathResult as a <code>String</code>.
+* @return the text of this GPathResult
+*/
     public abstract String text();
 
     /**
-     * Returns the parents of this GPathResult as a <code>GPathResult</code>.
-     * Warning: The subclasses of this package do not implement this method yet.
-     * @return the parents of this GPathResult
-     */
-    public abstract GPathResult parents();
+* Returns the unique parents of this GPathResult as a <code>GPathResult</code>.
+* @return the parents of this GPathResult
+*/
+    public GPathResult parents() {
+        return new NodeParents(this, this.namespaceTagHints);
+    }
 
     /**
-     * Returns an iterator over the child nodes of this GPathResult.
-     * @return an iterator over the child nodes of this GPathResult
-     */
+* Returns an iterator over the child nodes of this GPathResult.
+* @return an iterator over the child nodes of this GPathResult
+*/
     public abstract Iterator childNodes();
 
     public abstract Iterator iterator();
 
     /**
-     * Returns the first child of this GPathResult matching the condition(s)
-     * specified in the passed closure.
-     * @param closure a closure to filters the children of this GPathResult
-     * @return the first child matching the closure
-     */
+* Returns the first child of this GPathResult matching the condition(s)
+* specified in the passed closure.
+* @param closure a closure to filters the children of this GPathResult
+* @return the first child matching the closure
+*/
     public abstract GPathResult find(Closure closure);
 
     /**
-     * Returns the children of this GPathResult matching the condition(s)
-     * specified in the passed closure.
-     * @param closure a closure to filters the children of this GPathResult
-     * @return the children matching the closure
-     */
+* Returns the children of this GPathResult matching the condition(s)
+* specified in the passed closure.
+* @param closure a closure to filters the children of this GPathResult
+* @return the children matching the closure
+*/
     public abstract GPathResult findAll(Closure closure);
+    
+    public GPathResult getAt(Closure closure) {
+        return findAll(closure);
+    }
 
     public abstract Iterator nodeIterator();
 }
