@@ -127,10 +127,7 @@ class ReflectionCompletor implements Completor {
     static Collection<String> getPublicFieldsAndMethods(Object instance, String prefix) {
         Set<String> rv = new HashSet<String>()
         Set.getInterfaces()
-        Class clazz = instance.class
-        if (clazz == null) {
-            clazz = instance.getClass()
-        }
+        Class clazz = instance.getClass()
         if (clazz == null) {
             return rv;
         }
@@ -148,7 +145,7 @@ class ReflectionCompletor implements Completor {
 
         Class loopclazz = clazz
         while (loopclazz != null) {
-            addClassFieldsAndMethods(loopclazz, isClass, prefix, rv)
+            addClassFieldsAndMethods(loopclazz, instance, isClass, prefix, rv)
             loopclazz = loopclazz.superclass
         }
         if (clazz.isArray() && !isClass) {
@@ -162,9 +159,21 @@ class ReflectionCompletor implements Completor {
         return rv.sort()
     }
 
-    private static Collection<String> addClassFieldsAndMethods(final Class clazz, final boolean staticOnly, final String prefix, Collection rv) {
+    private static Collection<String> addClassFieldsAndMethods(final Class clazz, final Object instance, final boolean staticOnly, final String prefix, Collection rv) {
         Field[] fields = staticOnly ? clazz.fields : clazz.getDeclaredFields()
+        // also add all properties that are not fields, if any
+        Set<String> propKeys = [] as Set<String>
+        if (instance) {
+            try {
+                Map props = instance.getProperties()
+                if (props) {
+                    propKeys.addAll(props.keySet())
+                }
+            } catch(Exception e) {}
+        }
+
         fields.each { Field fit ->
+            propKeys.remove(fit.name)
             if (acceptName(fit.name, prefix)) {
                 int modifiers = fit.getModifiers()
                 if (Modifier.isPublic(modifiers) && (!staticOnly || Modifier.isStatic(modifiers))) {
@@ -173,6 +182,9 @@ class ReflectionCompletor implements Completor {
                     }
                 }
             }
+        }
+        if (propKeys) {
+            rv.addAll(propKeys.findAll {String key -> key.startsWith(prefix)})
         }
         Method[] methods = staticOnly ? clazz.methods : clazz.getDeclaredMethods()
         methods.each { Method methIt ->
@@ -188,7 +200,7 @@ class ReflectionCompletor implements Completor {
             }
         }
         for (interface_ in clazz.getInterfaces()) {
-            addClassFieldsAndMethods(interface_, staticOnly, prefix, rv)
+            addClassFieldsAndMethods(interface_, null, staticOnly, prefix, rv)
         }
     }
 

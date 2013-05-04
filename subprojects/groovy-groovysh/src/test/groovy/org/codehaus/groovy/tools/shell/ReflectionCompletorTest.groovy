@@ -204,8 +204,6 @@ class ReflectionCompletorUnitTest extends GroovyTestCase {
     void testGetFieldsAndMethodsClass() {
         Collection<String> result = ReflectionCompletor.getPublicFieldsAndMethods(Arrays, "")
         assertTrue(result.toString(), 'sort(' in result)
-        result = ReflectionCompletor.getPublicFieldsAndMethods(HashSet, "pro")
-        assertEquals([], result)
         result = ReflectionCompletor.getPublicFieldsAndMethods(HashSet, "toA")
         assertEquals([], result)
         result = ReflectionCompletor.getPublicFieldsAndMethods(new HashSet(), "toA")
@@ -222,6 +220,17 @@ class ReflectionCompletorUnitTest extends GroovyTestCase {
         assertTrue(result.toString(), 'compareTo(' in result)
     }
 
+    void testCustomProperty() {
+        def instance = new Object() {public Object getProperty(String name) {throw new MissingPropertyException('From test', name, null)}}
+        // assert no exception
+        Collection<String> result = ReflectionCompletor.getPublicFieldsAndMethods(instance, "")
+        assertTrue('clone()' in result)
+        // now try finding properties
+        instance = new Object() {public Object getProperties() {['fooProp': 42, 'barProp': 53]}}
+        result = ReflectionCompletor.getPublicFieldsAndMethods(instance, "")
+        assertTrue('fooProp' in result)
+        assertTrue('barProp' in result)
+    }
 }
 
 class ReflectionCompletorTest extends CompletorTestSupport {
@@ -494,7 +503,7 @@ class ReflectionCompletorTest extends CompletorTestSupport {
         registryMocker.use {
             CommandRegistry registry = new CommandRegistry()
             groovyshMocker.demand.getRegistry(1) { registry }
-            // mock doing the right thing
+            // mock doing the right thing, asserting the only part evaluated is "foo"
             groovyshMocker.demand.getInterp(1) { [evaluate: { expr -> assert (expr == ["foo"]); "foo" }] }
             groovyshMocker.use {
                 Groovysh groovyshMock = new Groovysh()
