@@ -15,7 +15,10 @@
  */
 package org.codehaus.groovy.tools.shell
 
+import org.codehaus.groovy.GroovyException
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
+import org.codehaus.groovy.tools.shell.completion.ReflectionCompletor
+import org.codehaus.groovy.tools.shell.completion.TokenUtilTest
 
 class GroovyshTest extends GroovyTestCase {
 
@@ -179,5 +182,86 @@ class GroovyshTest extends GroovyTestCase {
         groovysh.buffers.select(2)
         assertEquals(" " * groovysh.indentSize * 2, groovysh.getIndentPrefix())
 
+    }
+}
+
+
+class GroovyshCompletorTest extends GroovyTestCase {
+
+    void testIOMock() {
+        IO testio
+        ByteArrayOutputStream mockOut
+        ByteArrayOutputStream mockErr
+        mockOut = new ByteArrayOutputStream();
+        mockErr = new ByteArrayOutputStream();
+        testio = new IO(
+                new ByteArrayInputStream(),
+                mockOut,
+                mockErr)
+        testio.out.println("mockResult")
+        assertTrue("stdout=" + mockOut.toString() + "\nstderr=" + mockErr.toString(), mockOut.toString().contains('mockResult'))
+        testio.err.println("mockErrResult")
+        assertTrue("stdout=" + mockOut.toString() + "\nstderr=" + mockErr.toString(), mockErr.toString().contains('mockErrResult'))
+    }
+
+    void testLiveClass() {
+        /* This test setup looks weird, but it is the only I found that can reproduce this behavior:
+-groovy:000> class Foo extends HashSet implements Comparable {int compareTo(Object) {0}}
+-===> true
+-groovy:000> Foo.
+-__$stMC              __$swapInit()            __timeStamp
+-super$1$getClass()   super$1$notify()         super$1$notifyAll()
+-*/
+        IO testio = new IO()
+        Groovysh groovysh = new Groovysh(testio)
+        Object result = groovysh.interp.evaluate(["import " + ReflectionCompletor.getCanonicalName(), """class Foo extends HashSet implements Comparable {
+int compareTo(Object) {0}; int priv; static int priv2; public int foo; public static int bar; int foom(){1}; static int barm(){2}}""", "ReflectionCompletor.getPublicFieldsAndMethods(Foo, \"\")"])
+        assertNotNull(result)
+        assertTrue(result.size() > 0)
+        assertEquals([], result.findAll({it.startsWith("_")}))
+        assertEquals([], result.findAll({it.startsWith("super\$")}))
+        assertEquals([], result.findAll({it.startsWith("this\$")}))
+        assertFalse(result.toString(), 'foo' in result)
+        assertFalse(result.toString(), 'priv' in result)
+        assertFalse(result.toString(), 'priv2' in result)
+        assertTrue(result.toString(), 'barm()' in result)
+        assertFalse(result.toString(), 'foom()' in result)
+
+    }
+
+    void testLiveInstance() {
+        /* This test setup looks weird, but it is the only I found that can reproduce this behavior:
+-groovy:000> class Foo extends HashSet implements Comparable {int compareTo(Object) {0}}
+-===> true
+-groovy:000> Foo.
+-__$stMC              __$swapInit()            __timeStamp
+-super$1$getClass()   super$1$notify()         super$1$notifyAll()
+-*/
+        IO testio = new IO()
+        Groovysh groovysh = new Groovysh(testio)
+        Object result = groovysh.interp.evaluate(["import " + ReflectionCompletor.getCanonicalName(), """class Foo extends HashSet implements Comparable {
+int compareTo(Object) {0}; int priv; static int priv2; public int foo; public static int bar; int foom(){1}; static int barm(){2}}""",
+                "ReflectionCompletor.getPublicFieldsAndMethods(new Foo(), \"\")"])
+        assertNotNull(result)
+        assertTrue(result.size() > 0)
+        assertEquals([], result.findAll({it.startsWith("_")}))
+        assertEquals([], result.findAll({it.startsWith("super\$")}))
+        assertEquals([], result.findAll({it.startsWith("this\$")}))
+        assertTrue(result.toString(), 'bar' in result)
+        assertFalse(result.toString(), 'priv' in result)
+        assertFalse(result.toString(), 'priv2' in result)
+        assertTrue(result.toString(), 'foom()' in result)
+        assertTrue(result.toString(), 'barm()' in result)
+    }
+
+    void testImportedClassStaticMember() {
+        // tests that import are taken into account when evaluating for completion
+        IO testio = new IO()
+        Groovysh groovysh = new Groovysh(new URLClassLoader(), new Binding(), testio)
+        groovysh.run("import " + GroovyException.name)
+        ReflectionCompletor compl = new ReflectionCompletor(groovysh)
+        def candidates = []
+        compl.complete(TokenUtilTest.tokenList("GroovyException."), candidates)
+        assertTrue(candidates.size() > 0)
     }
 }
