@@ -266,11 +266,11 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
         } else if (newInstanceResolver instanceof Closure) {
             final ObjectGraphBuilder self = this;
             this.newInstanceResolver = new NewInstanceResolver() {
-                public Object newInstance(Class klass, Map attributes)
+                public Object newInstance(Class klass, Object value, Map attributes)
                         throws InstantiationException, IllegalAccessException {
                     Closure cls = (Closure) newInstanceResolver;
                     cls.setDelegate(self);
-                    return cls.call(new Object[]{klass, attributes});
+                    return cls.call(new Object[]{klass, value, attributes});
                 }
             };
         } else {
@@ -466,7 +466,7 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
      * Default impl that calls Class.newInstance()
      */
     public static class DefaultNewInstanceResolver implements NewInstanceResolver {
-        public Object newInstance(Class klass, Map attributes) throws InstantiationException,
+        public Object newInstance(Class klass, Object value, Map attributes) throws InstantiationException,
                 IllegalAccessException {
             return klass.newInstance();
         }
@@ -537,9 +537,10 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
          * Create a new instance of Class klass.
          *
          * @param klass      the resolved class name
+         * @param value      the node's value (may be null if no value was specified)
          * @param attributes the attribute Map available for the node
          */
-        Object newInstance(Class klass, Map attributes) throws InstantiationException,
+        Object newInstance(Class klass, Object value, Map attributes) throws InstantiationException,
                 IllegalAccessException;
     }
 
@@ -665,7 +666,7 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
                 return value;
             }
 
-            return ogbuilder.newInstanceResolver.newInstance(klass, properties);
+            return ogbuilder.newInstanceResolver.newInstance(klass, value, properties);
         }
 
         public void setChild(FactoryBuilderSupport builder, Object parent, Object child) {
