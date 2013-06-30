@@ -2153,6 +2153,54 @@ public class StringGroovyMethods extends DefaultGroovyMethodsSupport {
     }
 
     /**
+     * Use a String as a format string, by given the argument, return a formatted string.
+     * <p/>
+     * <p>This allows formatting String in a Python-like style:
+     * <pre>
+     * assert 'one: 1' == 'one: %d' % 1
+     * </pre>
+     * </p>
+     *
+     * @param self a format string
+     * @param arg argument referenced by the format specifiers in the format string
+     * @see String#format(String, Object...)
+     * @return a formatted string
+     */
+    public static String mod(String self, Object arg) {
+        return mod(self, new Object[] {arg});
+    }
+
+    /**
+     * Use a String as a format string, by given the arguments, return a formatted string.
+     * <p/>
+     * <p>This allows formatting String in a Python-like style:
+     * <pre>
+     * assert 'one: 1' == '%s: %d' % ['one', 1]
+     * </pre>
+     * </p>
+     *
+     * @param self a format string
+     * @param args arguments referenced by the format specifiers in the format string
+     * @see String#format(String, Object...)
+     * @return a formatted string
+     */
+    public static String mod(String self, List<?> args) {
+        return mod(self, args.toArray());
+    }
+
+    /**
+     * Use a String as a format string, by given the arguments, return a formatted string.
+     *
+     * @param self a format string
+     * @param args arguments referenced by the format specifiers in the format string
+     * @see String#format(String, Object...)
+     * @return a formatted string
+     */
+    public static String mod(String self, Object[] args) {
+        return String.format(self, args);
+    }
+
+    /**
      * This method is called by the ++ operator for the class CharSequence.
      *
      * @param self a CharSequence
