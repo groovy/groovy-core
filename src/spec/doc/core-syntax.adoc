@@ -1,6 +1,6 @@
 = Syntax
 :toc:
-:icons:
+:icons: font
 :linkcss!:
 
 This chapter covers the syntax of the Groovy programming language.
@@ -10,11 +10,114 @@ but enhances it with specific constructs for Groovy, and allows certain simplifi
 == Comments
 
 === Single line comment
+
+Single line comments start with +//+ and can be found at any position in the line.
+The characters following +//+, till the end of the line, are considered part of the comment.
+
+[source,groovy]
+----
+include::../test/SyntaxTest.groovy[tags=single_line_comment,indent=0]
+----
+
 === Multiline comment
-=== JavaDoc comment
+
+A multiline comment starts with +/\*+ and can be found at any position in the line.
+The characters following +/*+ will be considered part of the comment, including new line characters,
+up to the first +*/+ closing the comment.
+Multiline comments can thus be put at the end of a statement, or even inside a statement.
+
+[source,groovy]
+----
+include::../test/SyntaxTest.groovy[tags=multiline_comment,indent=0]
+----
+
+=== GroovyDoc comment
+
+Similarly to multiline comments, GroovyDoc comments are multiline, but start with +/\**+ and end with +\*/+.
+Lines following the first GroovyDoc comment line can optionally start with a star +\*+.
+Those comments are associated with:
+
+* type definitions (classes, interfaces, enums, annotations),
+* fields and properties definitions
+* methods definitions
+
+Although the compiler will not complain about JavaDoc comments not being associated with the above language elements,
+you should prepend those constructs with the comment right before it.
+
+[source,groovy]
+----
+include::../test/SyntaxTest.groovy[tags=groovydoc_comment,indent=0]
+----
+
+GroovyDoc follows the same conventions as Java's own JavaDoc.
+So you'll be able to use the same tags as with JavaDoc.
+
 === Shebang line
 
+Beside the single line comment, there is a special line comment, often called the _shebang_ line understood by UNIX systems
+which allows scripts to be run directly from the command-line, provided you have installed the Groovy distribution
+and the +groovy+ command is available on the +PATH+.
+
+[source,groovy]
+----
+include::../test/SyntaxTest.groovy[tags=shebang_comment_line,indent=0]
+----
+
+NOTE: The +#+ character must be the first character of the file. Any indentation would yield a compilation error.
+
 == Keywords
+
+The following list represents all the keywords of the Groovy language:
+
+[cols="1,1,1,1"]
+.Keywords
+|===
+|as
+|assert
+|break
+|case
+
+|catch
+|class
+|const
+|continue
+
+|def
+|default
+|do
+|else
+
+|enum
+|extends
+|false
+|finally
+
+|for
+|goto
+|if
+|implements
+
+|import
+|in
+|instanceof
+|interface
+
+|new
+|null
+|package
+|return
+
+|super
+|switch
+|this
+|throw
+
+|throws
+|true
+|try
+|while
+
+|===
 
 == Identifiers
 
@@ -46,6 +149,13 @@ But the following ones are invalid identifiers:
 [source,groovy]
 ----
 include::../test/SyntaxTest.groovy[tags=invalid_identifiers,indent=0]
+----
+
+All keywords are also valid identifiers when following a dot:
+
+[source,groovy]
+----
+include::../test/SyntaxTest.groovy[tags=keywords_valid_id_after_dot,indent=0]
 ----
 
 === Quoted identifiers
