@@ -1,6 +1,6 @@
 = Syntax
 :toc:
-:icons:
+:icons: font
 :linkcss!:
 
 This chapter covers the syntax of the Groovy programming language.
@@ -10,11 +10,114 @@ but enhances it with specific constructs for Groovy, and allows certain simplifi
 == Comments
 
 === Single line comment
+
+Single line comments start with +//+ and can be found at any position in the line.
+The characters following +//+, till the end of the line, are considered part of the comment.
+
+[source,groovy]
+----
+include::../test/SyntaxTest.groovy[tags=single_line_comment,indent=0]
+----
+
 === Multiline comment
-=== JavaDoc comment
+
+A multiline comment starts with +/\*+ and can be found at any position in the line.
+The characters following +/*+ will be considered part of the comment, including new line characters,
+up to the first +*/+ closing the comment.
+Multiline comments can thus be put at the end of a statement, or even inside a statement.
+
+[source,groovy]
+----
+include::../test/SyntaxTest.groovy[tags=multiline_comment,indent=0]
+----
+
+=== GroovyDoc comment
+
+Similarly to multiline comments, GroovyDoc comments are multiline, but start with +/\**+ and end with +\*/+.
+Lines following the first GroovyDoc comment line can optionally start with a star +\*+.
+Those comments are associated with:
+
+* type definitions (classes, interfaces, enums, annotations),
+* fields and properties definitions
+* methods definitions
+
+Although the compiler will not complain about JavaDoc comments not being associated with the above language elements,
+you should prepend those constructs with the comment right before it.
+
+[source,groovy]
+----
+include::../test/SyntaxTest.groovy[tags=groovydoc_comment,indent=0]
+----
+
+GroovyDoc follows the same conventions as Java's own JavaDoc.
+So you'll be able to use the same tags as with JavaDoc.
+
 === Shebang line
 
+Beside the single line comment, there is a special line comment, often called the _shebang_ line understood by UNIX systems
+which allows scripts to be run directly from the command-line, provided you have installed the Groovy distribution
+and the +groovy+ command is available on the +PATH+.
+
+[source,groovy]
+----
+include::../test/SyntaxTest.groovy[tags=shebang_comment_line,indent=0]
+----
+
+NOTE: The +#+ character must be the first character of the file. Any indentation would yield a compilation error.
+
 == Keywords
+
+The following list represents all the keywords of the Groovy language:
+
+[cols="1,1,1,1"]
+.Keywords
+|===
+|as
+|assert
+|break
+|case
+
+|catch
+|class
+|const
+|continue
+
+|def
+|default
+|do
+|else
+
+|enum
+|extends
+|false
+|finally
+
+|for
+|goto
+|if
+|implements
+
+|import
+|in
+|instanceof
+|interface
+
+|new
+|null
+|package
+|return
+
+|super
+|switch
+|this
+|throw
+
+|throws
+|true
+|try
+|while
+
+|===
 
 == Identifiers
 
@@ -48,7 +151,19 @@ But the following ones are invalid identifiers:
 include::../test/SyntaxTest.groovy[tags=invalid_identifiers,indent=0]
 ----
 
+All keywords are also valid identifiers when following a dot:
+
+[source,groovy]
+----
+include::../test/SyntaxTest.groovy[tags=keywords_valid_id_after_dot,indent=0]
+----
+
 === Quoted identifiers
+
+Quoted identifiers appear after the dot of a dotted expression.
+For instance, the +name+ part of the +person.name+ expression can be quoted with +person."name"+ or +person.'name'+.
+This is particularly interesting when certain identifiers contain illegal characters that are forbidden by the Java Language Specification,
+but which are allowed by Groovy when quoted. For example, characters like a dash, a space, an exclamation mark, etc.
 
 
 
@@ -64,14 +179,101 @@ include::../test/SyntaxTest.groovy[tags=invalid_identifiers,indent=0]
 == Numbers
 
 === Integer literal
+
+
+
 === Floating point literal
+
+
+
+NOTE: Decimal numbers can't be represented using a binary, octal or hexadecimal representation.
+
 === Binary literal
+
+In Java 6 and before, as well as in Groovy, numbers could be represented in decimal, octal and hexadecimal bases, and with Java 7 and Groovy 2, you can use a binary notation with the ++0b++ prefix:
+
+[source,groovy]
+----
+include::../test/SyntaxTest.groovy[tags=binary_literal_example,indent=0]
+----
+
 === Octal literal
+
+Octal numbers are specified in the typical format of ++0++ followed by octal digits.
+
+[source,groovy]
+----
+include::../test/SyntaxTest.groovy[tags=octal_literal_example,indent=0]
+----
+
 === Hexadecimal literal
+
+Hexadecimal numbers are specified in the typical format of ++0x++ followed by hex digits.
+
+[source,groovy]
+----
+include::../test/SyntaxTest.groovy[tags=hexadecimal_literal_example,indent=0]
+----
+
 === Underscore in literal
+
+When writing long literal numbers, it’s harder on the eye to figure out how some numbers are grouped together, for example with groups of thousands, of words, etc. By allowing you to place underscore in number literals, it’s easier to spot those groups:
+
+[source,groovy]
+----
+include::../test/SyntaxTest.groovy[tags=underscore_in_number_example,indent=0]
+----
+
 === Number type suffixes
 
+We can force an number (including binary, octals and hexadecimals) to have a specific type by giving a suffix (see table bellow), either uppercase or lowercase.
+
+[cols="1,2" options="header"]
+|====
+|Type
+|Suffix
+
+|BigInteger
+|G
+
+|Long
+|L
+
+|Integer
+|I
+
+|BigDecimal
+|G
+
+|Double
+|D
+
+|Float
+|F
+|====
+
+Examples:
+
+[source,groovy]
+----
+include::../test/SyntaxTest.groovy[tags=number_type_suffixes_example,indent=0]
+----
+
 == Booleans
+
+Boolean is a special data type that is used to represent truth values: ++true++ and ++false++.
+Use this data type for simple flags that track true/false <<_conditional_operators,conditions>>.
+
+Boolean values can be stored in variables, just like any other data type:
+
+[source,groovy]
+----
+include::../test/SyntaxTest.groovy[tags=variable_store_boolean_value,indent=0]
+----
+
+++true++ and ++false++ are the only two primitive boolean values.
+But more complex boolean expressions can be represented using <<_bitwise_and_logical_operators,logical operators>>.
+In addition, Groovy has <<_the_groovy_truth,special rules>> (often referred to as _Groovy Truth_) for coercing non-boolean objects to a boolean value.
 
 == Arrays
 

@@ -1,6 +1,7 @@
 = Groovy Language Documentation
 :toc:
-:icons:
+:toclevels: 10
+:icons: font
 :linkcss!:
 :numbered:
 :subprojroot: ../../../subprojects/groovy-
@@ -12,26 +13,22 @@ include::core-introduction.adoc[]
 
 :leveloffset: 2
 include::core-syntax.adoc[]
-include::core-semantics.adoc[]
 include::core-operators.adoc[]
 include::core-program-structure.adoc[]
 include::core-object-orientation.adoc[]
 include::core-closures.adoc[]
+include::core-semantics.adoc[]
 :leveloffset: 0
 
 == Tools
 
-=== groovyc, the Groovy compiler
-==== Ant task
-==== Maven integration
-===== GMaven and GMavenPlus
-===== The Groovy Eclipse Maven plugin
-==== Command-line compiler
-==== Joint compilation
-=== groovysh, the Groovy shell
-=== groovyConsole, the Groovy swing console
-=== groovydoc, the Groovy & Java documentation generator
-=== IDE integration
+:leveloffset: 2
+include::tools-groovyc.adoc[]
+include::tools-groovysh.adoc[]
+include::tools-groovyconsole.adoc[]
+include::tools-groovydoc.adoc[]
+include::tools-ide.adoc[]
+:leveloffset: 0
 
 == User Guides
 :leveloffset: 2
@@ -77,4 +74,15 @@ include::core-domain-specific-languages.adoc[]
 === Working with JMX
 === Creating Swing UIs
 === Security
-=== Design patterns in Groovy
+
+:leveloffset: 2
+
+include::design-pattern-in-groovy.adoc[]
+
+:leveloffset: 0
+
+== Acknowledgements
+
+:leveloffset: 2
+include::license-contributors.adoc[]
+:leveloffset: 0
