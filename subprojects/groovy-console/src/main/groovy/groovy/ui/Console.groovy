@@ -1180,7 +1180,7 @@ options:
         prefs.putInt("fontSize", newFontSize)
 
         // don't worry, the fonts won't be changed to this family, the styles will only derive from this
-        def newFont = new Font(inputEditor.defaultFamily, Font.PLAIN, newFontSize)
+        def newFont = new Font(prefs.get("fontName", inputEditor.defaultFamily), Font.PLAIN, newFontSize)
         inputArea.font = newFont
         outputArea.font = newFont
     }

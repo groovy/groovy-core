@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2010 the original author or authors.
+ * Copyright 2003-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package groovy.ui.view
 import groovy.ui.text.GroovyFilter
 import java.awt.Color
 import javax.swing.text.StyleConstants
-import javax.swing.text.StyleContext
 
 menuBarClass     = groovy.ui.view.BasicMenuBar
 contentPaneClass = groovy.ui.view.BasicContentPane
@@ -27,9 +26,6 @@ statusBarClass   = groovy.ui.view.BasicStatusBar
 
 styles = [
     // output window styles
-    regular: [
-            (StyleConstants.FontFamily): 'Monospaced'
-        ],
     prompt: [
             (StyleConstants.Foreground): new Color(0, 128, 0)
         ],
@@ -50,9 +46,6 @@ styles = [
         ],
 
     // syntax highlighting styles
-    (StyleContext.DEFAULT_STYLE) : [
-            (StyleConstants.FontFamily): 'Monospaced'
-        ],
     (GroovyFilter.COMMENT): [
             (StyleConstants.Foreground): Color.LIGHT_GRAY.darker().darker(),
             (StyleConstants.Italic) : true

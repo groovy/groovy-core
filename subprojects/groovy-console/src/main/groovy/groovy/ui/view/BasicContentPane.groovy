@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2010 the original author or authors.
+ * Copyright 2003-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ private def buildOutputArea(prefs) {
                 name: "outputArea",
                 contentType: "text/html",
                 background: new Color(255, 255, 218),
-                font: new Font("Monospaced", Font.PLAIN, prefs.getInt("fontSize", 12)),
+                font: new Font(prefs.get("fontName", "Monospaced"), Font.PLAIN, prefs.getInt("fontSize", 12)),
                 border: emptyBorder(4)
         )
     }
@@ -57,7 +57,7 @@ inputArea = inputEditor.textEditor
 // attach ctrl-enter to input area
 // need to wrap in actions to keep it from being added as a component
 actions {
-    container(inputArea, name: "inputArea", font:new Font("Monospaced", Font.PLAIN, prefs.getInt("fontSize", 12)), border:emptyBorder(4)) {
+    container(inputArea, name: "inputArea", font:new Font(prefs.get("fontName", "Monospaced"), Font.PLAIN, prefs.getInt("fontSize", 12)), border:emptyBorder(4)) {
         action(runAction)
         action(runSelectionAction)
         action(showOutputWindowAction)
@@ -71,7 +71,7 @@ actions {
 }
 
 // add styles to the output area, should this be moved into SwingBuilder somehow?
-outputArea.font = new Font("Monospaced", outputArea.font.style, outputArea.font.size)
+outputArea.font = new Font(prefs.get("fontName", "Monospaced"), outputArea.font.style, outputArea.font.size)
 StyledDocument doc = outputArea.styledDocument
 
 Style defStyle = StyleContext.defaultStyleContext.getStyle(StyleContext.DEFAULT_STYLE)
