@@ -5213,16 +5213,22 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      *
      * @param self  a List
      * @param range a Range indicating the items to get
-     * @return a sublist based on range borders or a new list if range is reversed
-     * @see java.util.List#subList(int,int)
+     * @return a new list instance based on range borders
+     *
      * @since 1.0
      */
     public static <T> List<T> getAt(List<T> self, Range range) {
         RangeInfo info = subListBorders(self.size(), range);
-        List<T> answer = self.subList(info.from, info.to);  // sublist is always exclusive, but Ranges are not
+
+        List<T> subList = self.subList(info.from, info.to);  // sublist is always exclusive, but Ranges are not
         if (info.reverse) {
-            answer = reverse(answer);
+            subList = reverse(subList);
         }
+
+        // trying to guess the concrete list type and create a new instance from it
+        List<T> answer = createSimilarList(self, subList.size());
+        answer.addAll(subList);
+
         return answer;
     }
 
@@ -5258,9 +5264,8 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      *
      * @param self  a ListWithDefault
      * @param range a Range indicating the items to get
-     * @return a new eager or lazy sublist based on range borders
      *
-     * @see java.util.List#subList(int,int)
+     * @return a new eager or lazy list instance based on range borders
      */
     public static <T> List<T> getAt(ListWithDefault<T> self, Range range) {
         RangeInfo info = subListBorders(self.size(), range);
@@ -5274,6 +5279,9 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
         List<T> answer = self.subList(info.from, info.to);  // sublist is always exclusive, but Ranges are not
         if (info.reverse) {
             answer =  ListWithDefault.newInstance(reverse(answer), self.isLazyDefaultValues(), self.getInitClosure());
+        } else {
+            // instead of using the SubList backed by the parent list, a new ArrayList instance is used
+            answer =  ListWithDefault.newInstance(new ArrayList<T>(answer), self.isLazyDefaultValues(), self.getInitClosure());
         }
 
         return answer;
@@ -5281,17 +5289,17 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
 
     /**
      * Support the range subscript operator for an eager or lazy List.
-     * <pre class="groovyTestCase">def list = [true, 1, 3.4]
+     * <pre class="groovyTestCase">def list = [true, 1, 3.4].withDefault{ 42 }
      * assert list[0..<0] == []</pre>
      *
      * @param self  a ListWithDefault
      * @param range a Range indicating the items to get
-     * @return a sublist based on range borders or a new list if range is reversed
      *
-     * @see java.util.List#subList(int,int)
+     * @return a new list instance based on range borders
+     *
      */
     public static <T> List<T> getAt(ListWithDefault<T> self, EmptyRange range) {
-        return ListWithDefault.newInstance(self.getDelegate(), self.isLazyDefaultValues(), self.getInitClosure());
+        return ListWithDefault.newInstance(new ArrayList<T>(), self.isLazyDefaultValues(), self.getInitClosure());
     }
 
     /**
@@ -5301,12 +5309,12 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      *
      * @param self  a List
      * @param range a Range indicating the items to get
-     * @return a sublist based on range borders or a new list if range is reversed
-     * @see java.util.List#subList(int,int)
+     * @return a new list instance based on range borders
+     *
      * @since 1.0
      */
     public static <T> List<T> getAt(List<T> self, EmptyRange range) {
-        return new ArrayList<T> ();
+        return createSimilarList(self, 0);
     }
 
     /**
@@ -11125,6 +11133,17 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     }
 
     /**
+     * Bitwise NEGATE a Number.
+     *
+     * @param left a Number
+     * @return the bitwise NEGATE of the Number
+     * @since 2.2.0
+     */
+    public static Number bitwiseNegate(Number left) {
+        return NumberMath.bitwiseNegate(left);
+    }
+
+    /**
      * Bitwise OR together two BitSets.  Called when the '|' operator is used
      * between two bit sets.
      *
@@ -11175,6 +11194,18 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
         return NumberMath.unaryMinus(left);
     }
 
+    /**
+     * Returns the number, effectively being a noop for numbers.
+     * Operator overloaded form of the '+' operator when it preceeds
+     * a single operand, i.e. <code>+10</code>
+     *
+     * @param left a Number
+     * @return the number
+     * @since 2.2.0
+     */
+    public static Number unaryPlus(Number left) {
+        return NumberMath.unaryPlus(left);
+    }
 
     /**
      * Executes the closure this many times, starting from zero.  The current

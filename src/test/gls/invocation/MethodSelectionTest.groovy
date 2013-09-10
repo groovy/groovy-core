@@ -70,6 +70,34 @@ public class MethodSelectionTest extends CompilableTestSupport {
       def n(String x){1}
       assert n(null) == 1
     """
+    
+    // Exception defines Throwable and String versions, which are both equal
+    shouldFail """
+        new Exception(null)
+    """
+    
+    shouldFail """
+        class A {
+            public A(String a){}
+            public A(Throwable t){}
+            public A(){this(null)}
+        }
+        new A()
+    """
+    
+    shouldFail """
+        class A{}
+        class B{}
+        def m(A a){}
+        def m(B b){}
+        m(null)
+    """
+    shouldFail """
+        class A extends Exception {
+            public A(){super(null)}
+        }
+        new A()
+    """
   }
   
   void testMethodSelectionException() {
@@ -351,6 +379,31 @@ public class MethodSelectionTest extends CompilableTestSupport {
           assert getStringArrayDirectly_Length() == getStringArrayIndirectlyWithType_Length()
           assert getStringArrayIndirectlyWithType_Length() == getStringArrayIndirectlyWithoutType_Length()
       """
+  }
+  
+  //GROOVY-6189
+  void testSAMs(){
+      // simple direct case
+      assertScript """
+          interface MySAM {
+              def someMethod()
+          }
+          def foo(MySAM sam) {sam.someMethod()}
+          assert foo {1} == 1
+      """
+
+      // overloads with classes implemented by Closure
+      ["java.util.concurrent.Callable", "Object", "Closure", "GroovyObjectSupport", "Cloneable", "Runnable", "GroovyCallable", "Serializable", "GroovyObject"].each {
+          className ->
+          assertScript """
+              interface MySAM {
+                  def someMethod()
+              }
+              def foo(MySAM sam) {sam.someMethod()}
+              def foo($className x) {2}
+              assert foo {1} == 2
+          """
+      }
   }
 }
 

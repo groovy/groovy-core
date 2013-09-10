@@ -16,7 +16,9 @@
 package org.codehaus.groovy.classgen;
 
 import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.stmt.ReturnStatement;
+import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.AnnotationConstantsVisitor;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.ErrorCollector;
@@ -34,7 +36,7 @@ import org.objectweb.asm.Opcodes;
  *
  * @author <a href='mailto:the[dot]mindstorm[at]gmail[dot]com'>Alex Popescu</a>
  */
-public class ExtendedVerifier implements GroovyClassVisitor {
+public class ExtendedVerifier extends ClassCodeVisitorSupport implements GroovyClassVisitor {
     public static final String JVM_ERROR_MESSAGE = "Please make sure you are running on a JVM >= 1.5";
 
     private SourceUnit source;
@@ -62,6 +64,11 @@ public class ExtendedVerifier implements GroovyClassVisitor {
 
     public void visitField(FieldNode node) {
         visitAnnotations(node, AnnotationNode.FIELD_TARGET);
+    }
+
+    @Override
+    public void visitDeclarationExpression(DeclarationExpression expression) {
+        visitAnnotations(expression, AnnotationNode.LOCAL_VARIABLE_TARGET);
     }
 
     public void visitConstructor(ConstructorNode node) {
@@ -97,6 +104,11 @@ public class ExtendedVerifier implements GroovyClassVisitor {
             }
             this.source.getErrorCollector().addCollectorContents(errorCollector);
         }
+        Statement code = node.getCode();
+        if (code != null) {
+            code.visit(this);
+        }
+
     }
 
     public void visitProperty(PropertyNode node) {
@@ -124,6 +136,8 @@ public class ExtendedVerifier implements GroovyClassVisitor {
                         visited);
             }
             visitDeprecation(node, visited);
+            // TODO GROOVY-5011
+//            visitOverride(node, visited);
         }
     }
 
@@ -141,6 +155,36 @@ public class ExtendedVerifier implements GroovyClassVisitor {
             }
         }
     }
+
+    /*
+    // TODO GROOVY-5011 handle case of @Override on a property
+    private void visitOverride(AnnotatedNode node, AnnotationNode visited) {
+        ClassNode annotationClassNode = visited.getClassNode();
+        if (annotationClassNode.isResolved() && annotationClassNode.getName().equals("java.lang.Override")) {
+            if (node instanceof MethodNode) {
+                MethodNode mn = (MethodNode) node;
+                ClassNode cNode = node.getDeclaringClass();
+                ClassNode sNode = cNode;
+                outer:
+                while (sNode != null) {
+                    if (sNode != cNode && sNode.getDeclaredMethod(mn.getName(), mn.getParameters()) != null) break;
+                    for (ClassNode anInterface : sNode.getInterfaces()) {
+                        ClassNode iNode = anInterface;
+                        while (iNode != null) {
+                            if (iNode.getDeclaredMethod(mn.getName(), mn.getParameters()) != null) break outer;
+                            iNode = iNode.getSuperClass();
+                        }
+                    }
+                    sNode = sNode.getSuperClass();
+                }
+                if (sNode == null) {
+                    addError("Method '" + mn.getName() + "' from class '" + cNode.getName() + "' does not override " +
+                            "method from its superclass or interfaces but is annotated with @Override.", visited);
+                }
+            }
+        }
+    }
+    */
 
     /**
      * Resolve metadata and details of the annotation.
@@ -170,6 +214,11 @@ public class ExtendedVerifier implements GroovyClassVisitor {
                 new SyntaxErrorMessage(
                         new SyntaxException(msg + '\n', expr.getLineNumber(), expr.getColumnNumber(), expr.getLastLineNumber(), expr.getLastColumnNumber()), this.source)
         );
+    }
+
+    @Override
+    protected SourceUnit getSourceUnit() {
+        return source;
     }
 
     // TODO use it or lose it

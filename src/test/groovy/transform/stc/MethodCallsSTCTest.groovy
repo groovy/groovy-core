@@ -753,7 +753,8 @@ class MethodCallsSTCTest extends StaticTypeCheckingTestCase {
 
             new SpreadInCtor(*['A', 'B'])
         ''',
-                'The spread operator cannot be used as argument of method or closure calls with static type checking because the number of arguments cannot be determined at compile time'
+                'The spread operator cannot be used as argument of method or closure calls with static type checking because the number of arguments cannot be determined at compile time',
+                'Cannot find matching method SpreadInCtor#<init>(java.util.List <E extends java.lang.Object>)'
     }
 
     void testSpreadArgsForbiddenInClosureCall() {
@@ -922,6 +923,47 @@ class MethodCallsSTCTest extends StaticTypeCheckingTestCase {
             })
             def result = select(o,s)
             assert result == 1
+        '''
+    }
+
+    // GROOVY-6195
+    void testShouldNotThrowAmbiguousVargs() {
+        assertScript '''
+            def list = ['a', 'b', 'c']
+            Object[] arr = list.toArray()
+            println arr
+        '''
+    }
+
+    void testOverloadedMethodWithVargs() {
+        assertScript '''import org.codehaus.groovy.classgen.asm.sc.support.Groovy6235SupportSub as Support
+            def b = new Support()
+            assert b.overload() == 1
+            assert b.overload('a') == 1
+            assert b.overload('a','b') == 2
+        '''
+    }
+    
+    // GROOVY-5883 and GROOVY-6270
+    void testClosureUpperBound() {
+        assertScript '''
+            class Test<T> {
+                def map(Closure<T> mapper) { 1 }
+                def m1(Closure<Boolean> predicate) {
+                    map { T it -> return predicate(it) ? it : null }
+                }
+                def m2(Closure<Boolean> predicate) {
+                    map { T it -> return predicate(it) ? it : (T) null }
+                }
+                def m3(Closure<Boolean> predicate) {
+                    Closure<T> c = { T it -> return predicate(it) ? it : null }
+                    map(c)
+                }
+            }
+            def t = new Test<String>()
+            assert t.m1{true} == 1
+            assert t.m2{true} == 1
+            assert t.m3{true} == 1
         '''
     }
 

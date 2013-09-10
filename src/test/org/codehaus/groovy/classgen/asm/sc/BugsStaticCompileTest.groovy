@@ -936,5 +936,88 @@ import groovy.transform.TypeCheckingMode
         assert isCaseNullCS(2,1) == false
         '''
     }
+
+    // GROOVY-6242
+    void testGetAtBigInt() {
+        assertScript '''
+class Sequence {
+    public Sequence() {}
+    static BigInteger getAt(final int index) { 1G }
+    static BigInteger getAt(final BigInteger index) { getAt(index as int) }
+}
+
+class Iterator implements java.util.Iterator {
+    private BigInteger currentIndex = 0G
+    private final Sequence sequence
+    Iterator(final Sequence s) { sequence = s }
+    boolean hasNext() { return true }
+    @ASTTest(phase=INSTRUCTION_SELECTION,value={
+        def expr = node.code.statements[0].expression
+        def indexType = expr.rightExpression.getNodeMetaData(INFERRED_TYPE)
+        assert indexType == make(BigInteger)
+    })
+    BigInteger next() { sequence[currentIndex++] }
+    void remove() { throw new UnsupportedOperationException() }
+}
+
+def it = new Iterator(new Sequence())
+assert it.next() == 1G
+'''
+    }
+
+    // GROOVY-6243
+    void testSwapUsingMultipleAssignment() {
+        assertScript '''
+        def swap(result,next) {
+            print "($result,$next) -> "
+            (result, next) =  [next, result]
+            println "($result,$next)"
+            [result, next]
+        }
+
+        assert swap(0,1) == [1,0]
+        assert swap('a','b') == ['b','a']
+        assert swap('a', 1) == [1, 'a']
+        def o1 = new Object()
+        def o2 = new Date()
+        assert swap(o1,o2) == [o2, o1]
+        '''
+    }
+
+    // GROOVY-5882
+    void testMod() {
+        assertScript """
+            int foo(Map<Integer, Object> markers, int i) {
+                int res = 0
+                for (e in markers.entrySet()) {
+                    res += i % e.key
+                }
+                return res
+            }
+            assert foo([(1):null,(2):null,(3):null],2)==2
+        """
+
+        assertScript """
+            int foo(Map<Integer, Object> markers, int i) {
+                int res = 0
+                for (e in markers.entrySet()) {
+                    int intKey = e.key
+                    res += i % intKey
+                }
+                return res
+            }
+            assert foo([(1):null,(2):null,(3):null],2)==2
+        """
+        assertScript """
+            int foo(Map<Integer, Object> markers, int i) {
+                int res = 0
+                for (e in markers.entrySet()) {
+                    res += i % e.key.intValue()
+                }
+                return res
+            }
+            assert foo([(1):null,(2):null,(3):null],2)==2
+        """
+    }
 }
 

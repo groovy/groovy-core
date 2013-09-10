@@ -134,7 +134,7 @@ class MiscSTCTest extends StaticTypeCheckingTestCase {
             foo.with {
                 name = 'Error'
             }
-        ''', 'The variable [name] is undeclared.' // todo: can we provide a better error message ?
+        ''', 'Cannot set read-only property: name'
     }
 
     void testFindMethodFromSameClass() {
@@ -290,7 +290,7 @@ class MiscSTCTest extends StaticTypeCheckingTestCase {
         '''
     }
 
-    // GROOVY-6165
+    // GROOVY-6165 && GROOVY-6196
     void testPropertyNameFromMethodName() {
         // too bad we're not using Spock!
 
@@ -306,7 +306,8 @@ class MiscSTCTest extends StaticTypeCheckingTestCase {
                 ['get', 'get_foo', '_foo'],
                 [null, 'foo', null],
                 ['foo', null, null],
-                [null,null,null]
+                [null,null,null],
+                ['get', 'getaList', 'aList']
         ]
         tests.each { prefix, methodName, expectation ->
             assert StaticTypeCheckingVisitor.extractPropertyNameFromMethodName(prefix, methodName) == expectation

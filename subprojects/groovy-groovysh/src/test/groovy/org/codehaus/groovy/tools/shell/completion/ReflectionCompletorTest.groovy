@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2007 the original author or authors.
+ * Copyright 2003-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package org.codehaus.groovy.tools.shell
+package org.codehaus.groovy.tools.shell.completion
 
 import org.codehaus.groovy.antlr.parser.GroovyLexer
-import org.codehaus.groovy.tools.shell.completion.ReflectionCompletor
+import org.codehaus.groovy.tools.shell.Interpreter
 
 import static org.codehaus.groovy.tools.shell.completion.TokenUtilTest.tokenList
 import static org.codehaus.groovy.tools.shell.completion.TokenUtilTest.tokensString
@@ -68,9 +68,9 @@ class ReflectionCompletorUnitTest extends GroovyTestCase {
         assertTrue(result.toString(), "notify()" in result)
         assertTrue("bitCount(" in result)
         result = ReflectionCompletor.getPublicFieldsAndMethods(3, "una")
-        assertEquals(["unaryMinus()"], result)
+        assertEquals(["unaryMinus()", "unaryPlus()"], result)
         result = ReflectionCompletor.getPublicFieldsAndMethods(Integer, "una")
-        assertEquals(["unaryMinus()"], result)
+        assertEquals(["unaryMinus()", "unaryPlus()"], result)
         result = ReflectionCompletor.getPublicFieldsAndMethods(Integer, "MA")
         assertEquals(["MAX_VALUE"], result)
         result = ReflectionCompletor.getPublicFieldsAndMethods(Integer, "getI")

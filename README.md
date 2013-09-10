@@ -23,15 +23,15 @@ To build everything and launch unit tests, use
 
 To build from IntelliJ IDEA
 
-    ./gradlew idea
-    ./gradlew jarAll
+    ./gradlew jarAll idea
 
 Then open the generated project in IDEA.
 
-To build from Eclipse:
+To build from Eclipse
 
-Sadly this is not possible at the moment (10/23/2013).
+    ./gradlew jarAll eclipse
 
+Then open the generated project and the generated subprojects in Eclipse.
 
 InvokeDynamic support
 ---

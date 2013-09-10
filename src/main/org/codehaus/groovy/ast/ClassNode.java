@@ -757,7 +757,7 @@ public class ClassNode extends AnnotatedNode implements Opcodes {
 
     public List<Statement> getObjectInitializerStatements() {
         if (objectInitializers == null)
-            objectInitializers = new ArrayList<Statement> ();
+            objectInitializers = new LinkedList<Statement> ();
         return objectInitializers;
     }
 
@@ -1145,7 +1145,7 @@ public class ClassNode extends AnnotatedNode implements Opcodes {
      * in GenericsType calls ClassNode.toString(), which calls GenericsType.toString(), etc. 
      * @param genericsType
      * @param showRedirect
-     * @return
+     * @return the string representing the generic type
      */
     private String genericTypeAsString(GenericsType genericsType, boolean showRedirect) {
         String ret = genericsType.getName();

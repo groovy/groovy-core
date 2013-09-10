@@ -23,6 +23,7 @@ import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.tools.GenericsUtils;
 import org.codehaus.groovy.ast.tools.WideningCategories;
 import org.codehaus.groovy.control.CompilationUnit;
+import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.DefaultGroovyStaticMethods;
 import org.codehaus.groovy.runtime.m12n.ExtensionModule;
@@ -185,8 +186,8 @@ public abstract class StaticTypeCheckingSupport {
         }
         if (clazz.isArray()) {
             ClassNode componentClass = clazz.getComponentType();
-            if (!componentClass.equals(OBJECT_TYPE)) {
-                if (componentClass.isInterface() || componentClass.getSuperClass()==null) {
+            if (!componentClass.equals(OBJECT_TYPE) && !ClassHelper.isPrimitiveType(componentClass)) {
+                if (componentClass.isInterface()) {
                     findDGMMethodsForClassNode(loader, OBJECT_TYPE.makeArray(), name, accumulator);
                 } else {
                     findDGMMethodsForClassNode(loader, componentClass.getSuperClass().makeArray(), name, accumulator);
@@ -304,7 +305,7 @@ public abstract class StaticTypeCheckingSupport {
      * assignment checks where you want to verify that the assignment is valid.
      * @param type
      * @param toBeAssignedTo
-     * @return
+     * @return true if the class node is assignable to the other class node, false otherwise
      */
     static boolean isAssignableTo(ClassNode type, ClassNode toBeAssignedTo) {
         if (UNKNOWN_PARAMETER_TYPE==type) return true;
@@ -359,9 +360,14 @@ public abstract class StaticTypeCheckingSupport {
                 return gt.isCompatibleWith(type);
             }
             return true;
-        } else {
-            return false;
         }
+
+        //SAM check
+        if (type.isDerivedFrom(CLOSURE_TYPE) && isSAMType(toBeAssignedTo)) {
+            return true;
+        }
+
+        return false;
     }
 
     static boolean isVargs(Parameter[] params) {
@@ -627,6 +633,12 @@ public abstract class StaticTypeCheckingSupport {
         if (GROOVY_OBJECT_TYPE.equals(leftRedirect) && isBeingCompiled(right)) {
             return true;
         }
+
+        //SAM check
+        if (rightRedirect.isDerivedFrom(CLOSURE_TYPE) && isSAMType(leftRedirect)) {
+            return true;
+        }
+
         return false;
     }
 
@@ -1015,11 +1027,16 @@ public abstract class StaticTypeCheckingSupport {
                     System.arraycopy(params, 0, firstParams, 0, firstParams.length);
                     dist = allParametersAndArgumentsMatch(firstParams, args);
                     firstParamMatches =  dist >= 0;
+                } else {
+                    dist = 0;
                 }
                 if (firstParamMatches) {
                     // there are three case for vargs
                     // (1) varg part is left out
                     if (params.length == args.length + 1) {
+                        if (dist>=0) {
+                            dist += 256-params.length; // ensure exact matches are preferred over vargs
+                        }
                         if (bestDist > 1+dist) {
                             bestChoices.clear();
                             bestChoices.add(m);
@@ -1336,10 +1353,11 @@ public abstract class StaticTypeCheckingSupport {
 
     public static boolean missesGenericsTypes(ClassNode cn) {
         if (cn.isArray()) return missesGenericsTypes(cn.getComponentType());
-        if (cn.redirect().isUsingGenerics() && !cn.isUsingGenerics()) return true;
-        if (cn.isUsingGenerics()) {
-            if (cn.getGenericsTypes()==null) return true;
-            for (GenericsType genericsType : cn.getGenericsTypes()) {
+        GenericsType[] cnTypes = cn.getGenericsTypes();
+        GenericsType[] rnTypes = cn.redirect().getGenericsTypes();
+        if (rnTypes!=null && cnTypes==null) return true;
+        if (cnTypes!=null) {
+            for (GenericsType genericsType : cnTypes) {
                 if (genericsType.isPlaceholder()) return true;
             }
         }
@@ -1354,14 +1372,16 @@ public abstract class StaticTypeCheckingSupport {
      * If this method throws an exception, then the expression cannot be evaluated on its own.
      *
      * @param expr the expression to be evaluated
+     * @param config the compiler configuration
      * @return the result of the expression
      */
-    public static Object evaluateExpression(Expression expr) {
+    public static Object evaluateExpression(Expression expr, CompilerConfiguration config) {
         String className = "Expression$" + UUID.randomUUID().toString().replace('-', '$');
         ClassNode node = new ClassNode(className, Opcodes.ACC_PUBLIC, ClassHelper.OBJECT_TYPE);
         ReturnStatement code = new ReturnStatement(expr);
         node.addMethod(new MethodNode("eval", Opcodes.ACC_PUBLIC+Opcodes.ACC_STATIC, ClassHelper.OBJECT_TYPE, Parameter.EMPTY_ARRAY, ClassNode.EMPTY_ARRAY, code));
-        CompilationUnit cu = new CompilationUnit();
+        CompilerConfiguration copyConf = new CompilerConfiguration(config);
+        CompilationUnit cu = new CompilationUnit(copyConf);
         cu.addClassNode(node);
         cu.compile();
         @SuppressWarnings("unchecked")

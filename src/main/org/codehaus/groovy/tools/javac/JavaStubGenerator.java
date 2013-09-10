@@ -125,6 +125,13 @@ public class JavaStubGenerator {
         }
         try {
             Verifier verifier = new Verifier() {
+                @Override
+                public void visitClass(final ClassNode node) {
+                    List<Statement> savedStatements = new ArrayList<Statement>(node.getObjectInitializerStatements());
+                    super.visitClass(node);
+                    node.getObjectInitializerStatements().addAll(savedStatements);
+                }
+
                 public void addCovariantMethods(ClassNode cn) {}
                 protected void addTimeStamp(ClassNode node) {}
                 protected void addInitialization(ClassNode node) {}
@@ -723,13 +730,13 @@ public class JavaStubGenerator {
     }
 
     private void printAnnotation(PrintWriter out, AnnotationNode annotation) {
-        out.print("@" + annotation.getClassNode().getName() + "(");
+        out.print("@" + annotation.getClassNode().getName().replace('$', '.') + "(");
         boolean first = true;
         Map<String, Expression> members = annotation.getMembers();
         for (String key : members.keySet()) {
             if (first) first = false;
             else out.print(", ");
-            out.print(key + "=" + getAnnotationValue(members.get(key)));
+            out.print(key + "=" + getAnnotationValue(members.get(key)).replace('$', '.'));
         }
         out.print(") ");
     }

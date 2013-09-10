@@ -569,5 +569,107 @@ class TypeInferenceSTCTest extends StaticTypeCheckingTestCase {
             convertValueToType('foo', String)
         '''
     }
+
+    void testSwitchCaseAnalysis() {
+        assertScript '''import org.codehaus.groovy.ast.tools.WideningCategories.LowestUpperBoundClassNode as LUB
+
+            def method(int x) {
+                def returnValue= new Date()
+                switch (x) {
+                    case 1:
+                        returnValue = 'string'
+                        break;
+                    case 2:
+                        returnValue = 1;
+                        break;
+                }
+                @ASTTest(phase=INSTRUCTION_SELECTION,value={
+                    def ift = node.getNodeMetaData(INFERRED_TYPE)
+                    assert ift instanceof LUB
+                    assert ift.name == 'java.io.Serializable'
+                })
+                def val = returnValue
+
+                returnValue
+            }
+        '''
+    }
+
+    void testGroovy6215() {
+        assertScript '''
+                def processNumber(int x) {
+                    def value = getValueForNumber(x)
+                    value
+                }
+
+                def getValueForNumber(int x) {
+                    def valueToReturn
+                    switch(x) {
+                        case 1:
+                            valueToReturn = 'One'
+                            break
+                        case 2:
+                            valueToReturn = []
+                            valueToReturn << 'Two'
+                            break
+                    }
+                    valueToReturn
+                }
+                def v1 = getValueForNumber(1)
+                def v2 = getValueForNumber(2)
+                def v3 = getValueForNumber(3)
+                assert v1 == 'One'
+                assert v2 == ['Two']
+                assert v3 == null
+        '''
+    }
+
+    void testNumberPrefixPlusPlusInference() {
+        [Byte:'Integer',
+         Character: 'Character',
+         Short: 'Integer',
+         Integer: 'Integer',
+         Long: 'Long',
+         Float: 'Double',
+         Double: 'Double',
+         BigDecimal: 'BigDecimal',
+         BigInteger: 'BigInteger'
+        ].each { orig, dest ->
+            assertScript """
+            $orig b = 65 as $orig
+            @ASTTest(phase=INSTRUCTION_SELECTION, value={
+                def rit = node.rightExpression.getNodeMetaData(INFERRED_TYPE)
+                assert rit == make($dest)
+            })
+            def pp = ++b
+            println '++${orig} -> ' + pp.class + ' ' + pp
+            assert pp.class == ${dest}
+            """
+        }
+    }
+
+    void testNumberPostfixPlusPlusInference() {
+        [Byte:'Byte',
+         Character: 'Character',
+         Short: 'Short',
+         Integer: 'Integer',
+         Long: 'Long',
+         Float: 'Float',
+         Double: 'Double',
+         BigDecimal: 'BigDecimal',
+         BigInteger: 'BigInteger'
+        ].each { orig, dest ->
+            assertScript """
+            $orig b = 65 as $orig
+            @ASTTest(phase=INSTRUCTION_SELECTION, value={
+                def rit = node.rightExpression.getNodeMetaData(INFERRED_TYPE)
+                assert rit == make($dest)
+            })
+            def pp = b++
+            println '${orig}++ -> ' + pp.class + ' ' + pp
+            assert pp.class == ${dest}
+            """
+        }
+    }
 }
 
