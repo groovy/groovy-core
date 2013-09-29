@@ -357,4 +357,14 @@ class GrapeIvyTest extends CompilableTestSupport {
 
         assert Grape.getInstance().ivyInstance.settings.defaultResolver.name == 'downloadGrapes'
     }
+    
+    public void testGrabWithCallback() {
+        boolean callbackHappend = false
+        
+        Grape.grab([groupId:'log4j', artifactId:'log4j', version:'1.1.3', classLoader:new GroovyClassLoader()]) {
+            callbackHappend = true
+        }
+        
+        assert callbackHappend == true
+    }
 }

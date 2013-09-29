@@ -15,10 +15,12 @@
  */
 package groovy.grape;
 
+import groovy.lang.Closure;
+
+import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.net.URI;
 
 /**
  * Facade to GrapeEngine.
@@ -148,6 +150,11 @@ public class Grape {
                 instance.grab(dependency);
             }
         }
+    }
+    
+    public static void grab(Map<String, Object> dependency, Closure callback) {
+        grab(dependency);
+        callback.call();
     }
 
     public static void grab(Map<String, Object> args, Map... dependencies) {
