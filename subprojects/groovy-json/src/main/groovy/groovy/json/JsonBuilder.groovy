@@ -15,6 +15,8 @@
  */
 package groovy.json
 
+import java.io.File
+
 /**
  * A builder for creating JSON payloads.
  * <p>
@@ -276,5 +278,13 @@ class JsonBuilder implements Writable {
      */
     Writer writeTo(Writer out) {
         out << toString()
+    }
+
+    File writeTo(File file, boolean pretty) {
+	file.write(pretty ? toPrettyString() : toString())
+    }
+
+    File writeTo(File file) {
+        writeTo(file, false)
     }
 }
