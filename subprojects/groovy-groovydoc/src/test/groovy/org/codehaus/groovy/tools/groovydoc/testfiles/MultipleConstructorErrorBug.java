@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2007 the original author or authors.
+ * Copyright 2003-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.codehaus.groovy.tools.groovydoc.testfiles;
 
-package groovy.swing.factory
 
-import javax.swing.JInternalFrame
+public class MultipleConstructorErrorBug {
 
-class InternalFrameFactory extends groovy.swing.factory.RootPaneContainerFactory {
+    public static String VARBINARY(Object value) { return ""; }
+    public static String VARCHAR(Object value) { return ""; }
 
-    public Object newInstance(FactoryBuilderSupport builder, Object name, Object value, Map attributes) throws InstantiationException, IllegalAccessException {
-        if (FactoryBuilderSupport.checkValueIsType(value, name, JInternalFrame)) {
-            return value;
-        }
-        JInternalFrame frame = new JInternalFrame();
+    public MultipleConstructorErrorBug(String dataSource) {
+    }
 
-        return frame;
+    public MultipleConstructorErrorBug(Integer connection) {
+    }
+
+    public MultipleConstructorErrorBug(MultipleConstructorErrorBug parent) {
     }
 }

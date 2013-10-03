@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2007 the original author or authors.
+ * Copyright 2003-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.codehaus.groovy.runtime;
 
-package groovy.swing.factory
+public class RangeInfo {
+    public final int from;
+    public final int to;
+    public final boolean reverse;
 
-import javax.swing.JInternalFrame
-
-class InternalFrameFactory extends groovy.swing.factory.RootPaneContainerFactory {
-
-    public Object newInstance(FactoryBuilderSupport builder, Object name, Object value, Map attributes) throws InstantiationException, IllegalAccessException {
-        if (FactoryBuilderSupport.checkValueIsType(value, name, JInternalFrame)) {
-            return value;
-        }
-        JInternalFrame frame = new JInternalFrame();
-
-        return frame;
+    public RangeInfo(int from, int to, boolean reverse) {
+        this.from = from;
+        this.to = to;
+        this.reverse = reverse;
     }
 }

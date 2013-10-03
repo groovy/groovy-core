@@ -251,7 +251,7 @@ options:
         shell = new GroovyShell(parent, binding, config)
     }
 
-    static def frameConsoleDelegates = [
+    static frameConsoleDelegates = [
             rootContainerDelegate:{
                 frame(
                     title: 'GroovyConsole',
@@ -672,11 +672,11 @@ options:
     boolean fileSave(EventObject evt = null) {
         if (scriptFile == null) {
             return fileSaveAs(evt)
-        } else {
-            scriptFile.write(inputArea.text)
-            setDirty(false)
-            return true
         }
+
+        scriptFile.write(inputArea.text)
+        setDirty(false)
+        return true
     }
 
     // Save file - return false if user cancelled save

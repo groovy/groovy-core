@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2007 the original author or authors.
+ * Copyright 2007-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.codehaus.groovy.tools.groovydoc.testfiles;
 
-package groovy.swing.factory
+import java.util.HashMap;
+import java.util.Map;
 
-import javax.swing.JInternalFrame
-
-class InternalFrameFactory extends groovy.swing.factory.RootPaneContainerFactory {
-
-    public Object newInstance(FactoryBuilderSupport builder, Object name, Object value, Map attributes) throws InstantiationException, IllegalAccessException {
-        if (FactoryBuilderSupport.checkValueIsType(value, name, JInternalFrame)) {
-            return value;
-        }
-        JInternalFrame frame = new JInternalFrame();
-
-        return frame;
+public class StaticModifier {
+    public static Map<String, String> getSyntheticProperties() {
+        Map<String, String> result = new HashMap<String, String>();
+        return result;
     }
 }
