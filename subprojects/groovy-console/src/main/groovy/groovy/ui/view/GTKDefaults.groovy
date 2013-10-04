@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2010 the original author or authors.
+ * Copyright 2003-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,15 @@ import javax.swing.JComponent
 import javax.swing.text.StyleConstants
 import javax.swing.text.StyleContext
 import org.codehaus.groovy.runtime.InvokerHelper
+import java.util.prefs.Preferences
 
 build(Defaults)
 
-// change font to DejaVu Sans Mono, much clearer
-styles.regular[StyleConstants.FontFamily] = 'DejaVu Sans Mono'
-styles[StyleContext.DEFAULT_STYLE][StyleConstants.FontFamily] = 'DejaVu Sans Mono'
+def prefs = Preferences.userNodeForPackage(groovy.ui.Console)
+def fontFamily = prefs.get("fontName", "Monospaced")
+
+styles.regular[StyleConstants.FontFamily] = fontFamily
+styles[StyleContext.DEFAULT_STYLE][StyleConstants.FontFamily] = fontFamily
 
 // possibly change look and feel
 if (System.properties['java.version'] =~ /^1\.5/) {

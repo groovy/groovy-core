@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2013 the original author or authors.
+ * Copyright 2003-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -138,9 +138,8 @@ public class ConsoleTextEditor extends JScrollPane {
      * Creates a new instance of ConsoleTextEditor
      */
     public ConsoleTextEditor() {
-        textEditor.setFont(new Font(Preferences.userNodeForPackage(Console.class).get("fontName", defaultFamily),
-            Font.PLAIN, Preferences.userNodeForPackage(Console.class).getInt("fontSize", 12)));
-
+        textEditor.setFont(new Font(defaultFamily, Font.PLAIN, Preferences.userNodeForPackage(Console.class).getInt("fontSize", 12)));
+        
         setViewportView(new JPanel(new BorderLayout()) {{
             add(numbersPanel, BorderLayout.WEST);
             add(textEditor, BorderLayout.CENTER);

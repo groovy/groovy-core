@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2010 the original author or authors.
+ * Copyright 2003-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +19,18 @@ import javax.swing.JComponent
 import javax.swing.text.StyleConstants
 import javax.swing.text.StyleContext
 import org.codehaus.groovy.runtime.InvokerHelper
+import java.util.prefs.Preferences
 
 build(Defaults)
+
+def prefs = Preferences.userNodeForPackage(groovy.ui.Console)
+def fontFamily = prefs.get("fontName", "Consolas")
 
 // change fonts for vista
 if (System.properties['os.version'] =~ /6\./) {
     // Vista/Server 2008 or later
-    styles.regular[StyleConstants.FontFamily] = 'Consolas'
-    styles[StyleContext.DEFAULT_STYLE][StyleConstants.FontFamily] = 'Consolas'
+    styles.regular[StyleConstants.FontFamily] = fontFamily
+    styles[StyleContext.DEFAULT_STYLE][StyleConstants.FontFamily] = fontFamily
 
     // in JDK 1.5 we need to turn on anti-aliasing so consoles looks better
     if (System.properties['java.version'] =~ /^1\.5/) {

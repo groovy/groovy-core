@@ -18,14 +18,22 @@ package groovy.ui.view
 import groovy.ui.text.GroovyFilter
 import java.awt.Color
 import javax.swing.text.StyleConstants
+import javax.swing.text.StyleContext
+import java.util.prefs.Preferences
 
 menuBarClass     = groovy.ui.view.BasicMenuBar
 contentPaneClass = groovy.ui.view.BasicContentPane
 toolBarClass     = groovy.ui.view.BasicToolBar
 statusBarClass   = groovy.ui.view.BasicStatusBar
 
+def prefs = Preferences.userNodeForPackage(groovy.ui.Console)
+def fontFamily = prefs.get("fontName", "Monospaced")
+
 styles = [
     // output window styles
+    regular: [
+            (StyleConstants.FontFamily): fontFamily
+        ],
     prompt: [
             (StyleConstants.Foreground): new Color(0, 128, 0)
         ],
@@ -46,6 +54,9 @@ styles = [
         ],
 
     // syntax highlighting styles
+    (StyleContext.DEFAULT_STYLE) : [
+            (StyleConstants.FontFamily): fontFamily
+        ],
     (GroovyFilter.COMMENT): [
             (StyleConstants.Foreground): Color.LIGHT_GRAY.darker().darker(),
             (StyleConstants.Italic) : true
