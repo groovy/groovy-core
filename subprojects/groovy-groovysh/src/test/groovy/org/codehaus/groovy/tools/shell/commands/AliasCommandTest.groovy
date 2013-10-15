@@ -25,7 +25,6 @@ class AliasCommandTest
     extends CommandTestSupport
 {
     void testAlias() {
-
-        shell << 'alias'
+        shell.execute('alias')
     }
 }
