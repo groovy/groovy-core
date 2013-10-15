@@ -50,7 +50,7 @@ class Interpreter
         return shell.getClassLoader()
     }
 
-    def evaluate(final List buffer) {
+    def evaluate(final Collection<String> buffer) {
         assert buffer
 
         def source = buffer.join(Parser.NEWLINE)

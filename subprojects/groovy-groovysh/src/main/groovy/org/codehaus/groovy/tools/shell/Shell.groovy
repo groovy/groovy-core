@@ -113,7 +113,10 @@ class Shell
     Command register(final Command command) {
         return (registry << command) as Command
     }
-    
+
+    /**
+     * this should probably be deprecated
+     */
     def leftShift(final String line) {
         return execute(line)
     }

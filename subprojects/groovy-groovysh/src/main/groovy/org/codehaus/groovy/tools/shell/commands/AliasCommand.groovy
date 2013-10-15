@@ -16,6 +16,7 @@
 
 package org.codehaus.groovy.tools.shell.commands
 
+import org.codehaus.groovy.tools.shell.Command
 import org.codehaus.groovy.tools.shell.CommandSupport
 import org.codehaus.groovy.tools.shell.Shell
 
@@ -42,7 +43,7 @@ class AliasCommand
         String name = args[0]
         List target = args[1..-1]
         
-        def command = registry[name]
+        Command command = registry[name]
         
         if (command) {
             if (command instanceof AliasTargetProxyCommand) {

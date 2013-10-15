@@ -94,7 +94,7 @@ class EditCommand
         
         // load editor contents into current buffer
         for (line in contents) {
-            shell << line as String
+            shell.execute(line as String)
         }
     }
     
