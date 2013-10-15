@@ -89,7 +89,7 @@ class Shell
         def result = null
         
         if (command) {
-            def args = parseLine(line)
+            List<String> args = parseLine(line)
             
             if (args.size() == 1) {
                 args = []

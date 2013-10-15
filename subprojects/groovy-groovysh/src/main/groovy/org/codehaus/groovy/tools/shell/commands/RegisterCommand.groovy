@@ -33,7 +33,7 @@ class RegisterCommand
         super(shell, "register", "\\rc")
     }
 
-    public Object execute(List args) {
+    public Object execute(List<String> args) {
         assert args != null
 
         if (args.size() < 1) {

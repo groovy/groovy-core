@@ -64,7 +64,7 @@ class ImportCommand
 
     }
 
-    Object execute(final List args) {
+    Object execute(final List<String> args) {
         assert args != null
 
         if (args.isEmpty()) {

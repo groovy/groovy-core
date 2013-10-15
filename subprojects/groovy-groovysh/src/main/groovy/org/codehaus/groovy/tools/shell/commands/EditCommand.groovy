@@ -60,7 +60,7 @@ class EditCommand
         return editor
     }
     
-    Object execute(final List args) {
+    Object execute(final List<String> args) {
         assertNoArguments(args)
         
         File file = File.createTempFile('groovysh-buffer', '.groovy')
