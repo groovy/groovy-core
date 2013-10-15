@@ -49,18 +49,19 @@ class ImportCommand
         Completer asCompleter = new StringsCompleter('as')
         PackageHelper packageHelper = shell.packageHelper
         Interpreter interp = shell.interp
-        return new AggregateCompleter([
-                new ArgumentCompleter([
+        Collection<Completer> argCompleters = [
+                (Completer) new ArgumentCompleter([
                         impCompleter,
                         new ImportCompleter(packageHelper, interp, false),
                         asCompleter,
                         null]),
-                new ArgumentCompleter([
+                (Completer) new ArgumentCompleter([
                         impCompleter,
                         new StringsCompleter('static'),
                         new ImportCompleter(packageHelper, interp, true),
                         asCompleter,
-                        null])])
+                        null])]
+        return new AggregateCompleter(argCompleters)
 
     }
 
