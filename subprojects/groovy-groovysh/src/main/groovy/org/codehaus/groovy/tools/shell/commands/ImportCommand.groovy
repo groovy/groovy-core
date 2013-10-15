@@ -96,7 +96,7 @@ class ImportCommand
         }
         finally {
             // Remove the class generated while testing the import syntax
-            classLoader.classCache.remove(type?.name)
+            classLoader.removeClassCacheEntry(type?.name)
         }
     }
 }

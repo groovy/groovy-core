@@ -80,13 +80,11 @@ class Interpreter
             }
         }
         finally {
-            def cache = classLoader.classCache
-
             // Remove the script class generated
-            cache.remove(type?.name)
+            classLoader.removeClassCacheEntry(type?.name)
 
             // Remove the inline closures from the cache as well
-            cache.remove('$_run_closure')
+            classLoader.removeClassCacheEntry('$_run_closure')
         }
 
         return result
