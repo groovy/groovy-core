@@ -121,7 +121,6 @@ public class DefaultGroovyMethodsTest extends GroovyTestCase {
         assertEquals(DefaultGroovyMethods.trunc(d, 6), 1000.123456);
     }
 
-
     public void testToMethods() throws Exception {
         Number n = 7L;
         assertEquals(DefaultGroovyMethods.toInteger(n), new Integer(7));

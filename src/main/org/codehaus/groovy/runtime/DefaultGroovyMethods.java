@@ -11837,7 +11837,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     /**
      * Truncate the value
      *
-     * @param number a Double
+     * @param number a Float
      * @return the Float truncated to 0 decimal places (i.e. a synonym for floor)
      * @since 1.6.0
      */
