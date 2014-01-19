@@ -77,10 +77,12 @@ public class JsonSlurper {
             content = parseObject(lexer);
         } else if (token.getType() == OPEN_BRACKET) {
             content = parseArray(lexer);
+        } else if (token.getType().ordinal() >= NULL.ordinal()) {
+            content = token.getValue();
         } else {
             throw new JsonException(
-                    "A JSON payload should start with " + OPEN_CURLY.getLabel() +
-                            " or " + OPEN_BRACKET.getLabel() + ".\n" +
+                    "A JSON payload should start be a JSON object, array, string, boolean," +
+                            "number, or null.\n" +
                             "Instead, '" + token.getText() + "' was found " +
                             "on line: " + token.getStartLine() + ", " +
                             "column: " + token.getStartColumn()
