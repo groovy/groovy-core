@@ -81,7 +81,7 @@ public class JsonSlurper {
             content = token.getValue();
         } else {
             throw new JsonException(
-                    "A JSON payload should start be a JSON object, array, string, boolean," +
+                    "A JSON payload should be a JSON object, array, string, boolean," +
                             "number, or null.\n" +
                             "Instead, '" + token.getText() + "' was found " +
                             "on line: " + token.getStartLine() + ", " +
