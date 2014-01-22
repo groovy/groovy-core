@@ -62,6 +62,13 @@ class NullObjectTest extends GroovyTestCase {
             null+null
         }
     }
+
+    void testNullWith() {
+        def map = [ a:1, b:2 ]
+        map.c.with { c ->
+            assert c == null
+        }
+    }
 }
 
 class MyCategory {
