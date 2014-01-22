@@ -68,6 +68,9 @@ class NullObjectTest extends GroovyTestCase {
         map.c.with { c ->
             assert c == null
         }
+        null.with {
+            assert !(it instanceof NullObject)
+        }
     }
 }
 
