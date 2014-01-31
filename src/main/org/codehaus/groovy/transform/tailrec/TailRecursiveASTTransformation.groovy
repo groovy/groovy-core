@@ -18,9 +18,11 @@ import org.codehaus.groovy.transform.GroovyASTTransformation
 /**
  * Handles generation of code for the @TailRecursive annotation.
  *
+ * It's doing its work in the earliest possible compile phase
+ *
  * @author Johannes Link
  */
-@GroovyASTTransformation(phase = CompilePhase.SEMANTIC_ANALYSIS) //the earliest possible phase
+@GroovyASTTransformation(phase = CompilePhase.SEMANTIC_ANALYSIS)
 class TailRecursiveASTTransformation extends AbstractASTTransformation {
 
     private static final Class MY_CLASS = TailRecursive.class;
@@ -97,7 +99,7 @@ class TailRecursiveASTTransformation extends AbstractASTTransformation {
         new VariableAccessReplacer(nameAndTypeMapping: nameAndTypeMapping).replaceIn(method.code)
     }
 
-    private  parameterMappingFor(MethodNode method) {
+    private parameterMappingFor(MethodNode method) {
         def nameAndTypeMapping = [:]
         def positionMapping = [:]
         BlockStatement code = method.code
