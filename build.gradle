@@ -1,22 +1,22 @@
 apply from: 'gradle/filter.gradle'
 apply from: 'gradle/indy.gradle'
+if (JavaVersion.current().java6Compatible) {
+    apply from: 'gradle/bintray.gradle'
+}
 
 buildscript {
     repositories {
-        mavenCentral()
-        maven { 
-            name 'Bintray Asciidoctor repo'
-            url 'http://dl.bintray.com/content/aalmiray/asciidoctor' 
-        }
+        jcenter()
         maven {
-            name 'Bintray JCenter'
-            url 'http://jcenter.bintray.com'
+            name 'Bintray Asciidoctor repo'
+            url 'http://dl.bintray.com/content/aalmiray/asciidoctor'
         }
     }
 
     dependencies {
-        classpath 'org.asciidoctor:asciidoctor-gradle-plugin:0.5.0'
+        classpath 'org.asciidoctor:asciidoctor-gradle-plugin:0.7.0'
         classpath 'net.saliman:gradle-cobertura-plugin:1.1.2'
+        classpath 'org.jfrog.buildinfo:build-info-extractor-gradle:2.2.3'
     }
 }
 
@@ -36,7 +36,7 @@ allprojects {
     group = 'org.codehaus.groovy'
     version = groovyVersion
     repositories {
-        mavenCentral()
+        jcenter()
     }
 
     apply plugin: 'checkstyle'
@@ -52,12 +52,51 @@ allprojects {
         apply plugin: 'asciidoctor'
 
         asciidoctor {
+            def (full, major, minor, patch, flavor) = (groovyVersion =~ /(\d+)\.(\d++)\.(\d+)-?(.+)/)[0]
             logDocuments = true
             sourceDir = project.file('src/spec/doc')
+            options = [
+                    attributes: [
+                            'source-highlighter': 'prettify',
+                            groovyversion: groovyVersion,
+                            'groovy-major-version': major,
+                            'groovy-minor-version': minor,
+                            'groovy-patch-version': patch,
+                            'groovy-full-version': groovyVersion,
+                            'groovy-short-version': "${major}.${minor}",
+                            doctype: 'book',
+                            revnumber : groovyVersion,
+                            icons : 'font',
+                            toc2: '',
+                            subprojroot: 'subprojects/groovy-',
+                            specfolder: 'src/spec/doc',
+                            'linkcss!': '',
+                            encoding: 'utf-8'
+                    ]
+            ]
         }
 
         // skip the asciidoctor task if there's no directory with asciidoc files
         asciidoctor.onlyIf { project.file('src/spec/doc').exists() }
+
+        asciidoctor.doLast {
+            outputDir.eachFileMatch(~'.*html') { File file ->
+                def text = file.getText('UTF-8')
+                text = text.replaceAll(/gapi::([a-zA-Z0-9$.#]+)/) { m->
+                    def cName = m[1]
+                    def cPath = m[1].replace('.','/')
+                    def anchor = ''
+                    int anchorIdx = cPath.indexOf('#')
+                    if (anchorIdx>0) {
+                        anchor = cPath.substring(anchorIdx)
+                        cPath = cPath.substring(0, anchorIdx)
+                    }
+
+                    "<a href='http://groovy.codehaus.org/gapi/index.html?${cPath}.html${anchor}' target='_blank'><code>$cName</code></a>"
+                }
+                file.write(text,'UTF-8')
+            }
+        }
     }
 
     // don't fail build on CodeNarc tasks
@@ -70,7 +109,7 @@ allprojects {
         configFile = file("$rootProject.projectDir/config/checkstyle/checkstyle.xml")
         configProperties = ['rootProject.projectDir': rootProject.projectDir]
     }
-    
+
     if (useIndy()) {
         tasks.withType(GroovyCompile) {
             groovyOptions.optimizationOptions.indy = true
@@ -294,7 +333,7 @@ sourceSets {
             ]
             fileTree('src/main/groovy/ui').matching {
                 exclude 'GroovyMain.java', 'GroovySocketServer.java'
-            }.visit {details ->
+            }.visit { details ->
                 exclude "groovy/ui/$details.path"
             }
             if (!useIndy()) {
@@ -412,9 +451,11 @@ apply from: 'gradle/utils.gradle'
 def isJava16() {
     System.properties['java.version'].contains('1.6')
 }
+
 def isJava15() {
     System.properties['java.version'].contains('1.5')
 }
+
 def modules() {
     subprojects
 }
@@ -456,7 +497,7 @@ compileCompilerJava {
 }
 
 compileJava {
-    dependsOn compilerClasses,compilerDgmConverter,ensureGrammars
+    dependsOn compilerClasses, compilerDgmConverter, ensureGrammars
     options.fork(memoryMaximumSize: javacMain_mx)
 }
 
@@ -493,10 +534,10 @@ apply from: 'gradle/eclipse.gradle'
 // Define a GroovyDoc task which depends on the generated groovydoc tool
 apply from: 'gradle/groovydoc.gradle'
 if (isJava15()) {
-  // do nothing on JDK 5 as sardine is built for Java 6
-  logger.warn 'You must run on JDK 6+ to be able to deploy to codehaus.'
+    // do nothing on JDK 5 as sardine is built for Java 6
+    logger.warn 'You must run on JDK 6+ to be able to deploy to codehaus.'
 } else {
-  apply from: 'gradle/codehaus.gradle'
+    apply from: 'gradle/codehaus.gradle'
 }
 
 classes {
