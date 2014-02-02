@@ -1,5 +1,6 @@
 package org.codehaus.groovy.transform.tailrec
 
+import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.MethodNode
 import org.codehaus.groovy.ast.expr.ConstantExpression
@@ -36,6 +37,16 @@ class RecursivenessTester {
 		methodParamsMatchCallArgs(method, call)
 	}
 
+    public boolean isRecursive(MethodNode method, StaticMethodCallExpression call) {
+        if (!method.isStatic())
+            return false
+        if (method.declaringClass != call.ownerType)
+            return false
+        if (call.method != method.name)
+            return false
+        methodParamsMatchCallArgs(method, call)
+    }
+
 	private boolean isCallToThis(MethodCallExpression call) {
 		if (call.objectExpression == null)
 			return call.isImplicitThis()
@@ -56,16 +67,29 @@ class RecursivenessTester {
      * optional in Groovy
      */
     private areTypesCallCompatible(ClassNode argType, ClassNode paramType) {
-        return argType.isDerivedFrom(paramType) || paramType.isDerivedFrom(argType)
+        ClassNode boxedArg = boxIfPossible(argType)
+        ClassNode boxedParam = boxIfPossible(paramType)
+        return boxedArg.isDerivedFrom(boxedParam) || boxedParam.isDerivedFrom(boxedArg)
     }
 
-    public boolean isRecursive(MethodNode method, StaticMethodCallExpression call) {
-		if (!method.isStatic())
-			return false
-		if (method.declaringClass != call.ownerType)
-			return false
-		if (call.method != method.name)
-			return false
-		methodParamsMatchCallArgs(method, call)
-	}
+    private ClassNode boxIfPossible(ClassNode classNode) {
+        switch(classNode) {
+            case ClassHelper.int_TYPE:
+                return ClassHelper.Integer_TYPE
+            case ClassHelper.double_TYPE:
+                return ClassHelper.Double_TYPE
+            case ClassHelper.float_TYPE:
+                return ClassHelper.Float_TYPE
+            case ClassHelper.char_TYPE:
+                return ClassHelper.Character_TYPE
+            case ClassHelper.byte_TYPE:
+                return ClassHelper.Byte_TYPE
+            case ClassHelper.short_TYPE:
+                return ClassHelper.Short_TYPE
+            case ClassHelper.long_TYPE:
+                return ClassHelper.Long_TYPE
+            default:
+                return classNode
+        }
+    }
 }

@@ -4,8 +4,10 @@ import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.builder.AstBuilder
 import org.codehaus.groovy.ast.expr.ArgumentListExpression
 import org.codehaus.groovy.ast.expr.ConstantExpression
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression
 import org.codehaus.groovy.ast.expr.MethodCallExpression
 import org.codehaus.groovy.ast.expr.StaticMethodCallExpression
+import org.codehaus.groovy.control.CompilePhase
 import org.junit.Before
 import org.junit.Test
 
@@ -219,6 +221,37 @@ class RecursivenessTesterTest {
     }
 
     @Test
+    public void callWithArgAnAutoboxedTypeOfParam() throws Exception {
+        /*
+         public void myMethod(int a) {}
+         */
+        def method = new AstBuilder().buildFromSpec {
+            method('myMethod', ACC_PUBLIC, Void.TYPE) {
+                parameters {
+                    parameter 'a': int.class
+                }
+                exceptions {}
+                block {
+                }
+            }
+        }[0]
+
+        /*
+         this.myMethod(new Integer(4));
+         */
+        def innerCall = new MethodCallExpression(null, "myMethod", new ArgumentListExpression(
+                [new ConstructorCallExpression(
+                        ClassHelper.Integer_TYPE,
+                        new ArgumentListExpression(
+                                new ConstantExpression(4)
+                        )
+                ) ]
+        ));
+
+        assert tester.isRecursive(method: method, call: innerCall)
+    }
+
+    @Test
 	public void recursiveCallWithImplicitThis() throws Exception {
 		/*
 		 public void myMethod() {}
@@ -353,6 +386,33 @@ class RecursivenessTesterTest {
 		 myMethod("a");
 		 */
 		def expressions = [new ConstantExpression("a")]
+		def args = new ArgumentListExpression(expressions)
+		def innerCall = new StaticMethodCallExpression(ClassHelper.make("MyClass"), "myMethod", args)
+
+		assert tester.isRecursive(method: method, call: innerCall)
+	}
+
+	@Test
+	public void staticRecursiveCallWithFunctionCallAsArgument() {
+		/*
+		 public static void myMethod(String a) {}
+		 */
+		def method = new AstBuilder().buildFromSpec {
+			method('myMethod', (ACC_PUBLIC | ACC_STATIC), Void.TYPE) {
+				parameters {
+					parameter 'a': String.class
+				}
+				exceptions {}
+				block {
+				}
+			}
+		}[0]
+		method.declaringClass = ClassHelper.make("MyClass")
+
+		/*
+		 myMethod(otherMethod());
+		 */
+		def expressions = [new StaticMethodCallExpression(ClassHelper.make("MyClass"), "otherMethod", new ArgumentListExpression([]))]
 		def args = new ArgumentListExpression(expressions)
 		def innerCall = new StaticMethodCallExpression(ClassHelper.make("MyClass"), "myMethod", args)
 
