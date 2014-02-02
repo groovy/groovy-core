@@ -23,6 +23,14 @@ class RecursiveListExamples {
         rlist = RecursiveList.rlist(integers)
         assert RecursiveList.count(rlist) == 9999
     }
+
+    @Test
+    void reversing() {
+        int size = 9999
+        rlist = RecursiveList.rlist(new ArrayList(1..size))
+        def reversed = RecursiveList.rlist(new ArrayList(size..1))
+        assert RecursiveList.compare(RecursiveList.reverse(rlist), reversed)
+    }
 }
 
 @CompileStatic
@@ -39,6 +47,10 @@ class RecursiveList {
 
     static Object head(Map rlist) {
         rlist.head
+    }
+
+    static boolean isEmpty(Map rlist) {
+        rlist.head == null
     }
 
     @TailRecursive
@@ -61,5 +73,24 @@ class RecursiveList {
         if (!rlist)
             return result
         count(tail(rlist), ++result)
+    }
+
+    @TailRecursive
+    static Map reverse(Map rlist, Map result = [:]) {
+        if (!rlist)
+            return result
+        reverse(tail(rlist), cons(head(rlist), result))
+
+    }
+
+    @TailRecursive
+    static boolean compare(Map r1, Map r2) {
+        if (isEmpty(r1))
+            return isEmpty(r2)
+        if (isEmpty(r2))
+            return false
+        if (head(r1) != head(r2))
+            return false
+        return compare(tail(r1), tail(r2))
     }
 }
