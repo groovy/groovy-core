@@ -15,23 +15,25 @@
  */
 package org.codehaus.groovy.transform.tailrec
 
+import groovy.transform.CompileStatic
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.CodeVisitorSupport
 import org.codehaus.groovy.ast.expr.*
 import org.codehaus.groovy.ast.stmt.*
 
 /**
- * Generic tool for replacing parts of an AST
+ * Generic tool for replacing parts of an AST.
  *
- * It takes care to handle expressions as well since those are needed a few time for @TailRecursive
+ * It takes care to handle expressions as well since those are needed a few times for @TailRecursive
  *
  * @author Johannes Link
  */
+//@CompileStatic
 class ASTNodesReplacer extends CodeVisitorSupport {
 
 	Map<ASTNode, ASTNode> replace = [:]
-	Closure when = { replace.containsKey it}
-	Closure replaceWith = { replace[it] }
+	Closure when = { ASTNode node -> replace.containsKey node}
+	Closure replaceWith = { ASTNode node -> replace[node] }
     int closureLevel = 0
 
     void replaceIn(ASTNode root) {
@@ -45,8 +47,8 @@ class ASTNodesReplacer extends CodeVisitorSupport {
     }
 
     public void visitBlockStatement(BlockStatement block) {
-		block.statements.clone().eachWithIndex { Statement statement, index ->
-			replaceIfNecessary(statement) {block.statements[index] = it}
+		block.statements.clone().eachWithIndex { Statement statement, int index ->
+			replaceIfNecessary(statement) {Statement node -> block.statements[index] = node}
 		}
 		super.visitBlockStatement(block);
 	}
@@ -86,15 +88,15 @@ class ASTNodesReplacer extends CodeVisitorSupport {
 
 
     protected void visitListOfExpressions(List<? extends Expression> list) {
-		list.clone().eachWithIndex { Expression expression, index ->
-			replaceIfNecessary(expression) {list[index] = it}
+		list.clone().eachWithIndex { Expression expression, int index ->
+			replaceIfNecessary(expression) {Expression exp -> list[index] = exp}
 		}
 		super.visitListOfExpressions(list)
 	}
 
 	private replaceIfNecessary(ASTNode nodeToCheck, Closure replacementCode) {
 		if (conditionFulfilled(nodeToCheck)) {
-			def replacement = replaceWith(nodeToCheck)
+			ASTNode replacement = replaceWith(nodeToCheck)
 			replacementCode(replacement)
 		}
 	}
@@ -110,8 +112,8 @@ class ASTNodesReplacer extends CodeVisitorSupport {
         closureLevel > 0
     }
 
-    private void replaceInnerExpressionIfNecessary(statement) {
-		replaceIfNecessary(statement.expression) {statement.expression = it}
+    private void replaceInnerExpressionIfNecessary(ASTNode node) {
+		replaceIfNecessary(node.expression) {node.expression = it}
 	}
 
     //todo: test
