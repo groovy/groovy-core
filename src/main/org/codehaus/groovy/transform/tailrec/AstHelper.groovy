@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.transform.tailrec
 
+import groovy.transform.CompileStatic
 import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.expr.BinaryExpression
@@ -37,6 +38,7 @@ import java.lang.reflect.Modifier
  *
  * @author Johannes Link
  */
+@CompileStatic
 class AstHelper {
 
 	static final Token ASSIGN = Token.newSymbol("=", -1, -1)
@@ -58,7 +60,7 @@ class AstHelper {
 	}
 
     static VariableExpression createVariableReference(Map variableSpec) {
-        new VariableExpression(variableSpec.name, variableSpec.type)
+        new VariableExpression((String) variableSpec.name, (ClassNode) variableSpec.type)
     }
 
     /**
