@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.transform.tailrec
 
+import groovy.transform.CompileStatic
 import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.MethodNode
 import org.codehaus.groovy.ast.Parameter
@@ -25,19 +26,21 @@ import org.codehaus.groovy.ast.stmt.BlockStatement
 import org.codehaus.groovy.ast.stmt.CatchStatement
 import org.codehaus.groovy.ast.stmt.ContinueStatement
 import org.codehaus.groovy.ast.stmt.EmptyStatement
+import org.codehaus.groovy.ast.stmt.Statement
 import org.codehaus.groovy.ast.stmt.TryCatchStatement
 import org.codehaus.groovy.ast.stmt.WhileStatement
 
 /**
  * @author Johannes Link
  */
+@CompileStatic
 class InWhileLoopWrapper {
 	
 	final static String LOOP_LABEL = '_RECUR_HERE_'
     final static GotoRecurHereException  LOOP_EXCEPTION = new GotoRecurHereException()
 
 	void wrap(MethodNode method) {
-		BlockStatement oldBody = method.code
+		BlockStatement oldBody = method.code as BlockStatement
         TryCatchStatement tryCatchStatement = new TryCatchStatement(
                 oldBody,
                 new EmptyStatement()
@@ -49,16 +52,20 @@ class InWhileLoopWrapper {
 
         WhileStatement whileLoop = new WhileStatement(
                 new BooleanExpression(new ConstantExpression(true)),
-                new BlockStatement([tryCatchStatement], new VariableScope(method.variableScope))
+                new BlockStatement([tryCatchStatement] as List<Statement>, new VariableScope(method.variableScope))
         )
-		if (whileLoop.loopBlock.statements.size() > 0)
-			whileLoop.loopBlock.statements[0].statementLabel = LOOP_LABEL
-		BlockStatement newBody = new BlockStatement([], new VariableScope(method.variableScope))
+        List<Statement> whileLoopStatements = ((BlockStatement) whileLoop.loopBlock).statements
+        if (whileLoopStatements.size() > 0)
+            whileLoopStatements[0].statementLabel = LOOP_LABEL
+		BlockStatement newBody = new BlockStatement([] as List<Statement>, new VariableScope(method.variableScope))
 		newBody.addStatement(whileLoop)
 		method.code = newBody
 	}
 }
 
+/**
+ * Exception will be thrown by recursive calls in closures and caught in while loop to continue to LOOP_LABEL
+ */
 class GotoRecurHereException extends Throwable {
 
 }
