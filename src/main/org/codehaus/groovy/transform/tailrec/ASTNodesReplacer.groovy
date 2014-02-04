@@ -18,8 +18,11 @@ package org.codehaus.groovy.transform.tailrec
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.CodeVisitorSupport
+import org.codehaus.groovy.ast.Parameter
 import org.codehaus.groovy.ast.expr.*
 import org.codehaus.groovy.ast.stmt.*
+
+import java.lang.reflect.Method
 
 /**
  * Generic tool for replacing parts of an AST.
@@ -28,17 +31,17 @@ import org.codehaus.groovy.ast.stmt.*
  *
  * @author Johannes Link
  */
-//@CompileStatic
+@CompileStatic
 class ASTNodesReplacer extends CodeVisitorSupport {
 
-	Map<ASTNode, ASTNode> replace = [:]
-	Closure when = { ASTNode node -> replace.containsKey node}
-	Closure replaceWith = { ASTNode node -> replace[node] }
+    Map<ASTNode, ASTNode> replace = [:]
+    Closure<Boolean> when = { ASTNode node -> replace.containsKey node }
+    Closure<ASTNode> replaceWith = { ASTNode node -> replace[node] }
     int closureLevel = 0
 
     void replaceIn(ASTNode root) {
-		root.visit(this)
-	}
+        root.visit(this)
+    }
 
     public void visitClosureExpression(ClosureExpression expression) {
         closureLevel++
@@ -47,34 +50,35 @@ class ASTNodesReplacer extends CodeVisitorSupport {
     }
 
     public void visitBlockStatement(BlockStatement block) {
-		block.statements.clone().eachWithIndex { Statement statement, int index ->
-			replaceIfNecessary(statement) {Statement node -> block.statements[index] = node}
-		}
-		super.visitBlockStatement(block);
-	}
+        List<Statement> copyOfStatements = new ArrayList<Statement>(block.statements)
+        copyOfStatements.eachWithIndex { Statement statement, int index ->
+            replaceIfNecessary(statement) { Statement node -> block.statements[index] = node }
+        }
+        super.visitBlockStatement(block);
+    }
 
-	public void visitIfElse(IfStatement ifElse) {
-		replaceIfNecessary(ifElse.booleanExpression) { ifElse.booleanExpression = it }
-		replaceIfNecessary(ifElse.ifBlock) { ifElse.ifBlock = it }
-		replaceIfNecessary(ifElse.elseBlock) { ifElse.elseBlock = it }
-		super.visitIfElse(ifElse);
-	}
+    public void visitIfElse(IfStatement ifElse) {
+        replaceIfNecessary(ifElse.booleanExpression) { BooleanExpression ex -> ifElse.booleanExpression = ex }
+        replaceIfNecessary(ifElse.ifBlock) { Statement s -> ifElse.ifBlock = s }
+        replaceIfNecessary(ifElse.elseBlock) { Statement s -> ifElse.elseBlock = s }
+        super.visitIfElse(ifElse);
+    }
 
-	public void visitBinaryExpression(BinaryExpression expression) {
-		replaceIfNecessary(expression.leftExpression) {expression.leftExpression = it}
-		replaceIfNecessary(expression.rightExpression) {expression.rightExpression = it}
-		super.visitBinaryExpression(expression);
-	}
+    public void visitBinaryExpression(BinaryExpression expression) {
+        replaceIfNecessary(expression.leftExpression) { Expression ex -> expression.leftExpression = ex }
+        replaceIfNecessary(expression.rightExpression) { Expression ex -> expression.rightExpression = ex }
+        super.visitBinaryExpression(expression);
+    }
 
-	public void visitReturnStatement(ReturnStatement statement) {
-		replaceInnerExpressionIfNecessary(statement)
-		super.visitReturnStatement(statement);
-	}
+    public void visitReturnStatement(ReturnStatement statement) {
+        replaceInnerExpressionIfNecessary(statement)
+        super.visitReturnStatement(statement);
+    }
 
-	public void visitMethodCallExpression(MethodCallExpression call) {
-		replaceIfNecessary(call.objectExpression) {call.objectExpression = it}
-		super.visitMethodCallExpression(call);
-	}
+    public void visitMethodCallExpression(MethodCallExpression call) {
+        replaceIfNecessary(call.objectExpression) { Expression ex -> call.objectExpression = ex }
+        super.visitMethodCallExpression(call);
+    }
 
     public void visitSwitch(SwitchStatement statement) {
         replaceInnerExpressionIfNecessary(statement)
@@ -88,18 +92,18 @@ class ASTNodesReplacer extends CodeVisitorSupport {
 
 
     protected void visitListOfExpressions(List<? extends Expression> list) {
-		list.clone().eachWithIndex { Expression expression, int index ->
-			replaceIfNecessary(expression) {Expression exp -> list[index] = exp}
-		}
-		super.visitListOfExpressions(list)
-	}
+        new ArrayList<? extends Expression>(list).eachWithIndex { Expression expression, int index ->
+            replaceIfNecessary(expression) { Expression exp -> list[index] = exp }
+        }
+        super.visitListOfExpressions(list)
+    }
 
-	private replaceIfNecessary(ASTNode nodeToCheck, Closure replacementCode) {
-		if (conditionFulfilled(nodeToCheck)) {
-			ASTNode replacement = replaceWith(nodeToCheck)
-			replacementCode(replacement)
-		}
-	}
+    private void replaceIfNecessary(ASTNode nodeToCheck, Closure replacementCode) {
+        if (conditionFulfilled(nodeToCheck)) {
+            ASTNode replacement = replaceWith(nodeToCheck)
+            replacementCode(replacement)
+        }
+    }
 
     private boolean conditionFulfilled(ASTNode nodeToCheck) {
         if (when.maximumNumberOfParameters < 2)
@@ -113,166 +117,179 @@ class ASTNodesReplacer extends CodeVisitorSupport {
     }
 
     private void replaceInnerExpressionIfNecessary(ASTNode node) {
-		replaceIfNecessary(node.expression) {node.expression = it}
-	}
+        //Simulate Groovy's property access
+        Method getExpressionMethod = node.class.getMethod('getExpression', new Class[0])
+        Method setExpressionMethod = node.class.getMethod('setExpression', [Expression].toArray(new Class[1]))
+        Expression expr = getExpressionMethod.invoke(node, new Object[0]) as Expression
+        replaceIfNecessary(expr) { Expression ex ->
+            setExpressionMethod.invoke(node, [ex].toArray())
+        }
+    }
 
     //todo: test
-	public void visitExpressionStatement(ExpressionStatement statement) {
-		replaceIfNecessary(statement.expression) {statement.expression = it}
-		super.visitExpressionStatement(statement);
-	}
+    public void visitExpressionStatement(ExpressionStatement statement) {
+        replaceIfNecessary(statement.expression) { Expression ex -> statement.expression = ex }
+        super.visitExpressionStatement(statement);
+    }
 
-	//todo: test
-	public void visitForLoop(ForStatement forLoop) {
-		replaceIfNecessary(forLoop.collectionExpression) {forLoop.collectionExpression = it}
-		replaceIfNecessary(forLoop.loopBlock) {forLoop.loopBlock = it}
-		super.visitForLoop(forLoop);
-	}
+    //todo: test
+    public void visitForLoop(ForStatement forLoop) {
+        replaceIfNecessary(forLoop.collectionExpression) { Expression ex -> forLoop.collectionExpression = ex }
+        replaceIfNecessary(forLoop.loopBlock) { Statement s -> forLoop.loopBlock = s }
+        super.visitForLoop(forLoop);
+    }
 
-	//todo: test
-	public void visitWhileLoop(WhileStatement loop) {
-		replaceIfNecessary(loop.booleanExpression) {loop.booleanExpression = it}
-		replaceIfNecessary(loop.loopBlock) {loop.loopBlock = it}
-		super.visitWhileLoop(loop);
-	}
+    //todo: test
+    public void visitWhileLoop(WhileStatement loop) {
+        replaceIfNecessary(loop.booleanExpression) { BooleanExpression ex -> loop.booleanExpression = ex }
+        replaceIfNecessary(loop.loopBlock) { Statement s -> loop.loopBlock = s }
+        super.visitWhileLoop(loop);
+    }
 
-	//todo: test
-	public void visitDoWhileLoop(DoWhileStatement loop) {
-		replaceIfNecessary(loop.booleanExpression) {loop.booleanExpression = it}
-		replaceIfNecessary(loop.loopBlock) {loop.loopBlock = it}
-		super.visitDoWhileLoop(loop);
-	}
+    //todo: test
+    public void visitDoWhileLoop(DoWhileStatement loop) {
+        replaceIfNecessary(loop.booleanExpression) { BooleanExpression ex -> loop.booleanExpression = ex }
+        replaceIfNecessary(loop.loopBlock) { Statement s -> loop.loopBlock = s }
+        super.visitDoWhileLoop(loop);
+    }
 
-	//todo: test
-	public void visitThrowStatement(ThrowStatement statement) {
-		replaceInnerExpressionIfNecessary(statement)
-		super.visitThrowStatement(statement)
-	}
+    //todo: test
+    public void visitThrowStatement(ThrowStatement statement) {
+        replaceInnerExpressionIfNecessary(statement)
+        super.visitThrowStatement(statement)
+    }
 
-	//todo: test
-	public void visitPostfixExpression(PostfixExpression expression) {
-		replaceInnerExpressionIfNecessary(expression)
-		super.visitPostfixExpression(expression);
-	}
+    //todo: test
+    public void visitPostfixExpression(PostfixExpression expression) {
+        replaceInnerExpressionIfNecessary(expression)
+        super.visitPostfixExpression(expression);
+    }
 
-	//todo: test
-	public void visitPrefixExpression(PrefixExpression expression) {
-		replaceInnerExpressionIfNecessary(expression)
-		super.visitPrefixExpression(expression);
-	}
+    //todo: test
+    public void visitPrefixExpression(PrefixExpression expression) {
+        replaceInnerExpressionIfNecessary(expression)
+        super.visitPrefixExpression(expression);
+    }
 
-	//todo: test
-	public void visitBooleanExpression(BooleanExpression expression) {
+    //todo: test
+    public void visitBooleanExpression(BooleanExpression expression) {
         //BooleanExpression.expression is readonly
         //replaceInnerExpressionIfNecessary(expression)
-		super.visitBooleanExpression(expression);
-	}
+        super.visitBooleanExpression(expression);
+    }
 
-	//todo: test
-	public void visitNotExpression(NotExpression expression) {
+    //todo: test
+    public void visitNotExpression(NotExpression expression) {
         //NotExpression.expression is readonly
-		//replaceInnerExpressionIfNecessary(expression)
-		super.visitNotExpression(expression);
-	}
+        //replaceInnerExpressionIfNecessary(expression)
+        super.visitNotExpression(expression);
+    }
 
-	//todo: test
-	public void visitSpreadExpression(SpreadExpression expression) {
+    //todo: test
+    public void visitSpreadExpression(SpreadExpression expression) {
         //SpreadExpression.expression is readonly
-		//replaceInnerExpressionIfNecessary(expression)
-		super.visitSpreadExpression(expression);
-	}
+        //replaceInnerExpressionIfNecessary(expression)
+        super.visitSpreadExpression(expression);
+    }
 
-	//todo: test
-	public void visitSpreadMapExpression(SpreadMapExpression expression) {
-		replaceInnerExpressionIfNecessary(expression)
-		super.visitSpreadMapExpression(expression);
-	}
+    //todo: test
+    public void visitSpreadMapExpression(SpreadMapExpression expression) {
+        replaceInnerExpressionIfNecessary(expression)
+        super.visitSpreadMapExpression(expression);
+    }
 
-	//todo: test
-	public void visitUnaryMinusExpression(UnaryMinusExpression expression) {
+    //todo: test
+    public void visitUnaryMinusExpression(UnaryMinusExpression expression) {
         //UnaryMinusExpression.expression is readonly
-		//replaceInnerExpressionIfNecessary(expression)
-		super.visitUnaryMinusExpression(expression);
-	}
+        //replaceInnerExpressionIfNecessary(expression)
+        super.visitUnaryMinusExpression(expression);
+    }
 
-	//todo: test
-	public void visitUnaryPlusExpression(UnaryPlusExpression expression) {
+    //todo: test
+    public void visitUnaryPlusExpression(UnaryPlusExpression expression) {
         //UnaryPlusExpression.expression is readonly
-		//replaceInnerExpressionIfNecessary(expression)
-		super.visitUnaryPlusExpression(expression);
-	}
+        //replaceInnerExpressionIfNecessary(expression)
+        super.visitUnaryPlusExpression(expression);
+    }
 
-	//todo: test
-	public void visitBitwiseNegationExpression(BitwiseNegationExpression expression) {
-		replaceInnerExpressionIfNecessary(expression)
-		super.visitBitwiseNegationExpression(expression);
-	}
+    //todo: test
+    public void visitBitwiseNegationExpression(BitwiseNegationExpression expression) {
+        replaceInnerExpressionIfNecessary(expression)
+        super.visitBitwiseNegationExpression(expression);
+    }
 
-	//todo: test
-	public void visitCastExpression(CastExpression expression) {
-		replaceInnerExpressionIfNecessary(expression)
-		super.visitCastExpression(expression);
-	}
+    //todo: test
+    public void visitCastExpression(CastExpression expression) {
+        //CastExpression.expression is readonly todo: Handle in VariableAccessReplacer or w/ reflection
+        //replaceInnerExpressionIfNecessary(expression)
+        super.visitCastExpression(expression);
+    }
 
-	//todo: test
-	public void visitMapEntryExpression(MapEntryExpression expression) {
-		replaceIfNecessary(expression.keyExpression) {expression.keyExpression = it}
-		replaceIfNecessary(expression.valueExpression) {expression.valueExpression = it}
-		super.visitMapEntryExpression(expression);
-	}
+    //todo: test
+    public void visitMapEntryExpression(MapEntryExpression expression) {
+        replaceIfNecessary(expression.keyExpression) { Expression ex -> expression.keyExpression = ex }
+        replaceIfNecessary(expression.valueExpression) { Expression ex -> expression.valueExpression = ex }
+        super.visitMapEntryExpression(expression);
+    }
 
-	//todo: test
-	public void visitTernaryExpression(TernaryExpression expression) {
-		replaceIfNecessary(expression.booleanExpression) {expression.booleanExpression = it}
-		replaceIfNecessary(expression.trueExpression) {expression.trueExpression = it}
-		replaceIfNecessary(expression.falseExpression) {expression.falseExpression = it}
-		super.visitTernaryExpression(expression);
-	}
+    //todo: test
+    public void visitTernaryExpression(TernaryExpression expression) {
+        //TernaryExpression.*Expression are readonly todo: Handle in VariableAccessReplacer or w/ reflection
+        //replaceIfNecessary(expression.booleanExpression) { BooleanExpression ex -> expression.booleanExpression = ex }
+        //replaceIfNecessary(expression.trueExpression) { Expression ex -> expression.trueExpression = ex }
+        //replaceIfNecessary(expression.falseExpression) { Expression ex -> expression.falseExpression = ex }
+        super.visitTernaryExpression(expression);
+    }
 
-	//todo: test
-	public void visitAssertStatement(AssertStatement statement) {
-        replaceIfNecessary(statement.booleanExpression) {statement.booleanExpression = it}
-        replaceIfNecessary(statement.messageExpression) {statement.messageExpression= it}
+    //todo: test
+    public void visitAssertStatement(AssertStatement statement) {
+        replaceIfNecessary(statement.booleanExpression) { BooleanExpression ex -> statement.booleanExpression = ex }
+        replaceIfNecessary(statement.messageExpression) { Expression ex -> statement.messageExpression = ex }
         super.visitAssertStatement(statement)
-	}
+    }
 
-	//todo: test
-	public void visitSynchronizedStatement(SynchronizedStatement statement) {
+    //todo: test
+    public void visitSynchronizedStatement(SynchronizedStatement statement) {
         replaceInnerExpressionIfNecessary(statement)
         super.visitSynchronizedStatement(statement)
-	}
+    }
 
-	//todo: test
-	public void visitRangeExpression(RangeExpression expression) {
-        replaceIfNecessary(expression.from) {expression.from = it}
-        replaceIfNecessary(expression.to) {expression.to = it}
+    //todo: test
+    public void visitRangeExpression(RangeExpression expression) {
+        //RangeExpression.from/to are readonly todo: Handle in VariableAccessReplacer or w/ reflection
+        //replaceIfNecessary(expression.from) { Expression ex -> expression.from = ex }
+        //replaceIfNecessary(expression.to) { Expression ex -> expression.to = ex }
         super.visitRangeExpression(expression)
-	}
+    }
 
-	//todo: test
-	public void visitMethodPointerExpression(MethodPointerExpression expression) {
+    //todo: test
+    public void visitMethodPointerExpression(MethodPointerExpression expression) {
         replaceInnerExpressionIfNecessary(expression)
-        replaceIfNecessary(expression.methodName) {expression.methodName = it}
+        //MethodPointerExpression.methodName is readonly todo: Handle in VariableAccessReplacer or w/ reflection
+        //replaceIfNecessary(expression.methodName) { Expression ex -> expression.methodName = ex }
         super.visitMethodPointerExpression(expression)
-	}
+    }
 
-	//todo: test
-	public void visitPropertyExpression(PropertyExpression expression) {
-        replaceIfNecessary(expression.objectExpression) {expression.objectExpression = it}
-        replaceIfNecessary(expression.property) {expression.property = it}
+    //todo: test
+    public void visitPropertyExpression(PropertyExpression expression) {
+        replaceIfNecessary(expression.objectExpression) { Expression ex -> expression.objectExpression = ex }
+        //PropertyExpression.property is readonly todo: Handle in VariableAccessReplacer or w/ reflection
+        //replaceIfNecessary(expression.property) { Expression ex -> expression.property = ex }
         super.visitPropertyExpression(expression)
-	}
+    }
 
-	//todo: test
-	public void visitAttributeExpression(AttributeExpression expression) {
-        replaceIfNecessary(expression.objectExpression) {expression.objectExpression = it}
-        replaceIfNecessary(expression.property) {expression.property = it}
+    //todo: test
+    public void visitAttributeExpression(AttributeExpression expression) {
+        replaceIfNecessary(expression.objectExpression) { Expression ex -> expression.objectExpression = ex }
+        //AttributeExpression.property is readonly todo: Handle in VariableAccessReplacer or w/ reflection
+        //replaceIfNecessary(expression.property) { Expression ex -> expression.property = ex }
         super.visitAttributeExpression(expression)
-	}
+    }
 
-	//todo: test
-	public void visitCatchStatement(CatchStatement statement) {
-        replaceIfNecessary(statement.variable) {statement.variable = it}
+    //todo: test
+    public void visitCatchStatement(CatchStatement statement) {
+        //CatchStatement.variable is readonly todo: Handle in VariableAccessReplacer or w/ reflection
+        //replaceIfNecessary(statement.variable) { Parameter p -> statement.variable = p }
         super.visitCatchStatement(statement)
-	}
+    }
 }
