@@ -15,17 +15,20 @@
  */
 package org.codehaus.groovy.transform.tailrec
 
+import groovy.transform.CompileStatic
 import org.codehaus.groovy.ast.CodeVisitorSupport
 import org.codehaus.groovy.ast.MethodNode
+import org.codehaus.groovy.ast.expr.Expression
 import org.codehaus.groovy.ast.expr.MethodCallExpression
 import org.codehaus.groovy.ast.expr.StaticMethodCallExpression;
 
 /**
  * @author Johannes Link
  */
+@CompileStatic
 class CollectRecursiveCalls extends CodeVisitorSupport {
 	MethodNode method
-	List recursiveCalls = []
+	List<Expression> recursiveCalls = []
 
 	public void visitMethodCallExpression(MethodCallExpression call) {
 		if (isRecursive(call)) {
@@ -45,7 +48,7 @@ class CollectRecursiveCalls extends CodeVisitorSupport {
 		new RecursivenessTester().isRecursive(method: method, call: call)
 	}
 	
-	synchronized List collect(method) {
+	synchronized List<Expression> collect(MethodNode method) {
 		recursiveCalls.clear()
 		this.method = method
 		this.method.code.visit(this)
