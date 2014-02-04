@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.transform.tailrec
 
+import groovy.transform.CompileStatic
 import org.codehaus.groovy.ast.CodeVisitorSupport
 import org.codehaus.groovy.ast.MethodNode
 import org.codehaus.groovy.ast.expr.MethodCallExpression
@@ -23,6 +24,7 @@ import org.codehaus.groovy.ast.expr.StaticMethodCallExpression;
 /**
  * @author Johannes Link
  */
+@CompileStatic
 class HasRecursiveCalls extends CodeVisitorSupport {
 	MethodNode method
 	boolean hasRecursiveCalls = false
@@ -47,7 +49,7 @@ class HasRecursiveCalls extends CodeVisitorSupport {
 		new RecursivenessTester().isRecursive(method: method, call: call)
 	}
 	
-	synchronized boolean test(method) {
+	synchronized boolean test(MethodNode method) {
 		hasRecursiveCalls = false
 		this.method = method
 		this.method.code.visit(this)
