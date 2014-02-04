@@ -18,10 +18,8 @@ package org.codehaus.groovy.transform.tailrec
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.CodeVisitorSupport
-import org.codehaus.groovy.ast.expr.*
+import org.codehaus.groovy.ast.expr.ClosureExpression
 import org.codehaus.groovy.ast.stmt.*
-
-import java.lang.reflect.Method
 
 /**
  * Tool for replacing Statement objects in an AST by other Statement instances.
@@ -43,8 +41,11 @@ class StatementReplacer extends CodeVisitorSupport {
 
     public void visitClosureExpression(ClosureExpression expression) {
         closureLevel++
-        super.visitClosureExpression(expression)
-        closureLevel--
+        try {
+            super.visitClosureExpression(expression)
+        } finally {
+            closureLevel--
+        }
     }
 
     public void visitBlockStatement(BlockStatement block) {
@@ -80,6 +81,11 @@ class StatementReplacer extends CodeVisitorSupport {
     private void replaceIfNecessary(Statement nodeToCheck, Closure replacementCode) {
         if (conditionFulfilled(nodeToCheck)) {
             ASTNode replacement = replaceWith(nodeToCheck)
+
+            //Copied from transformExpression() implementations. Can only guess that it's needed.
+            replacement.setSourcePosition(nodeToCheck);
+            replacement.copyNodeMetaData(nodeToCheck);
+
             replacementCode(replacement)
         }
     }
