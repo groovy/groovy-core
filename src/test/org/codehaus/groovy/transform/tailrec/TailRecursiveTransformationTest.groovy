@@ -81,8 +81,8 @@ class TailRecursiveTransformationTest extends GroovyShellTestCase {
             }
             new TargetClass()
         """)
-//		assert target.staticCountDown(5) == 0
-//		assert target.staticCountDown(100000) == 0
+		assert target.staticCountDown(5) == 0
+		assert target.staticCountDown(100000) == 0
 	}
 	
 	void testRecursiveFunctionWithTwoParameters() {
