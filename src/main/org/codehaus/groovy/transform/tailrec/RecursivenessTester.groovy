@@ -79,32 +79,13 @@ class RecursivenessTester {
 
     /**
      * Parameter type and calling argument type can both be derived from the other since typing information is
-     * optional in Groovy
+     * optional in Groovy.
+     * Since int is not derived from Integer (nor the other way around) we compare the boxed types
      */
     private areTypesCallCompatible(ClassNode argType, ClassNode paramType) {
-        ClassNode boxedArg = boxIfPossible(argType)
-        ClassNode boxedParam = boxIfPossible(paramType)
+        ClassNode boxedArg = ClassHelper.getWrapper(argType)
+        ClassNode boxedParam = ClassHelper.getWrapper(paramType)
         return boxedArg.isDerivedFrom(boxedParam) || boxedParam.isDerivedFrom(boxedArg)
     }
 
-    private ClassNode boxIfPossible(ClassNode classNode) {
-        switch(classNode) {
-            case ClassHelper.int_TYPE:
-                return ClassHelper.Integer_TYPE
-            case ClassHelper.double_TYPE:
-                return ClassHelper.Double_TYPE
-            case ClassHelper.float_TYPE:
-                return ClassHelper.Float_TYPE
-            case ClassHelper.char_TYPE:
-                return ClassHelper.Character_TYPE
-            case ClassHelper.byte_TYPE:
-                return ClassHelper.Byte_TYPE
-            case ClassHelper.short_TYPE:
-                return ClassHelper.Short_TYPE
-            case ClassHelper.long_TYPE:
-                return ClassHelper.Long_TYPE
-            default:
-                return classNode
-        }
-    }
 }
