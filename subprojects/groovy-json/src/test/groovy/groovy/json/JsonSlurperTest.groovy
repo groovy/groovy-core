@@ -22,12 +22,25 @@ class JsonSlurperTest extends GroovyTestCase {
 
     def parser = new JsonSlurper()
 
-    void testJsonShouldStartWithCurlyOrBracket() {
+    void testJsonSHouldFaulIfNotValid() {
         def msg = shouldFail(JsonException) {
-            parser.parseText("true")
+            parser.parseText(',')
         }
+        assert msg.contains('A JSON payload should')
+    }
 
-        assert msg.contains('A JSON payload should start with')
+    void testCanParseString() {
+        assert parser.parseText('"Hello World!!"') == 'Hello World!!'
+    }
+
+    void testCanParseBoolean() {
+        assert parser.parseText('true').class == Boolean
+    }
+
+    void testCanParserNumber() {
+        assert parser.parseText('22') == 22
+        assert parser.parseText('-22') == -22
+        assert parser.parseText('-22.0065') == -22.0065
     }
 
     void testEmptyStructures() {
