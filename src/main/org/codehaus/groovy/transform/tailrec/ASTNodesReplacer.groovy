@@ -30,7 +30,7 @@ import java.lang.reflect.Method
  *
  * @author Johannes Link
  */
-@CompileStatic
+//@CompileStatic
 class ASTNodesReplacer extends CodeVisitorSupport {
 
     Map<ASTNode, ASTNode> replace = [:]
