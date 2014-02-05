@@ -1,11 +1,11 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2003-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,7 +22,6 @@ import org.codehaus.groovy.ast.builder.AstBuilder
 import org.codehaus.groovy.ast.expr.BooleanExpression
 import org.codehaus.groovy.ast.expr.ClosureExpression
 import org.codehaus.groovy.ast.expr.ConstantExpression
-import org.codehaus.groovy.ast.expr.VariableExpression
 import org.codehaus.groovy.ast.stmt.*
 import org.junit.Before
 import org.junit.Test
@@ -56,6 +55,21 @@ class StatementReplacerTest {
 
         assert block.statements[1] == replacement
         assert block.statements.size() == 3
+    }
+
+    @Test
+    public void replacingElementCopiesSourcePosition() {
+        def toReplace = aReturnStatement("old")
+        toReplace.lineNumber = 42
+        def replacement = aReturnStatement("new")
+        def block = new BlockStatement()
+        block.addStatement(toReplace)
+
+        replacements[toReplace] = replacement
+        replacer.replaceIn(block)
+
+        assert block.statements[0] == replacement
+        assert replacement.lineNumber == toReplace.lineNumber
     }
 
     @Test
@@ -204,10 +218,6 @@ class StatementReplacerTest {
 
     def aConstant(value) {
         new ConstantExpression(value)
-    }
-
-    def aVariable(value) {
-        new VariableExpression(value)
     }
 
     def aBooleanExpression(value) {
