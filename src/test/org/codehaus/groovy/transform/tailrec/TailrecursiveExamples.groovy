@@ -1,6 +1,7 @@
 package org.codehaus.groovy.transform.tailrec
 
 import groovy.transform.CompileStatic
+import groovy.transform.Memoized
 import groovy.transform.TailRecursive
 import org.junit.Test
 
@@ -16,6 +17,15 @@ class TailRecursiveExamples {
         assert StaticTargetClass.factorial(10) == 3628800
         assert StaticTargetClass.factorial(20) == 2432902008176640000L
         assert StaticTargetClass.factorial(10000).bitCount() == 54134
+    }
+
+    @Test
+    void memoizedFactorial() {
+        assert StaticTargetClass.memoizedFactorial(1) == 1
+        assert StaticTargetClass.memoizedFactorial(3) == 6
+        assert StaticTargetClass.memoizedFactorial(10) == 3628800
+        assert StaticTargetClass.memoizedFactorial(20) == 2432902008176640000L
+        assert StaticTargetClass.memoizedFactorial(10000).bitCount() == 54134
     }
 
     @Test
@@ -85,6 +95,14 @@ class StaticTargetClass {
 
     @TailRecursive
     static BigInteger factorial(BigInteger number, BigInteger result = 1) {
+        if (number <= 1)
+            return result
+        return factorial(number - 1, number * result)
+    }
+
+    @TailRecursive
+    @Memoized
+    static BigInteger memoizedFactorial(BigInteger number, BigInteger result = 1) {
         if (number <= 1)
             return result
         return factorial(number - 1, number * result)

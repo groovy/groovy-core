@@ -21,6 +21,7 @@ import org.codehaus.groovy.ast.MethodNode
 import org.codehaus.groovy.ast.expr.ConstantExpression
 import org.codehaus.groovy.ast.expr.MethodCallExpression
 import org.codehaus.groovy.ast.expr.StaticMethodCallExpression
+import org.codehaus.groovy.ast.expr.VariableExpression
 
 /**
  *
@@ -65,7 +66,10 @@ class RecursivenessTester {
 	private boolean isCallToThis(MethodCallExpression call) {
 		if (call.objectExpression == null)
 			return call.isImplicitThis()
-		call.objectExpression.isThisExpression()
+        if (! (call.objectExpression instanceof VariableExpression)) {
+            return false
+        }
+		return call.objectExpression.isThisExpression()
 	}
 	
 	private boolean methodParamsMatchCallArgs(method, call) {

@@ -20,7 +20,7 @@ import org.codehaus.groovy.control.CompilationFailedException
 /**
  * @author Johannes Link
  */
-class TailRecursiveCompiledStaticallyTest extends GroovyShellTestCase {
+class TailRecursiveTogetherWithOtherASTsTest extends GroovyShellTestCase {
 
     void testStaticallyCompiledRecursiveMethod() {
         def target = evaluate("""
@@ -107,6 +107,52 @@ class TailRecursiveCompiledStaticallyTest extends GroovyShellTestCase {
         assert target.fillString(1, "") == "+"
         assert target.fillString(5, "") == "+++++"
         assert target.fillString(10000, "") == "+" * 10000
+    }
+
+    /**
+     * In this case recursiveness is not detected
+     */
+    void testMemoizedThenTailRecursiveMethod() {
+        def target = evaluate("""
+            import groovy.transform.TailRecursive
+            import groovy.transform.Memoized
+
+            class TargetClass {
+                @Memoized
+            	@TailRecursive
+            	static int countDown(int zahl) {
+            		if (zahl == 0)
+            			return zahl
+            		return countDown(zahl - 1)
+            	}
+            }
+            new TargetClass()
+        """)
+        assert target.countDown(5) == 0
+        //assert target.staticCountDown(100000) == 0 //would lead to StackOverflowExceptioin
+    }
+
+    /**
+     * In this case memoization does not take place
+     */
+    void testTailRecursiveThenMemoizedMethod() {
+        def target = evaluate("""
+            import groovy.transform.Memoized
+            import groovy.transform.TailRecursive
+
+            class TargetClass {
+            	@TailRecursive
+                @Memoized
+            	static int countDown(int zahl) {
+            		if (zahl == 0)
+            			return zahl
+            		return countDown(zahl - 1)
+            	}
+            }
+            new TargetClass()
+        """)
+        assert target.countDown(5) == 0
+        assert target.countDown(100000) == 0
     }
 
 }
