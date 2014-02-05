@@ -64,5 +64,23 @@ class TailRecursiveCompilationFailuresTest extends GroovyShellTestCase {
         """) }
     }
 
+    void testMemoizedIsIncompatibleWithTailRecursive() {
+        shouldFail(CompilationFailedException) {evaluate("""
+            import groovy.transform.TailRecursive
+            import groovy.transform.Memoized
+
+            class TargetClass {
+                @Memoized
+            	@TailRecursive
+            	static int countDown(int zahl) {
+            		if (zahl == 0)
+            			return zahl
+            		return countDown(zahl - 1)
+            	}
+            }
+            new TargetClass()
+        """)}
+    }
+
 
 }

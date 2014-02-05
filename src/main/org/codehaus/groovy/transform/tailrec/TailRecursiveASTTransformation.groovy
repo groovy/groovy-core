@@ -15,14 +15,17 @@
  */
 package org.codehaus.groovy.transform.tailrec
 
+import groovy.transform.Memoized
 import groovy.transform.TailRecursive
 import org.codehaus.groovy.ast.ASTNode
+import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.MethodNode
 import org.codehaus.groovy.ast.Parameter
 import org.codehaus.groovy.ast.expr.*
 import org.codehaus.groovy.ast.stmt.BlockStatement
 import org.codehaus.groovy.ast.stmt.ReturnStatement
+import org.codehaus.groovy.ast.stmt.Statement
 import org.codehaus.groovy.classgen.ReturnAdder
 import org.codehaus.groovy.classgen.VariableScopeVisitor
 import org.codehaus.groovy.control.CompilePhase
@@ -52,6 +55,9 @@ class TailRecursiveASTTransformation extends AbstractASTTransformation {
         init(nodes, source);
 
         MethodNode method = nodes[1]
+        if (hasAnnotation(method, ClassHelper.make(Memoized)))
+            addError("@TailRecursive is incompatible with @Memoized", method)
+
         if (!hasRecursiveMethodCalls(method)) {
             //Todo: Emit a compiler warning. How to do that?
             //System.err.println(transformationDescription(method) + " skipped: No recursive calls detected.")
@@ -60,6 +66,12 @@ class TailRecursiveASTTransformation extends AbstractASTTransformation {
         transformToIteration(method, source)
         ensureAllRecursiveCallsHaveBeenTransformed(method)
     }
+
+    private boolean hasAnnotation(MethodNode methodNode, ClassNode annotation) {
+        List annots = methodNode.getAnnotations(annotation);
+        return (annots != null && annots.size() > 0);
+    }
+
 
     private void transformToIteration(MethodNode method, SourceUnit source) {
         if (method.isVoidMethod()) {
@@ -98,7 +110,7 @@ class TailRecursiveASTTransformation extends AbstractASTTransformation {
         def replaceWithIfStatement = { expression ->
             ternaryToIfStatement.convert(expression)
         }
-        def replacer = new ASTNodesReplacer(when: whenReturnWithTernary, replaceWith: replaceWithIfStatement)
+        def replacer = new StatementReplacer(when: whenReturnWithTernary, replaceWith: replaceWithIfStatement)
         replacer.replaceIn(method.code)
 
     }
@@ -134,7 +146,7 @@ class TailRecursiveASTTransformation extends AbstractASTTransformation {
     }
 
     private void replaceRecursiveReturnsOutsideClosures(MethodNode method, Map positionMapping) {
-        def whenRecursiveReturn = { statement, inClosure ->
+        def whenRecursiveReturn = { Statement statement, boolean inClosure ->
             if (inClosure)
                 return false
             if (!(statement instanceof ReturnStatement)) {
@@ -149,12 +161,12 @@ class TailRecursiveASTTransformation extends AbstractASTTransformation {
         def replaceWithContinueBlock = { statement ->
             new ReturnStatementToIterationConverter().convert(statement, positionMapping)
         }
-        def replacer = new ASTNodesReplacer(when: whenRecursiveReturn, replaceWith: replaceWithContinueBlock)
+        def replacer = new StatementReplacer(when: whenRecursiveReturn, replaceWith: replaceWithContinueBlock)
         replacer.replaceIn(method.code)
     }
 
     private void replaceRecursiveReturnsInsideClosures(MethodNode method, Map positionMapping) {
-        def whenRecursiveReturn = { statement, inClosure ->
+        def whenRecursiveReturn = { Statement statement, boolean inClosure ->
             if (!inClosure)
                 return false
             if (!(statement instanceof ReturnStatement)) {
@@ -169,7 +181,7 @@ class TailRecursiveASTTransformation extends AbstractASTTransformation {
         def replaceWithContinueBlock = { statement ->
             new ReturnStatementToIterationConverter(recurStatement: AstHelper.recurByThrowStatement()).convert(statement, positionMapping)
         }
-        def replacer = new ASTNodesReplacer(when: whenRecursiveReturn, replaceWith: replaceWithContinueBlock)
+        def replacer = new StatementReplacer(when: whenRecursiveReturn, replaceWith: replaceWithContinueBlock)
         replacer.replaceIn(method.code)
     }
 
