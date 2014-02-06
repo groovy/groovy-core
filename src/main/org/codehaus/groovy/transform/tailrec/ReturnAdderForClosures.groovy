@@ -27,7 +27,7 @@ import org.codehaus.groovy.classgen.ReturnAdder
  */
 class ReturnAdderForClosures extends CodeVisitorSupport {
 
-    synchronized void addReturnsIfNeeded(MethodNode method) {
+    synchronized void visitMethod(MethodNode method) {
         method.code.visit(this)
     }
 

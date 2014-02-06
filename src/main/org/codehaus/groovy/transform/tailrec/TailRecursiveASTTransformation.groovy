@@ -15,13 +15,10 @@
  */
 package org.codehaus.groovy.transform.tailrec
 
+import groovy.transform.CompileStatic
 import groovy.transform.Memoized
 import groovy.transform.TailRecursive
-import org.codehaus.groovy.ast.ASTNode
-import org.codehaus.groovy.ast.ClassHelper
-import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.ast.MethodNode
-import org.codehaus.groovy.ast.Parameter
+import org.codehaus.groovy.ast.*
 import org.codehaus.groovy.ast.expr.*
 import org.codehaus.groovy.ast.stmt.BlockStatement
 import org.codehaus.groovy.ast.stmt.ReturnStatement
@@ -40,6 +37,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformation
  *
  * @author Johannes Link
  */
+@CompileStatic
 @GroovyASTTransformation(phase = CompilePhase.SEMANTIC_ANALYSIS)
 class TailRecursiveASTTransformation extends AbstractASTTransformation {
 
@@ -54,16 +52,23 @@ class TailRecursiveASTTransformation extends AbstractASTTransformation {
     public void visit(ASTNode[] nodes, SourceUnit source) {
         init(nodes, source);
 
-        MethodNode method = nodes[1]
+        MethodNode method = nodes[1] as MethodNode
+
+        if (method.isAbstract()) {
+            addError("Annotation " + MY_TYPE_NAME + " cannot be used for abstract methods.", method);
+            return;
+        }
+
         if (hasAnnotation(method, ClassHelper.make(Memoized))) {
-            addError("@TailRecursive is incompatible with @Memoized. Remove one of them.", method)
+            addError("Annotation " + MY_TYPE_NAME + " is incompatible with @Memoized. Remove one of them.", method)
             return
         }
 
         if (!hasRecursiveMethodCalls(method)) {
-            addError("No recursive calls detected. Remove @TailRecursive annotation.", method)
+            addError("No recursive calls detected. You must remove annotation " + MY_TYPE_NAME + ".", method)
             return;
         }
+
         transformToIteration(method, source)
         ensureAllRecursiveCallsHaveBeenTransformed(method)
     }
@@ -90,9 +95,12 @@ class TailRecursiveASTTransformation extends AbstractASTTransformation {
         addMissingDefaultReturnStatement(method)
         replaceReturnsWithTernariesToIfStatements(method)
         wrapMethodBodyWithWhileLoop(method)
-        def (nameAndTypeMapping, positionMapping) = parameterMappingFor(method)
+
+        Map<String, Map> nameAndTypeMapping = name2VariableMappingFor(method)
         replaceAllAccessToParams(method, nameAndTypeMapping)
         addLocalVariablesForAllParameters(method, nameAndTypeMapping) //must happen after replacing access to params
+
+        Map<Integer, Map> positionMapping = position2VariableMappingFor(method)
         replaceAllRecursiveReturnsWithIteration(method, positionMapping)
         repairVariableScopes(source, method)
     }
@@ -102,43 +110,61 @@ class TailRecursiveASTTransformation extends AbstractASTTransformation {
     }
 
     private void replaceReturnsWithTernariesToIfStatements(MethodNode method) {
-        def whenReturnWithTernary = { expression ->
-            if (!(expression instanceof ReturnStatement)) {
+        Closure<Boolean> whenReturnWithTernary = { ASTNode node ->
+            if (!(node instanceof ReturnStatement)) {
                 return false
             }
-            return (expression.expression instanceof TernaryExpression)
+            return (((ReturnStatement) node).expression instanceof TernaryExpression)
         }
-        def replaceWithIfStatement = { expression ->
-            ternaryToIfStatement.convert(expression)
+        Closure<Statement> replaceWithIfStatement = { ReturnStatement statement ->
+            ternaryToIfStatement.convert(statement)
         }
-        def replacer = new StatementReplacer(when: whenReturnWithTernary, replaceWith: replaceWithIfStatement)
+        StatementReplacer replacer = new StatementReplacer(when: whenReturnWithTernary, replaceWith: replaceWithIfStatement)
         replacer.replaceIn(method.code)
 
     }
 
-    private void addLocalVariablesForAllParameters(MethodNode method, Map nameAndTypeMapping) {
-        BlockStatement code = method.code
-        nameAndTypeMapping.each { paramName, localNameAndType ->
-            code.statements.add(0, AstHelper.createVariableDefinition(localNameAndType.name, localNameAndType.type, new VariableExpression(paramName, localNameAndType.type)))
+    private void addLocalVariablesForAllParameters(MethodNode method, Map<String, Map> nameAndTypeMapping) {
+        BlockStatement code = method.code as BlockStatement
+        nameAndTypeMapping.each { String paramName, Map localNameAndType ->
+            code.statements.add(0, AstHelper.createVariableDefinition(
+                    (String) localNameAndType['name'],
+                    (ClassNode) localNameAndType['type'],
+                    new VariableExpression(paramName, (ClassNode) localNameAndType['type'])
+            ))
         }
     }
 
-    private void replaceAllAccessToParams(MethodNode method, Map nameAndTypeMapping) {
+    private void replaceAllAccessToParams(MethodNode method, Map<String, Map> nameAndTypeMapping) {
         new VariableAccessReplacer(nameAndTypeMapping: nameAndTypeMapping).replaceIn(method.code)
     }
 
-    private parameterMappingFor(MethodNode method) {
-        def nameAndTypeMapping = [:]
-        def positionMapping = [:]
-        BlockStatement code = method.code
-        method.parameters.eachWithIndex { Parameter param, index ->
-            def paramName = param.name
-            def paramType = param.type
-            def localName = '_' + paramName + '_'
-            nameAndTypeMapping[paramName] = [name: localName, type: paramType]
-            positionMapping[index] = [name: localName, type: paramType]
+    // Public b/c there are tests for this method
+    Map<String, Map> name2VariableMappingFor(MethodNode method) {
+        Map<String, Map> nameAndTypeMapping = [:]
+        method.parameters.each { Parameter param ->
+            String paramName = param.name
+            ClassNode paramType = param.type as ClassNode
+            String iterationVariableName = iterationVariableName(paramName)
+            nameAndTypeMapping[paramName] = [name: iterationVariableName, type: paramType]
         }
-        return [nameAndTypeMapping, positionMapping]
+        return nameAndTypeMapping
+    }
+
+    // Public b/c there are tests for this method
+    Map<Integer, Map> position2VariableMappingFor(MethodNode method) {
+        Map<Integer, Map> positionMapping = [:]
+        method.parameters.eachWithIndex { Parameter param, int index ->
+            String paramName = param.name
+            ClassNode paramType = param.type as ClassNode
+            String iterationVariableName = this.iterationVariableName(paramName)
+            positionMapping[index] = [name: iterationVariableName, type: paramType]
+        }
+        return positionMapping
+    }
+
+    private String iterationVariableName(String paramName) {
+        '_' + paramName + '_'
     }
 
     private void replaceAllRecursiveReturnsWithIteration(MethodNode method, Map positionMapping) {
@@ -146,43 +172,43 @@ class TailRecursiveASTTransformation extends AbstractASTTransformation {
         replaceRecursiveReturnsInsideClosures(method, positionMapping)
     }
 
-    private void replaceRecursiveReturnsOutsideClosures(MethodNode method, Map positionMapping) {
-        def whenRecursiveReturn = { Statement statement, boolean inClosure ->
+    private void replaceRecursiveReturnsOutsideClosures(MethodNode method, Map<Integer, Map> positionMapping) {
+        Closure<Boolean> whenRecursiveReturn = { Statement statement, boolean inClosure ->
             if (inClosure)
                 return false
             if (!(statement instanceof ReturnStatement)) {
                 return false
             }
-            Expression inner = statement.expression
+            Expression inner = ((ReturnStatement) statement).expression
             if (!(inner instanceof MethodCallExpression) && !(inner instanceof StaticMethodCallExpression)) {
                 return false
             }
             return isRecursiveIn(inner, method)
         }
-        def replaceWithContinueBlock = { statement ->
+        Closure<Statement> replaceWithContinueBlock = { ReturnStatement statement ->
             new ReturnStatementToIterationConverter().convert(statement, positionMapping)
         }
         def replacer = new StatementReplacer(when: whenRecursiveReturn, replaceWith: replaceWithContinueBlock)
         replacer.replaceIn(method.code)
     }
 
-    private void replaceRecursiveReturnsInsideClosures(MethodNode method, Map positionMapping) {
-        def whenRecursiveReturn = { Statement statement, boolean inClosure ->
+    private void replaceRecursiveReturnsInsideClosures(MethodNode method, Map<Integer, Map> positionMapping) {
+        Closure<Boolean> whenRecursiveReturn = { Statement statement, boolean inClosure ->
             if (!inClosure)
                 return false
             if (!(statement instanceof ReturnStatement)) {
                 return false
             }
-            Expression inner = statement.expression
+            Expression inner = ((ReturnStatement )statement).expression
             if (!(inner instanceof MethodCallExpression) && !(inner instanceof StaticMethodCallExpression)) {
                 return false
             }
             return isRecursiveIn(inner, method)
         }
-        def replaceWithContinueBlock = { statement ->
+        Closure<Statement> replaceWithThrowLoopException = { ReturnStatement statement ->
             new ReturnStatementToIterationConverter(recurStatement: AstHelper.recurByThrowStatement()).convert(statement, positionMapping)
         }
-        def replacer = new StatementReplacer(when: whenRecursiveReturn, replaceWith: replaceWithContinueBlock)
+        StatementReplacer replacer = new StatementReplacer(when: whenRecursiveReturn, replaceWith: replaceWithThrowLoopException)
         replacer.replaceIn(method.code)
     }
 
@@ -192,25 +218,24 @@ class TailRecursiveASTTransformation extends AbstractASTTransformation {
 
     private void addMissingDefaultReturnStatement(MethodNode method) {
         new ReturnAdder().visitMethod(method)
-        new ReturnAdderForClosures().addReturnsIfNeeded(method)
+        new ReturnAdderForClosures().visitMethod(method)
     }
 
     private void ensureAllRecursiveCallsHaveBeenTransformed(MethodNode method) {
-        def remainingRecursiveCalls = new CollectRecursiveCalls().collect(method)
-        remainingRecursiveCalls.each {
-            addError("Recursive call could not be transformed by @TailRecursive. Maybe it's not tail recursive?", it)
+        List<Expression> remainingRecursiveCalls = new CollectRecursiveCalls().collect(method)
+        for(Expression expression : remainingRecursiveCalls) {
+            addError("Recursive call could not be transformed by @TailRecursive. Maybe it's not a tail call.", expression)
         }
-    }
-
-    private transformationDescription(MethodNode method) {
-        "$MY_TYPE_NAME transformation on '${method.declaringClass}.${method.name}(${method.parameters.size()} params)'"
     }
 
     private boolean hasRecursiveMethodCalls(MethodNode method) {
         hasRecursiveCalls.test(method)
     }
 
-    private boolean isRecursiveIn(methodCall, MethodNode method) {
-        new RecursivenessTester().isRecursive(method, methodCall)
+    private boolean isRecursiveIn(Expression methodCall, MethodNode method) {
+        if (methodCall instanceof MethodCallExpression)
+            return new RecursivenessTester().isRecursive(method, (MethodCallExpression) methodCall)
+        if (methodCall instanceof StaticMethodCallExpression)
+            return new RecursivenessTester().isRecursive(method, (StaticMethodCallExpression) methodCall)
     }
 }

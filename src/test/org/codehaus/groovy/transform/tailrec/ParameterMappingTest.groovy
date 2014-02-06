@@ -39,8 +39,8 @@ class ParameterMappingTest {
             }
         }[0]
 
-        def nameAndTypeMapping, positionMapping
-        (nameAndTypeMapping, positionMapping) = transformation.parameterMappingFor(myMethod)
+        def nameAndTypeMapping = transformation.name2VariableMappingFor(myMethod)
+        def positionMapping = transformation.position2VariableMappingFor(myMethod)
 
         assert nameAndTypeMapping == [:]
         assert positionMapping == [:]
@@ -57,8 +57,8 @@ class ParameterMappingTest {
             }
         }[0]
 
-        def nameAndTypeMapping, positionMapping
-        (nameAndTypeMapping, positionMapping) = transformation.parameterMappingFor(myMethod)
+        def nameAndTypeMapping = transformation.name2VariableMappingFor(myMethod)
+        def positionMapping = transformation.position2VariableMappingFor(myMethod)
 
         assert nameAndTypeMapping == [one: [name: '_one_', type: ClassHelper.int_TYPE]]
         assert positionMapping == [0: [name: '_one_', type: ClassHelper.int_TYPE]]
@@ -79,8 +79,8 @@ class ParameterMappingTest {
             }
         }[0]
 
-        def nameAndTypeMapping, positionMapping
-        (nameAndTypeMapping, positionMapping) = transformation.parameterMappingFor(myMethod)
+        def nameAndTypeMapping = transformation.name2VariableMappingFor(myMethod)
+        def positionMapping = transformation.position2VariableMappingFor(myMethod)
 
         assert nameAndTypeMapping == [
                 one: [name: '_one_', type: ClassHelper.int_TYPE],

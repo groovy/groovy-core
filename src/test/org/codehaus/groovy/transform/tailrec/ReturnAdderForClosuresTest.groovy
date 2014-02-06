@@ -58,7 +58,7 @@ class ReturnAdderForClosuresTest {
             }
 		''')[1].getMethods('myMethod')[0]
 
-        adder.addReturnsIfNeeded(method)
+        adder.visitMethod(method)
 
         AstAssert.assertSyntaxTree([methodExpected], [method])
     }
