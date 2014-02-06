@@ -16,13 +16,44 @@
 package org.codehaus.groovy.transform.tailrec
 
 import org.codehaus.groovy.control.CompilationFailedException
+import org.codehaus.groovy.control.MultipleCompilationErrorsException
 
 /**
  * @author Johannes Link
  */
 class TailRecursiveCompilationFailuresTest extends GroovyShellTestCase {
 
-	void testFailIfNotAllRecursiveCallsCanBeTransformed() {
+    void testMethodsWithoutRecursiveCallsFailCompilation() {
+        try {
+            evaluate("""
+            import groovy.transform.TailRecursive
+            class TargetClass {
+            	@TailRecursive
+            	void aVoidMethod() {
+            		new Object()
+            	}
+				@TailRecursive
+				static void aStaticVoidMethod() {
+					new Object()
+				}
+				@TailRecursive
+				int aFunction() {
+					42
+				}
+				@TailRecursive
+				static int aStaticFunction() {
+					43
+				}
+            }
+            new TargetClass()
+        """)
+            assert false, "MultipleCompilationErrorsException expected"
+        } catch (MultipleCompilationErrorsException expected) {
+            assert expected.errorCollector.errors.size() == 4
+        }
+    }
+
+    void testFailIfNotAllRecursiveCallsCanBeTransformed() {
 		shouldFail(CompilationFailedException) { evaluate("""
             import groovy.transform.TailRecursive
             class TargetClass {

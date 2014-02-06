@@ -55,12 +55,13 @@ class TailRecursiveASTTransformation extends AbstractASTTransformation {
         init(nodes, source);
 
         MethodNode method = nodes[1]
-        if (hasAnnotation(method, ClassHelper.make(Memoized)))
-            addError("@TailRecursive is incompatible with @Memoized", method)
+        if (hasAnnotation(method, ClassHelper.make(Memoized))) {
+            addError("@TailRecursive is incompatible with @Memoized. Remove one of them.", method)
+            return
+        }
 
         if (!hasRecursiveMethodCalls(method)) {
-            //Todo: Emit a compiler warning. How to do that?
-            //System.err.println(transformationDescription(method) + " skipped: No recursive calls detected.")
+            addError("No recursive calls detected. Remove @TailRecursive annotation.", method)
             return;
         }
         transformToIteration(method, source)
@@ -82,7 +83,7 @@ class TailRecursiveASTTransformation extends AbstractASTTransformation {
     }
 
     private void transformVoidMethodToIteration(MethodNode method, SourceUnit source) {
-        addError("Void methods are not supported yet", method)
+        addError("Void methods are not supported by @TailRecursive yet.", method)
     }
 
     private void transformNonVoidMethodToIteration(MethodNode method, SourceUnit source) {
@@ -197,7 +198,7 @@ class TailRecursiveASTTransformation extends AbstractASTTransformation {
     private void ensureAllRecursiveCallsHaveBeenTransformed(MethodNode method) {
         def remainingRecursiveCalls = new CollectRecursiveCalls().collect(method)
         remainingRecursiveCalls.each {
-            addError("Recursive call could not be transformed.", it)
+            addError("Recursive call could not be transformed by @TailRecursive. Maybe it's not tail recursive?", it)
         }
     }
 
