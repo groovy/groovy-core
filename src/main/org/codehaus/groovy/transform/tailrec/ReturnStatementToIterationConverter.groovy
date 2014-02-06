@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.transform.tailrec
 
+import groovy.transform.CompileStatic
 import org.codehaus.groovy.ast.expr.*
 import org.codehaus.groovy.ast.stmt.BlockStatement
 import org.codehaus.groovy.ast.stmt.ExpressionStatement
@@ -91,6 +92,7 @@ class ReturnStatementToIterationConverter {
     }
 }
 
+@CompileStatic
 class UsedVariableTracker implements VariableReplacedListener {
 
     final Set<String> usedVariableNames = [] as Set

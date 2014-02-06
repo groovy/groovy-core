@@ -28,10 +28,17 @@ import org.codehaus.groovy.ast.expr.VariableExpression
  *
  * @author Johannes Link
  */
-//@CompileStatic
+@CompileStatic
 class VariableAccessReplacer {
 
-    Map<String, Map> nameAndTypeMapping = [:] //e.g.: ['varToReplace': [name: 'newVar', type: TypeOfVar]]
+    /**
+     * Nested map of variable accesses to replace
+     * e.g.: [
+     *          'varToReplace': [name: 'newVar', type: TypeOfVar],
+     *          'varToReplace2': [name: 'newVar2', type: TypeOfVar2],
+     *       ]
+     */
+    Map<String, Map> nameAndTypeMapping = [:]
 
     VariableReplacedListener listener = VariableReplacedListener.NULL
 
