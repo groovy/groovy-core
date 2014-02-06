@@ -15,10 +15,12 @@
  */
 package org.codehaus.groovy.transform.tailrec
 
+import groovy.transform.CompileStatic
 import org.codehaus.groovy.ast.expr.BinaryExpression
 import org.codehaus.groovy.ast.expr.Expression
 import org.codehaus.groovy.ast.expr.MethodCallExpression
 import org.codehaus.groovy.ast.expr.StaticMethodCallExpression
+import org.codehaus.groovy.ast.expr.VariableExpression
 import org.codehaus.groovy.ast.stmt.BlockStatement
 import org.codehaus.groovy.ast.stmt.ExpressionStatement
 import org.codehaus.groovy.ast.stmt.ReturnStatement
@@ -74,15 +76,15 @@ class ReturnStatementToIterationConverter {
         return unusedTempNames
     }
 
-    private replaceArgUsageByTempUsage(BinaryExpression binary, tempMapping) {
-        def usedTempNames = [] as Set
-        def expressionToReplaceIn = binary.rightExpression
-        def useTempInstead = { tempNameAndType ->
+    private replaceArgUsageByTempUsage(BinaryExpression binary, Map tempMapping) {
+        Set usedTempNames = [] as Set
+        def useTempInstead = { Map tempNameAndType ->
             usedTempNames << tempNameAndType.name
             AstHelper.createVariableReference(tempNameAndType)
         }
-        def replacer = new VariableAccessReplacer(nameAndTypeMapping: tempMapping, replaceBy: useTempInstead)
-        replacer.replaceIn(expressionToReplaceIn)
+        VariableAccessReplacer replacer = new VariableAccessReplacer(nameAndTypeMapping: tempMapping, replaceBy: useTempInstead)
+        // Replacement must only happen in binary.rightExpression. It's a hack in VariableExpressionReplacer which takes care of that.
+        replacer.replaceIn(binary)
         return usedTempNames
     }
 }
