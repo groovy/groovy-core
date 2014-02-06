@@ -26,11 +26,13 @@ import org.codehaus.groovy.ast.expr.VariableExpression
 /**
  *
  * Test if a method call is recursive if called within a given method node.
- * Tries to handle static calls as well.
+ * Handles static calls as well.
  * 
  * Currently known simplifications:
- * Does not check for matching argument types but only considers the number of arguments.
- * Does not check for matching return types; even void and any object type are considered to be compatible.
+ * - Does not check for method overloading or overridden methods.
+ * - Does not check for matching return types; even void and any object type are considered to be compatible.
+ * - Argument type matching could be more specific in case of static compilation.
+ * - Method names via a GString are never considered to be recursive
  * 
  * @author Johannes Link
  */

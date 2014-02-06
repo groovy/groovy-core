@@ -30,8 +30,11 @@ import java.lang.reflect.Method
 /**
  * Tool for replacing VariableExpression instances in an AST by other VariableExpression instances.
  * Regardless of a real change taking place in nested expressions, all considered expression (trees) will be replaced.
+ * This could be optimized to accelerate compilation.
  *
- * Within @TailRecursive it is used to swap the access of arg with the access of temp vars
+ * Within @TailRecursive it is used
+ * - to swap the access of method args with the access to iteration variables
+ * - to swap the access of iteration variables with the access of temp vars
  *
  * @author Johannes Link
  */
@@ -64,7 +67,8 @@ class VariableExpressionReplacer extends CodeVisitorSupport {
     }
 
     /**
-     * It's the only Expression in which replacing is considered.
+     * It's the only Expression type in which replacing is considered.
+     * That's an abuse of the class, but I couldn't think of a better way.
      */
     public void visitBinaryExpression(BinaryExpression expression) {
         //A hack: Only replace right expression b/c ReturnStatementToIterationConverter needs it that way :-/

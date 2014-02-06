@@ -31,6 +31,13 @@ import org.codehaus.groovy.ast.stmt.TryCatchStatement
 import org.codehaus.groovy.ast.stmt.WhileStatement
 
 /**
+ * Wrap the body of a method in a while loop, nested in a try-catch.
+ * This is the first step in making a tail recursive method iterative.
+ *
+ * There are two ways to invoke the next iteration step:
+ * 1. "continue _RECURE_HERE_" is used by recursive calls outside of closures
+ * 2. "throw LOOP_EXCEPTION" is used by recursive calls within closures b/c you cannot invoke "continue" from there
+ *
  * @author Johannes Link
  */
 @CompileStatic

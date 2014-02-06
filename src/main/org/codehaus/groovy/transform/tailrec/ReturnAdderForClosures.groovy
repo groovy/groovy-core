@@ -25,9 +25,12 @@ import org.codehaus.groovy.ast.stmt.*
 import org.codehaus.groovy.classgen.BytecodeSequence
 
 /**
- * @author Johannes Link
+ * Adds explicit return statements to implicit return points in a closure. This is necessary since
+ * tail-recursion is detected by having the recursive call within the return statement.
  *
  * Copied a lot of code from package org.codehaus.groovy.classgen.ReturnAdder which can only be used for Methods
+ *
+ * @author Johannes Link
  */
 class ReturnAdderForClosures extends CodeVisitorSupport {
 

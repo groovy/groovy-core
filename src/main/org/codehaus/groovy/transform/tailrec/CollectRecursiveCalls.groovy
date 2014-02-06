@@ -23,6 +23,8 @@ import org.codehaus.groovy.ast.expr.MethodCallExpression
 import org.codehaus.groovy.ast.expr.StaticMethodCallExpression;
 
 /**
+ * Collect all recursive calls within method
+ *
  * @author Johannes Link
  */
 @CompileStatic

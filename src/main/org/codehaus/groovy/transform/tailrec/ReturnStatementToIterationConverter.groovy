@@ -15,18 +15,24 @@
  */
 package org.codehaus.groovy.transform.tailrec
 
-import groovy.transform.CompileStatic
-import org.codehaus.groovy.ast.expr.BinaryExpression
-import org.codehaus.groovy.ast.expr.Expression
-import org.codehaus.groovy.ast.expr.MethodCallExpression
-import org.codehaus.groovy.ast.expr.StaticMethodCallExpression
-import org.codehaus.groovy.ast.expr.VariableExpression
+import org.codehaus.groovy.ast.expr.*
 import org.codehaus.groovy.ast.stmt.BlockStatement
 import org.codehaus.groovy.ast.stmt.ExpressionStatement
 import org.codehaus.groovy.ast.stmt.ReturnStatement
 import org.codehaus.groovy.ast.stmt.Statement
 
 /**
+ * Translates all return statements into an invocation of the next iteration. This can be either
+ * - "continue LOOP_LABEL": Outside closures
+ * - "throw LOOP_EXCEPTION": Inside closures
+ *
+ * Moreover, before adding the recur statement the iteration parameters (originally the method args)
+ * are set to their new value. To prevent variable aliasing parameters will be copied into temp vars
+ * before they are changes so that their current iteration value can be used when setting other params.
+ *
+ * There's probably place for optimizing the amount of variable copying being done, e.g.
+ * parameters that are only handed through must not be copied at all.
+ *
  * @author Johannes Link
  */
 class ReturnStatementToIterationConverter {
@@ -68,23 +74,29 @@ class ReturnStatementToIterationConverter {
         return result
     }
 
-    private replaceAllArgUsages(List<ExpressionStatement> nodes, tempMapping) {
-        def unusedTempNames = new HashSet(tempMapping.values()*.name)
+    private replaceAllArgUsages(List<ExpressionStatement> nodes, Map tempMapping) {
+        Set<String> unusedTempNames = new HashSet(tempMapping.values()*.name)
+        VariableReplacedListener tracker = new UsedVariableTracker()
         for (ExpressionStatement statement : nodes) {
-            unusedTempNames.removeAll(replaceArgUsageByTempUsage(statement.expression, tempMapping))
+            replaceArgUsageByTempUsage(statement.expression, tempMapping, tracker)
         }
+        unusedTempNames = unusedTempNames - tracker.usedVariableNames
         return unusedTempNames
     }
 
-    private replaceArgUsageByTempUsage(BinaryExpression binary, Map tempMapping) {
-        Set usedTempNames = [] as Set
-        def useTempInstead = { Map tempNameAndType ->
-            usedTempNames << tempNameAndType.name
-            AstHelper.createVariableReference(tempNameAndType)
-        }
-        VariableAccessReplacer replacer = new VariableAccessReplacer(nameAndTypeMapping: tempMapping, replaceBy: useTempInstead)
+    private void replaceArgUsageByTempUsage(BinaryExpression binary, Map tempMapping, UsedVariableTracker tracker) {
+        VariableAccessReplacer replacer = new VariableAccessReplacer(nameAndTypeMapping: tempMapping, listener: tracker)
         // Replacement must only happen in binary.rightExpression. It's a hack in VariableExpressionReplacer which takes care of that.
         replacer.replaceIn(binary)
-        return usedTempNames
+    }
+}
+
+class UsedVariableTracker implements VariableReplacedListener {
+
+    final Set<String> usedVariableNames = [] as Set
+
+    @Override
+    void variableReplaced(VariableExpression oldVar, VariableExpression newVar) {
+        usedVariableNames.add(newVar.name)
     }
 }
