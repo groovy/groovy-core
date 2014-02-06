@@ -16,6 +16,7 @@
 package org.codehaus.groovy.transform.tailrec
 
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.expr.*
 import org.codehaus.groovy.ast.stmt.BlockStatement
 import org.codehaus.groovy.ast.stmt.ExpressionStatement
@@ -36,37 +37,37 @@ import org.codehaus.groovy.ast.stmt.Statement
  *
  * @author Johannes Link
  */
+@CompileStatic
 class ReturnStatementToIterationConverter {
 
     Statement recurStatement = AstHelper.recurStatement()
 
-    Statement convert(ReturnStatement statement, Map positionMapping) {
-        def recursiveCall = statement.expression
-        if (!recursiveCall.class in [
-                MethodCallExpression,
-                StaticMethodCallExpression
-        ])
+    Statement convert(ReturnStatement statement, Map<Integer, Map> positionMapping) {
+        Expression recursiveCall = statement.expression
+        if (!isAMethodCalls(recursiveCall))
             return statement
 
-        Map tempMapping = [:]
+
+        Map<String, Map> tempMapping = [:]
         Map tempDeclarations = [:]
         List<ExpressionStatement> argAssignments = []
 
         BlockStatement result = new BlockStatement()
         result.statementLabel = statement.statementLabel
-        recursiveCall.arguments.expressions.eachWithIndex { Expression expression, index ->
-            def argName = positionMapping[index].name
-            def tempName = "_${argName}_"
-            def argAndTempType = positionMapping[index].type
+
+        getArguments(recursiveCall).eachWithIndex { Expression expression, int index ->
+            String argName = positionMapping[index]['name']
+            String tempName = "_${argName}_"
+            ClassNode argAndTempType = positionMapping[index]['type'] as ClassNode
             tempMapping[argName] = [name: tempName, type: argAndTempType]
-            def tempDeclaration = AstHelper.createVariableAlias(tempName, argAndTempType, argName)
+            ExpressionStatement tempDeclaration = AstHelper.createVariableAlias(tempName, argAndTempType, argName)
             tempDeclarations[tempName] = tempDeclaration
             result.addStatement(tempDeclaration)
-            def argAssignment = AstHelper.createAssignment(argName, argAndTempType, expression)
-            argAssignments << argAssignment
+            ExpressionStatement argAssignment = AstHelper.createAssignment(argName, argAndTempType, expression)
+            argAssignments.add(argAssignment)
             result.addStatement(argAssignment)
         }
-        def unusedTemps = replaceAllArgUsages(argAssignments, tempMapping)
+        Set<String> unusedTemps = replaceAllArgUsages(argAssignments, tempMapping)
         for (String temp : unusedTemps) {
             result.statements.remove(tempDeclarations[temp])
         }
@@ -75,11 +76,22 @@ class ReturnStatementToIterationConverter {
         return result
     }
 
-    private replaceAllArgUsages(List<ExpressionStatement> nodes, Map tempMapping) {
-        Set<String> unusedTempNames = new HashSet(tempMapping.values()*.name)
+    private List<Expression> getArguments(Expression recursiveCall) {
+        if (recursiveCall instanceof MethodCallExpression)
+            return ((TupleExpression) ((MethodCallExpression) recursiveCall).arguments).expressions
+        if (recursiveCall instanceof StaticMethodCallExpression)
+            return ((TupleExpression) ((StaticMethodCallExpression) recursiveCall).arguments).expressions
+    }
+
+    private boolean isAMethodCalls(Expression expression) {
+        expression.class in [MethodCallExpression, StaticMethodCallExpression]
+    }
+
+    private Set<String> replaceAllArgUsages(List<ExpressionStatement> iterationVariablesAssignmentNodes, Map<String, Map> tempMapping) {
+        Set<String> unusedTempNames = tempMapping.values().collect {Map nameAndType -> (String) nameAndType['name']} as Set<String>
         VariableReplacedListener tracker = new UsedVariableTracker()
-        for (ExpressionStatement statement : nodes) {
-            replaceArgUsageByTempUsage(statement.expression, tempMapping, tracker)
+        for (ExpressionStatement statement : iterationVariablesAssignmentNodes) {
+            replaceArgUsageByTempUsage((BinaryExpression) statement.expression, tempMapping, tracker)
         }
         unusedTempNames = unusedTempNames - tracker.usedVariableNames
         return unusedTempNames
