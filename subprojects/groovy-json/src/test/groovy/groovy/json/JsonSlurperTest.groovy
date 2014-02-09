@@ -126,6 +126,12 @@ class JsonSlurperTest extends GroovyTestCase {
 
     }
 
+    void exactly312Test() {
+        assert parser.parseText('22') == 22
+        assert parser.parseText('-22') == -22
+        assert parser.parseText('-22.0065') == -22.0065
+    }
+
 
 
     void testArrayOfArrayWithSimpleValues() {
