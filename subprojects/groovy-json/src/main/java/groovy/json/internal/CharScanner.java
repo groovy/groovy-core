@@ -435,11 +435,11 @@ public class CharScanner {
     }
 
 
-    final static String MIN_LONG_STR_NO_SIGN = String.valueOf( Long.MIN_VALUE ).substring( 1 );
+    final static String MIN_LONG_STR_NO_SIGN = String.valueOf( Long.MIN_VALUE );
     final static String MAX_LONG_STR = String.valueOf( Long.MAX_VALUE );
 
 
-    final static String MIN_INT_STR_NO_SIGN = String.valueOf( Integer.MIN_VALUE ).substring( 1 );
+    final static String MIN_INT_STR_NO_SIGN = String.valueOf( Integer.MIN_VALUE );
     final static String MAX_INT_STR = String.valueOf( Integer.MAX_VALUE );
 
 
