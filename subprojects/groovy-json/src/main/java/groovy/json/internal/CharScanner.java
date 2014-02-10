@@ -24,6 +24,7 @@ import static groovy.json.internal.Exceptions.die;
 import static groovy.json.internal.Exceptions.handle;
 
 
+
 public class CharScanner {
 
 
