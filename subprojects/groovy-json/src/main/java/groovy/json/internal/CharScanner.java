@@ -18,7 +18,6 @@
 package groovy.json.internal;
 
 
-import java.util.Arrays;
 
 import static groovy.json.internal.Exceptions.die;
 import static groovy.json.internal.Exceptions.handle;
@@ -909,7 +908,7 @@ public class CharScanner {
             }
         }
 
-        return  Arrays.copyOfRange ( array, startIndex, idx );
+        return  ArrayUtils.copyRange ( array, startIndex, idx );
 
 
     }
@@ -928,7 +927,7 @@ public class CharScanner {
             }
         }
 
-        return  Arrays.copyOfRange ( array, startIndex, idx );
+        return  ArrayUtils.copyRange ( array, startIndex, idx );
 
 
     }
