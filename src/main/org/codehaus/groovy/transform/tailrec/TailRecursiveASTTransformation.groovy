@@ -1,11 +1,11 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2003-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -60,12 +60,20 @@ class TailRecursiveASTTransformation extends AbstractASTTransformation {
         }
 
         if (hasAnnotation(method, ClassHelper.make(Memoized))) {
-            addError("Annotation " + MY_TYPE_NAME + " is incompatible with @Memoized. Remove one of them.", method)
-            return
+            ClassNode memoizedClassNode = ClassHelper.make(Memoized)
+            for (AnnotationNode annotationNode in method.annotations) {
+                if (annotationNode.classNode == MY_TYPE)
+                    break
+                if (annotationNode.classNode == memoizedClassNode) {
+                    addError("Annotation " + MY_TYPE_NAME + " must be placed before annotation @Memoized.", annotationNode)
+                    return
+                }
+            }
         }
 
         if (!hasRecursiveMethodCalls(method)) {
-            addError("No recursive calls detected. You must remove annotation " + MY_TYPE_NAME + ".", method)
+            AnnotationNode annotationNode = method.getAnnotations(ClassHelper.make(TailRecursive))[0]
+            addError("No recursive calls detected. You must remove annotation " + MY_TYPE_NAME + ".", annotationNode)
             return;
         }
 

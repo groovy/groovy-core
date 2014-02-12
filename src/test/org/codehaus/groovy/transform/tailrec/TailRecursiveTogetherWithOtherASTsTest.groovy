@@ -1,11 +1,11 @@
 /*
- * Copyright 2013-2014 the original author or authors.
+ * Copyright 2003-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,9 +14,6 @@
  * limitations under the License.
  */
 package org.codehaus.groovy.transform.tailrec
-
-import org.codehaus.groovy.control.CompilationFailedException
-
 /**
  * @author Johannes Link
  */
@@ -107,6 +104,32 @@ class TailRecursiveTogetherWithOtherASTsTest extends GroovyShellTestCase {
         assert target.fillString(1, "") == "+"
         assert target.fillString(5, "") == "+++++"
         assert target.fillString(10000, "") == "+" * 10000
+    }
+
+    void testTailRecursiveFirstWorksWithMemoized() {
+        def target = evaluate("""
+            import groovy.transform.Memoized
+            import groovy.transform.TailRecursive
+
+            class TargetClass {
+                int countActualInvocations = 0
+            	@TailRecursive
+                @Memoized
+            	int countDown(int zahl) {
+            		if (zahl == 0) {
+            		    countActualInvocations++
+            			return zahl
+            	    }
+            		return countDown(zahl - 1)
+            	}
+            }
+            new TargetClass()
+        """)
+
+        assert target.countDown(10) == 0
+        assert target.countActualInvocations == 1
+        assert target.countDown(10) == 0
+        assert target.countActualInvocations == 1
     }
 
 }
