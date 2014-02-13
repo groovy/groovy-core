@@ -18,11 +18,7 @@ package org.codehaus.groovy.transform.tailrec
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.CodeVisitorSupport
-import org.codehaus.groovy.ast.expr.BinaryExpression
-import org.codehaus.groovy.ast.expr.BooleanExpression
-import org.codehaus.groovy.ast.expr.Expression
-import org.codehaus.groovy.ast.expr.ExpressionTransformer
-import org.codehaus.groovy.ast.expr.VariableExpression
+import org.codehaus.groovy.ast.expr.*
 import org.codehaus.groovy.ast.stmt.*
 
 import java.lang.reflect.Method
@@ -77,50 +73,42 @@ class VariableExpressionReplacer extends CodeVisitorSupport {
         super.visitBinaryExpression(expression)
     }
 
-    //todo: test
     public void visitWhileLoop(WhileStatement loop) {
         replaceExpressionPropertyWhenNecessary(loop, 'booleanExpression', BooleanExpression)
         super.visitWhileLoop(loop);
     }
 
-    //todo: test
     public void visitDoWhileLoop(DoWhileStatement loop) {
         replaceExpressionPropertyWhenNecessary(loop, 'booleanExpression', BooleanExpression)
         super.visitDoWhileLoop(loop);
     }
 
-    //todo: test
     public void visitSwitch(SwitchStatement statement) {
         replaceExpressionPropertyWhenNecessary(statement)
         super.visitSwitch(statement)
     }
 
-    //todo: test
     public void visitCaseStatement(CaseStatement statement) {
         replaceExpressionPropertyWhenNecessary(statement)
         super.visitCaseStatement(statement)
     }
 
-    //todo: test
     public void visitExpressionStatement(ExpressionStatement statement) {
         replaceExpressionPropertyWhenNecessary(statement)
         super.visitExpressionStatement(statement);
     }
 
-    //todo: test
     public void visitThrowStatement(ThrowStatement statement) {
         replaceExpressionPropertyWhenNecessary(statement)
         super.visitThrowStatement(statement)
     }
 
-    //todo: test
     public void visitAssertStatement(AssertStatement statement) {
         replaceExpressionPropertyWhenNecessary(statement, 'booleanExpression', BooleanExpression)
-        replaceExpressionPropertyWhenNecessary(statement, 'messageExpression', BooleanExpression)
+        replaceExpressionPropertyWhenNecessary(statement, 'messageExpression')
         super.visitAssertStatement(statement)
     }
 
-    //todo: test
     public void visitSynchronizedStatement(SynchronizedStatement statement) {
         replaceExpressionPropertyWhenNecessary(statement)
         super.visitSynchronizedStatement(statement)

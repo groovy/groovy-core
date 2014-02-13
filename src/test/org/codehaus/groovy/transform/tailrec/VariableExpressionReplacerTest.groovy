@@ -18,11 +18,7 @@ package org.codehaus.groovy.transform.tailrec
 import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.Parameter
 import org.codehaus.groovy.ast.expr.*
-import org.codehaus.groovy.ast.stmt.EmptyStatement
-import org.codehaus.groovy.ast.stmt.ForStatement
-import org.codehaus.groovy.ast.stmt.IfStatement
-import org.codehaus.groovy.ast.stmt.ReturnStatement
-import org.codehaus.groovy.ast.stmt.Statement
+import org.codehaus.groovy.ast.stmt.*
 import org.codehaus.groovy.syntax.Token
 import org.junit.Before
 import org.junit.Test
@@ -81,6 +77,78 @@ class VariableExpressionReplacerTest {
     public void replaceCollectionExpressionInForLoop() {
         def createStatement = { new ForStatement(anyParameter(), it, anEmptyStatement()) }
         def accessExpression = { it.collectionExpression }
+
+        assertReplace(createStatement, accessExpression)
+    }
+
+    @Test
+    public void replaceBooleanExpressionInWhileLoop() {
+        def createStatement = { VariableExpression toReplace -> new WhileStatement(new BooleanExpression(toReplace), anEmptyStatement()) }
+        def accessExpression = { WhileStatement statement -> statement.booleanExpression.expression }
+
+        assertReplace(createStatement, accessExpression)
+    }
+
+    @Test
+    public void replaceBooleanExpressionInDoWhileLoop() {
+        def createStatement = { VariableExpression toReplace -> new DoWhileStatement(new BooleanExpression(toReplace), anEmptyStatement()) }
+        def accessExpression = { DoWhileStatement statement -> statement.booleanExpression.expression }
+
+        assertReplace(createStatement, accessExpression)
+    }
+
+    @Test
+    public void replaceExpressionInSwitch() {
+        def createStatement = { VariableExpression toReplace -> new SwitchStatement(toReplace, anEmptyStatement()) }
+        def accessExpression = { SwitchStatement statement -> statement.expression }
+
+        assertReplace(createStatement, accessExpression)
+    }
+
+    @Test
+    public void replaceExpressionInCase() {
+        def createStatement = { VariableExpression toReplace -> new CaseStatement(toReplace, anEmptyStatement()) }
+        def accessExpression = { CaseStatement statement -> statement.expression }
+
+        assertReplace(createStatement, accessExpression)
+    }
+
+    @Test
+    public void replaceExpressionInExpressionStatement() {
+        def createStatement = { VariableExpression toReplace -> new ExpressionStatement(toReplace) }
+        def accessExpression = { ExpressionStatement statement -> statement.expression }
+
+        assertReplace(createStatement, accessExpression)
+    }
+
+    @Test
+    public void replaceExpressionInThrowStatement() {
+        def createStatement = { VariableExpression toReplace -> new ThrowStatement(toReplace) }
+        def accessExpression = { ThrowStatement statement -> statement.expression }
+
+        assertReplace(createStatement, accessExpression)
+    }
+
+    @Test
+    public void replaceBooleanExpressionInAssertStatement() {
+        def createStatement = { VariableExpression toReplace -> new AssertStatement(new BooleanExpression(toReplace), aVariable('any')) }
+        def accessExpression = { AssertStatement statement -> statement.booleanExpression.expression }
+
+        assertReplace(createStatement, accessExpression)
+    }
+
+    @Test
+    public void replaceMessageExpressionInAssertStatement() {
+        def createStatement = { VariableExpression toReplace -> new AssertStatement(new BooleanExpression(aVariable('any')), toReplace) }
+        def accessExpression = { AssertStatement statement -> statement.messageExpression }
+
+        assertReplace(createStatement, accessExpression)
+    }
+
+    @Test
+    public void replaceExpressionInSynchronizedStatement() {
+        def createStatement = { VariableExpression toReplace -> new SynchronizedStatement(toReplace, anEmptyStatement()) }
+        def accessExpression = { SynchronizedStatement statement -> statement.expression }
 
         assertReplace(createStatement, accessExpression)
     }
