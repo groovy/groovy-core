@@ -28,7 +28,7 @@ import org.codehaus.groovy.ast.stmt.*
  *
  * @author Johannes Link
  */
-//@CompileStatic
+@CompileStatic
 class StatementReplacer extends CodeVisitorSupport {
 
     Closure<Boolean> when = { Statement node -> false }
