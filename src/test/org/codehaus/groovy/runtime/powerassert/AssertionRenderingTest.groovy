@@ -16,8 +16,8 @@
 
 package org.codehaus.groovy.runtime.powerassert
 
-import static AssertionTestUtil.*
 import static java.lang.Math.min
+import static org.codehaus.groovy.runtime.powerassert.AssertionTestUtil.isRendered
 
 /**
  * Tests rendering of whole assertions.
@@ -112,6 +112,17 @@ assert ["1", "22"]*.size() == null
                     [1, 2] false
         """, {
             assert ["1", "22"]*.size() == null
+        }
+    }
+
+    void testMethodCallExpressionSpreadDotUnique() {
+        isRendered """
+assert [[a:"22"], [a:"22"]]*.a.unique() == null
+                             | |        |
+                             | [22]     false
+                             [22, 22]
+        """, {
+            assert [[a: "22"], [a: "22"]]*.a.unique() == null
         }
     }
 
