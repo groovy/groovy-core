@@ -117,10 +117,10 @@ assert ["1", "22"]*.size() == null
 
     void testMethodCallExpressionSpreadDotUnique() {
         isRendered """
-assert [[a:"22"], [a:"22"]]*.a.unique() == null
-                             | |        |
-                             | [22]     false
-                             [22, 22]
+assert [[a: "22"], [a: "22"]]*.a.unique() == null
+                               | |        |
+                               | [22]     false
+                               [22, 22]
         """, {
             assert [[a: "22"], [a: "22"]]*.a.unique() == null
         }
