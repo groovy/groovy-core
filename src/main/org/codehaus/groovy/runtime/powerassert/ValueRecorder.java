@@ -54,7 +54,7 @@ public class ValueRecorder {
             ObjectInputStream ois = new ObjectInputStream(bais);
             Object deepCopy = ois.readObject();
             return deepCopy;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             return value;
         }
     }
