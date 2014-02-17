@@ -211,6 +211,7 @@ public class MethodNode extends AnnotatedNode implements Opcodes {
     public boolean isScriptBody() {
         return getDeclaringClass() != null &&
                 getDeclaringClass().isScript() &&
+                // TODO: I would like to remove this test.  See GROOVY-6585.
                 getName().equals("run") &&
                 getColumnNumber() == -1;
     }
