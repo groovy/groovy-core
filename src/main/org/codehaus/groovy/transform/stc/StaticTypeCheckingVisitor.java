@@ -507,6 +507,11 @@ public class StaticTypeCheckingVisitor extends ClassCodeVisitorSupport {
                     resultType = lType;
                 }
 
+                // make sure we keep primitive types
+                if (isPrimitiveType(originType) && resultType.equals(getWrapper(originType))) {
+                    resultType = originType;
+                }
+
                 // if we are in an if/else branch, keep track of assignment
                 if (typeCheckingContext.ifElseForWhileAssignmentTracker != null && leftExpression instanceof VariableExpression
                         && !isNullConstant(rightExpression)) {
@@ -726,7 +731,10 @@ public class StaticTypeCheckingVisitor extends ClassCodeVisitorSupport {
         if (rightExpression instanceof ListExpression && !implementsInterfaceOrIsSubclassOf(LIST_TYPE, leftRedirect)) {
             ArgumentListExpression argList = new ArgumentListExpression(((ListExpression) rightExpression).getExpressions());
             ClassNode[] args = getArgumentTypes(argList);
-            checkGroovyStyleConstructor(leftRedirect, args);
+            MethodNode methodNode = checkGroovyStyleConstructor(leftRedirect, args, assignmentExpression);
+            if (methodNode!=null) {
+                rightExpression.putNodeMetaData(StaticTypesMarker.DIRECT_METHOD_CALL_TARGET, methodNode);
+            }
         } else if (!implementsInterfaceOrIsSubclassOf(inferredRightExpressionType, leftRedirect)
                 && implementsInterfaceOrIsSubclassOf(inferredRightExpressionType, LIST_TYPE)
                 && !isWildcardLeftHandSide(leftExpressionType)) {
@@ -744,7 +752,7 @@ public class StaticTypeCheckingVisitor extends ClassCodeVisitorSupport {
             if (!(leftExpression instanceof VariableExpression) || !((VariableExpression) leftExpression).isDynamicTyped()) {
                 ArgumentListExpression argList = new ArgumentListExpression(rightExpression);
                 ClassNode[] args = getArgumentTypes(argList);
-                checkGroovyStyleConstructor(leftRedirect, args);
+                checkGroovyStyleConstructor(leftRedirect, args, rightExpression);
                 // perform additional type checking on arguments
                 MapExpression mapExpression = (MapExpression) rightExpression;
                 checkGroovyConstructorMap(leftExpression, leftRedirect, mapExpression);
@@ -853,18 +861,37 @@ public class StaticTypeCheckingVisitor extends ClassCodeVisitorSupport {
      *
      * @param node      the class node for which we will try to find a matching constructor
      * @param arguments the constructor arguments
+     * @deprecated use {@link #checkGroovyStyleConstructor(org.codehaus.groovy.ast.ClassNode, org.codehaus.groovy.ast.ClassNode[], org.codehaus.groovy.ast.ASTNode)} )}
      */
+    @Deprecated
     protected void checkGroovyStyleConstructor(final ClassNode node, final ClassNode[] arguments) {
+        checkGroovyStyleConstructor(node, arguments, typeCheckingContext.getEnclosingClassNode());
+    }
+
+    /**
+     * Checks that a constructor style expression is valid regarding the number of arguments and the argument types.
+     *
+     * @param node      the class node for which we will try to find a matching constructor
+     * @param arguments the constructor arguments
+     */
+    protected MethodNode checkGroovyStyleConstructor(final ClassNode node, final ClassNode[] arguments, final ASTNode source) {
         if (node.equals(ClassHelper.OBJECT_TYPE) || node.equals(ClassHelper.DYNAMIC_TYPE)) {
             // in that case, we are facing a list constructor assigned to a def or object
-            return;
+            return null;
         }
         List<ConstructorNode> constructors = node.getDeclaredConstructors();
-        if (constructors.isEmpty() && arguments.length == 0) return;
+        if (constructors.isEmpty() && arguments.length == 0) {
+            return null;
+        }
         List<MethodNode> constructorList = findMethod(node, "<init>", arguments);
         if (constructorList.isEmpty()) {
-            addStaticTypeError("No matching constructor found: " + node + toMethodParametersString("<init>", arguments), typeCheckingContext.getEnclosingClassNode());
+            addStaticTypeError("No matching constructor found: " + node + toMethodParametersString("<init>", arguments), source);
+            return null;
+        } else if (constructorList.size()>1) {
+            addStaticTypeError("Ambiguous constructor call " + node + toMethodParametersString("<init>", arguments), source);
+            return null;
         }
+        return constructorList.get(0);
     }
 
     /**
@@ -2786,8 +2813,7 @@ public class StaticTypeCheckingVisitor extends ClassCodeVisitorSupport {
             // ex: (Date)null
         } else if (char_TYPE == targetType && isPrimitiveType(expressionType) && isNumberType(expressionType)) {
             // char c = (char) ...
-        }
-        else if (sourceIsNull && isPrimitiveType(targetType)) {
+        } else if (sourceIsNull && isPrimitiveType(targetType) && !boolean_TYPE.equals(targetType)) {
             return false;
         } else if ((expressionType.getModifiers()&Opcodes.ACC_FINAL)==0 && targetType.isInterface()) {
             return true;
@@ -2908,7 +2934,7 @@ public class StaticTypeCheckingVisitor extends ClassCodeVisitorSupport {
 
         Expression leftExpression = expr.getLeftExpression();
         if (op == ASSIGN || op == ASSIGNMENT_OPERATOR) {
-            if (leftRedirect.isArray() && !rightRedirect.isArray()) return leftRedirect;
+            if (leftRedirect.isArray() && implementsInterfaceOrIsSubclassOf(rightRedirect, Collection_TYPE)) return leftRedirect;
             if (leftRedirect.implementsInterface(Collection_TYPE) && rightRedirect.implementsInterface(Collection_TYPE)) {
                 // because of type inferrence, we must perform an additional check if the right expression
                 // is an empty list expression ([]). In that case and only in that case, the inferred type
@@ -2936,7 +2962,8 @@ public class StaticTypeCheckingVisitor extends ClassCodeVisitorSupport {
                 // as anything can be assigned to a String, Class or boolean, return the left type instead
                 if (STRING_TYPE.equals(initialType)
                         || CLASS_Type.equals(initialType)
-                        || Boolean_TYPE.equals(initialType)) {
+                        || Boolean_TYPE.equals(initialType)
+                        || boolean_TYPE.equals(initialType)) {
                     return initialType;
                 }
             }
@@ -3935,7 +3962,10 @@ public class StaticTypeCheckingVisitor extends ClassCodeVisitorSupport {
         }
     }
 
-    protected void addNoMatchingMethodError(final ClassNode receiver, final String name, final ClassNode[] args, final Expression call) {
+    protected void addNoMatchingMethodError(ClassNode receiver, final String name, final ClassNode[] args, final Expression call) {
+        if (isClassClassNodeWrappingConcreteType(receiver)) {
+            receiver = receiver.getGenericsTypes()[0].getType();
+        }
         addStaticTypeError("Cannot find matching method " + receiver.getText() + "#" + toMethodParametersString(name, args) + ". Please check if the declared type is right and if the method exists.", call);
     }
 
