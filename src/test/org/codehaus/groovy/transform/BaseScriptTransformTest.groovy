@@ -121,6 +121,41 @@ class BaseScriptTransformTest extends CompilableTestSupport {
             assert meaningOfLife == 42
         ''')
     }
+
+    void testBaseScriptAbstractMethod() {
+        // http://jira.codehaus.org/browse/GROOVY-6585
+        CompilerConfiguration config = new CompilerConfiguration()
+        config.scriptBaseClass = MyCustomScript.name
+        GroovyShell shell = new GroovyShell(config)
+
+        def result = shell.evaluate('''
+            abstract class DeclaredBaseScript extends Script {
+                int _meaningOfLife = 0
+                int getMeaningOfLife() { 0 }
+                void setMeaningOfLife(int v) { __meaningOfLife = v }
+
+                abstract def runScript()
+
+                def preRun() { meaningOfLife |= 2 }
+                def postRun() { meaningOfLife |= 8 }
+                def run() {
+                   preRun()
+                   runScript()
+                   postRun()
+                   assert meaningOfLife == 42
+                   meaningOfLife
+                }
+            }
+
+            @groovy.transform.BaseScript DeclaredBaseScript baseScript
+
+            meaningOfLife |= 32
+            assert meaningOfLife == 34
+        ''')
+
+        assert result == 42
+    }
+
 }
 
 abstract class MyCustomScript extends Script {}

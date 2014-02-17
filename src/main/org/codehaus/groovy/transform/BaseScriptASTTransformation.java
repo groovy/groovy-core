@@ -19,6 +19,7 @@ package org.codehaus.groovy.transform;
 import groovy.transform.BaseScript;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.codehaus.groovy.GroovyBugError;
 import org.codehaus.groovy.ast.ASTNode;
@@ -26,6 +27,7 @@ import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.EmptyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
@@ -40,6 +42,7 @@ import org.codehaus.groovy.syntax.SyntaxException;
  * @author Paul King
  * @author Cedric Champeau
  * @author Vladimir Orany
+ * @author Jim White
  */
 @GroovyASTTransformation(phase = CompilePhase.SEMANTIC_ANALYSIS)
 public class BaseScriptASTTransformation extends AbstractASTTransformation {
@@ -83,9 +86,37 @@ public class BaseScriptASTTransformation extends AbstractASTTransformation {
                 addError("Declared type " + baseScriptType + " does not extend groovy.lang.Script class!", parent);
                 return;
             }
-            
+
             cNode.setSuperClass(baseScriptType);
             de.setRightExpression(new VariableExpression("this"));
+
+            // Method in base script that the script class should implement to be run with (if something other than run()).
+            MethodNode runScriptMethod = null;
+
+            // Look to see if the base script has an abstract method we should use instead of the default.
+            for (MethodNode m : baseScriptType.getMethods()) {
+                if ((m.getModifiers() & ACC_ABSTRACT) != 0) {
+                    runScriptMethod = m;
+                    break;
+                }
+            }
+
+            // Do they want to use something than "run"?
+            if (runScriptMethod != null) {
+                List<MethodNode> methods = cNode.getMethods();
+                for (int i = 0; i < methods.size(); ++i) {
+                    MethodNode m = methods.get(i);
+                    if ("run".equals(m.getName())) {
+                        // Remove the default run method implementation and replace it with the one
+                        // whose signature comes from the abstract method in the base script.
+                        methods.remove(i);
+                        methods.add(i, new MethodNode(runScriptMethod.getName(), runScriptMethod.getModifiers() & ~ACC_ABSTRACT
+                                , runScriptMethod.getReturnType(), runScriptMethod.getParameters(), runScriptMethod.getExceptions()
+                                , m.getCode()));
+                        break;
+                    }
+                }
+            }
         }
     }
     
