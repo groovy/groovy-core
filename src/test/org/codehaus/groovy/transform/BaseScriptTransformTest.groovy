@@ -128,11 +128,11 @@ class BaseScriptTransformTest extends CompilableTestSupport {
         config.scriptBaseClass = MyCustomScript.name
         GroovyShell shell = new GroovyShell(config)
 
-        def result = shell.evaluate('''
+        def answer = shell.evaluate('''
             abstract class DeclaredBaseScript extends Script {
                 int _meaningOfLife = 0
-                int getMeaningOfLife() { 0 }
-                void setMeaningOfLife(int v) { __meaningOfLife = v }
+                int getMeaningOfLife() { _meaningOfLife }
+                void setMeaningOfLife(int v) { _meaningOfLife = v }
 
                 abstract def runScript()
 
@@ -153,7 +153,7 @@ class BaseScriptTransformTest extends CompilableTestSupport {
             assert meaningOfLife == 34
         ''')
 
-        assert result == 42
+        assert answer == 42
     }
 
 }
