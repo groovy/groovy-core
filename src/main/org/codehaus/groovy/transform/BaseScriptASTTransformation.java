@@ -28,6 +28,7 @@ import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.EmptyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
@@ -103,19 +104,11 @@ public class BaseScriptASTTransformation extends AbstractASTTransformation {
 
             // Do they want to use something than "run"?
             if (runScriptMethod != null) {
-                List<MethodNode> methods = cNode.getMethods();
-                for (int i = 0; i < methods.size(); ++i) {
-                    MethodNode m = methods.get(i);
-                    if ("run".equals(m.getName())) {
-                        // Remove the default run method implementation and replace it with the one
-                        // whose signature comes from the abstract method in the base script.
-                        methods.remove(i);
-                        methods.add(i, new MethodNode(runScriptMethod.getName(), runScriptMethod.getModifiers() & ~ACC_ABSTRACT
-                                , runScriptMethod.getReturnType(), runScriptMethod.getParameters(), runScriptMethod.getExceptions()
-                                , m.getCode()));
-                        break;
-                    }
-                }
+                MethodNode defaultMethod = cNode.getDeclaredMethod("run", Parameter.EMPTY_ARRAY);
+                cNode.removeMethod(defaultMethod);
+                cNode.addMethod(new MethodNode(runScriptMethod.getName(), runScriptMethod.getModifiers() & ~ACC_ABSTRACT
+                        , runScriptMethod.getReturnType(), runScriptMethod.getParameters(), runScriptMethod.getExceptions()
+                        , defaultMethod.getCode()));
             }
         }
     }
