@@ -41,6 +41,7 @@ public class MethodNode extends AnnotatedNode implements Opcodes {
     private VariableScope variableScope;
     private final ClassNode[] exceptions;
     private final boolean staticConstructor;
+    private final boolean isScriptBody;
 
     // type spec for generics
     private GenericsType[] genericsTypes = null;
@@ -49,7 +50,7 @@ public class MethodNode extends AnnotatedNode implements Opcodes {
     // cached data
     String typeDescriptor;
 
-    public MethodNode(String name, int modifiers, ClassNode returnType, Parameter[] parameters, ClassNode[] exceptions, Statement code) {
+    public MethodNode(String name, int modifiers, ClassNode returnType, Parameter[] parameters, ClassNode[] exceptions, Statement code, boolean isScriptBody) {
         this.name = name;
         this.modifiers = modifiers;
         this.code = code;
@@ -60,6 +61,11 @@ public class MethodNode extends AnnotatedNode implements Opcodes {
         this.hasDefault = false;
         this.exceptions = exceptions;
         this.staticConstructor = (name != null && name.equals("<clinit>"));
+        this.isScriptBody = isScriptBody;
+    }
+
+    public MethodNode(String name, int modifiers, ClassNode returnType, Parameter[] parameters, ClassNode[] exceptions, Statement code) {
+        this(name, modifiers, returnType, parameters, exceptions, code, false);
     }
 
     /**
@@ -209,11 +215,7 @@ public class MethodNode extends AnnotatedNode implements Opcodes {
      * @return true if this method is the run method from a script
      */
     public boolean isScriptBody() {
-        return getDeclaringClass() != null &&
-                getDeclaringClass().isScript() &&
-                // TODO: I would like to remove this test.  See GROOVY-6585.
-                getName().equals("run") &&
-                getColumnNumber() == -1;
+        return isScriptBody;
     }
 
     public String toString() {
