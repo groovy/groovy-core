@@ -98,10 +98,11 @@ public class BaseScriptASTTransformation extends AbstractASTTransformation {
             if (runScriptMethod != null) {
                 MethodNode defaultMethod = cNode.getDeclaredMethod("run", Parameter.EMPTY_ARRAY);
                 cNode.removeMethod(defaultMethod);
-                cNode.addMethod(new MethodNode(runScriptMethod.getName(), runScriptMethod.getModifiers() & ~ACC_ABSTRACT
+                MethodNode methodNode = new MethodNode(runScriptMethod.getName(), runScriptMethod.getModifiers() & ~ACC_ABSTRACT
                         , runScriptMethod.getReturnType(), runScriptMethod.getParameters(), runScriptMethod.getExceptions()
-                        , defaultMethod.getCode()
-                        , true));
+                        , defaultMethod.getCode());
+                methodNode.copyNodeMetaData(defaultMethod);
+                cNode.addMethod(methodNode);
             }
         }
     }
