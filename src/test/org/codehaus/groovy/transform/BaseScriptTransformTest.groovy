@@ -156,6 +156,27 @@ class BaseScriptTransformTest extends CompilableTestSupport {
         assert answer == 42
     }
 
+    void testBaseScriptImplementsRunMethod() {
+        def result = new GroovyShell().evaluate('''
+            class DeclaredBaseScript extends Script {
+                boolean iBeenRun
+                def run() { iBeenRun = true }
+            }
+
+            @groovy.transform.BaseScript DeclaredBaseScript baseScript
+
+            assert !iBeenRun
+
+            super.run()
+
+            assert iBeenRun
+
+            iBeenRun
+        ''')
+
+        assert result
+    }
+
 }
 
 abstract class MyCustomScript extends Script {}

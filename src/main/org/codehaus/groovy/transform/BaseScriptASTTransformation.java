@@ -35,6 +35,7 @@ import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
+import org.codehaus.groovy.control.messages.WarningMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
 
 /**
@@ -100,13 +101,15 @@ public class BaseScriptASTTransformation extends AbstractASTTransformation {
             cNode.setSuperClass(baseScriptType);
             de.setRightExpression(new VariableExpression("this"));
 
+            MethodNode runScriptMethod = ClassHelper.findSAM(baseScriptType);
+
             // If they want to use a name other than than "run", then make the change.
-            if (!runScriptMethod.getName().equals("run")) {
+            if (runScriptMethod != null && !runScriptMethod.getName().equals("run")) {
                 MethodNode defaultMethod = cNode.getDeclaredMethod("run", Parameter.EMPTY_ARRAY);
                 cNode.removeMethod(defaultMethod);
                 MethodNode methodNode = new MethodNode(runScriptMethod.getName(), runScriptMethod.getModifiers() & ~ACC_ABSTRACT
-                        , runScriptMethod.getReturnType(), runScriptMethod.getParameters(), runScriptMethod.getExceptions()
-                        , defaultMethod.getCode());
+                    , runScriptMethod.getReturnType(), runScriptMethod.getParameters(), runScriptMethod.getExceptions()
+                    , defaultMethod.getCode());
                 // The AST node metadata has the flag that indicates that this method is a script body.
                 // It may also be carrying data for other AST transforms.
                 methodNode.copyNodeMetaData(defaultMethod);
