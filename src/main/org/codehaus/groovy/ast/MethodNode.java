@@ -214,7 +214,8 @@ public class MethodNode extends AnnotatedNode implements Opcodes {
     }
 
     /**
-     *
+     * Set the metadata flag for this method to indicate that it is a script body implementation.
+     * @see ModuleNode createStatementsClass().
      * @return
      */
     public void setIsScriptBody() {
