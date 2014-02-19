@@ -158,7 +158,7 @@ class BaseScriptTransformTest extends CompilableTestSupport {
 
     void testBaseScriptImplementsRunMethod() {
         def result = new GroovyShell().evaluate('''
-            abstract class DeclaredBaseScript extends Script {
+            class DeclaredBaseScript extends Script {
                 boolean iBeenRun
                 def run() { iBeenRun = true }
             }
