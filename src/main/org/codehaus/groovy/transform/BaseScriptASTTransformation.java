@@ -89,30 +89,23 @@ public class BaseScriptASTTransformation extends AbstractASTTransformation {
                 return;
             }
 
-            // Method in base script that will contain the script body code.
-            MethodNode runScriptMethod = ClassHelper.findSAM(baseScriptType);
-
             cNode.setSuperClass(baseScriptType);
             de.setRightExpression(new VariableExpression("this"));
 
-            // Make sure they have not implemented run() without declaring some other abstract method for us to use.
-            if (runScriptMethod == null) {
-                sourceUnit.getErrorCollector().addWarning(WarningMessage.PARANOIA,
-                    "Declared type " + baseScriptType + " implements Script.run(). Are you intending to use super.run() in your script body?"
-                    , de.getOperation(), sourceUnit);
-            } else {
-                // If they want to use a name other than than "run", then make the change.
-                if (!runScriptMethod.getName().equals("run")) {
-                    MethodNode defaultMethod = cNode.getDeclaredMethod("run", Parameter.EMPTY_ARRAY);
-                    cNode.removeMethod(defaultMethod);
-                    MethodNode methodNode = new MethodNode(runScriptMethod.getName(), runScriptMethod.getModifiers() & ~ACC_ABSTRACT
-                            , runScriptMethod.getReturnType(), runScriptMethod.getParameters(), runScriptMethod.getExceptions()
-                            , defaultMethod.getCode());
-                    // The AST node metadata has the flag that indicates that this method is a script body.
-                    // It may also be carrying data for other AST transforms.
-                    methodNode.copyNodeMetaData(defaultMethod);
-                    cNode.addMethod(methodNode);
-                }
+            // Method in base script that will contain the script body code.
+            MethodNode runScriptMethod = ClassHelper.findSAM(baseScriptType);
+
+            // If they want to use a name other than than "run", then make the change.
+            if (runScriptMethod != null && !runScriptMethod.getName().equals("run")) {
+                MethodNode defaultMethod = cNode.getDeclaredMethod("run", Parameter.EMPTY_ARRAY);
+                cNode.removeMethod(defaultMethod);
+                MethodNode methodNode = new MethodNode(runScriptMethod.getName(), runScriptMethod.getModifiers() & ~ACC_ABSTRACT
+                    , runScriptMethod.getReturnType(), runScriptMethod.getParameters(), runScriptMethod.getExceptions()
+                    , defaultMethod.getCode());
+                // The AST node metadata has the flag that indicates that this method is a script body.
+                // It may also be carrying data for other AST transforms.
+                methodNode.copyNodeMetaData(defaultMethod);
+                cNode.addMethod(methodNode);
             }
         }
     }
