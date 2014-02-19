@@ -92,17 +92,9 @@ public class BaseScriptASTTransformation extends AbstractASTTransformation {
             de.setRightExpression(new VariableExpression("this"));
 
             // Method in base script that the script class should implement to be run with (if something other than run()).
-            MethodNode runScriptMethod = null;
+            MethodNode runScriptMethod = ClassHelper.findSAM(baseScriptType);
 
-            // Look to see if the base script has an abstract method we should use instead of the default.
-            for (MethodNode m : baseScriptType.getMethods()) {
-                if ((m.getModifiers() & ACC_ABSTRACT) != 0) {
-                    runScriptMethod = m;
-                    break;
-                }
-            }
-
-            // Do they want to use something than "run"?
+            // If they want to use a name than "run", then make change.
             if (runScriptMethod != null) {
                 MethodNode defaultMethod = cNode.getDeclaredMethod("run", Parameter.EMPTY_ARRAY);
                 cNode.removeMethod(defaultMethod);
