@@ -209,6 +209,13 @@ class BaseScriptTransformTest extends CompilableTestSupport {
         '''
     }
 
+    void testMultipleMethodsWithSameSignatureFails() {
+        shouldNotCompile '''
+            def run() { println 'hmm' }
+            println 'huh?'
+        '''
+    }
+
     void testBaseScriptOnImport() {
         def result = new GroovyShell().evaluate('''
             @BaseScript(DeclaredBaseScript)
