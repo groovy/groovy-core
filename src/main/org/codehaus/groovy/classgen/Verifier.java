@@ -184,14 +184,21 @@ public class Verifier implements GroovyClassVisitor, Opcodes {
     
     private void checkForDuplicateMethods(ClassNode cn) {
         HashSet<String> descriptors = new HashSet<String>();
+        String signatureOfScriptBody = null;
         for (MethodNode mn : cn.getMethods()) {
             if (mn.isSynthetic()) continue;
             String mySig = makeDescriptorWithoutReturnType(mn);
             if (descriptors.contains(mySig)) {
-                throw new RuntimeParserException("The method " + mn.getText() +
-                        " duplicates another method of the same signature", mn);
+                if (mn.isScriptBody() || mySig.equals(signatureOfScriptBody)) {
+                    throw new RuntimeParserException("The method " + mn.getText() +
+                            " is a duplicate of the one declared for this script's body code", mn);
+                } else {
+                    throw new RuntimeParserException("The method " + mn.getText() +
+                            " duplicates another method of the same signature", mn);
+                }
             }
             descriptors.add(mySig);
+            if (mn.isScriptBody()) { signatureOfScriptBody = mySig; }
         }
     }
 
