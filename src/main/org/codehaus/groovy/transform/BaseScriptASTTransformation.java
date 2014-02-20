@@ -89,15 +89,6 @@ public class BaseScriptASTTransformation extends AbstractASTTransformation {
                 return;
             }
 
-            // Method in base script that will contain the script body code.
-            MethodNode runScriptMethod = ClassHelper.findSAM(baseScriptType);
-
-            // Make sure they have not implemented run() without declaring some other abstract method for us to use.
-            if (runScriptMethod == null) {
-                addError("Declared type " + baseScriptType + " doesn't have a single abstract method for the script body.", parent);
-                return;
-            }
-
             cNode.setSuperClass(baseScriptType);
             de.setRightExpression(new VariableExpression("this"));
 
