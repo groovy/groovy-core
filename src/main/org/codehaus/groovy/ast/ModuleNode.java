@@ -321,17 +321,6 @@ public class ModuleNode extends ASTNode implements Opcodes {
         return classNode;
     }
 
-    private MethodNode hasRunMethod() {
-        MethodNode methodNode = null;
-        for (MethodNode method : methods) {
-            if ("run".equals(method.getName()) && method.getParameters().length==0) {
-                methodNode = method;
-                break;
-            }
-        }
-        return methodNode;
-    }
-
     /*
      * If a main method is provided by user, account for it under run() as scripts generate their own 'main' so they can run.  
      */
