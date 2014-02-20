@@ -184,12 +184,11 @@ public class Verifier implements GroovyClassVisitor, Opcodes {
     
     private void checkForDuplicateMethods(ClassNode cn) {
         HashSet<String> descriptors = new HashSet<String>();
-        String signatureOfScriptBody = null;
         for (MethodNode mn : cn.getMethods()) {
             if (mn.isSynthetic()) continue;
             String mySig = makeDescriptorWithoutReturnType(mn);
             if (descriptors.contains(mySig)) {
-                if (mn.isScriptBody() || mySig.equals(signatureOfScriptBody)) {
+                if (mn.isScriptBody() || mySig.equals(scriptBodySignatureWithoutReturnType(cn))) {
                     throw new RuntimeParserException("The method " + mn.getText() +
                             " is a duplicate of the one declared for this script's body code", mn);
                 } else {
@@ -198,8 +197,14 @@ public class Verifier implements GroovyClassVisitor, Opcodes {
                 }
             }
             descriptors.add(mySig);
-            if (mn.isScriptBody()) { signatureOfScriptBody = mySig; }
         }
+    }
+
+    private String scriptBodySignatureWithoutReturnType(ClassNode cn) {
+        for (MethodNode mn : cn.getMethods()) {
+            if (mn.isScriptBody()) return makeDescriptorWithoutReturnType(mn);
+        }
+        return null;
     }
 
     private FieldNode checkFieldDoesNotExist(ClassNode node, String fieldName) {
