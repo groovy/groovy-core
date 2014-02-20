@@ -16,6 +16,10 @@
 
 package org.codehaus.groovy.runtime.powerassert;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,11 +37,25 @@ public class ValueRecorder {
     }
 
     public Object record(Object value, int anchor) {
-        values.add(new Value(value, anchor));
+        values.add(new Value(copy(value), anchor));
         return value;
     }
 
     public List<Value> getValues() {
         return values;
+    }
+
+    private Object copy(Object value) {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+            oos.writeObject(value);
+            ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+            ObjectInputStream ois = new ObjectInputStream(bais);
+            Object deepCopy = ois.readObject();
+            return deepCopy;
+        } catch (Throwable e) {
+            return value;
+        }
     }
 }
