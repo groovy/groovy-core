@@ -16,28 +16,10 @@
 
 package groovy.grape;
 
-import groovy.lang.Grab;
-import groovy.lang.GrabConfig;
-import groovy.lang.GrabExclude;
-import groovy.lang.GrabResolver;
-import groovy.lang.Grapes;
+import groovy.lang.*;
 import groovy.transform.CompilationUnitAware;
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.AnnotatedNode;
-import org.codehaus.groovy.ast.AnnotationNode;
-import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
-import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.ImportNode;
-import org.codehaus.groovy.ast.ModuleNode;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.ListExpression;
-import org.codehaus.groovy.ast.expr.MapExpression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.StaticMethodCallExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.CompilationUnit;
@@ -51,8 +33,6 @@ import org.codehaus.groovy.transform.GroovyASTTransformation;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -248,7 +228,7 @@ public class GrabAnnotationTransformation extends ClassCodeVisitorSupport implem
                             if (member == null) {
                                 addError("The missing attribute \"" + s + "\" is required in @" + node.getClassNode().getNameWithoutPackage() + " annotations", node);
                                 continue grabResolverAnnotationLoop;
-                            } else if (member != null && !(member instanceof ConstantExpression)) {
+                            } else if (!(member instanceof ConstantExpression)) {
                                 addError("Attribute \"" + s + "\" has value " + member.getText() + " but should be an inline constant in @" + node.getClassNode().getNameWithoutPackage() + " annotations", node);
                                 continue grabResolverAnnotationLoop;
                             }
@@ -294,7 +274,7 @@ public class GrabAnnotationTransformation extends ClassCodeVisitorSupport implem
                         if (member == null) {
                             addError("The missing attribute \"" + s + "\" is required in @" + node.getClassNode().getNameWithoutPackage() + " annotations", node);
                             continue grabExcludeAnnotationLoop;
-                        } else if (member != null && !(member instanceof ConstantExpression)) {
+                        } else if (!(member instanceof ConstantExpression)) {
                             addError("Attribute \"" + s + "\" has value " + member.getText() + " but should be an inline constant in @" + node.getClassNode().getNameWithoutPackage() + " annotations", node);
                             continue grabExcludeAnnotationLoop;
                         }
@@ -319,7 +299,7 @@ public class GrabAnnotationTransformation extends ClassCodeVisitorSupport implem
                             continue grabAnnotationLoop;
                         }
                         if (node.getMember(s) != null) {
-                            grabMap.put(s, ((ConstantExpression)member).getValue());
+                            grabMap.put(s, member != null ? ((ConstantExpression) member).getValue() : null);
                         }
                     }
                     grabMaps.add(grabMap);

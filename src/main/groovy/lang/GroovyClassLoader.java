@@ -265,7 +265,7 @@ public class GroovyClassLoader extends URLClassLoader {
         validate(codeSource);
         Class answer;  // Was neither already loaded nor compiling, so compile and add to cache.
         CompilationUnit unit = createCompilationUnit(config, codeSource.getCodeSource());
-        SourceUnit su = null;
+        SourceUnit su;
         if (codeSource.getFile() == null) {
             su = unit.addSource(codeSource.getName(), codeSource.getScriptText());
         } else {
@@ -371,7 +371,7 @@ public class GroovyClassLoader extends URLClassLoader {
             return delegate.findResource(name);
         }
 
-        public Enumeration findResources(String name) throws IOException {
+        public Enumeration<URL> findResources(String name) throws IOException {
             return delegate.findResources(name);
         }
 
@@ -476,7 +476,7 @@ public class GroovyClassLoader extends URLClassLoader {
                 SourceUnit msu = null;
                 if (mn != null) msu = mn.getContext();
                 ClassNode main = null;
-                if (mn != null) main = (ClassNode) mn.getClasses().get(0);
+                if (mn != null) main = mn.getClasses().get(0);
                 if (msu == su && main == classNode) generatedClass = theClass;
             }
 

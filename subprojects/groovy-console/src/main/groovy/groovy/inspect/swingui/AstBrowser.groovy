@@ -17,6 +17,7 @@
 package groovy.inspect.swingui
 
 import groovy.swing.SwingBuilder
+import groovy.ui.ConsoleTextEditor
 
 import java.awt.Cursor
 import java.awt.Font
@@ -76,11 +77,11 @@ class AstBrowser {
         if (!args) {
             println 'Usage: java groovy.inspect.swingui.AstBrowser [filename]\nwhere [filename] is a Groovy script'
         } else {
-            def file = new File((String) args[0])
+            def file = new File(args[0] as String)
             if (!file.exists()) {
                 println "File $args[0] cannot be found."
             } else {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
+                UIManager.setLookAndFeel(UIManager.systemLookAndFeelClassName)
                 new AstBrowser(null, null, new GroovyClassLoader()).run({file.text}, file.path)
             }
         }
@@ -181,8 +182,8 @@ class AstBrowser {
                         orientation: JSplitPane.VERTICAL_SPLIT,
                         topComponent: splitterPane,
                         bottomComponent: tabbedPane {
-                            widget(decompiledSource = new groovy.ui.ConsoleTextEditor(editable: false, showLineNumbers: false), title:'Source')
-                            widget(bytecodeView = new groovy.ui.ConsoleTextEditor(editable: false, showLineNumbers: false), title:'Bytecode')
+                            widget(decompiledSource = new ConsoleTextEditor(editable: false, showLineNumbers: false), title:'Source')
+                            widget(bytecodeView = new ConsoleTextEditor(editable: false, showLineNumbers: false), title:'Bytecode')
                         },
                         constraints: gbc(gridx: 0, gridy: 2, gridwidth: 3, gridheight: 1, weightx: 1.0, weighty: 1.0, anchor: NORTHWEST, fill: BOTH, insets: [2, 2, 2, 2])) { }
 
@@ -315,9 +316,9 @@ class AstBrowser {
 
     void showAbout(EventObject evt) {
         def pane = swing.optionPane()
-        pane.setMessage('An interactive GUI to explore AST capabilities.')
+        pane.message = 'An interactive GUI to explore AST capabilities.'
         def dialog = pane.createDialog(frame, 'About Groovy AST Browser')
-        dialog.show()
+        dialog.visible = true
     }
 
     void showScriptFreeForm(EventObject evt) {
@@ -358,7 +359,7 @@ class AstBrowser {
                 }
             } catch (Throwable t) {
                 swing.doLater {
-                    decompiledSource.textEditor.text = t.getMessage()
+                    decompiledSource.textEditor.text = t.message
                     decompiledSource.textEditor.setCaretPosition(0)
                     decompiledSource.textEditor.setCursor(Cursor.defaultCursor)
                 }
@@ -547,7 +548,7 @@ class BytecodeCollector extends ClassCollector {
     Map<String, byte[]> bytecode
 
     BytecodeCollector(ClassCollector delegate, Map<String,byte[]> bytecode) {
-        super(delegate.cl, delegate.unit, delegate.su)
+        super(delegate.cl as GroovyClassLoader.InnerLoader, delegate.unit, delegate.su)
         this.bytecode = bytecode
     }
 

@@ -15,9 +15,12 @@
  */
 package org.codehaus.groovy.tools
 
+import groovy.text.SimpleTemplateEngine
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
 import com.thoughtworks.qdox.JavaDocBuilder
 import org.codehaus.groovy.tools.shell.util.Logger
+
+import java.text.BreakIterator
 
 /**
  * Generate documentation about the methods provided by the Groovy Development Kit
@@ -101,7 +104,7 @@ class DocGenerator {
      * Builds an HTML page from the structure of DefaultGroovyMethods.
      */
     def generateNew() {
-        def engine = new groovy.text.SimpleTemplateEngine()
+        def engine = new SimpleTemplateEngine()
 
         // the index
         def templateIndex = createTemplate(engine, 'index.html')
@@ -221,7 +224,7 @@ class DocGenerator {
     }
 
     private getFirstSentence(text) {
-        def boundary = java.text.BreakIterator.getSentenceInstance(Locale.getDefault()) // todo - allow locale to be passed in
+        def boundary = BreakIterator.getSentenceInstance(Locale.getDefault()) // todo - allow locale to be passed in
         boundary.setText(text)
         int start = boundary.first()
         int end = boundary.next()

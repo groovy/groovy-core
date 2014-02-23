@@ -213,10 +213,7 @@ public abstract class GString extends GroovyObjectSupport implements Comparable,
     }
 
     public boolean equals(Object that) {
-        if (that instanceof GString) {
-            return equals((GString) that);
-        }
-        return false;
+        return that instanceof GString && equals((GString) that);
     }
 
     public boolean equals(GString that) {
