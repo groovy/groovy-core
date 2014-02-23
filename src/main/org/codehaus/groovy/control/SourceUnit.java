@@ -16,9 +16,16 @@
 
 package org.codehaus.groovy.control;
 
-import antlr.*;
-import com.thoughtworks.xstream.XStream;
 import groovy.lang.GroovyClassLoader;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Reader;
+import java.net.URL;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+
 import org.codehaus.groovy.GroovyBugError;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.control.io.FileReaderSource;
@@ -28,17 +35,16 @@ import org.codehaus.groovy.control.io.URLReaderSource;
 import org.codehaus.groovy.control.messages.Message;
 import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
-import org.codehaus.groovy.syntax.Reduction;
-import org.codehaus.groovy.syntax.SyntaxException;
+import org.codehaus.groovy.syntax.*;
 import org.codehaus.groovy.tools.Utilities;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
-import java.net.URL;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
+import antlr.CharScanner;
+import antlr.MismatchedTokenException;
+import antlr.MismatchedCharException;
+import antlr.NoViableAltException;
+import antlr.NoViableAltForCharException;
+
+import com.thoughtworks.xstream.XStream;
 
 /**
  * Provides an anchor for a single source unit (usually a script file)
@@ -148,7 +154,7 @@ public class SourceUnit extends ProcessingUnit {
         // to report an unexpected EOF. Perhaps this implementation misses some.
         // If you find another way, please add it.
         if (getErrorCollector().hasErrors()) {
-            Message last = getErrorCollector().getLastError();
+            Message last = (Message) getErrorCollector().getLastError();
             Throwable cause = null;
             if (last instanceof SyntaxErrorMessage) {
                 cause = ((SyntaxErrorMessage) last).getCause().getCause();

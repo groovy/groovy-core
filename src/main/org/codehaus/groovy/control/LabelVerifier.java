@@ -15,11 +15,17 @@
  */
 package org.codehaus.groovy.control;
 
-import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
-import org.codehaus.groovy.ast.stmt.*;
-
 import java.util.Iterator;
 import java.util.LinkedList;
+
+import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
+import org.codehaus.groovy.ast.stmt.BreakStatement;
+import org.codehaus.groovy.ast.stmt.ContinueStatement;
+import org.codehaus.groovy.ast.stmt.DoWhileStatement;
+import org.codehaus.groovy.ast.stmt.ForStatement;
+import org.codehaus.groovy.ast.stmt.Statement;
+import org.codehaus.groovy.ast.stmt.SwitchStatement;
+import org.codehaus.groovy.ast.stmt.WhileStatement;
 
 /**
  * This class checks the handling of labels in the AST
@@ -29,9 +35,9 @@ import java.util.LinkedList;
 public class LabelVerifier extends ClassCodeVisitorSupport {
 
     private SourceUnit source;
-    private LinkedList<String> visitedLabels;
-    private LinkedList<ContinueStatement> continueLabels;
-    private LinkedList<BreakStatement> breakLabels;
+    private LinkedList visitedLabels;
+    private LinkedList continueLabels;
+    private LinkedList breakLabels;
     boolean inLoop=false;
     boolean inSwitch=false;
     
@@ -44,9 +50,9 @@ public class LabelVerifier extends ClassCodeVisitorSupport {
     }
     
     private void init(){
-        visitedLabels = new LinkedList<String>();
-        continueLabels = new LinkedList<ContinueStatement>();
-        breakLabels = new LinkedList<BreakStatement>();
+        visitedLabels = new LinkedList();
+        continueLabels = new LinkedList();
+        breakLabels = new LinkedList();
         inLoop=false;
         inSwitch=false;
     }
@@ -61,13 +67,13 @@ public class LabelVerifier extends ClassCodeVisitorSupport {
        String label = statement.getStatementLabel();
        
        if (label!=null) {
-           for (Iterator<BreakStatement> iter = breakLabels.iterator(); iter.hasNext();) {
-               BreakStatement element = iter.next();
+           for (Iterator iter = breakLabels.iterator(); iter.hasNext();) {
+               BreakStatement element = (BreakStatement) iter.next();
                if (element.getLabel().equals(label)) iter.remove();
            }
            
-           for (Iterator<ContinueStatement> iter = continueLabels.iterator(); iter.hasNext();) {
-               ContinueStatement element = iter.next();
+           for (Iterator iter = continueLabels.iterator(); iter.hasNext();) {
+               ContinueStatement element = (ContinueStatement) iter.next();
                if (element.getLabel().equals(label)) iter.remove();
            }
            
@@ -108,7 +114,8 @@ public class LabelVerifier extends ClassCodeVisitorSupport {
         }
         if (label!=null) {
             boolean found=false;
-            for (String element : visitedLabels) {
+            for (Iterator iter = visitedLabels.iterator(); iter.hasNext();) {
+                String element = (String) iter.next();
                 if (element.equals(label)) {
                     found = true;
                     break;
@@ -128,7 +135,8 @@ public class LabelVerifier extends ClassCodeVisitorSupport {
         } 
         if (label!=null) {
             boolean found=false;
-            for (String element : visitedLabels) {
+            for (Iterator iter = visitedLabels.iterator(); iter.hasNext();) {
+                String element = (String) iter.next();
                 if (element.equals(label)) {
                     found = true;
                     break;
@@ -142,11 +150,13 @@ public class LabelVerifier extends ClassCodeVisitorSupport {
     
     protected void assertNoLabelsMissed() {
         //TODO: report multiple missing labels of the same name only once
-        for (ContinueStatement element : continueLabels) {
-            addError("continue to missing label", element);
+        for (Iterator iter = continueLabels.iterator(); iter.hasNext();) {
+            ContinueStatement element = (ContinueStatement) iter.next();
+            addError("continue to missing label",element);
         }
-        for (BreakStatement element : breakLabels) {
-            addError("break to missing label", element);
+        for (Iterator iter = breakLabels.iterator(); iter.hasNext();) {
+            BreakStatement element = (BreakStatement) iter.next();
+            addError("break to missing label",element);
         }
     }
     

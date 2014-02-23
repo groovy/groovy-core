@@ -90,7 +90,7 @@ public class AsmClassGenerator extends ClassGenerator {
     public static final boolean ASM_DEBUG = false; // add marker in the bytecode to show source-bytecode relationship
 
     private ASTNode currentASTNode = null;
-    private Map<String, GenericsType> genericParameterNames = null;
+    private Map genericParameterNames = null;
     private SourceUnit source;
     private WriterController controller;
     
@@ -102,7 +102,7 @@ public class AsmClassGenerator extends ClassGenerator {
         this.context = context;
         this.cv = classVisitor;
         this.sourceFile = sourceFile;
-        genericParameterNames = new HashMap<String, GenericsType>();
+        genericParameterNames = new HashMap();
     }
 
     public SourceUnit getSourceUnit() {
@@ -692,7 +692,7 @@ public class AsmClassGenerator extends ClassGenerator {
     }
 
     public static boolean containsSpreadExpression(Expression arguments) {
-        List<Expression> args = null;
+        List args = null;
         if (arguments instanceof TupleExpression) {
             TupleExpression tupleExpression = (TupleExpression) arguments;
             args = tupleExpression.getExpressions();
@@ -702,7 +702,7 @@ public class AsmClassGenerator extends ClassGenerator {
         } else {
             return arguments instanceof SpreadExpression;
         }
-        for (Iterator<Expression> iter = args.iterator(); iter.hasNext();) {
+        for (Iterator iter = args.iterator(); iter.hasNext();) {
             if (iter.next() instanceof SpreadExpression) return true;
         }
         return false;
@@ -1281,16 +1281,16 @@ public class AsmClassGenerator extends ClassGenerator {
     public void visitMapExpression(MapExpression expression) {
         MethodVisitor mv = controller.getMethodVisitor();
 
-        List<MapEntryExpression> entries = expression.getMapEntryExpressions();
+        List entries = expression.getMapEntryExpressions();
         int size = entries.size();
         BytecodeHelper.pushConstant(mv, size * 2);
 
         mv.visitTypeInsn(ANEWARRAY, "java/lang/Object");
 
         int i = 0;
-        for (Iterator<MapEntryExpression> iter = entries.iterator(); iter.hasNext();) {
-            MapEntryExpression object = iter.next();
-            MapEntryExpression entry = object;
+        for (Iterator iter = entries.iterator(); iter.hasNext();) {
+            Object object = iter.next();
+            MapEntryExpression entry = (MapEntryExpression) object;
 
             mv.visitInsn(DUP);
             BytecodeHelper.pushConstant(mv, i++);
@@ -1319,8 +1319,8 @@ public class AsmClassGenerator extends ClassGenerator {
     }
 
     public void despreadList(List expressions, boolean wrap) {
-        ArrayList<Expression> spreadIndexes = new ArrayList<Expression>();
-        ArrayList<Expression> spreadExpressions = new ArrayList<Expression>();
+        ArrayList spreadIndexes = new ArrayList();
+        ArrayList spreadExpressions = new ArrayList();
         ArrayList normalArguments = new ArrayList();
         for (int i = 0; i < expressions.size(); i++) {
             Object expr = expressions.get(i);
@@ -1382,13 +1382,13 @@ public class AsmClassGenerator extends ClassGenerator {
         MethodVisitor mv = controller.getMethodVisitor();
         ClassNode elementType = expression.getElementType();
         String arrayTypeName = BytecodeHelper.getClassInternalName(elementType);
-        List<Expression> sizeExpression = expression.getSizeExpression();
+        List sizeExpression = expression.getSizeExpression();
 
         int size = 0;
         int dimensions = 0;
         if (sizeExpression != null) {
-            for (Iterator<Expression> iter = sizeExpression.iterator(); iter.hasNext();) {
-                Expression element = iter.next();
+            for (Iterator iter = sizeExpression.iterator(); iter.hasNext();) {
+                Expression element = (Expression) iter.next();
                 if (element == ConstantExpression.EMPTY_EXPRESSION) break;
                 dimensions++;
                 // let's convert to an int
@@ -1506,8 +1506,8 @@ public class AsmClassGenerator extends ClassGenerator {
         // visit cases
         for (int i = 0; i < size; i++) {
             final Label label = new Label();
-            Expression expr = expressions.get(i);
-            final boolean isStatement = false;
+            Object expr = expressions.get(i);
+            final boolean isStatement = expr instanceof Statement;
             labels[i] = label;
             instructions.add(new BytecodeInstruction() {
                 public void visit(MethodVisitor mv) {
@@ -1648,7 +1648,7 @@ public class AsmClassGenerator extends ClassGenerator {
                 controller.getOperandStack().remove(size);
             } else {
                 List<Expression> expressions = expression.getExpressions();
-                List<String> methods = new ArrayList<String>();
+                List<String> methods = new ArrayList();
                 MethodVisitor oldMv = mv;
                 int index = 0;
                 int methodIndex = 0;
@@ -1718,7 +1718,7 @@ public class AsmClassGenerator extends ClassGenerator {
         }
         controller.getOperandStack().remove(size);
 
-        List<ConstantExpression> strings = expression.getStrings();
+        List strings = expression.getStrings();
         size = strings.size();
         BytecodeHelper.pushConstant(mv, size);
         mv.visitTypeInsn(ANEWARRAY, "java/lang/String");
@@ -1726,7 +1726,7 @@ public class AsmClassGenerator extends ClassGenerator {
         for (int i = 0; i < size; i++) {
             mv.visitInsn(DUP);
             BytecodeHelper.pushConstant(mv, i);
-            controller.getOperandStack().pushConstant(strings.get(i));
+            controller.getOperandStack().pushConstant((ConstantExpression) strings.get(i));
             controller.getOperandStack().box();
             mv.visitInsn(AASTORE);
         }
@@ -1811,12 +1811,12 @@ public class AsmClassGenerator extends ClassGenerator {
             }
         }
 
-        for (Map.Entry<String, Object> entry : constantAttrs.entrySet()) {
-            av.visit(entry.getKey(), entry.getValue());
+        for (Map.Entry entry : constantAttrs.entrySet()) {
+            av.visit((String) entry.getKey(), entry.getValue());
         }
-        for (Map.Entry<String, PropertyExpression> entry : enumAttrs.entrySet()) {
-            PropertyExpression propExp = entry.getValue();
-            av.visitEnum(entry.getKey(),
+        for (Map.Entry entry : enumAttrs.entrySet()) {
+            PropertyExpression propExp = (PropertyExpression) entry.getValue();
+            av.visitEnum((String) entry.getKey(),
                     BytecodeHelper.getTypeDescription(propExp.getObjectExpression().getType()),
                     String.valueOf(((ConstantExpression) propExp.getProperty()).getValue()));
         }
@@ -1832,9 +1832,9 @@ public class AsmClassGenerator extends ClassGenerator {
 
     private void visitArrayAttributes(AnnotationNode an, Map<String, ListExpression> arrayAttr, AnnotationVisitor av) {
         if (arrayAttr.isEmpty()) return;
-        for (Map.Entry<String, ListExpression> entry : arrayAttr.entrySet()) {
-            AnnotationVisitor av2 = av.visitArray(entry.getKey());
-            List<Expression> values = (entry.getValue()).getExpressions();
+        for (Map.Entry entry : arrayAttr.entrySet()) {
+            AnnotationVisitor av2 = av.visitArray((String) entry.getKey());
+            List<Expression> values = ((ListExpression) entry.getValue()).getExpressions();
             if (!values.isEmpty()) {
                 int arrayElementType = determineCommonArrayType(values);
                 for (Expression exprChild : values) {
@@ -1845,8 +1845,8 @@ public class AsmClassGenerator extends ClassGenerator {
         }
     }
 
-    private int determineCommonArrayType(List<Expression> values) {
-        Expression expr = values.get(0);
+    private int determineCommonArrayType(List values) {
+        Expression expr = (Expression) values.get(0);
         int arrayElementType = -1;
         if (expr instanceof AnnotationConstantExpression) {
             arrayElementType = 1;

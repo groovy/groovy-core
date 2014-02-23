@@ -22,6 +22,8 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
+import java.util.Iterator;
+
 /**
  * To generate a class that has all the fields and methods, except that fields are not initialized
  * and methods are empty. It's intended for being used as a place holder during code generation
@@ -74,8 +76,10 @@ public class DummyClassGenerator extends ClassGenerator {
 
             classNode.visitContents(this);
 
-            for (ClassNode innerClass : innerClasses) {
-                String innerClassInternalName = BytecodeHelper.getClassInternalName(innerClass);
+            for (Iterator iter = innerClasses.iterator(); iter.hasNext();) {
+                ClassNode innerClass = (ClassNode) iter.next();
+                ClassNode innerClassType = innerClass;
+                String innerClassInternalName = BytecodeHelper.getClassInternalName(innerClassType);
                 String outerClassName = internalClassName; // default for inner classes
                 MethodNode enclosingMethod = innerClass.getEnclosingMethod();
                 if (enclosingMethod != null) {
@@ -85,7 +89,7 @@ public class DummyClassGenerator extends ClassGenerator {
                 cv.visitInnerClass(
                         innerClassInternalName,
                         outerClassName,
-                        innerClass.getName(),
+                        innerClassType.getName(),
                         innerClass.getModifiers());
             }
             cv.visitEnd();

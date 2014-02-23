@@ -1711,7 +1711,7 @@ public abstract class StaticTypeCheckingSupport {
         cu.addClassNode(node);
         cu.compile();
         @SuppressWarnings("unchecked")
-        List<GroovyClass> classes = cu.getClasses();
+        List<GroovyClass> classes = (List<GroovyClass>)cu.getClasses();
         Class aClass = cu.getClassLoader().defineClass(className, classes.get(0).getBytes());
         try {
             return aClass.getMethod("eval").invoke(null);

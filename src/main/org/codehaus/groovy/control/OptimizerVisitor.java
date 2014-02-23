@@ -35,7 +35,7 @@ public class OptimizerVisitor extends ClassCodeExpressionTransformer {
     private ClassNode currentClass;
     private SourceUnit source;
 
-    private Map<Object, FieldNode> const2Var = new HashMap<Object, FieldNode>();
+    private Map const2Var = new HashMap();
     private List<FieldNode> missingFields = new LinkedList<FieldNode>();
 
     public OptimizerVisitor(CompilationUnit cu) {
@@ -51,8 +51,8 @@ public class OptimizerVisitor extends ClassCodeExpressionTransformer {
     }
 
     private void addMissingFields() {
-        for (FieldNode missingField : missingFields) {
-            FieldNode f = missingField;
+        for (Object missingField : missingFields) {
+            FieldNode f = (FieldNode) missingField;
             currentClass.addField(f);
         }
     }
@@ -61,7 +61,7 @@ public class OptimizerVisitor extends ClassCodeExpressionTransformer {
         final Object n = constantExpression.getValue();
         if (!(n instanceof Number || n instanceof Character)) return;
         if (n instanceof Integer || n instanceof Double) return;
-        FieldNode field = const2Var.get(n);
+        FieldNode field = (FieldNode) const2Var.get(n);
         if (field!=null) {
             constantExpression.setConstantName(field.getName());
             return;
