@@ -72,7 +72,7 @@ public class GroovyCollections {
      */
     @Deprecated
     public static List<List<Object>> combinations(Collection collections) {
-        return combinations(collections);
+        return combinations((Iterable) collections);
     }
 
     /**
@@ -248,7 +248,7 @@ public class GroovyCollections {
      */
     @Deprecated
     public static Object sum(Collection items) {
-        return sum(items);
+        return sum(items.toArray());
     }
 
     /**
