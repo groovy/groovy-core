@@ -161,9 +161,9 @@ public class GStringTemplateEngine extends TemplateEngine {
                     writingString = true;
                     c = reader.read();
                     if (c == '{') {
-                        appendCharacter('{', templateExpressions, writingString);
+                        appendCharacter('{', templateExpressions, true);
                         writingString = true;
-                        parseGSstring(reader, writingString, templateExpressions);
+                        parseGSstring(reader, true, templateExpressions);
                         writingString = true;
                         continue;
                     }

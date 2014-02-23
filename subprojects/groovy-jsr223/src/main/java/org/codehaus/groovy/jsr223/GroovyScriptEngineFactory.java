@@ -150,8 +150,8 @@ public class GroovyScriptEngineFactory implements ScriptEngineFactory {
     public String getProgram(String... statements) {
         StringBuilder ret = new StringBuilder();
         int len = statements.length;
-        for (int i = 0; i < len; i++) {
-            ret.append(statements[i]);
+        for (String statement : statements) {
+            ret.append(statement);
             ret.append('\n');
         }
         return ret.toString();

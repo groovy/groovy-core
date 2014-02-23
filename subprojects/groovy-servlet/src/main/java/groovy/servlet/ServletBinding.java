@@ -17,6 +17,8 @@ package groovy.servlet;
 
 import groovy.lang.Binding;
 import groovy.xml.MarkupBuilder;
+import org.codehaus.groovy.GroovyBugError;
+import org.codehaus.groovy.runtime.MethodClosure;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
@@ -24,10 +26,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.codehaus.groovy.GroovyBugError;
-import org.codehaus.groovy.runtime.MethodClosure;
-
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.util.Enumeration;
@@ -230,7 +228,7 @@ public class ServletBinding extends Binding {
          *
          * If there are multiple, they are passed as an array.
          */
-        Map params = collectParams(request);
+        Map<String, Serializable> params = collectParams(request);
         super.setVariable("params", params);
 
         /*
@@ -246,8 +244,8 @@ public class ServletBinding extends Binding {
     }
 
     @SuppressWarnings("unchecked")
-    private Map collectParams(HttpServletRequest request) {
-        Map params = new LinkedHashMap();
+    private Map<String, Serializable> collectParams(HttpServletRequest request) {
+        Map<String, Serializable> params = new LinkedHashMap<String, Serializable>();
         for (Enumeration names = request.getParameterNames(); names.hasMoreElements();) {
             String name = (String) names.nextElement();
             if (!super.getVariables().containsKey(name)) {

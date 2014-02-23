@@ -30,15 +30,15 @@ import javax.script.ScriptException;
 public class GroovyCompiledScript extends CompiledScript {
     
     private final GroovyScriptEngineImpl engine;
-    private final Class clasz;
+    private final Class<?> clazz;
     
-    public GroovyCompiledScript(GroovyScriptEngineImpl engine, Class clazz) {
+    public GroovyCompiledScript(GroovyScriptEngineImpl engine, Class<?> clazz) {
         this.engine = engine;
-        this.clasz = clazz;
+        this.clazz = clazz;
     }
     
     public Object eval(ScriptContext context) throws ScriptException {
-        return engine.eval(clasz, context);
+        return engine.eval(clazz, context);
     }    
     
     public ScriptEngine getEngine() {
