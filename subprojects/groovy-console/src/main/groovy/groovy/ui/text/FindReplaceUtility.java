@@ -50,7 +50,7 @@ public final class FindReplaceUtility {
 
     private static final JPanel REPLACE_PANEL = new JPanel();
     private static final JLabel REPLACE_LABEL = new JLabel("Replace With:");
-    private static final JComboBox<String> REPLACE_FIELD = new JComboBox<String>();
+    private static final JComboBox REPLACE_FIELD = new JComboBox();
 
     private static final JPanel BUTTON_PANEL = new JPanel();
     private static final JButton FIND_BUTTON = new JButton();
