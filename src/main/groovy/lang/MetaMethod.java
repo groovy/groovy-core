@@ -174,7 +174,7 @@ public abstract class MetaMethod extends ParameterTypes implements Cloneable {
         if (signature == null) {
             CachedClass [] parameters = getParameterTypes();
             final String name = getName();
-            StringBuffer buf = new StringBuffer(name.length()+parameters.length*10);
+            StringBuilder buf = new StringBuilder(name.length()+parameters.length*10);
             buf.append(getReturnType().getName());
             //
             buf.append(' ');
@@ -197,9 +197,9 @@ public abstract class MetaMethod extends ParameterTypes implements Cloneable {
           String name = getName();
           CachedClass declaringClass = getDeclaringClass();
           if (Modifier.isPrivate(getModifiers()))
-            mopName = new StringBuffer().append("this$").append(declaringClass.getSuperClassDistance()).append("$").append(name).toString();
+            mopName = "this$" + declaringClass.getSuperClassDistance() + "$" + name;
           else 
-            mopName = new StringBuffer().append("super$").append(declaringClass.getSuperClassDistance()).append("$").append(name).toString();
+            mopName = "super$" + declaringClass.getSuperClassDistance() + "$" + name;
         }
         return mopName;
     }

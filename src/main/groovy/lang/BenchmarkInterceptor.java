@@ -42,12 +42,12 @@ import java.util.*;
  */
 public class BenchmarkInterceptor implements Interceptor {
 
-    protected Map calls = new LinkedHashMap(); // keys to list of invocation times and before and after
+    protected Map<String, LinkedList<Long>> calls = new LinkedHashMap<String, LinkedList<Long>>(); // keys to list of invocation times and before and after
 
     /**
     * Returns the raw data associated with the current benchmark run. 
     */ 
-    public Map getCalls() {
+    public Map<String, LinkedList<Long>> getCalls() {
         return calls;
     }
     
@@ -55,18 +55,18 @@ public class BenchmarkInterceptor implements Interceptor {
     * Resets all the benchmark data on this object. 
     */
     public void reset() {
-        calls = new HashMap();
+        calls = new HashMap<String, LinkedList<Long>>();
     }
 
     public Object beforeInvoke(Object object, String methodName, Object[] arguments) {
-        if (!calls.containsKey(methodName)) calls.put(methodName, new LinkedList());
-        ((List) calls.get(methodName)).add(new Long(System.currentTimeMillis()));
+        if (!calls.containsKey(methodName)) calls.put(methodName, new LinkedList<Long>());
+        (calls.get(methodName)).add(System.currentTimeMillis());
 
         return null;
     }
 
     public Object afterInvoke(Object object, String methodName, Object[] arguments, Object result) {
-        ((List) calls.get(methodName)).add(new Long(System.currentTimeMillis()));
+        (calls.get(methodName)).add(System.currentTimeMillis());
         return result;
     }
 
@@ -80,21 +80,21 @@ public class BenchmarkInterceptor implements Interceptor {
      * System.currentTimeMillis() allows it to be. 
      * @return a list of lines, each item is [methodname, numberOfCalls, accumulatedTime]
      */
-    public List statistic() {
-        List result = new LinkedList();
-        for (Iterator iter = calls.keySet().iterator(); iter.hasNext();) {
+    public List<Object[]> statistic() {
+        List<Object[]> result = new LinkedList<Object[]>();
+        for (String s : calls.keySet()) {
             Object[] line = new Object[3];
             result.add(line);
-            line[0] = iter.next();
-            List times = (List) calls.get(line[0]);
-            line[1] = new Integer(times.size() / 2);
+            line[0] = s;
+            List<Long> times = calls.get(line[0]);
+            line[1] = times.size() / 2;
             int accTime = 0;
-            for (Iterator it = times.iterator(); it.hasNext();) {
-                Long start = (Long) it.next();
-                Long end = (Long) it.next();
-                accTime += end.longValue() - start.longValue();
+            for (Iterator<Long> it = times.iterator(); it.hasNext(); ) {
+                Long start = it.next();
+                Long end = it.next();
+                accTime += end - start;
             }
-            line[2] = new Long(accTime);
+            line[2] = (long) accTime;
         }
         return result;
     }

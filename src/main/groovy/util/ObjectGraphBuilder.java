@@ -20,17 +20,12 @@ import groovy.lang.Closure;
 import groovy.lang.GString;
 import groovy.lang.MetaProperty;
 import groovy.lang.MissingPropertyException;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.regex.Pattern;
-import java.lang.reflect.Type;
-import java.lang.reflect.ParameterizedType;
-
 import org.codehaus.groovy.runtime.InvokerHelper;
+
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * A builder for creating object graphs.<br>
@@ -157,7 +152,7 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
                                      String propertyName) {
                     Closure cls = (Closure) childPropertySetter;
                     cls.setDelegate(self);
-                    cls.call(new Object[]{parent, child, parentName, propertyName});
+                    cls.call(parent, child, parentName, propertyName);
                 }
             };
         } else {
@@ -270,7 +265,7 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
                         throws InstantiationException, IllegalAccessException {
                     Closure cls = (Closure) newInstanceResolver;
                     cls.setDelegate(self);
-                    return cls.call(new Object[]{klass, attributes});
+                    return cls.call(klass, attributes);
                 }
             };
         } else {
@@ -797,7 +792,7 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
                         "You can not modify the properties of a referenced object.");
             }
 
-            Map context = ogbuilder.getContext();
+            Map<String, Object> context = ogbuilder.getContext();
             context.put(ObjectGraphBuilder.NODE_NAME, name);
             context.put(ObjectGraphBuilder.LAZY_REF, lazy);
 
@@ -824,12 +819,12 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
 
         public void setChild(FactoryBuilderSupport builder, Object parent, Object child) {
             Boolean lazy = (Boolean) builder.getContext().get(ObjectGraphBuilder.LAZY_REF);
-            if (!lazy.booleanValue()) super.setChild(builder, parent, child);
+            if (!lazy) super.setChild(builder, parent, child);
         }
 
         public void setParent(FactoryBuilderSupport builder, Object parent, Object child) {
             Boolean lazy = (Boolean) builder.getContext().get(ObjectGraphBuilder.LAZY_REF);
-            if (!lazy.booleanValue()) super.setParent(builder, parent, child);
+            if (!lazy) super.setParent(builder, parent, child);
         }
     }
 
@@ -847,10 +842,7 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
         }
 
         public String toString() {
-            return new StringBuilder().append("[parentName=").append(parentName)
-                    .append(", childName=").append(childName)
-                    .append(", refId=").append(refId)
-                    .append("]").toString();
+            return "[parentName=" + parentName + ", childName=" + childName + ", refId=" + refId + "]";
         }
     }
 }

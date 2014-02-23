@@ -15,19 +15,8 @@
  */
 package groovy.ui;
 
-import groovy.lang.Binding;
-import groovy.lang.GroovyRuntimeException;
-import groovy.lang.GroovyShell;
-import groovy.lang.GroovySystem;
-import groovy.lang.MissingMethodException;
-import groovy.lang.Script;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.GroovyInternalPosixParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
+import groovy.lang.*;
+import org.apache.commons.cli.*;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
@@ -39,7 +28,6 @@ import org.codehaus.groovy.runtime.StackTraceUtils;
 import java.io.*;
 import java.math.BigInteger;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -283,8 +271,8 @@ public class GroovyMain {
         if (line.hasOption('D')) {
             String[] values = line.getOptionValues('D');
 
-            for (int i=0; i<values.length; i++) {
-                setSystemPropertyFrom(values[i]);
+            for (String value : values) {
+                setSystemPropertyFrom(value);
             }
         }
 
@@ -477,9 +465,8 @@ public class GroovyMain {
             }
 
         } else {
-            Iterator i = args.iterator();
-            while (i.hasNext()) {
-                String filename = (String) i.next();
+            for (Object arg : args) {
+                String filename = (String) arg;
                 File file = huntForTheScriptFile(filename);
                 processFile(s, file);
             }

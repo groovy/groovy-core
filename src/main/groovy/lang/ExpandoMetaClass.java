@@ -15,43 +15,20 @@
  */
 package groovy.lang;
 
+import org.codehaus.groovy.reflection.CachedClass;
+import org.codehaus.groovy.reflection.MixinInMetaClass;
+import org.codehaus.groovy.runtime.*;
+import org.codehaus.groovy.runtime.callsite.*;
+import org.codehaus.groovy.runtime.metaclass.*;
+import org.codehaus.groovy.util.FastArray;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import org.codehaus.groovy.reflection.CachedClass;
-import org.codehaus.groovy.reflection.MixinInMetaClass;
-import org.codehaus.groovy.runtime.DefaultCachedMethodKey;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-import org.codehaus.groovy.runtime.InvokerHelper;
-import org.codehaus.groovy.runtime.MetaClassHelper;
-import org.codehaus.groovy.runtime.MethodKey;
-import org.codehaus.groovy.runtime.callsite.CallSite;
-import org.codehaus.groovy.runtime.callsite.ConstructorMetaMethodSite;
-import org.codehaus.groovy.runtime.callsite.PogoMetaClassSite;
-import org.codehaus.groovy.runtime.callsite.PojoMetaClassSite;
-import org.codehaus.groovy.runtime.callsite.StaticMetaClassSite;
-import org.codehaus.groovy.runtime.metaclass.ClosureMetaMethod;
-import org.codehaus.groovy.runtime.metaclass.ClosureStaticMetaMethod;
-import org.codehaus.groovy.runtime.metaclass.DefaultMetaClassInfo;
-import org.codehaus.groovy.runtime.metaclass.MethodSelectionException;
-import org.codehaus.groovy.runtime.metaclass.MixedInMetaClass;
-import org.codehaus.groovy.runtime.metaclass.MixinInstanceMetaMethod;
-import org.codehaus.groovy.runtime.metaclass.OwnedMetaClass;
-import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty;
-import org.codehaus.groovy.util.FastArray;
 
 /**
  * ExpandoMetaClass is a MetaClass that behaves like an Expando, allowing the addition or replacement
@@ -586,7 +563,7 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
             return this.isStatic;
         }
 
-        public Object leftShift(Object arg) {
+        public ExpandoMetaProperty leftShift(Object arg) {
             registerIfClosure(arg, false);
             return this;
         }
@@ -681,7 +658,7 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
      * @author Graeme Rocher
      */
     protected class ExpandoMetaConstructor extends GroovyObjectSupport {
-        public Object leftShift(Closure c) {
+        public ExpandoMetaConstructor leftShift(Closure c) {
             if (c != null) {
                 final List<MetaMethod> list = ClosureMetaMethod.createMethodList(GROOVY_CONSTRUCTOR, theClass, c);
                 for (MetaMethod method : list) {
@@ -1050,9 +1027,9 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
      *
      * @param modifiedSuperExpandos A list of modified super ExpandoMetaClass
      */
-    public void refreshInheritedMethods(Set modifiedSuperExpandos) {
-        for (Iterator i = modifiedSuperExpandos.iterator(); i.hasNext();) {
-            ExpandoMetaClass superExpando = (ExpandoMetaClass) i.next();
+    public void refreshInheritedMethods(Set<ExpandoMetaClass> modifiedSuperExpandos) {
+        for (Iterator<ExpandoMetaClass> i = modifiedSuperExpandos.iterator(); i.hasNext();) {
+            ExpandoMetaClass superExpando = i.next();
             if (superExpando != this) {
                 refreshInheritedMethods(superExpando);
             }
@@ -1177,7 +1154,7 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
      * @return The MetaProperty or null if it doesn't exist
      */
     public MetaProperty getMetaProperty(String name) {
-        MetaProperty mp = (MetaProperty) this.expandoProperties.get(name);
+        MetaProperty mp = this.expandoProperties.get(name);
         if (mp != null) return mp;
         return super.getMetaProperty(name);
     }
@@ -1359,7 +1336,7 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
             mixin(Collections.singletonList(category));
         }
 
-        public void mixin(List categories) {
+        public void mixin(List<Class> categories) {
             DefaultGroovyMethods.mixin(ExpandoMetaClass.this, categories);
         }
 

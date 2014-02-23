@@ -270,11 +270,10 @@ public class ProxyGenerator {
 
             if (emptyMethods != cacheKey.emptyMethods) return false;
             if (useDelegate != cacheKey.useDelegate) return false;
-            if (baseClass != null ? !baseClass.equals(cacheKey.baseClass) : cacheKey.baseClass != null) return false;
+            if (!baseClass.equals(cacheKey.baseClass)) return false;
             if (!Arrays.equals(interfaces, cacheKey.interfaces)) return false;
-            if (methods != null ? !methods.equals(cacheKey.methods) : cacheKey.methods != null) return false;
+            return !(methods != null ? !methods.equals(cacheKey.methods) : cacheKey.methods != null);
 
-            return true;
         }
 
         @Override
@@ -282,7 +281,7 @@ public class ProxyGenerator {
             int result = (emptyMethods ? 1 : 0);
             result = 31 * result + (useDelegate ? 1 : 0);
             result = 31 * result + (methods != null ? methods.hashCode() : 0);
-            result = 31 * result + (baseClass != null ? baseClass.hashCode() : 0);
+            result = 31 * result + (baseClass.hashCode());
             result = 31 * result + (interfaces != null ? Arrays.hashCode(interfaces) : 0);
             return result;
         }

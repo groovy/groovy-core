@@ -20,7 +20,6 @@ import org.codehaus.groovy.runtime.InvokerHelper;
 
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -95,12 +94,10 @@ public class NodePrinter {
         else {
             out.println(" {");
             out.incrementIndent();
-            for (Iterator iter = list.iterator(); iter.hasNext();) {
-                Object value = iter.next();
+            for (Object value : list) {
                 if (value instanceof Node) {
                     print((Node) value);
-                }
-                else {
+                } else {
                     out.printIndent();
                     out.print("builder.append(");
                     out.print(InvokerHelper.toString(value));
@@ -117,20 +114,18 @@ public class NodePrinter {
     protected void printAttributes(Map attributes) {
         out.print("(");
         boolean first = true;
-        for (Iterator iter = attributes.entrySet().iterator(); iter.hasNext();) {
-            Map.Entry entry = (Map.Entry) iter.next();
+        for (Object o : attributes.entrySet()) {
+            Map.Entry entry = (Map.Entry) o;
             if (first) {
                 first = false;
-            }
-            else {
+            } else {
                 out.print(", ");
             }
             out.print(entry.getKey().toString());
             out.print(":");
             if (entry.getValue() instanceof String) {
                 out.print("'" + entry.getValue() + "'");
-            }
-            else {
+            } else {
                 out.print(InvokerHelper.toString(entry.getValue()));
             }
         }

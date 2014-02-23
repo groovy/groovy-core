@@ -231,7 +231,7 @@ public class ConfigObject extends GroovyObjectSupport implements Writable, Map, 
                         } else {
                             for (Object j : value.keySet()) {
                                 Object v2 = value.get(j);
-                                Object k2 = ((String) j).indexOf('.') > -1 ? InvokerHelper.inspect(j) : j;
+                                String k2 = ((String) j).indexOf('.') > -1 ? InvokerHelper.inspect(j) : (String) j;
                                 if (v2 instanceof ConfigObject) {
                                     key = KEYWORDS.contains(key) ? InvokerHelper.inspect(key) : key;
                                     writeConfig(prefix + key, (ConfigObject) v2, out, tab, false);
@@ -269,13 +269,12 @@ public class ConfigObject extends GroovyObjectSupport implements Writable, Map, 
         out.newLine();
     }
 
-    private Properties convertValuesToString(Map props) {
+    private Properties convertValuesToString(Map<Object, Object> props) {
         Properties newProps = new Properties();
 
-        for (Object o : props.entrySet()) {
-            Map.Entry next = (Map.Entry) o;
-            Object key = next.getKey();
-            Object value = next.getValue();
+        for (Entry<Object, Object> o : props.entrySet()) {
+            Object key = o.getKey();
+            Object value = o.getValue();
 
             newProps.put(key, value != null ? value.toString() : null);
         }

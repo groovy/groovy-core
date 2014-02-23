@@ -65,8 +65,8 @@ public abstract class FactoryBuilderSupport extends Binding {
     private static final Comparator<Method> METHOD_COMPARATOR = new Comparator<Method>() {
         public int compare(final Method o1, final Method o2) {
             int cmp = o1.getName().compareTo(o2.getName());
-            if (cmp != 0) return cmp;
-            cmp = o1.getParameterTypes().length - o1.getParameterTypes().length;
+            if (cmp != 0)
+                return cmp;
             return cmp;
         }
     };
@@ -133,7 +133,7 @@ public abstract class FactoryBuilderSupport extends Binding {
     protected LinkedList<Closure> attributeDelegates = new LinkedList<Closure>(); //
     private List<Closure> disposalClosures = new ArrayList<Closure>(); // because of reverse iteration use ArrayList
     private Map<String, Factory> factories = new HashMap<String, Factory>();
-    private Closure nameMappingClosure;
+    private Closure<String> nameMappingClosure;
     private ThreadLocal<FactoryBuilderSupport> localProxyBuilder = new ThreadLocal<FactoryBuilderSupport>();
     private FactoryBuilderSupport globalProxyBuilder;
     protected LinkedList<Closure> preInstantiateDelegates = new LinkedList<Closure>();
@@ -492,9 +492,9 @@ public abstract class FactoryBuilderSupport extends Binding {
     }
 
     public Object invokeMethod(String methodName, Object args) {
-        Object name = getProxyBuilder().getName(methodName);
+        String name = getProxyBuilder().getName(methodName);
         Object result;
-        Object previousContext = getProxyBuilder().getContext();
+        Map<String, Object> previousContext = getProxyBuilder().getContext();
         try {
             result = getProxyBuilder().doInvokeMethod(methodName, name, args);
         } catch (RuntimeException e) {
@@ -693,13 +693,13 @@ public abstract class FactoryBuilderSupport extends Binding {
      * @param value      the value arguments for the node
      * @return the object return from the factory
      */
-    protected Object createNode(Object name, Map attributes, Object value) {
+    protected Object createNode(String name, Map attributes, Object value) {
         Object node;
 
         Factory factory = getProxyBuilder().resolveFactory(name, attributes, value);
         if (factory == null) {
             LOG.log(Level.WARNING, "Could not find match for name '" + name + "'");
-            throw new MissingMethodExceptionNoStack((String) name, Object.class, new Object[]{attributes, value});
+            throw new MissingMethodExceptionNoStack(name, Object.class, new Object[]{attributes, value});
             //return null;
         }
         getProxyBuilder().getContext().put(CURRENT_FACTORY, factory);
@@ -770,7 +770,7 @@ public abstract class FactoryBuilderSupport extends Binding {
      * @param args       the arguments passed into the node
      * @return the object from the factory
      */
-    private Object doInvokeMethod(String methodName, Object name, Object args) {
+    private Object doInvokeMethod(String methodName, String name, Object args) {
         Reference explicitResult = new Reference();
         if (checkExplicitMethod(methodName, args, explicitResult)) {
             return explicitResult.get();
@@ -779,7 +779,7 @@ public abstract class FactoryBuilderSupport extends Binding {
                 return dispatchNodeCall(name, args);
             } catch(MissingMethodException mme) {
                 if(mme.getMethod().equals(methodName) && methodMissingDelegate != null) {
-                    return methodMissingDelegate.call(new Object[]{methodName, args});
+                    return methodMissingDelegate.call(methodName, args);
                 }
                 throw mme;
             }
@@ -802,14 +802,14 @@ public abstract class FactoryBuilderSupport extends Binding {
     }
 
     /**
-     * Use {@link FactoryBuilderSupport#dispatchNodeCall(Object, Object)} instead.
+     * Use {@link FactoryBuilderSupport#dispatchNodeCall(String, Object)} instead.
      */
     @Deprecated
-    protected Object dispathNodeCall(Object name, Object args) {
+    protected Object dispathNodeCall(String name, Object args) {
         return dispatchNodeCall(name, args);
     }
 
-    protected Object dispatchNodeCall(Object name, Object args) {
+    protected Object dispatchNodeCall(String name, Object args) {
         Object node;
         Closure closure = null;
         List list = InvokerHelper.asList(args);
@@ -871,7 +871,7 @@ public abstract class FactoryBuilderSupport extends Binding {
                 if (processContent) {
                     // push new node on stack
                     String parentName = getProxyBuilder().getCurrentName();
-                    Map parentContext = getProxyBuilder().getContext();
+                    Map<String, Object> parentContext = getProxyBuilder().getContext();
                     getProxyBuilder().newContext();
                     try {
                         getProxyBuilder().getContext().put(OWNER, closure.getOwner());
@@ -909,7 +909,7 @@ public abstract class FactoryBuilderSupport extends Binding {
      * @param methodName the name of the desired method
      * @return the object representing the name
      */
-    public Object getName(String methodName) {
+    public String getName(String methodName) {
         if (getProxyBuilder().nameMappingClosure != null) {
             return getProxyBuilder().nameMappingClosure.call(methodName);
         }
@@ -940,11 +940,11 @@ public abstract class FactoryBuilderSupport extends Binding {
         globalProxyBuilder = proxyBuilder;
     }
 
-    public Closure getNameMappingClosure() {
+    public Closure<String> getNameMappingClosure() {
         return nameMappingClosure;
     }
 
-    public void setNameMappingClosure(Closure nameMappingClosure) {
+    public void setNameMappingClosure(Closure<String> nameMappingClosure) {
         this.nameMappingClosure = nameMappingClosure;
     }
 
@@ -970,7 +970,7 @@ public abstract class FactoryBuilderSupport extends Binding {
                 builder = (FactoryBuilderSupport) attrDelegate.getDelegate();
             }
 
-            attrDelegate.call(new Object[]{builder, node, attributes});
+            attrDelegate.call(builder, node, attributes);
         }
 
         if (getProxyBuilder().getCurrentFactory().onHandleNodeAttributes(getProxyBuilder().getChildBuilder(), node, attributes)) {
@@ -1019,7 +1019,7 @@ public abstract class FactoryBuilderSupport extends Binding {
      */
     protected void postInstantiate(Object name, Map attributes, Object node) {
         for (Closure postInstantiateDelegate : getProxyBuilder().getPostInstantiateDelegates()) {
-            (postInstantiateDelegate).call(new Object[]{this, attributes, node});
+            (postInstantiateDelegate).call(this, attributes, node);
         }
     }
 
@@ -1036,7 +1036,7 @@ public abstract class FactoryBuilderSupport extends Binding {
      */
     protected Object postNodeCompletion(Object parent, Object node) {
         for (Closure postNodeCompletionDelegate : getProxyBuilder().getPostNodeCompletionDelegates()) {
-            (postNodeCompletionDelegate).call(new Object[]{this, parent, node});
+            (postNodeCompletionDelegate).call(this, parent, node);
         }
 
         return node;
@@ -1053,7 +1053,7 @@ public abstract class FactoryBuilderSupport extends Binding {
      */
     protected void preInstantiate(Object name, Map attributes, Object value) {
         for (Closure preInstantiateDelegate : getProxyBuilder().getPreInstantiateDelegates()) {
-            (preInstantiateDelegate).call(new Object[]{this, attributes, value});
+            (preInstantiateDelegate).call(this, attributes, value);
         }
     }
 
@@ -1199,7 +1199,7 @@ public abstract class FactoryBuilderSupport extends Binding {
         }
 
         Object result = null;
-        Object previousContext = getProxyBuilder().getContext();
+        Map<String, Object> previousContext = getProxyBuilder().getContext();
         FactoryBuilderSupport previousProxyBuilder = localProxyBuilder.get();
         try {
             localProxyBuilder.set(builder);

@@ -18,8 +18,13 @@ package groovy.lang;
 
 import groovy.security.GroovyCodeSourcePermission;
 import groovy.util.CharsetToolkit;
+import org.codehaus.groovy.runtime.IOGroovyMethods;
+import org.codehaus.groovy.runtime.ResourceGroovyMethods;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.AccessController;
@@ -27,9 +32,6 @@ import java.security.CodeSource;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.security.cert.Certificate;
-
-import org.codehaus.groovy.runtime.IOGroovyMethods;
-import org.codehaus.groovy.runtime.ResourceGroovyMethods;
 
 /**
  * CodeSource wrapper class that allows specific security policies to be associated with a class
@@ -105,13 +107,8 @@ public class GroovyCodeSource {
         if (file.isDirectory()) {
             throw new IllegalArgumentException(file.toString() + " (" + file.getAbsolutePath() + ") is a directory not a Groovy source file.");
         }
-        try {
-            if (!file.canRead())
-                throw new RuntimeException(file.toString() + " can not be read. Check the read permission of the file \"" + file.toString() + "\" (" + file.getAbsolutePath() + ").");
-        }
-        catch (SecurityException e) {
-            throw e;
-        }
+        if (!file.canRead())
+            throw new RuntimeException(file.toString() + " can not be read. Check the read permission of the file \"" + file.toString() + "\" (" + file.getAbsolutePath() + ").");
 
         this.file = file;
         this.cachable = true;

@@ -202,7 +202,7 @@ class ConfigSlurper {
             } else {
                 try {
                     result = InvokerHelper.getProperty(this, name)
-                } catch (GroovyRuntimeException e) {
+                } catch (GroovyRuntimeException ignored) {
                     result = new ConfigObject()
                     assignName.call(name, result)
                 }
