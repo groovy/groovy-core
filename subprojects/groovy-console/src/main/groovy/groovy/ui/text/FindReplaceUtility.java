@@ -16,40 +16,12 @@
 
 package groovy.ui.text;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.TextEvent;
-import java.awt.event.TextListener;
-
-import java.util.EventListener;
-
-import javax.swing.Action;
-import javax.swing.AbstractAction;
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRootPane;
-import javax.swing.KeyStroke;
-
+import javax.swing.*;
 import javax.swing.event.EventListenerList;
-
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.Segment;
+import javax.swing.text.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.EventListener;
 
 /**
  * @author Evan "Hippy" Slatis
@@ -78,7 +50,7 @@ public final class FindReplaceUtility {
 
     private static final JPanel REPLACE_PANEL = new JPanel();
     private static final JLabel REPLACE_LABEL = new JLabel("Replace With:");
-    private static final JComboBox REPLACE_FIELD = new JComboBox();
+    private static final JComboBox<String> REPLACE_FIELD = new JComboBox<String>();
 
     private static final JPanel BUTTON_PANEL = new JPanel();
     private static final JButton FIND_BUTTON = new JButton();
@@ -211,8 +183,8 @@ public final class FindReplaceUtility {
         if (lstrs != null && lstrs.length > 0) {
             TextEvent te =
                     new TextEvent(FIND_REPLACE_DIALOG, TextEvent.TEXT_VALUE_CHANGED);
-            for (int i = 0; i < lstrs.length; i++) {
-                ((TextListener) lstrs[i]).textValueChanged(te);
+            for (EventListener lstr : lstrs) {
+                ((TextListener) lstr).textValueChanged(te);
             }
         }
     }
@@ -325,7 +297,7 @@ public final class FindReplaceUtility {
 
     private static void setListStrings() {
         Object findObject = FIND_FIELD.getSelectedItem();
-        Object replaceObject = REPLACE_FIELD.isShowing() ?
+        String replaceObject = REPLACE_FIELD.isShowing() ?
                 (String) REPLACE_FIELD.getSelectedItem() : "";
 
         if (findObject != null && replaceObject != null) {
@@ -395,9 +367,9 @@ public final class FindReplaceUtility {
         FIND_REPLACE_DIALOG.pack();
 
         java.awt.Frame[] frames = java.awt.Frame.getFrames();
-        for (int i = 0; i < frames.length; i++) {
-            if (frames[i].isFocused()) {
-                FIND_REPLACE_DIALOG.setLocationRelativeTo(frames[i]);
+        for (Frame frame : frames) {
+            if (frame.isFocused()) {
+                FIND_REPLACE_DIALOG.setLocationRelativeTo(frame);
             }
         }
 

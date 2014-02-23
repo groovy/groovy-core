@@ -92,11 +92,7 @@ public enum JsonTokenType {
             return matcher.matches();
         } else if (validator instanceof Closure) {
             return (Boolean)((Closure) validator).call(input);
-        } else if (validator instanceof String) {
-            return input.equals(validator);
-        } else {
-            return false;
-        }
+        } else return validator instanceof String && input.equals(validator);
     }
 
     /**

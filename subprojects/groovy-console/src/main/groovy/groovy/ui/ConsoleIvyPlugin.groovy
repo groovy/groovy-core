@@ -38,7 +38,7 @@ class ConsoleIvyPlugin {
     def addListener(Console console) {
         savedConsole = console
 
-        ((GrapeIvy) Grape.instance).ivyInstance.eventManager.addIvyListener([progress: { ivyEvent ->
+        (Grape.instance as GrapeIvy).ivyInstance.eventManager.addIvyListener([progress: { ivyEvent ->
             switch (ivyEvent) {
                 case StartResolveEvent:
                     ivyEvent.moduleDescriptor.dependencies.each { it ->

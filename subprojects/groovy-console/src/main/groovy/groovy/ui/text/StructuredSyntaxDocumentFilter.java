@@ -132,7 +132,7 @@ public class StructuredSyntaxDocumentFilter extends DocumentFilter {
     private MultiLineRun getMultiLineRun(int offset) {
         MultiLineRun ml = null;
         if (offset > 0) {
-            Integer os = Integer.valueOf(offset);
+            Integer os = offset;
 
             SortedSet set = mlTextRunSet.headSet(os);
             if (!set.isEmpty()) {
@@ -205,11 +205,9 @@ public class StructuredSyntaxDocumentFilter extends DocumentFilter {
             
             // clean the tree by ensuring multi line styles are reset in area
             // of parsing
-            SortedSet set = mlTextRunSet.subSet(Integer.valueOf(offset),
-                                                Integer.valueOf(offset + length));
-            if (set != null) {
-                set.clear();
-            }
+            SortedSet set = mlTextRunSet.subSet(offset,
+                    offset + length);
+            set.clear();
         }
         
         // parse the document
@@ -292,7 +290,7 @@ public class StructuredSyntaxDocumentFilter extends DocumentFilter {
         private Map children = new HashMap();
 
         private Matcher matcher;
-        private List groupList = new ArrayList();
+        private List<String> groupList = new ArrayList<String>();
         
         private boolean initialized;
         
@@ -309,8 +307,8 @@ public class StructuredSyntaxDocumentFilter extends DocumentFilter {
         private String buildRegexp(String[] regexps) {
             String regexp = "";
 
-            for (int i = 0; i < regexps.length; i++) {
-                regexp += "|" + regexps[i];
+            for (String regexp1 : regexps) {
+                regexp += "|" + regexp1;
             }
 
             // ensure leading '|' is removed
@@ -381,7 +379,11 @@ public class StructuredSyntaxDocumentFilter extends DocumentFilter {
                 // matcher, which would always return a hit based on the above
                 // while condition
                 int groupNum = 0;
-                while ((offset = matcher.start(++groupNum)) == -1){
+                while ((offset = matcher.start(++groupNum)) == -1) {
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException ignored) {
+                    }
                 }
                 
                 // if the matching offset is not the same as the end of the 
@@ -403,7 +405,7 @@ public class StructuredSyntaxDocumentFilter extends DocumentFilter {
 
                 // retrieve the proper style from groupNum of the groupList and
                 // styleMap, then set the attributes of the matching string
-                style = (Style)styleMap.get((String)groupList.get(groupNum));
+                style = (Style)styleMap.get(groupList.get(groupNum));
                 styledDocument.setCharacterAttributes(offset,
                                                       matchEnd - offset,
                                                       style, true);
@@ -558,8 +560,8 @@ public class StructuredSyntaxDocumentFilter extends DocumentFilter {
         }
         
         private int valueOf(Object obj) {
-            return obj instanceof Integer ? 
-                    ((Integer)obj).intValue() : 
+            return obj instanceof Integer ?
+                    (Integer) obj :
                     (obj instanceof MultiLineRun) ?
                         ((MultiLineRun)obj).start() :
                         ((Position)obj).getOffset();

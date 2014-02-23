@@ -16,24 +16,11 @@
 
 package groovy.ui.text;
 
-import java.awt.Color;
-
+import javax.swing.*;
+import javax.swing.text.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.KeyStroke;
-
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.Element;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.Segment;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
-import javax.swing.text.StyleContext;
 
 
 /**
@@ -255,6 +242,11 @@ public class GroovyFilter extends StructuredSyntaxDocumentFilter {
             if (offset > -1 && segment.array[offset] == '{') {
                 while (offset > -1 &&
                         !Character.isWhitespace(segment.array[offset--])) {
+                    try {
+                        // Prevents wasting CPU Cycles
+                        Thread.sleep(1);
+                    } catch (InterruptedException ignored) {
+                    }
                 }
             }
 
