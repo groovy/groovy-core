@@ -209,7 +209,7 @@ public class InnerClassVisitor extends InnerClassVisitorHelper implements Opcode
             pField.setOriginType(ClassHelper.getWrapper(var.getOriginType()));
         }
 
-        innerClass.addConstructor(ACC_SYNTHETIC, parameters.toArray(new Parameter[0]), ClassNode.EMPTY_ARRAY, block);
+        innerClass.addConstructor(ACC_SYNTHETIC, parameters.toArray(new Parameter[parameters.size()]), ClassNode.EMPTY_ARRAY, block);
     }
 
     // this is the counterpart of addThisReference(). To non-static inner classes, outer this should be

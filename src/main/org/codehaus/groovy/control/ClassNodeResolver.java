@@ -16,6 +16,11 @@
 package org.codehaus.groovy.control;
 
 import groovy.lang.GroovyClassLoader;
+import org.codehaus.groovy.GroovyBugError;
+import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.classgen.Verifier;
+import org.objectweb.asm.Opcodes;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,12 +29,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.codehaus.groovy.GroovyBugError;
-import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.classgen.Verifier;
-import org.objectweb.asm.Opcodes;
 
 /**
  * This class is used as a plugable way to resolve class names.
@@ -89,7 +88,7 @@ public class ClassNodeResolver {
     }
     
     // Map to store cached classes
-    private Map<String,ClassNode> cachedClasses = new HashMap();
+    private Map<String,ClassNode> cachedClasses = new HashMap<String, ClassNode>();
     /**
      * Internal helper used to indicate a cache hit for a class that does not exist. 
      * This way further lookups through a slow {@link #findClassNode(String, CompilationUnit)} 
@@ -99,7 +98,7 @@ public class ClassNodeResolver {
     protected static final ClassNode NO_CLASS = new ClassNode("NO_CLASS", Opcodes.ACC_PUBLIC,ClassHelper.OBJECT_TYPE){
         public void setRedirect(ClassNode cn) {
             throw new GroovyBugError("This is a dummy class node only! Never use it for real classes.");
-        };
+        }
     };
     
     /**
@@ -149,8 +148,7 @@ public class ClassNodeResolver {
         // We use here the class cache cachedClasses to prevent
         // calls to ClassLoader#loadClass. Disabling this cache will
         // cause a major performance hit.
-        ClassNode cached = cachedClasses.get(name);
-        return cached;
+        return cachedClasses.get(name);
     }
     
     /**
@@ -182,8 +180,7 @@ public class ClassNodeResolver {
             // here since the GroovyClassLoader would create a new CompilationUnit
             cls = loader.loadClass(name, false, true);
         } catch (ClassNotFoundException cnfe) {
-            LookupResult lr = tryAsScript(name, compilationUnit, null);
-            return lr;
+            return tryAsScript(name, compilationUnit, null);
         } catch (CompilationFailedException cfe) {
             throw new GroovyBugError("The lookup for "+name+" caused a failed compilaton. There should not have been any compilation from this call.");
         }

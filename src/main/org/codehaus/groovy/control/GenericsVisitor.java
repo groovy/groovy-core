@@ -44,8 +44,8 @@ public class GenericsVisitor extends ClassCodeVisitorSupport {
         if (error) return;
         checkGenericsUsage(node.getUnresolvedSuperClass(false), node.getSuperClass());
         ClassNode[] interfaces = node.getInterfaces();
-        for (int i = 0; i < interfaces.length; i++) {
-            checkGenericsUsage(interfaces[i], interfaces[i].redirect());
+        for (ClassNode anInterface : interfaces) {
+            checkGenericsUsage(anInterface, anInterface.redirect());
         }
         node.visitContents(this);
     }
@@ -71,9 +71,9 @@ public class GenericsVisitor extends ClassCodeVisitorSupport {
         GenericsType[] generics = sn.getGenericsTypes();
         if (generics==null) return false;
         boolean error=false;
-        for (int i = 0; i < generics.length; i++) {
-            if(generics[i].isWildcard()) {
-                addError("A supertype may not specify a wildcard type",sn);
+        for (GenericsType generic : generics) {
+            if (generic.isWildcard()) {
+                addError("A supertype may not specify a wildcard type", sn);
                 error = true;
             }
         }
@@ -86,7 +86,7 @@ public class GenericsVisitor extends ClassCodeVisitorSupport {
         GenericsType[] cnTypes = cn.getGenericsTypes();
         // raw type usage is always allowed
         if (nTypes==null) return;
-        // parameterize a type by using all of the parameters only
+        // parametrize a type by using all of the parameters only
         if (cnTypes==null) {
             addError( "The class "+n.getName()+" refers to the class "+
                       cn.getName()+" and uses "+nTypes.length+
@@ -142,14 +142,5 @@ public class GenericsVisitor extends ClassCodeVisitorSupport {
             ret+=">";
         }
         return ret;
-    }
-    
-    private void checkBounds(ClassNode[] given, ClassNode[] restrictions) {
-        if (restrictions==null) return;
-        for (int i=0; i<given.length; i++) {
-            for (int j=0; j<restrictions.length; j++) {
-                if (! given[i].isDerivedFrom(restrictions[j])){}
-            }
-        }
     }
 }

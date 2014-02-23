@@ -181,7 +181,7 @@ public class CompilerConfiguration {
         // Target bytecode
         String targetByteCode = null;
         try {
-            targetByteCode = System.getProperty("groovy.target.bytecode", targetByteCode);
+            targetByteCode = System.getProperty("groovy.target.bytecode", null);
         } catch (Exception e) {
             // IGNORE
         }
@@ -238,10 +238,10 @@ public class CompilerConfiguration {
         } catch (Exception e) {
             // IGNORE
         }
-        if (DEFAULT!=null && Boolean.TRUE.equals(DEFAULT.getOptimizationOptions().get("indy"))) {
+        if (Boolean.TRUE.equals(DEFAULT.getOptimizationOptions().get("indy"))) {
             indy = true;
         }
-        Map options = new HashMap<String,Boolean>(3);
+        Map<String, Boolean> options = new HashMap<String,Boolean>(3);
         if (indy) {
             options.put("indy", Boolean.TRUE);
         }
@@ -390,17 +390,17 @@ public class CompilerConfiguration {
             text = configuration.getProperty("groovy.warnings", "likely errors");
             numeric = Integer.parseInt(text);
         } catch (NumberFormatException e) {
-            text = text.toLowerCase();
-            if (text.equals("none")) {
+            text = text != null ? text.toLowerCase() : null;
+            if (text != null && text.equals("none")) {
                 numeric = WarningMessage.NONE;
             }
-            else if (text.startsWith("likely")) {
+            else if (text != null && text.startsWith("likely")) {
                 numeric = WarningMessage.LIKELY_ERRORS;
             }
-            else if (text.startsWith("possible")) {
+            else if (text != null && text.startsWith("possible")) {
                 numeric = WarningMessage.POSSIBLE_ERRORS;
             }
-            else if (text.startsWith("paranoia")) {
+            else if (text != null && text.startsWith("paranoia")) {
                 numeric = WarningMessage.PARANOIA;
             }
             else {
