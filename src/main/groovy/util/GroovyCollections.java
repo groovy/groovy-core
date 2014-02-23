@@ -35,7 +35,7 @@ public class GroovyCollections {
      * @return a List of the combinations found
      * @see #combinations(Collection)
      */
-    public static List combinations(Object[] collections) {
+    public static List<List<Object>> combinations(Object[] collections) {
         return combinations((Iterable)Arrays.asList(collections));
     }
 
@@ -71,8 +71,8 @@ public class GroovyCollections {
      * @deprecated use combinations(Iterable)
      */
     @Deprecated
-    public static List combinations(Collection collections) {
-        return combinations((Iterable)collections);
+    public static List<List<Object>> combinations(Collection collections) {
+        return combinations(collections);
     }
 
     /**
@@ -88,22 +88,22 @@ public class GroovyCollections {
      * @return a List of the combinations found
      * @since 2.2.0
      */
-    public static List combinations(Iterable collections) {
-        List collectedCombos = new ArrayList();
+    public static List<List<Object>> combinations(Iterable collections) {
+        List<List<Object>> collectedCombos = new ArrayList<List<Object>>();
         for (Object collection : collections) {
             Iterable items = DefaultTypeTransformation.asCollection(collection);
             if (collectedCombos.isEmpty()) {
                 for (Object item : items) {
-                    List l = new ArrayList();
+                    List<Object> l = new ArrayList<Object>();
                     l.add(item);
                     collectedCombos.add(l);
                 }
             } else {
-                List savedCombos = new ArrayList(collectedCombos);
-                List newCombos = new ArrayList();
+                List<List<Object>> savedCombos = new ArrayList<List<Object>>(collectedCombos);
+                List<List<Object>> newCombos = new ArrayList<List<Object>>();
                 for (Object value : items) {
-                    for (Object savedCombo : savedCombos) {
-                        List oldList = new ArrayList((List) savedCombo);
+                    for (List<Object> savedCombo : savedCombos) {
+                        List<Object> oldList = new ArrayList<Object>(savedCombo);
                         oldList.add(value);
                         newCombos.add(oldList);
                     }
@@ -248,7 +248,7 @@ public class GroovyCollections {
      */
     @Deprecated
     public static Object sum(Collection items) {
-        return sum((Iterable)items);
+        return sum(items);
     }
 
     /**

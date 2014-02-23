@@ -65,7 +65,7 @@ public abstract class BuilderSupport extends GroovyObjectSupport {
     }
 
     protected Object doInvokeMethod(String methodName, Object name, Object args) {
-        Object node = null;
+        Object node;
         Closure closure = null;
         List list = InvokerHelper.asList(args);
 

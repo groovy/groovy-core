@@ -343,10 +343,7 @@ public class CharsetToolkit {
      * @return true if the buffer has a BOM for UTF8.
      */
     public boolean hasUTF8Bom() {
-        if (buffer.length >= 3)
-            return (buffer[0] == -17 && buffer[1] == -69 && buffer[2] == -65);
-        else
-            return false;
+        return buffer.length >= 3 && (buffer[0] == -17 && buffer[1] == -69 && buffer[2] == -65);
     }
 
     /**
@@ -356,10 +353,7 @@ public class CharsetToolkit {
      * @return true if the buffer has a BOM for UTF-16 Low Endian.
      */
     public boolean hasUTF16LEBom() {
-        if (buffer.length >= 2)
-            return (buffer[0] == -1 && buffer[1] == -2);
-        else
-            return false;
+        return buffer.length >= 2 && (buffer[0] == -1 && buffer[1] == -2);
     }
 
     /**
@@ -369,10 +363,7 @@ public class CharsetToolkit {
      * @return true if the buffer has a BOM for UTF-16 Big Endian.
      */
     public boolean hasUTF16BEBom() {
-        if (buffer.length >= 2)
-            return (buffer[0] == -2 && buffer[1] == -1);
-        else
-            return false;
+        return buffer.length >= 2 && (buffer[0] == -2 && buffer[1] == -1);
     }
 
     /**

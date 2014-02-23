@@ -15,9 +15,9 @@
  */
 package groovy.util;
 
-import java.util.Map;
-
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
+
+import java.util.Map;
 
 /**
  * A Map.Entry implementation.
@@ -36,10 +36,7 @@ public class MapEntry implements Map.Entry {
     }
 
     public boolean equals(Object that) {
-        if (that instanceof MapEntry) {
-            return equals((MapEntry) that);
-        }
-        return false;
+        return that instanceof MapEntry && equals((MapEntry) that);
     }
 
     public boolean equals(MapEntry that) {

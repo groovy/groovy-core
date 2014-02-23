@@ -257,7 +257,7 @@ public class GroovyScriptEngine implements ResourceConnector {
                         if (origEntry==dep || GroovyScriptEngine.this.isSourceNewer(dep)) {
                             newDep.add(depName);
                         }
-                    } catch (ResourceException re) {
+                    } catch (ResourceException ignored) {
                         
                     }
                 }
@@ -371,7 +371,7 @@ public class GroovyScriptEngine implements ResourceConnector {
 
         ResourceException se = null;
         for (URL root : roots) {
-            URL scriptURL = null;
+            URL scriptURL;
             try {
                 scriptURL = new URL(root, resourceName);
                 groovyScriptConn = scriptURL.openConnection();
@@ -477,7 +477,7 @@ public class GroovyScriptEngine implements ResourceConnector {
         if (urls == null) return null;
         URL[] roots = new URL[urls.length];
         for (int i = 0; i < roots.length; i++) {
-            if (urls[i].indexOf("://") != -1) {
+            if (urls[i].contains("://")) {
                 roots[i] = new URL(urls[i]);
             } else {
                 roots[i] = new File(urls[i]).toURI().toURL();
