@@ -116,7 +116,7 @@ public final class NumberNumberDiv extends NumberNumberMetaMethod {
         public final Object call(Object receiver, Object arg) throws Throwable {
             try {
                 if (checkCall(receiver, arg)) {
-                    return ((Integer) receiver).intValue() / ((Double) arg).doubleValue();
+                    return (Integer) receiver / (Double) arg;
                 }
             }
             catch (ClassCastException e) {//
@@ -150,7 +150,7 @@ public final class NumberNumberDiv extends NumberNumberMetaMethod {
         public final Object call(Object receiver, Object arg) throws Throwable {
             try {
                 if (checkCall(receiver, arg)) {
-                    return ((Long) receiver).doubleValue() / ((Double) arg).doubleValue();
+                    return ((Long) receiver).doubleValue() / (Double) arg;
                 }
             }
             catch (ClassCastException e) {//

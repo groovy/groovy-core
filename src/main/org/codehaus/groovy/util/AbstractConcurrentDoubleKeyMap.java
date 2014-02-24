@@ -16,7 +16,7 @@
 package org.codehaus.groovy.util;
 
 public abstract class AbstractConcurrentDoubleKeyMap<K1,K2,V> extends AbstractConcurrentMapBase {
-    public AbstractConcurrentDoubleKeyMap(Object segmentInfo) {
+    public AbstractConcurrentDoubleKeyMap(ReferenceBundle segmentInfo) {
         super(segmentInfo);
     }
 

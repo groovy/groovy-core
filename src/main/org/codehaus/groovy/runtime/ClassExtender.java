@@ -28,8 +28,8 @@ import java.util.Map;
  * @version $Revision$
  */
 public class ClassExtender {
-    private Map variables;
-    private Map methods;
+    private Map<String, Object> variables;
+    private Map<String, Object> methods;
 
     public synchronized Object get(String name) {
         if (variables != null) {
@@ -82,6 +82,6 @@ public class ClassExtender {
     }
 
     protected Map createMap() {
-        return new HashMap();
+        return new HashMap<String, Object>();
     }
 }

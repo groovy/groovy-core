@@ -136,12 +136,14 @@ public class FileSystemCompiler {
         //
         // Load the file name list
         String[] filenames = generateFileNamesFromOptions(cli);
+
         boolean fileNameErrors = filenames == null;
         if (!fileNameErrors && (filenames.length == 0)) {
             displayHelp(options);
             return;
         }
 
+        //noinspection ConstantConditions
         fileNameErrors = fileNameErrors && !validateFiles(filenames);
 
         if (!fileNameErrors) {
@@ -363,8 +365,10 @@ public class FileSystemCompiler {
             file.delete();
         } else if (file.isDirectory()) {
             File[] files = file.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                deleteRecursive(files[i]);
+            if (files != null) {
+                for (File file1 : files) {
+                    deleteRecursive(file1);
+                }
             }
             file.delete();
         }

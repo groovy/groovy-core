@@ -15,20 +15,7 @@
  */
 package org.codehaus.groovy.vmplugin.v7;
 
-import groovy.lang.GroovyObject;
-import groovy.lang.GroovyRuntimeException;
-import groovy.lang.MetaClass;
-import groovy.lang.MetaMethod;
-import groovy.lang.MetaObjectProtocol;
-import groovy.lang.MetaProperty;
-import groovy.lang.MissingMethodException;
-
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.MethodType;
-import java.util.Iterator;
-import java.util.Map;
-
+import groovy.lang.*;
 import org.codehaus.groovy.GroovyBugError;
 import org.codehaus.groovy.runtime.GroovyCategorySupport;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -36,7 +23,12 @@ import org.codehaus.groovy.runtime.ScriptBytecodeAdapter;
 import org.codehaus.groovy.runtime.metaclass.MissingMethodExecutionFailed;
 import org.codehaus.groovy.runtime.wrappers.Wrapper;
 
-import static org.codehaus.groovy.vmplugin.v7.IndyInterface.*;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.util.Map;
+
+import static org.codehaus.groovy.vmplugin.v7.IndyInterface.LOOKUP;
 
 /**
  * This class contains guards, runtime filters and
@@ -110,8 +102,8 @@ public class IndyGuardsFiltersAndSignatures {
      * with property map.
      */
     public static Object setBeanProperties(MetaClass mc, Object bean, Map properties) {
-        for (Iterator iter = properties.entrySet().iterator(); iter.hasNext();) {
-            Map.Entry entry = (Map.Entry) iter.next();
+        for (Object o : properties.entrySet()) {
+            Map.Entry entry = (Map.Entry) o;
             String key = entry.getKey().toString();
 
             Object value = entry.getValue();
@@ -187,7 +179,6 @@ public class IndyGuardsFiltersAndSignatures {
      * return false if the Object is null.
      */
     public static boolean sameClass(Class c, Object o) {
-        if (o==null) return false;
-        return o.getClass() == c;
+        return o != null && o.getClass() == c;
     }
 }

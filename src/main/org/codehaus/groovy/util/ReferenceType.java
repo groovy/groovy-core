@@ -25,25 +25,25 @@ public enum ReferenceType {
     SOFT {
         @Override
         protected <T,V extends Finalizable> Reference<T,V> createReference(T value, V handler, ReferenceQueue queue) {
-            return new SoftRef(value, handler, queue);
+            return new SoftRef<T, V>(value, handler, queue);
         }
     },
     WEAK {
         @Override
         protected <T,V extends Finalizable> Reference<T,V> createReference(T value, V handler, ReferenceQueue queue) {
-            return new WeakRef(value, handler, queue);
+            return new WeakRef<T, V>(value, handler, queue);
         }
     },
     PHANTOM {
         @Override
         protected <T,V extends Finalizable> Reference<T,V> createReference(T value, V handler, ReferenceQueue queue) {
-            return new PhantomRef(value, handler, queue);
+            return new PhantomRef<T, V>(value, handler, queue);
         }            
     },
     HARD {
         @Override
         protected <T,V extends Finalizable> Reference<T,V> createReference(T value, V handler, ReferenceQueue queue) {
-            return new HardRef(value, handler, queue);
+            return new HardRef<T, V>(value, handler, queue);
         }
     };
     protected abstract <T,V extends Finalizable> Reference<T,V> createReference(T value, V handler, ReferenceQueue queue);

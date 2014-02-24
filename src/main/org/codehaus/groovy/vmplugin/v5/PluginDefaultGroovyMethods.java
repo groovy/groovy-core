@@ -43,8 +43,7 @@ public class PluginDefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      */
     public static Object next(Enum self) {
         final Method[] methods = self.getClass().getMethods();
-        for (int i = 0; i < methods.length; i++) {
-            Method method = methods[i];
+        for (Method method : methods) {
             if (method.getName().equals("next") && method.getParameterTypes().length == 0) {
                 return InvokerHelper.invokeMethod(self, "next", NO_ARGS);
             }
@@ -64,8 +63,7 @@ public class PluginDefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      */
     public static Object previous(Enum self) {
         final Method[] methods = self.getClass().getMethods();
-        for (int i = 0; i < methods.length; i++) {
-            Method method = methods[i];
+        for (Method method : methods) {
             if (method.getName().equals("previous") && method.getParameterTypes().length == 0) {
                 return InvokerHelper.invokeMethod(self, "previous", NO_ARGS);
             }

@@ -170,8 +170,7 @@ public class QName implements Serializable {
         if (o == null) return false;
         if (o instanceof QName) {
             final QName qName = (QName) o;
-            if (!namespaceURI.equals(qName.namespaceURI)) return false;
-            return localPart.equals(qName.localPart);
+            return namespaceURI.equals(qName.namespaceURI) && localPart.equals(qName.localPart);
 
         } else if (o instanceof String) {
             final String string = (String)o;
@@ -180,10 +179,7 @@ public class QName implements Serializable {
             if (lastColonIndex < 0 || lastColonIndex == string.length() - 1) return false;
             final String stringPrefix = string.substring(0,lastColonIndex);
             final String stringLocalPart = string.substring(lastColonIndex + 1);
-            if (stringPrefix.equals(prefix) || stringPrefix.equals(namespaceURI)) {
-                return localPart.equals(stringLocalPart);
-            }
-            return false;
+            return (stringPrefix.equals(prefix) || stringPrefix.equals(namespaceURI)) && localPart.equals(stringLocalPart);
         }
         return false;
     }
@@ -211,8 +207,7 @@ public class QName implements Serializable {
         if (o == null) return false;
         if (o instanceof QName) {
             final QName qName = (QName) o;
-            if (!namespaceURI.equals(qName.namespaceURI) && !namespaceURI.equals("*") && !qName.namespaceURI.equals("*")) return false;
-            return localPart.equals(qName.localPart) || localPart.equals("*") || qName.localPart.equals("*");
+            return !(!namespaceURI.equals(qName.namespaceURI) && !namespaceURI.equals("*") && !qName.namespaceURI.equals("*")) && (localPart.equals(qName.localPart) || localPart.equals("*") || qName.localPart.equals("*"));
         } else if (o instanceof String) {
             final String string = (String)o;
             if (string.length() == 0) return false;

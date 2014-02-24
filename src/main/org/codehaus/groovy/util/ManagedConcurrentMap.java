@@ -39,7 +39,6 @@ public class ManagedConcurrentMap<K,V> extends AbstractConcurrentMap<K,V> {
         }
 
         protected AbstractConcurrentMap.Entry<K,V> createEntry(K key, int hash, V value) {
-            if (bundle==null) throw new IllegalArgumentException("bundle must not be null");
             return new EntryWithValue<K,V>(bundle, this, key, hash, value);
         }
     }

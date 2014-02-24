@@ -22,10 +22,10 @@ import java.util.regex.Matcher;
  */
 public class RegexSupport {
 
-    private static final ThreadLocal CURRENT_MATCHER = new ThreadLocal();
+    private static final ThreadLocal<Matcher> CURRENT_MATCHER = new ThreadLocal<Matcher>();
 
     public static Matcher getLastMatcher() {
-        return (Matcher) CURRENT_MATCHER.get();
+        return CURRENT_MATCHER.get();
     }
 
     public static void setLastMatcher(Matcher matcher) {

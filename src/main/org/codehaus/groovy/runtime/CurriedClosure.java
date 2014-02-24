@@ -43,7 +43,6 @@ public final class CurriedClosure<V> extends Closure<V> {
 
     private Object[] curriedParams;
     private int index;
-    private int numTrailingArgs = 0;
     private Class varargType = null;
 
     public CurriedClosure(int index, Closure<V> uncurriedClosure, Object... arguments) {
@@ -58,11 +57,7 @@ public final class CurriedClosure<V> extends Closure<V> {
             varargType = lastType;
         }
 
-        if (isVararg()) {
-            if (index < 0) {
-                numTrailingArgs = (-index) - arguments.length;
-            }
-        } else {
+        if (!isVararg()) {
             // perform some early param checking for non-vararg case
             if (index < 0) {
                 // normalise

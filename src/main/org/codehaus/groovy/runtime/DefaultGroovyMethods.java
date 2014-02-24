@@ -468,7 +468,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the value returned from the closure
      * @since 1.0
      */
-    public static <T> T use(Object self, List<Class> categoryClassList, Closure<T> closure) {
+    public static <T> T use(Object self, List<Class<?>> categoryClassList, Closure<T> closure) {
         return GroovyCategorySupport.use(categoryClassList, closure);
     }
 
@@ -504,11 +504,11 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
         } catch (ClassCastException e) {
             throw new IllegalArgumentException("Expecting a Closure to be the last argument");
         }
-        List<Class> list = new ArrayList<Class>(array.length - 1);
+        List<Class<?>> list = new ArrayList<Class<?>>(array.length - 1);
         for (int i = 0; i < array.length - 1; ++i) {
-            Class categoryClass;
+            Class<?> categoryClass;
             try {
-                categoryClass = (Class) array[i];
+                categoryClass = (Class<?>) array[i];
             } catch (ClassCastException e) {
                 throw new IllegalArgumentException("Expecting a Category Class for argument " + i);
             }

@@ -211,9 +211,9 @@ public class Numbers
         switch (type)
         {
             case 'i':
-                return Integer.valueOf( value.intValue() );
+                return value.intValue();
             case 'l':
-                return new Long( value.longValue() );
+                return value.longValue();
             case 'g':
                 return value ;
             default:
@@ -221,11 +221,11 @@ public class Numbers
                 // of Integer, Long, and BigInteger.
                 if( value.compareTo(MAX_INTEGER) <= 0 && value.compareTo(MIN_INTEGER) >= 0 )
                 {
-                    return Integer.valueOf(value.intValue());
+                    return value.intValue();
                 }
                 else if( value.compareTo(MAX_LONG) <= 0 && value.compareTo(MIN_LONG) >= 0 )
                 {
-                    return new Long(value.longValue());
+                    return value.longValue();
                 }
                 return value;
         }

@@ -144,12 +144,10 @@ public class Java5 implements VMPlugin {
         base.setRedirect(ClassHelper.OBJECT_TYPE);
         //TODO: more than one lower bound for wildcards?
         ClassNode[] lowers = configureTypes(wildcardType.getLowerBounds());
-        ClassNode lower = null;
         // TODO: is it safe to remove this? What was the original intention?
-        if (lower != null) lower = lowers[0];
 
         ClassNode[] upper = configureTypes(wildcardType.getUpperBounds());
-        GenericsType t = new GenericsType(base, upper, lower);
+        GenericsType t = new GenericsType(base, upper, null);
         t.setWildcard(true);
 
         ClassNode ref = ClassHelper.makeWithoutCaching(Object.class, false);
@@ -274,8 +272,8 @@ public class Java5 implements VMPlugin {
                     if (valueExpression == null)
                         continue;
                     node.setMember(declaredMethod.getName(), valueExpression);
-                } catch (IllegalAccessException e) {
-                } catch (InvocationTargetException e) {
+                } catch (IllegalAccessException ignored) {
+                } catch (InvocationTargetException ignored) {
                 }
             }
         }

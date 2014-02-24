@@ -122,11 +122,7 @@ public abstract class ConversionHandler implements InvocationHandler, Serializab
             obj = Proxy.getInvocationHandler(obj);
         }
 
-        if (obj instanceof ConversionHandler) {
-            return (((ConversionHandler) obj).getDelegate()).equals(delegate);
-        } else {
-            return false;
-        }
+        return obj instanceof ConversionHandler && (((ConversionHandler) obj).getDelegate()).equals(delegate);
     }
 
     /**

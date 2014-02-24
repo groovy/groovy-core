@@ -16,18 +16,17 @@
 package org.codehaus.groovy.runtime;
 
 import groovy.lang.Closure;
+import org.codehaus.groovy.reflection.ReflectionUtils;
+import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.ResourceBundle;
 import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.regex.Matcher;
-
-import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
-import org.codehaus.groovy.reflection.ReflectionUtils;
 
 /**
  * This class defines all the new static groovy methods which appear on normal
@@ -251,7 +250,7 @@ public class DefaultGroovyStaticMethods {
             } catch (IOException ioe) {
                 if (ioe.getMessage().startsWith("Access is denied")) {
                     accessDeniedCounter++;
-                    try { Thread.sleep(100); } catch (InterruptedException e) {}
+                    try { Thread.sleep(100); } catch (InterruptedException ignored) {}
                 }
                 if (i==MAXTRIES-1) {
                     if (accessDeniedCounter==MAXTRIES) {
@@ -268,7 +267,6 @@ public class DefaultGroovyStaticMethods {
                         throw ioe;
                     }
                 }
-                continue;
             }
         }
         return tempFile;

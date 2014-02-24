@@ -56,7 +56,6 @@ public class InvokerHelper {
 
     public static final Object[] EMPTY_ARGS = {};
     protected static final Object[] EMPTY_ARGUMENTS = EMPTY_ARGS;
-    protected static final Class[] EMPTY_TYPES = {};
 
     public static final MetaClassRegistry metaRegistry = GroovySystem.getMetaClassRegistry();
 
@@ -190,7 +189,7 @@ public class InvokerHelper {
             GroovyObject pogo = (GroovyObject) object;
             pogo.setProperty(property, newValue);
         } else if (object instanceof Class) {
-            metaRegistry.getMetaClass((Class) object).setProperty((Class) object, property, newValue);
+            metaRegistry.getMetaClass((Class) object).setProperty(object, property, newValue);
         } else {
             ((MetaClassRegistryImpl) GroovySystem.getMetaClassRegistry()).getMetaClass(object).setProperty(object, property, newValue);
         }
@@ -241,7 +240,7 @@ public class InvokerHelper {
     public static Object unaryMinus(Object value) {
         if (value instanceof Integer) {
             Integer number = (Integer) value;
-            return Integer.valueOf(-number.intValue());
+            return -number;
         }
         if (value instanceof Long) {
             Long number = (Long) value;
@@ -263,11 +262,11 @@ public class InvokerHelper {
         }
         if (value instanceof Short) {
             Short number = (Short) value;
-            return Short.valueOf((short) -number.shortValue());
+            return (short) -number;
         }
         if (value instanceof Byte) {
             Byte number = (Byte) value;
-            return Byte.valueOf((byte) -number.byteValue());
+            return (byte) -number;
         }
         if (value instanceof ArrayList) {
             // value is an list.
@@ -407,7 +406,7 @@ public class InvokerHelper {
     }
 
     public static Script createScript(Class scriptClass, Binding context) {
-        Script script = null;
+        Script script;
         // for empty scripts
         if (scriptClass == null) {
             script = new Script() {
@@ -800,7 +799,7 @@ public class InvokerHelper {
         return toListString(DefaultTypeTransformation.asCollection(arguments), maxSize, safe);
     }
 
-    public static List createRange(Object from, Object to, boolean inclusive) {
+    public static List<?> createRange(Object from, Object to, boolean inclusive) {
         try {
             return ScriptBytecodeAdapter.createRange(from, to, inclusive);
         } catch (RuntimeException re) {

@@ -16,8 +16,6 @@
 package org.codehaus.groovy.runtime;
 
 import groovy.lang.Closure;
-import java.lang.ref.SoftReference;
-
 import org.codehaus.groovy.reflection.CachedClass;
 import org.codehaus.groovy.reflection.CachedMethod;
 import org.codehaus.groovy.reflection.ReflectionCache;
@@ -25,6 +23,7 @@ import org.codehaus.groovy.runtime.metaclass.DefaultMetaClassInfo;
 import org.codehaus.groovy.runtime.metaclass.NewInstanceMetaMethod;
 import org.codehaus.groovy.vmplugin.VMPluginFactory;
 
+import java.lang.ref.SoftReference;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -112,10 +111,10 @@ public class GroovyCategorySupport {
             }
         }
 
-        public <T> T use(List<Class> categoryClasses, Closure<T> closure) {
+        public <T> T use(List<Class<?>> categoryClasses, Closure<T> closure) {
             newScope();
             try {
-                for (Class categoryClass : categoryClasses) {
+                for (Class<?> categoryClass : categoryClasses) {
                     use(categoryClass);
                 }
                 return closure.call();
@@ -168,7 +167,7 @@ public class GroovyCategorySupport {
             return map;
         }
 
-        private void use(Class categoryClass) {
+        private void use(Class<? extends Object> categoryClass) {
             CachedClass cachedClass = ReflectionCache.getCachedClass(categoryClass);
             LinkedList<CachedClass> classStack = new LinkedList<CachedClass>();
             for (CachedClass superClass = cachedClass; superClass.getTheClass()!=Object.class; superClass = superClass.getCachedSuperClass()) {
@@ -198,9 +197,9 @@ public class GroovyCategorySupport {
     private static final MyThreadLocal THREAD_INFO = new MyThreadLocal();
 
     public static class CategoryMethod extends NewInstanceMetaMethod implements Comparable {
-        private final Class metaClass;
+        private final Class<?> metaClass;
 
-        public CategoryMethod(CachedMethod metaMethod, Class metaClass) {
+        public CategoryMethod(CachedMethod metaMethod, Class<?> metaClass) {
             super(metaMethod);
             this.metaClass = metaClass;
         }
@@ -214,15 +213,15 @@ public class GroovyCategorySupport {
          */
         public int compareTo(Object o) {
             CategoryMethod thatMethod = (CategoryMethod) o;
-            Class thisClass = metaClass;
-            Class thatClass = thatMethod.metaClass;
+            Class<?> thisClass = metaClass;
+            Class<?> thatClass = thatMethod.metaClass;
             if (thisClass == thatClass) return 0;
             if (isChildOfParent(thisClass, thatClass)) return -1;
             if (isChildOfParent(thatClass, thisClass)) return 1;
             return 0;
         }
 
-        private boolean isChildOfParent(Class candidateChild, Class candidateParent) {
+        private boolean isChildOfParent(Class<?> candidateChild, Class<?> candidateParent) {
             Class loop = candidateChild;
             while(loop != null && loop != Object.class) {
                 loop = loop.getSuperclass();
@@ -256,7 +255,7 @@ public class GroovyCategorySupport {
      * @param closure the closure during which to make the category class methods available
      * @return the value returned from the closure
      */
-    public static <T> T use(List<Class> categoryClasses, Closure<T> closure) {
+    public static <T> T use(List<Class<? extends Object>> categoryClasses, Closure<T> closure) {
         return THREAD_INFO.getInfo().use(categoryClasses, closure);
     }
 
@@ -302,12 +301,12 @@ public class GroovyCategorySupport {
                 tcinfo = (ThreadCategoryInfo) reference.get();
                 if( tcinfo == null ) {
                     tcinfo = new ThreadCategoryInfo();
-                    set(new SoftReference(tcinfo));
+                    set(new SoftReference<ThreadCategoryInfo>(tcinfo));
                 }
             }
             else {
                 tcinfo = new ThreadCategoryInfo();
-                set(new SoftReference(tcinfo));
+                set(new SoftReference<ThreadCategoryInfo>(tcinfo));
             }
             return tcinfo;
         }

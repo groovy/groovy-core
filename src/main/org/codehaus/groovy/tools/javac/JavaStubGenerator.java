@@ -456,9 +456,9 @@ public class JavaStubGenerator {
 
 
         // if all remaining exceptions are used in the stub we are good
-        outer: for (int i=0; i<superExceptions.length; i++) {
-            ClassNode superExc = superExceptions[i];
-            for (ClassNode stub:stubExceptions) {
+        outer:
+        for (ClassNode superExc : superExceptions) {
+            for (ClassNode stub : stubExceptions) {
                 if (stub.isDerivedFrom(superExc)) continue outer;
             }
             // not found 
@@ -843,11 +843,7 @@ public class JavaStubGenerator {
         imports.addAll(Arrays.asList(ResolveVisitor.DEFAULT_IMPORTS));
 
         for (String imp : imports) {
-            String s = new StringBuilder()
-                    .append("import ")
-                    .append(imp)
-                    .append((imp.charAt(imp.length() - 1) == '.') ? "*;" : ";")
-                    .toString()
+            String s = ("import " + imp + ((imp.charAt(imp.length() - 1) == '.') ? "*;" : ";"))
                     .replace('$', '.');
             out.println(s);
         }

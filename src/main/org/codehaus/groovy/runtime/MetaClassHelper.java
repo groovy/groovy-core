@@ -48,8 +48,9 @@ public class MetaClassHelper {
     protected static final Logger LOG = Logger.getLogger(MetaClassHelper.class.getName());
     private static final int MAX_ARG_LEN = 12;
     private static final int
-            OBJECT_SHIFT = 23, INTERFACE_SHIFT = 0,
-            PRIMITIVE_SHIFT = 21, VARGS_SHIFT = 44;
+            OBJECT_SHIFT = 23;
+    private static final int PRIMITIVE_SHIFT = 21;
+    private static final int VARGS_SHIFT = 44;
     /* dist binary layout:
     * 0-20: interface
     * 21-22: primitive dist
@@ -73,7 +74,7 @@ public class MetaClassHelper {
             } else {
                 boolean flag = false;
                 Class clazz = at;
-                while (!flag && clazz != null) {
+                while (clazz != null) {
                     if (clazz.equals(constructor.getDeclaringClass())) {
                         flag = true;
                         break;
@@ -228,14 +229,14 @@ public class MetaClassHelper {
             /*Object*/{14, 15, 12, 13, 10, 11, 8, 9, 7, 5, 6, 3, 4, 2, 1, 0,},
     };
 
-    private static int getPrimitiveIndex(Class c) {
+    private static int getPrimitiveIndex(Class<?> c) {
         for (byte i = 0; i < PRIMITIVES.length; i++) {
             if (PRIMITIVES[i] == c) return i;
         }
         return -1;
     }
 
-    private static int getPrimitiveDistance(Class from, Class to) {
+    private static int getPrimitiveDistance(Class<?> from, Class<?> to) {
         // we know here that from!=to, so a distance of 0 is never valid
         // get primitive type indexes
         int fromIndex = getPrimitiveIndex(from);
@@ -244,7 +245,7 @@ public class MetaClassHelper {
         return PRIMITIVE_DISTANCE_TABLE[toIndex][fromIndex];
     }
 
-    private static int getMaximumInterfaceDistance(Class c, Class interfaceClass) {
+    private static int getMaximumInterfaceDistance(Class c, Class<?> interfaceClass) {
         // -1 means a mismatch
         if (c == null) return -1;
         // 0 means a direct match
@@ -267,7 +268,7 @@ public class MetaClassHelper {
         return Math.max(max, superClassMax);
     }
 
-    private static long calculateParameterDistance(Class argument, CachedClass parameter) {
+    private static long calculateParameterDistance(Class<?> argument, CachedClass parameter) {
         /**
          * note: when shifting with 32 bit, you should only shift on a long. If you do
          *       that with an int, then i==(i<<32), which means you loose the shift
@@ -277,7 +278,7 @@ public class MetaClassHelper {
         if (parameter.getTheClass() == argument) return 0;
 
         if (parameter.isInterface()) {
-            int dist = getMaximumInterfaceDistance(argument, parameter.getTheClass()) << INTERFACE_SHIFT;
+            int dist = getMaximumInterfaceDistance(argument, parameter.getTheClass());
             if (dist>-1 || !(argument!=null && Closure.class.isAssignableFrom(argument))) {
                 return dist;
             } // else go to object case
@@ -297,7 +298,7 @@ public class MetaClassHelper {
             if (argument.isArray() && !parameter.isArray) {
                 objectDistance+=4;
             }
-            Class clazz = ReflectionCache.autoboxType(argument);
+            Class<?> clazz = ReflectionCache.autoboxType(argument);
             while (clazz != null) {
                 if (clazz == parameter.getTheClass()) break;
                 if (clazz == GString.class && parameter.getTheClass() == String.class) {
@@ -311,7 +312,7 @@ public class MetaClassHelper {
             // choose the distance to Object if a parameter is null
             // this will mean that Object is preferred over a more
             // specific type
-            Class clazz = parameter.getTheClass();
+            Class<?> clazz = parameter.getTheClass();
             if (clazz.isPrimitive()) {
                 objectDistance += 2;
             } else {
@@ -578,9 +579,9 @@ public class MetaClassHelper {
      * @return true if a method of the same matching prototype was found in the
      *         list
      */
-    public static boolean containsMatchingMethod(List list, MetaMethod method) {
-        for (Object aList : list) {
-            MetaMethod aMethod = (MetaMethod) aList;
+    public static boolean containsMatchingMethod(List<? extends MetaMethod> list, MetaMethod method) {
+        for (MetaMethod aList : list) {
+            MetaMethod aMethod = aList;
             CachedClass[] params1 = aMethod.getParameterTypes();
             CachedClass[] params2 = method.getParameterTypes();
             if (params1.length == params2.length) {
@@ -619,10 +620,10 @@ public class MetaClassHelper {
 
     public static Object makeCommonArray(Object[] arguments, int offset, Class fallback) {
         // arguments.length>0 && !=null
-        Class baseClass = null;
+        Class<?> baseClass = null;
         for (int i = offset; i < arguments.length; i++) {
             if (arguments[i] == null) continue;
-            Class argClass = arguments[i].getClass();
+            Class<?> argClass = arguments[i].getClass();
             if (baseClass == null) {
                 baseClass = argClass;
             } else {
@@ -643,9 +644,9 @@ public class MetaClassHelper {
             int tmpCount = 0;
             for (int i = offset; i < arguments.length; i++) {
                 if (arguments[i] != null) {
-                    Class argClass, tmpClass;
+                    Class tmpClass;
                     Set<Class> intfs = new HashSet<Class>();
-                    tmpClass = argClass = arguments[i].getClass();
+                    tmpClass = arguments[i].getClass();
                     for (; tmpClass != Object.class; tmpClass = tmpClass.getSuperclass()) {
                         intfs.addAll(Arrays.asList(tmpClass.getInterfaces()));
                     }
@@ -781,7 +782,7 @@ public class MetaClassHelper {
                 && method.getParameterTypes().length == 2;
     }
 
-    protected static boolean isSuperclass(Class clazz, Class superclass) {
+    protected static boolean isSuperclass(Class clazz, Class<GString> superclass) {
         while (clazz != null) {
             if (clazz == superclass) return true;
             clazz = clazz.getSuperclass();
@@ -802,7 +803,7 @@ public class MetaClassHelper {
         String logname = "methodCalls." + className + "." + methodName;
         Logger objLog = Logger.getLogger(logname);
         if (!objLog.isLoggable(Level.FINER)) return;
-        StringBuffer msg = new StringBuffer(methodName);
+        StringBuilder msg = new StringBuilder(methodName);
         msg.append("(");
         if (arguments != null) {
             for (int i = 0; i < arguments.length;) {
@@ -907,52 +908,28 @@ public class MetaClassHelper {
     }
 
     public static boolean sameClasses(Class[] params) {
-        if (params.length != 0)
-            return false;
+        return params.length == 0;
 
-        return true;
     }
 
     public static boolean sameClasses(Class[] params, Object arg1) {
-        if (params.length != 1)
-            return false;
+        return params.length == 1 && params[0] == getClassWithNullAndWrapper(arg1);
 
-        if (params[0] != getClassWithNullAndWrapper(arg1)) return false;
-
-        return true;
     }
 
     public static boolean sameClasses(Class[] params, Object arg1, Object arg2) {
-        if (params.length != 2)
-            return false;
+        return params.length == 2 && params[0] == getClassWithNullAndWrapper(arg1) && params[1] == getClassWithNullAndWrapper(arg2);
 
-        if (params[0] != getClassWithNullAndWrapper(arg1)) return false;
-        if (params[1] != getClassWithNullAndWrapper(arg2)) return false;
-
-        return true;
     }
 
     public static boolean sameClasses(Class[] params, Object arg1, Object arg2, Object arg3) {
-        if (params.length != 3)
-            return false;
+        return params.length == 3 && params[0] == getClassWithNullAndWrapper(arg1) && params[1] == getClassWithNullAndWrapper(arg2) && params[2] == getClassWithNullAndWrapper(arg3);
 
-        if (params[0] != getClassWithNullAndWrapper(arg1)) return false;
-        if (params[1] != getClassWithNullAndWrapper(arg2)) return false;
-        if (params[2] != getClassWithNullAndWrapper(arg3)) return false;
-
-        return true;
     }
 
     public static boolean sameClasses(Class[] params, Object arg1, Object arg2, Object arg3, Object arg4) {
-        if (params.length != 4)
-            return false;
+        return params.length == 4 && params[0] == getClassWithNullAndWrapper(arg1) && params[1] == getClassWithNullAndWrapper(arg2) && params[2] == getClassWithNullAndWrapper(arg3) && params[3] == getClassWithNullAndWrapper(arg4);
 
-        if (params[0] != getClassWithNullAndWrapper(arg1)) return false;
-        if (params[1] != getClassWithNullAndWrapper(arg2)) return false;
-        if (params[2] != getClassWithNullAndWrapper(arg3)) return false;
-        if (params[3] != getClassWithNullAndWrapper(arg4)) return false;
-        
-        return true;
     }
 
     public static boolean sameClass(Class[] params, Object arg) {

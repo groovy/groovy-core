@@ -23,9 +23,9 @@ import groovy.lang.MetaClass;
  * @author John Wilson
  */
 public abstract class Wrapper implements GroovyObject {
-    protected final Class constrainedType;
+    protected final Class<?> constrainedType;
 
-    public Wrapper(final Class constrainedType) {
+    public Wrapper(final Class<?> constrainedType) {
         this.constrainedType = constrainedType;
     }
 
@@ -36,7 +36,7 @@ public abstract class Wrapper implements GroovyObject {
         return getDelegatedMetaClass();
     }
 
-    public Class getType() {
+    public Class<?> getType() {
         return this.constrainedType;
     }
 
