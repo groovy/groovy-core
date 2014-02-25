@@ -16,17 +16,16 @@
 
 package groovy.xml.vm6
 
-import groovy.xml.StaxBuilder
-import org.custommonkey.xmlunit.Diff
-import org.custommonkey.xmlunit.XMLUnit
-
 import javax.xml.stream.XMLOutputFactory
+import groovy.xml.StaxBuilder
+import org.custommonkey.xmlunit.XMLUnit
+import org.custommonkey.xmlunit.Diff
 
 //import org.codehaus.jettison.mapped.*
 
 /**
  * Tests Stax builder with XML
- *
+ * 
  * @author <a href="dejan@nighttale.net">Dejan Bosanac</a>
  * @author Paul King
  */
@@ -36,10 +35,10 @@ class StaxBuilderTest extends GroovyTestCase {
         def factory = XMLOutputFactory.newInstance()
         def writer = new StringWriter()
         def builder = new StaxBuilder(factory.createXMLStreamWriter(writer))
-        builder.root1(a: 5, b: 7) {
+        builder.root1(a:5, b:7) {
             elem1('hello1')
             elem2('hello2')
-            elem3(x: 7)
+            elem3(x:7)
         }
         def expected = """<root1 a="5" b="7"><elem1>hello1</elem1><elem2>hello2</elem2><elem3 x="7" /></root1>"""
         XMLUnit.ignoreWhitespace = true

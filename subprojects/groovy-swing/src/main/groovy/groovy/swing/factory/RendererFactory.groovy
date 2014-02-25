@@ -15,10 +15,10 @@
  */
 package groovy.swing.factory
 
+import java.awt.Component
+import javax.swing.JList
+import javax.swing.JTree
 import groovy.swing.impl.ClosureRenderer
-
-import javax.swing.*
-import java.awt.*
 
 /**
  * @author Danno Ferrin
@@ -40,7 +40,8 @@ class RendererFactory extends AbstractFactory {
         node.update = builder.context.updateClosure
         if (parent instanceof JTree) {
             parent.cellRenderer = node
-        } else if (parent instanceof JList) {
+        }
+        else if (parent instanceof JList) {
             parent.cellRenderer = node
         }
     }

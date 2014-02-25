@@ -15,8 +15,8 @@
  */
 package groovy.swing.factory
 
-import javax.swing.*
-import java.awt.*
+import java.awt.Color
+import javax.swing.BorderFactory
 
 class EtchedBorderFactory extends SwingBorderFactory {
 

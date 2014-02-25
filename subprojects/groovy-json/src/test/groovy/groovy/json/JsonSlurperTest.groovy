@@ -15,6 +15,8 @@
  */
 package groovy.json
 
+
+
 /**
  * @author Guillaume Laforge
  */
@@ -22,8 +24,8 @@ class JsonSlurperTest extends GroovyTestCase {
 
     def parser;
 
-    public JsonSlurperTest() {
-        parser = new JsonSlurper();
+    public JsonSlurperTest () {
+           parser = new JsonSlurper();
     }
 
     void testJsonShouldStartWithCurlyOrBracket() {
@@ -74,6 +76,7 @@ class JsonSlurperTest extends GroovyTestCase {
     }
 
 
+
     void testLargeNegNumWithSpace() {
         int i = parser.parseText('   -1234567891')
         int i2 = -1234567891;
@@ -82,16 +85,18 @@ class JsonSlurperTest extends GroovyTestCase {
     }
 
 
+
     void testWithSpaces() {
-        int num = ((Number) parser.parseText("           123")).intValue();
+        int num = ((Number)parser.parseText( "           123")).intValue();
         int num2 = 123;
-        boolean ok = num == num2 || die("" + num);
+        boolean ok = num == num2 || die ( "" + num);
 
     }
 
 
+
     void testParseLargeNum() {
-        long num = parser.parseText("" + Long.MAX_VALUE)
+        long num = parser.parseText(""+Long.MAX_VALUE)
         long num2 = Long.MAX_VALUE;
         assert num == num2;
 
@@ -99,7 +104,7 @@ class JsonSlurperTest extends GroovyTestCase {
 
 
     void testParseSmallNum() {
-        long num = parser.parseText("" + Long.MIN_VALUE)
+        long num = parser.parseText(""+Long.MIN_VALUE)
         long num2 = Long.MIN_VALUE
         assert num == num2
 
@@ -107,7 +112,7 @@ class JsonSlurperTest extends GroovyTestCase {
 
 
     void testParseLargeDecimal() {
-        double num = parser.parseText("" + Double.MAX_VALUE)
+        double num  = parser.parseText(""+Double.MAX_VALUE)
         double num2 = Double.MAX_VALUE;
         assert num == num2
 
@@ -115,7 +120,7 @@ class JsonSlurperTest extends GroovyTestCase {
 
 
     void testParseSmallDecimal() {
-        double num = parser.parseText("" + Double.MIN_VALUE)
+        double num  = parser.parseText(""+Double.MIN_VALUE)
         double num2 = Double.MIN_VALUE;
         assert num == num2
 
@@ -126,6 +131,7 @@ class JsonSlurperTest extends GroovyTestCase {
         assert parser.parseText('-22') == -22
         assert parser.parseText('-22.0065') == -22.0065
     }
+
 
 
     void testArrayOfArrayWithSimpleValues() {
@@ -166,11 +172,11 @@ class JsonSlurperTest extends GroovyTestCase {
             }
         ''') == [
                 response: [
-                        status                  : "ok",
-                        code                    : 200,
-                        chuncked                : false,
+                        status: "ok",
+                        code: 200,
+                        chuncked: false,
                         "content-type-supported": ["text/html", "text/plain"],
-                        headers                 : [
+                        headers: [
                                 "If-Last-Modified": "2010"
                         ]
                 ]
@@ -196,34 +202,34 @@ class JsonSlurperTest extends GroovyTestCase {
         ''') == [
                 [
                         firstname: "Guillaume",
-                        lastname : "Laforge"
+                        lastname: "Laforge"
                 ],
                 [
                         firstname: "Paul",
-                        lastname : "King"
+                        lastname: "King"
                 ],
                 [
                         firstname: "Jochen",
-                        lastname : "Theodorou"
+                        lastname: "Theodorou"
                 ]
         ]
     }
 
     void testNullEmptyMalformedPayloads() {
-        shouldFail(IllegalArgumentException) { parser.parseText(null) }
-        shouldFail(IllegalArgumentException) { parser.parseText("") }
+        shouldFail(IllegalArgumentException) { parser.parseText(null)   }
+        shouldFail(IllegalArgumentException) { parser.parseText("")     }
 
-        shouldFail(JsonException) { parser.parseText("[") }
-        shouldFail(JsonException) { parser.parseText("[a") }
-        shouldFail(JsonException) { parser.parseText('{"') }
-        shouldFail(JsonException) { parser.parseText('{"key"') }
-        shouldFail(JsonException) { parser.parseText('{"key":') }
-        shouldFail(JsonException) { parser.parseText('{"key":1') }
-        shouldFail(JsonException) { parser.parseText('[') }
-        shouldFail(JsonException) { parser.parseText('[a') }
-        shouldFail(JsonException) { parser.parseText('["a"') }
-        shouldFail(JsonException) { parser.parseText('["a", ') }
-        shouldFail(JsonException) { parser.parseText('["a", true') }
+        shouldFail(JsonException) { parser.parseText("[")           }
+        shouldFail(JsonException) { parser.parseText("[a")          }
+        shouldFail(JsonException) { parser.parseText('{"')          }
+        shouldFail(JsonException) { parser.parseText('{"key"')      }
+        shouldFail(JsonException) { parser.parseText('{"key":')     }
+        shouldFail(JsonException) { parser.parseText('{"key":1')    }
+        shouldFail(JsonException) { parser.parseText('[')           }
+        shouldFail(JsonException) { parser.parseText('[a')          }
+        shouldFail(JsonException) { parser.parseText('["a"')        }
+        shouldFail(JsonException) { parser.parseText('["a", ')      }
+        shouldFail(JsonException) { parser.parseText('["a", true')  }
     }
 
     void testBackSlashEscaping() {

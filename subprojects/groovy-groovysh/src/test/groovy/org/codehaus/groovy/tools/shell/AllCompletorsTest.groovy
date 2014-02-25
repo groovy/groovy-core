@@ -86,7 +86,7 @@ class AllCompletorsTest extends GroovyTestCase {
             }
         }
         groovysh.history = new FileHistory(filemock)
-        InteractiveShellRunner shellRun = new InteractiveShellRunner(groovysh, { ">" })
+        InteractiveShellRunner shellRun = new InteractiveShellRunner(groovysh, { ">"})
         // setup completers in run()
         shellRun.run()
         completers = shellRun.reader.getCompleters()
@@ -129,7 +129,7 @@ class AllCompletorsTest extends GroovyTestCase {
         def result = complete(prompt, prompt.length())
         assert result
         assert prompt.length() - 1 == result[1]
-        assertTrue(result.toString(), "java." in result[0])
+        assertTrue(result.toString() ,"java." in result[0])
     }
 
     void testShowVariablesJava() {
@@ -155,7 +155,7 @@ class AllCompletorsTest extends GroovyTestCase {
         def result = complete(prompt, prompt.length())
         assert result
         assert prompt.length() - 1 == result[1]
-        assertTrue(result.toString(), "java." in result[0])
+        assertTrue(result.toString() ,"java." in result[0])
     }
 
 }

@@ -85,8 +85,7 @@ class GroovySecurityManager {
 
     private Set<String> blacklist = new HashSet<String>();
 
-    private GroovySecurityManager() {
-    }
+    private GroovySecurityManager() { }
 
     public synchronized static GroovySecurityManager instance() {
         return instance;
@@ -96,10 +95,12 @@ class GroovySecurityManager {
         try {
             if (classLoaderDefType == ClassLoaderDefinitionType.REFLECTION) {
                 overrideDefaultGroovyClassLoaderUsingReflection(engine);
-            } else if (classLoaderDefType == ClassLoaderDefinitionType.INJECTION) {
+            }
+            else if (classLoaderDefType == ClassLoaderDefinitionType.INJECTION) {
                 overrideDefaultGroovyClassLoaderUsingInjection(engine);
             }
-        } catch (Throwable ex) {
+        }
+        catch (Throwable ex) {
             throw new RuntimeException("Could not initialize the security manager", ex);
         }
     }

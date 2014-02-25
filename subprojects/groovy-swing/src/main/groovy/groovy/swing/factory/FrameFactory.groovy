@@ -16,7 +16,8 @@
 
 package groovy.swing.factory
 
-import javax.swing.*
+import javax.swing.JFrame
+import javax.swing.JMenuBar
 
 public class FrameFactory extends RootPaneContainerFactory {
 

@@ -16,8 +16,8 @@
 
 package groovy.swing.factory
 
-import javax.swing.*
-import java.awt.*
+import java.awt.Container
+import javax.swing.RootPaneContainer
 
 class LayoutFactory extends groovy.swing.factory.BeanFactory {
 

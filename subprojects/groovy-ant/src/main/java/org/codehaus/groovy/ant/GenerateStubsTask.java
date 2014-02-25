@@ -17,8 +17,10 @@
 package org.codehaus.groovy.ant;
 
 import groovy.lang.GroovyClassLoader;
+
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
+
 import org.codehaus.groovy.tools.javac.JavaStubCompilationUnit;
 
 import java.io.File;
@@ -26,11 +28,12 @@ import java.io.File;
 /**
  * Generates Java stubs from Groovy sources.
  *
- * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  * @version $Id$
+ * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 public class GenerateStubsTask
-        extends CompileTaskSupport {
+    extends CompileTaskSupport
+{
     @Override
     protected void compile() {
         GroovyClassLoader gcl = createClassLoader();
@@ -50,9 +53,9 @@ public class GenerateStubsTask
 
             log.debug("Including files from: " + basedir);
 
-            for (int j = 0; j < includes.length; j++) {
-                log.debug("    " + includes[j]);
-
+            for (int j=0; j < includes.length; j++) {
+                log.debug("    "  + includes[j]);
+                
                 File file = new File(basedir, includes[j]);
                 cu.addSource(file);
 
@@ -69,7 +72,8 @@ public class GenerateStubsTask
             cu.compile();
 
             log.info("Generated " + cu.getStubCount() + " Java stub(s)");
-        } else {
+        }
+        else {
             log.info("No sources found for stub generation");
         }
     }

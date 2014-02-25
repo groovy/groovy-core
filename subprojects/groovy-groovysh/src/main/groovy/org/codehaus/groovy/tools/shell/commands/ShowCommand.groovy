@@ -18,6 +18,7 @@ package org.codehaus.groovy.tools.shell.commands
 
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.codehaus.groovy.runtime.MethodClosure
+
 import org.codehaus.groovy.tools.shell.ComplexCommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.util.Preferences
@@ -29,17 +30,19 @@ import org.codehaus.groovy.tools.shell.util.Preferences
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class ShowCommand
-        extends ComplexCommandSupport {
+    extends ComplexCommandSupport
+{
     ShowCommand(final Groovysh shell) {
-        super(shell, ':show', ':S', ['variables', 'classes', 'imports', 'preferences', 'all'])
+        super(shell, ':show', ':S', [ 'variables', 'classes', 'imports', 'preferences', 'all' ])
     }
-
+    
     def do_variables = {
         if (variables.isEmpty()) {
             io.out.println('No variables defined') // TODO: i18n
-        } else {
+        }
+        else {
             io.out.println('Variables:') // TODO: i18n
-
+            
             variables.each { key, value ->
                 // Special handling for defined methods, just show the sig
                 if (value instanceof MethodClosure) {
@@ -53,28 +56,30 @@ class ShowCommand
             }
         }
     }
-
+    
     def do_classes = {
         Class[] classes = classLoader.loadedClasses
-
+        
         if (classes.size() == 0) {
             io.out.println("No classes have been loaded") // TODO: i18n
-        } else {
+        }
+        else {
             io.out.println('Classes:') // TODO: i18n
-
+            
             classes.each { Class classIt ->
                 io.out.println("  $classIt")
             }
         }
     }
-
+    
     def do_imports = {
         if (imports.isEmpty()) {
             io.out.println("No custom imports have been defined") // TODO: i18n
-        } else {
+        }
+        else {
             io.out.println("Custom imports:") // TODO: i18n
-
-            imports.each { String importIt ->
+            
+            imports.each {String importIt ->
                 io.out.println("  $importIt")
             }
         }

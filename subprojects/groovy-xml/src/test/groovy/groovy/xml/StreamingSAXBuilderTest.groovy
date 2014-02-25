@@ -15,12 +15,11 @@
  */
 package groovy.xml
 
-import org.custommonkey.xmlunit.Diff
-import org.custommonkey.xmlunit.XMLUnit
-import org.xml.sax.ContentHandler
-
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.stream.StreamResult
+import groovy.xml.StreamingSAXBuilder
+import org.xml.sax.ContentHandler
+import org.custommonkey.xmlunit.*
 
 public class StreamingSAXBuilderTest extends GroovyTestCase {
 
@@ -48,8 +47,8 @@ public class StreamingSAXBuilderTest extends GroovyTestCase {
         handler.setResult(new StreamResult(outstream))
 
         def doc = new StreamingSAXBuilder().bind {
-            mkp.declareNamespace("": "uri:urn1")
-            mkp.declareNamespace("x": "uri:urn2")
+            mkp.declareNamespace("" : "uri:urn1")
+            mkp.declareNamespace("x" : "uri:urn2")
             outer {
                 'x:inner'('hello')
             }
@@ -65,17 +64,17 @@ public class StreamingSAXBuilderTest extends GroovyTestCase {
     public void testCustomHandler() {
         def visited = []
         def handler = [
-                startDocument: { ->
+                startDocument: {->
                     visited << 'startDocument'
                 },
-                startElement : { uri, localName, qName, atts ->
+                startElement: {uri, localName, qName, atts ->
                     visited << 'startElement'
                 },
-                characters   : { chars, start, end -> /* ignore */ },
-                endElement   : { uri, localName, qName ->
+                characters: {chars, start, end -> /* ignore */ },
+                endElement: {uri, localName, qName ->
                     visited << 'endElement'
                 },
-                endDocument  : { ->
+                endDocument: {->
                     visited << 'endDocument'
                 },
         ] as ContentHandler
@@ -86,7 +85,7 @@ public class StreamingSAXBuilderTest extends GroovyTestCase {
             }
         }
         def expected = ["startDocument", "startElement", "startElement",
-                        "endElement", "endElement", "endDocument"]
+                "endElement", "endElement", "endDocument"]
 
         doc(handler)
         assert visited == expected

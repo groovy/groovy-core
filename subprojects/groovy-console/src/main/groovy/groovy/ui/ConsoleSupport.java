@@ -17,16 +17,17 @@ package groovy.ui;
 
 import groovy.lang.GroovyShell;
 
-import javax.swing.*;
+import java.awt.Color;
+
+import javax.swing.JTextPane;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
-import java.awt.*;
 
 /**
  * Base class for console
- *
+ * 
  * @author <a href="mailto:james@coredevelopers.net">James Strachan</a>
  * @version $Revision$
  */
@@ -79,11 +80,12 @@ public abstract class ConsoleSupport {
         String name = "Script" + counter++;
         try {
             return getShell().evaluate(text, name);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             handleException(text, e);
             return null;
         }
     }
-
+    
     protected abstract void handleException(String text, Exception e);
 }

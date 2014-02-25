@@ -30,12 +30,11 @@ class Ignore {
             throw new IllegalArgumentException("Ranges/repetitions not supported for ignored method '$methodName'.")
         }
         if (args && args.size() == 1) {
-            if (args[0] instanceof Closure) {
+            if (args[0] instanceof Closure)
                 parent.ignore(methodName, (Closure) args[0])
-            } else {
+            else
                 throw new IllegalArgumentException(
                         "Optional parameter to ignored method '$methodName' must be a Closure but instead found a ${args[0].getClass().simpleName}.")
-            }
         } else {
             parent.ignore(methodName, null)
         }

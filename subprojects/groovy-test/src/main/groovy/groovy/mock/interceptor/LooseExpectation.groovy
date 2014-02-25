@@ -23,13 +23,13 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods
  *  Expects demanded call cardinalities to match demanded ranges.
  *  The calls are allowed to be out of the recorded sequence.
  *  If a method is demanded multiple times, the ranges are filled by order of recording.
- *
- * @see StrictExpectation
- * @author Dierk Koenig
+ * 
+ *  @see StrictExpectation
+ *  @author Dierk Koenig
  */
 class LooseExpectation {
-    Demand fDemand = null
-    List fCalls = []
+    Demand fDemand  = null
+    List fCalls      = []
 
     LooseExpectation(Demand demand) {
         fDemand = demand
@@ -42,11 +42,11 @@ class LooseExpectation {
      * Also skips over names matching ignore filter, if any.
      */
     Closure match(String name) {
-        def filter = fDemand.ignore.keySet().find { DefaultGroovyMethods.grep([name], it) }
+        def filter = fDemand.ignore.keySet().find{ DefaultGroovyMethods.grep([name], it) }
         if (filter) return fDemand.ignore.get(filter)
         def callIndex = 0
         // find first eligible callSpec
-        while (!isEligible(name, callIndex)) callIndex++
+        while (! isEligible(name, callIndex) ) callIndex++
 
         // register the call
         fCalls[callIndex] += 1
@@ -56,16 +56,16 @@ class LooseExpectation {
 
     boolean isEligible(String name, int i) {
         def calls = fDemand.recorded
-        if (i >= calls.size()) {
+        if (i >= calls.size())  {
             throw new AssertionFailedError("No more calls to '$name' expected at this point. End of demands.")
         }
-        if (calls[i].name != name) return false
-        if (null == fCalls[i]) fCalls[i] = 0
-        if (fCalls[i] >= calls[i].range.to) return false
+        if (calls[i].name != name)              return false
+        if (null == fCalls[i])                  fCalls[i] = 0
+        if (fCalls[i] >= calls[i].range.to)     return false
         return true
     }
 
-    /** verify all calls are in expected range */
+    /** verify all calls are in expected range */ 
     void verify() {
         fDemand.verify(fCalls)
     }

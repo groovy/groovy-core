@@ -17,11 +17,13 @@
 package org.codehaus.groovy.ant;
 
 import groovy.lang.GroovyClassLoader;
+
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.util.GlobPatternMapper;
 import org.apache.tools.ant.util.SourceFileScanner;
+
 import org.codehaus.groovy.control.CompilationUnit;
 
 import java.io.File;
@@ -29,11 +31,12 @@ import java.io.File;
 /**
  * Compiles Groovy source files.
  *
- * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  * @version $Id$
+ * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 public class GroovycTask
-        extends CompileTaskSupport {
+    extends CompileTaskSupport
+{
     protected boolean force;
 
     public void setForce(final boolean flag) {
@@ -54,13 +57,13 @@ public class GroovycTask
         GlobPatternMapper mapper = new GlobPatternMapper();
         mapper.setFrom("*.groovy");
         mapper.setTo("*.class");
-
+        
         int count = 0;
         String[] list = src.list();
 
         for (int i = 0; i < list.length; i++) {
             File basedir = getProject().resolveFile(list[i]);
-
+            
             if (!basedir.exists()) {
                 throw new BuildException("Source directory does not exist: " + basedir, getLocation());
             }
@@ -71,21 +74,22 @@ public class GroovycTask
             if (force) {
                 log.debug("Forcefully including all files from: " + basedir);
 
-                for (int j = 0; j < includes.length; j++) {
+                for (int j=0; j < includes.length; j++) {
                     File file = new File(basedir, includes[j]);
-                    log.debug("    " + file);
+                    log.debug("    "  + file);
 
                     compilation.addSource(file);
                     count++;
                 }
-            } else {
+            }
+            else {
                 log.debug("Including changed files from: " + basedir);
 
                 SourceFileScanner sourceScanner = new SourceFileScanner(this);
                 File[] files = sourceScanner.restrictAsFiles(includes, basedir, destdir, mapper);
 
-                for (int j = 0; j < files.length; j++) {
-                    log.debug("    " + files[j]);
+                for (int j=0; j < files.length; j++) {
+                    log.debug("    "  + files[j]);
 
                     compilation.addSource(files[j]);
                     count++;
@@ -97,7 +101,8 @@ public class GroovycTask
             log.info("Compiling " + count + " source file" + (count > 1 ? "s" : "") + " to " + destdir);
 
             compilation.compile();
-        } else {
+        }
+        else {
             log.info("No sources found to compile");
         }
     }

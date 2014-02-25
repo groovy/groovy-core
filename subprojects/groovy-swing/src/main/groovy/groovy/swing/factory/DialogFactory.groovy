@@ -16,8 +16,9 @@
 
 package groovy.swing.factory
 
-import javax.swing.*
-import java.awt.*
+import java.awt.Dialog
+import java.awt.Frame
+import javax.swing.JDialog
 
 public class DialogFactory extends groovy.swing.factory.RootPaneContainerFactory {
 

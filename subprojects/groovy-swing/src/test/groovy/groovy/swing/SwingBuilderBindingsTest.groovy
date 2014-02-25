@@ -17,13 +17,12 @@ package groovy.swing
 
 import groovy.beans.Bindable
 import groovy.beans.Vetoable
-
-import javax.swing.*
-import javax.swing.text.PlainDocument
 import java.awt.event.ActionEvent
 import java.beans.PropertyChangeEvent
 import java.beans.PropertyVetoException
 import java.text.SimpleDateFormat
+import javax.swing.text.PlainDocument
+import javax.swing.*
 
 public class SwingBuilderBindingsTest extends GroovySwingTestCase {
 
@@ -221,15 +220,15 @@ public class SwingBuilderBindingsTest extends GroovySwingTestCase {
                 comboBox(id: 'combo01', items: comboData)
                 comboBox(id: 'combo02', model: new javax.swing.DefaultComboBoxModel(new Vector(vectorData)))
 
-                t1e = label(text: bind { combo01.elements })
-                t1sx = label(text: bind { combo01.selectedIndex })
-                t1se = label(text: bind { combo01.selectedElement })
-                t1si = label(text: bind { combo01.selectedItem })
+                t1e = label(text: bind {combo01.elements})
+                t1sx = label(text: bind {combo01.selectedIndex})
+                t1se = label(text: bind {combo01.selectedElement})
+                t1si = label(text: bind {combo01.selectedItem})
 
-                t2e = label(text: bind { combo02.elements })
-                t2sx = label(text: bind { combo02.selectedIndex })
-                t2se = label(text: bind { combo02.selectedElement })
-                t2si = label(text: bind { combo02.selectedItem })
+                t2e = label(text: bind {combo02.elements})
+                t2sx = label(text: bind {combo02.selectedIndex})
+                t2se = label(text: bind {combo02.selectedElement})
+                t2si = label(text: bind {combo02.selectedItem})
             }
 
             assert swing.t1e.text == '[Alpha, Bravo, Charlie, Delta]'
@@ -329,19 +328,19 @@ public class SwingBuilderBindingsTest extends GroovySwingTestCase {
         testInEDT {
             SwingBuilder swing = new SwingBuilder()
             def listModel = new DefaultListModel()
-            ['Alpha', 'Bravo', 'Charlie', 'Delta'].each { listModel << it }
+            ['Alpha', 'Bravo', 'Charlie', 'Delta'].each {listModel << it}
             def map = [sis: null, ses: null, svs: null] as ObservableMap
 
             swing.frame {
                 list(id: 'list01', model: listModel, selectionMode: ListSelectionModel.SINGLE_SELECTION)
 
-                t1e = label(text: bind { list01.elements })
-                t1sx = label(text: bind { list01.selectedIndex })
-                t1se = label(text: bind { list01.selectedElement })
-                t1si = label(text: bind { list01.selectedValue })
-                bean(map, sis: bind { list01.selectedIndices },
-                        ses: bind { list01.selectedElements },
-                        svs: bind { list01.selectedValues })
+                t1e = label(text: bind {list01.elements})
+                t1sx = label(text: bind {list01.selectedIndex})
+                t1se = label(text: bind {list01.selectedElement})
+                t1si = label(text: bind {list01.selectedValue})
+                bean(map, sis: bind {list01.selectedIndices},
+                        ses: bind {list01.selectedElements},
+                        svs: bind {list01.selectedValues})
             }
 
             assert swing.t1e.text == '[Alpha, Bravo, Charlie, Delta]'
@@ -430,8 +429,8 @@ public class SwingBuilderBindingsTest extends GroovySwingTestCase {
             def capture
             swing.actions {
                 button('Button!', id: 'b')
-                textField(id: 'txt', text: bind(source: b, sourceEvent: 'actionPerformed', sourceValue: { b.text }))
-                textField(id: 'txt2', text: bind(source: b, sourceEvent: 'actionPerformed', sourceValue: { evt -> capture = evt; 'Captured!' }))
+                textField(id: 'txt', text: bind(source: b, sourceEvent: 'actionPerformed', sourceValue: {b.text}))
+                textField(id: 'txt2', text: bind(source: b, sourceEvent: 'actionPerformed', sourceValue: {evt -> capture = evt; 'Captured!'}))
             }
 
             assert swing.txt.text == 'Button!'
@@ -492,9 +491,7 @@ public class SwingBuilderBindingsTest extends GroovySwingTestCase {
                 bindGroup(id: 'testGroup')
                 checkBox('Button!', id: 'cb')
                 textField(id: 'txt1', text: bind(source: cb, sourceProperty: 'text', group: testGroup))
-                textField(id: 'txt2', text: bind(source: cb, sourceProperty: 'text', sourceValue: {
-                    enabledChangeCount++
-                }, group: testGroup))
+                textField(id: 'txt2', text: bind(source: cb, sourceProperty: 'text', sourceValue: {enabledChangeCount++}, group: testGroup))
                 textField(id: 'txt3', text: bind(source: cb, sourceProperty: 'text', group: testGroup))
             }
             assert swing.txt1.text == 'Button!'
@@ -565,23 +562,19 @@ public class SwingBuilderBindingsTest extends GroovySwingTestCase {
             swing.actions {
                 checkBox('Button!', id: 'cb')
                 textField(id: 'txtp', text: bind(source: cb, sourceProperty: 'text',))
-                textField(id: 'txtpv', text: bind(source: cb, sourceProperty: 'text', sourceValue: {
-                    enabledChangeCount++
-                }))
+                textField(id: 'txtpv', text: bind(source: cb, sourceProperty: 'text', sourceValue: {enabledChangeCount++}))
                 textField(id: 'txtep', text: bind(source: cb, sourceEvent: 'stateChanged', sourceProperty: 'text'))
             }
             shouldFail {
                 swing.actions {
                     // all three are pointless
-                    textField(id: 'txtepv', enabled: bind(source: cb, sourceEvent: 'stateChanged', sourceProperty: 'text', sourceValue: {
-                        enabledChangeCount++
-                    }))
+                    textField(id: 'txtepv', enabled: bind(source: cb, sourceEvent: 'stateChanged', sourceProperty: 'text', sourceValue: {enabledChangeCount++}))
                 }
             }
             shouldFail {
                 swing.actions {
                     // just value isn't enough info
-                    textField(id: 'txtv', enabled: bind(source: cb, sourceValue: { enabledChangeCount++ }))
+                    textField(id: 'txtv', enabled: bind(source: cb, sourceValue: {enabledChangeCount++}))
                 }
             }
             shouldFail {
@@ -613,8 +606,8 @@ public class SwingBuilderBindingsTest extends GroovySwingTestCase {
             SwingBuilder swing = new SwingBuilder()
 
             Map model = [
-                    string: 'string',
-                    bool  : true
+                string: 'string',
+                bool  : true
             ] as ObservableMap
 
             shouldFail {
@@ -710,9 +703,7 @@ public class SwingBuilderBindingsTest extends GroovySwingTestCase {
 
             swing.actions {
                 textField(id: 'txt')
-                checkBox('Button!', id: 'cb1', enabled: bind(target: txt, targetProperty: 'enabled', converter: {
-                    it
-                }, id: 'binding1'))
+                checkBox('Button!', id: 'cb1', enabled: bind(target: txt, targetProperty: 'enabled', converter: {it}, id: 'binding1'))
                 checkBox('Button!', id: 'cb2', enabled: bind(target: txt, targetProperty: 'enabled', id: 'binding2'))
             }
             assert swing.binding1.converter != null
@@ -726,10 +717,8 @@ public class SwingBuilderBindingsTest extends GroovySwingTestCase {
 
             swing.actions {
                 checkBox(id: 'doner')
-                checkBox(id: 'cb1', enabled: bind(source: doner, sourceProperty: 'enabled', converter: {
-                    it
-                }, id: 'binding1'))
-                checkBox(id: 'cb2', enabled: bind(source: doner, sourceProperty: 'enabled', id: 'binding2') { it })
+                checkBox(id: 'cb1', enabled: bind(source: doner, sourceProperty: 'enabled', converter: {it}, id: 'binding1'))
+                checkBox(id: 'cb2', enabled: bind(source: doner, sourceProperty: 'enabled', id: 'binding2') {it})
                 checkBox(id: 'cb3', enabled: bind(source: doner, sourceProperty: 'enabled', id: 'binding3'))
             }
             assert swing.binding1.converter != null
@@ -739,19 +728,15 @@ public class SwingBuilderBindingsTest extends GroovySwingTestCase {
             shouldFail(RuntimeException) {
                 swing.actions {
                     checkBox(id: 'doner')
-                    checkBox(id: 'cb1', enabled: bind(source: doner, sourceProperty: 'enabled', converter: {
-                        it
-                    }, id: 'binding1') { it })
+                    checkBox(id: 'cb1', enabled: bind(source: doner, sourceProperty: 'enabled', converter: {it}, id: 'binding1') {it})
                 }
             }
 
             // check reversed bindings
             swing.actions {
                 checkBox(id: 'doner')
-                checkBox(id: 'cb1', enabled: bind(target: doner, targetProperty: 'enabled', converter: {
-                    it
-                }, id: 'binding1'))
-                checkBox(id: 'cb2', enabled: bind(target: doner, targetProperty: 'enabled', id: 'binding2') { it })
+                checkBox(id: 'cb1', enabled: bind(target: doner, targetProperty: 'enabled', converter: {it}, id: 'binding1'))
+                checkBox(id: 'cb2', enabled: bind(target: doner, targetProperty: 'enabled', id: 'binding2') {it})
                 checkBox(id: 'cb3', enabled: bind(target: doner, targetProperty: 'enabled', id: 'binding3'))
             }
             assert swing.binding1.converter != null
@@ -761,9 +746,7 @@ public class SwingBuilderBindingsTest extends GroovySwingTestCase {
             shouldFail(RuntimeException) {
                 swing.actions {
                     checkBox(id: 'doner')
-                    checkBox(id: 'cb1', enabled: bind(target: doner, targetProperty: 'enabled', converter: {
-                        it
-                    }, id: 'binding1') { it })
+                    checkBox(id: 'cb1', enabled: bind(target: doner, targetProperty: 'enabled', converter: {it}, id: 'binding1') {it})
                 }
             }
         }
@@ -828,10 +811,10 @@ public class SwingBuilderBindingsTest extends GroovySwingTestCase {
                 slider(id: 's4', value: 8)
                 textArea(id: 't1', text: bind(target: s3, targetProperty: 'value',
                         id: 'binding3', value: '15',
-                        converter: { Integer.parseInt(String.valueOf(it)) }))
+                        converter: {Integer.parseInt(String.valueOf(it))}))
                 textArea(id: 't2', text: bind(source: s4, sourceProperty: 'value',
                         id: 'binding4', value: '16',
-                        converter: { Integer.parseInt(String.valueOf(it)) }))
+                        converter: {Integer.parseInt(String.valueOf(it))}))
             }
             // s1 is the source, so it's value should be reflected
             assert swing.s3.value == 15
@@ -1042,14 +1025,12 @@ public class SwingBuilderBindingsTest extends GroovySwingTestCase {
                                 default: fail()
                             }
                         }
-                        mutualPropertyWorkout(swing.cb1, sProp, [{ swing.cb1[sProp] = true }, {
-                            swing.cb1[sProp] = false
-                        }],
-                                swing.cb2, tProp, [{ swing.cb2[tProp] = true }, { swing.cb2[tProp] = false }],
+                        mutualPropertyWorkout(swing.cb1, sProp, [{swing.cb1[sProp] = true}, {swing.cb1[sProp] = false}],
+                                swing.cb2, tProp, [{swing.cb2[tProp] = true}, {swing.cb2[tProp] = false}],
                                 swing.binding)
 
-                        mutualPropertyWorkout(swing.st, 'text', [{ swing.st.text = "Foo" }, { swing.st.text = "Bar" }],
-                                swing.tt, 'text', [{ swing.tt.text = "Foo" }, { swing.tt.text = "Bar" }],
+                        mutualPropertyWorkout(swing.st, 'text', [{swing.st.text = "Foo"}, {swing.st.text = "Bar"}],
+                                swing.tt, 'text', [{swing.tt.text = "Foo"}, {swing.tt.text = "Bar"}],
                                 swing.textBinding)
                     }
                     if (mode != 'source') {
@@ -1096,18 +1077,18 @@ public class SwingBuilderBindingsTest extends GroovySwingTestCase {
                             }
                             mutualPropertyShortWorkout(swing.cb1, 'borderPaintedFlat',
                                     [
-                                            { swing.cb1.borderPaintedFlat = true; swing.cb1.doClick() },
-                                            { swing.cb1.borderPaintedFlat = false; swing.cb1.doClick() }
+                                            {swing.cb1.borderPaintedFlat = true; swing.cb1.doClick()},
+                                            {swing.cb1.borderPaintedFlat = false; swing.cb1.doClick()}
                                     ],
-                                    swing.cb2, tProp, [{ swing.cb2[tProp] = true }, { swing.cb2[tProp] = false }],
+                                    swing.cb2, tProp, [{swing.cb2[tProp] = true}, {swing.cb2[tProp] = false}],
                                     swing.binding)
 
                             mutualPropertyShortWorkout(swing.st, 'actionCommand',
                                     [
-                                            { swing.st.actionCommand = "Foo"; swing.st.doClick() },
-                                            { swing.st.actionCommand = "Bar"; swing.st.doClick() }
+                                            {swing.st.actionCommand = "Foo"; swing.st.doClick()},
+                                            {swing.st.actionCommand = "Bar"; swing.st.doClick()}
                                     ],
-                                    swing.tt, 'text', [{ swing.tt.text = "Foo" }, { swing.tt.text = "Bar" }],
+                                    swing.tt, 'text', [{swing.tt.text = "Foo"}, {swing.tt.text = "Bar"}],
                                     swing.textBinding)
                         }
                     }
@@ -1124,18 +1105,14 @@ public class SwingBuilderBindingsTest extends GroovySwingTestCase {
 
             def toNumber = { v ->
                 if (v == null || v == "") return null
-                try {
-                    return new Integer(v)
-                }
-                catch (x) {
-                    return null
-                }
+                try { return new Integer(v) }
+                catch (x) { return null }
             }
 
             swing.actions {
                 frame(title: "Binding test", size: [100, 60]) {
                     textField(id: "t1", text: bind(target: model,
-                            targetProperty: "value", converter: { toNumber(it) }))
+                            targetProperty: "value", converter: {toNumber(it)}))
                     textField(id: "t2", text: bind(target: model,
                             'floatValue', value: '1234', converter: { Float.parseFloat(it) * 2 }))
                 }
@@ -1261,14 +1238,12 @@ public class SwingBuilderBindingsTest extends GroovySwingTestCase {
     }
 }
 
-@Bindable
-class BindableBean {
+@Bindable class BindableBean {
     boolean enabled
     Integer value
     float floatValue
     int pvalue
     String text
     Date date
-    @Vetoable
-    String vetoField
+    @Vetoable String vetoField
 }

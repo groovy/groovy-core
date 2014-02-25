@@ -47,7 +47,8 @@ public interface GroovyResultSet extends GroovyObject, ResultSet {
      *
      * @param columnName the SQL name of the column
      * @return the returned column value
-     * @throws groovy.lang.MissingPropertyException if an SQLException happens while getting the object
+     * @throws groovy.lang.MissingPropertyException
+     *          if an SQLException happens while getting the object
      */
     Object getAt(String columnName);
 
@@ -66,7 +67,8 @@ public interface GroovyResultSet extends GroovyObject, ResultSet {
      *
      * @param columnName the SQL name of the column
      * @param newValue   the updated value
-     * @throws groovy.lang.MissingPropertyException if an SQLException happens while setting the new value
+     * @throws groovy.lang.MissingPropertyException
+     *          if an SQLException happens while setting the new value
      */
     void putAt(String columnName, Object newValue);
 

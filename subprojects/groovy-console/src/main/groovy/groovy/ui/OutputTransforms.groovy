@@ -15,16 +15,15 @@
  */
 package groovy.ui
 
-import org.codehaus.groovy.runtime.InvokerHelper
-
-import javax.swing.*
 import java.awt.*
 import java.awt.image.BufferedImage
+import javax.swing.Icon
+import javax.swing.ImageIcon
+import org.codehaus.groovy.runtime.InvokerHelper
 
 class OutputTransforms {
 
-    @Lazy
-    static localTransforms = loadOutputTransforms()
+    @Lazy static localTransforms = loadOutputTransforms()
 
     static loadOutputTransforms() {
         def transforms = []
@@ -75,7 +74,7 @@ class OutputTransforms {
         transforms << { it -> if (it instanceof Icon) it }
 
         // Images become ImageIcons
-        transforms << { it -> if (it instanceof Image) new ImageIcon(it) }
+        transforms << { it -> if (it instanceof Image) new ImageIcon(it)}
 
         // final case, non-nulls just get inspected as strings
         transforms << { it -> if (it != null) "${InvokerHelper.inspect(it)}" }
@@ -86,7 +85,7 @@ class OutputTransforms {
     static transformResult(base, transforms = localTransforms) {
         for (Closure c : transforms) {
             def result = c(base as Object)
-            if (result != null) {
+            if (result != null)  {
                 return result
             }
         }

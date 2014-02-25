@@ -36,7 +36,6 @@ public class MockProxyMetaClass extends ProxyMetaClass {
             super(owner);
         }
     }
-
     static final FallThroughMarker FALL_THROUGH_MARKER = new FallThroughMarker(new Object());
 
     /**

@@ -51,7 +51,7 @@ public class NavigablePropertiesCompleter {
             } else if (child instanceof Node) {
                 member = ((Node) child).name();
             } else if (child instanceof NodeList) {
-                for (node in ((NodeList) child)) {
+                for (node in ((NodeList)child)) {
                     addNodeChildren(node, prefix, candidates)
                 }
             } else {

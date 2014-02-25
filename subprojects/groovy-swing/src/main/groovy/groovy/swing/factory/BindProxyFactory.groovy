@@ -39,7 +39,7 @@ public class BindProxyFactory extends AbstractFactory {
         return mb;
     }
 
-    public void onNodeCompleted(FactoryBuilderSupport builder, Object parent, Object node) {
+    public void onNodeCompleted( FactoryBuilderSupport builder, Object parent, Object node ) {
         if (builder.context.bind) {
             node.bind()
         }

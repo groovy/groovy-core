@@ -16,7 +16,15 @@
 
 package groovy.util.slurpersupport;
 
-import groovy.lang.*;
+import groovy.lang.Buildable;
+import groovy.lang.Closure;
+import groovy.lang.DelegatingMetaClass;
+import groovy.lang.GString;
+import groovy.lang.GroovyObject;
+import groovy.lang.GroovyObjectSupport;
+import groovy.lang.IntRange;
+import groovy.lang.MetaClass;
+import groovy.lang.Writable;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.ResourceGroovyMethods;
 import org.codehaus.groovy.runtime.StringGroovyMethods;
@@ -27,7 +35,13 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
 /**
  * Base class for representing lazy evaluated GPath expressions.
@@ -46,9 +60,9 @@ public abstract class GPathResult extends GroovyObjectSupport implements Writabl
      * the namespacePrefix <code>namespacePrefix</code> and the namespaceTagHints specified in
      * the <code>namespaceTagHints</code> Map.
      *
-     * @param parent            the GPathResult prior to the application of the expression creating this GPathResult
-     * @param name              if the GPathResult corresponds to something with a name, e.g. a node
-     * @param namespacePrefix   the namespace prefix if any
+     * @param parent the GPathResult prior to the application of the expression creating this GPathResult
+     * @param name if the GPathResult corresponds to something with a name, e.g. a node
+     * @param namespacePrefix the namespace prefix if any
      * @param namespaceTagHints the known tag to namespace mappings
      */
     public GPathResult(final GPathResult parent, final String name, final String namespacePrefix, final Map<String, String> namespaceTagHints) {
@@ -90,7 +104,7 @@ public abstract class GPathResult extends GroovyObjectSupport implements Writabl
 
     /**
      * Returns the specified Property of this GPathResult.
-     * <p/>
+     * <p>
      * Realizes the follow shortcuts:
      * <ul>
      * <li><code>'..'</code> for <code>parent()</code>
@@ -98,7 +112,6 @@ public abstract class GPathResult extends GroovyObjectSupport implements Writabl
      * <li><code>'**'</code> for <code>depthFirst()</code>
      * <li><code>'@'</code> for attribute access
      * </ul>
-     *
      * @param property the Property to fetch
      */
     public Object getProperty(final String property) {
@@ -195,7 +208,7 @@ public abstract class GPathResult extends GroovyObjectSupport implements Writabl
     protected abstract void replaceNode(Closure newValue);
 
     protected abstract void replaceBody(Object newValue);
-
+    
     protected abstract void appendNode(Object newValue);
 
     /**
@@ -372,7 +385,6 @@ public abstract class GPathResult extends GroovyObjectSupport implements Writabl
      *
      * assert characterList.character[1].name == 'Gromit'
      * </pre>
-     *
      * @param index an index
      * @return the value at the given index
      */
@@ -414,7 +426,6 @@ public abstract class GPathResult extends GroovyObjectSupport implements Writabl
      *
      * assert characterList.character[1..2].join(',') == 'Gromit,Shaun'
      * </pre>
-     *
      * @param range a Range indicating the items to get
      * @return a new list based on range borders
      */
@@ -424,14 +435,13 @@ public abstract class GPathResult extends GroovyObjectSupport implements Writabl
 
     /**
      * A helper method to allow GPathResults to work with subscript operators
-     *
-     * @param index    an index
+     * @param index an index
      * @param newValue the value to put at the given index
      */
     public void putAt(final int index, final Object newValue) {
-        final GPathResult result = (GPathResult) getAt(index);
+        final GPathResult result = (GPathResult)getAt(index);
         if (newValue instanceof Closure) {
-            result.replaceNode((Closure) newValue);
+            result.replaceNode((Closure)newValue);
         } else {
             result.replaceBody(newValue);
         }
@@ -575,12 +585,12 @@ public abstract class GPathResult extends GroovyObjectSupport implements Writabl
      * @return the body of this GPathResult, converted to a <code>Closure</code>
      */
     public Closure getBody() {
-        return new Closure(this.parent, this) {
+        return new Closure(this.parent,this) {
             public void doCall(Object[] args) {
-                final GroovyObject delegate = (GroovyObject) getDelegate();
-                final GPathResult thisObject = (GPathResult) getThisObject();
+                final GroovyObject delegate = (GroovyObject)getDelegate();
+                final GPathResult thisObject = (GPathResult)getThisObject();
 
-                Node node = (Node) thisObject.getAt(0);
+                Node node = (Node)thisObject.getAt(0);
                 List children = node.children();
 
                 for (Object child : children) {
@@ -590,21 +600,19 @@ public abstract class GPathResult extends GroovyObjectSupport implements Writabl
                     } else {
                         delegate.invokeMethod("yield", new Object[]{child});
                     }
-                }
+                }                
             }
         };
     }
 
     /**
      * Returns the size of this GPathResult.
-     *
      * @return the size of this GPathResult
      */
     public abstract int size();
 
     /**
      * Returns the text of this GPathResult as a <code>String</code>.
-     *
      * @return the text of this GPathResult
      */
     public abstract String text();
@@ -612,14 +620,12 @@ public abstract class GPathResult extends GroovyObjectSupport implements Writabl
     /**
      * Returns the parents of this GPathResult as a <code>GPathResult</code>.
      * Warning: The subclasses of this package do not implement this method yet.
-     *
      * @return the parents of this GPathResult
      */
     public abstract GPathResult parents();
 
     /**
      * Returns an iterator over the child nodes of this GPathResult.
-     *
      * @return an iterator over the child nodes of this GPathResult
      */
     public abstract Iterator childNodes();
@@ -629,7 +635,6 @@ public abstract class GPathResult extends GroovyObjectSupport implements Writabl
     /**
      * Returns the first child of this GPathResult matching the condition(s)
      * specified in the passed closure.
-     *
      * @param closure a closure to filters the children of this GPathResult
      * @return the first child matching the closure
      */
@@ -638,7 +643,6 @@ public abstract class GPathResult extends GroovyObjectSupport implements Writabl
     /**
      * Returns the children of this GPathResult matching the condition(s)
      * specified in the passed closure.
-     *
      * @param closure a closure to filters the children of this GPathResult
      * @return the children matching the closure
      */

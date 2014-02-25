@@ -123,7 +123,7 @@ class GroovyFilterTests extends GroovyTestCase {
         assert "'a'" ==~ GroovyFilter.SINGLE_QUOTES
 
         assert "'''a'''" ==~ GroovyFilter.SINGLE_QUOTES
-        String multilineTripleSingleQuotes = """'''
+        String multilineTripleSingleQuotes =  """'''
         a
         '''"""
         assert multilineTripleSingleQuotes ==~ GroovyFilter.SINGLE_QUOTES

@@ -22,7 +22,8 @@ package org.codehaus.groovy.tools.shell.commands
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class InspectCommandTest
-        extends CommandTestSupport {
+    extends CommandTestSupport
+{
     void testInspect() {
         shell << ':inspect'
     }

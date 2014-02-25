@@ -20,7 +20,7 @@ class NamespaceNodeGPathTest extends TestXmlSupport {
 
         def name = root.name()
 
-        root.children().each { println "has a child with name ${it.name()} and content $it" }
+        root.children().each {println "has a child with name ${it.name()} and content $it"}
 
         def foo = xsd.annotation
         println "qname url is $foo.namespaceURI"

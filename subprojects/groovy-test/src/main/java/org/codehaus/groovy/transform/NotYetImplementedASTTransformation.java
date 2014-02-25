@@ -28,12 +28,13 @@ import java.util.Arrays;
 
 /**
  * Handles generation of code for the {@code @NotYetImplemented} annotation.
+ * 
+ * @see groovy.transform.NotYetImplemented
  *
  * @author Dierk König
  * @author Andre Steingress
  * @author Ilinca V. Hallberg
  * @author Björn Westlin
- * @see groovy.transform.NotYetImplemented
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 public class NotYetImplementedASTTransformation extends AbstractASTTransformation {
@@ -49,8 +50,8 @@ public class NotYetImplementedASTTransformation extends AbstractASTTransformatio
         AnnotationNode annotationNode = (AnnotationNode) nodes[0];
         ASTNode node = nodes[1];
 
-        if (!(node instanceof MethodNode)) {
-            addError("@NotYetImplemented must only be applied on test methods!", node);
+        if (!(node instanceof MethodNode))  {
+            addError("@NotYetImplemented must only be applied on test methods!",node);
             return;
         }
 
@@ -58,7 +59,7 @@ public class NotYetImplementedASTTransformation extends AbstractASTTransformatio
 
         ArrayList<Statement> statements = new ArrayList<Statement>();
         Statement statement = methodNode.getCode();
-        if (statement instanceof BlockStatement) {
+        if (statement instanceof BlockStatement)  {
             statements.addAll(((BlockStatement) statement).getStatements());
         }
 
@@ -82,9 +83,7 @@ public class NotYetImplementedASTTransformation extends AbstractASTTransformatio
         ThrowStatement throwStatement = new ThrowStatement(
                 new ConstructorCallExpression(ASSERTION_FAILED_ERROR_TYPE,
                         new ArgumentListExpression(
-                                new ConstantExpression("Method is marked with @NotYetImplemented but passes unexpectedly"))
-                )
-        );
+                                new ConstantExpression("Method is marked with @NotYetImplemented but passes unexpectedly"))));
 
         throwStatement.setSourcePosition(annotationNode);
 

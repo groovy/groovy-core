@@ -26,14 +26,15 @@ import org.codehaus.groovy.tools.shell.Groovysh
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class ClearCommand
-        extends CommandSupport {
+    extends CommandSupport
+{
     ClearCommand(final Groovysh shell) {
         super(shell, ':clear', ':c')
     }
-
+    
     Object execute(final List<String> args) {
         assertNoArguments(args)
-
+        
         buffer.clear()
 
         if (io.verbose) {

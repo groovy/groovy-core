@@ -17,10 +17,11 @@ package groovy.swing.impl;
 
 import groovy.lang.Closure;
 
-import javax.swing.*;
 import java.awt.event.ActionEvent;
 
-/**
+import javax.swing.AbstractAction;
+
+/** 
  * A default action implementation
  *
  * @author <a href="mailto:james@coredevelopers.net">James Strachan</a>

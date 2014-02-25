@@ -15,7 +15,7 @@
  */
 package groovy.ui
 
-import javax.swing.*
+import javax.swing.JApplet
 
 /**
  * ConsoleApplet

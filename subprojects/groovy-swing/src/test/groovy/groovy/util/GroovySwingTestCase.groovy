@@ -15,7 +15,7 @@
  */
 package groovy.util
 
-import javax.swing.*
+import javax.swing.SwingUtilities
 
 public abstract class GroovySwingTestCase extends GroovyTestCase {
 

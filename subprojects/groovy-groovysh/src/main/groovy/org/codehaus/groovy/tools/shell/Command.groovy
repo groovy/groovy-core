@@ -16,8 +16,9 @@
 
 package org.codehaus.groovy.tools.shell
 
-import groovy.transform.CompileStatic
-import jline.console.completer.Completer
+import groovy.transform.CompileStatic;
+import jline.console.completer.Completer;
+import java.util.List;
 
 /**
  * Provides the interface required for command extensions.
@@ -26,7 +27,8 @@ import jline.console.completer.Completer
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 @CompileStatic
-public interface Command {
+public interface Command
+{
     public String getName();
 
     public String getShortcut();

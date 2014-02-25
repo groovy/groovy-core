@@ -32,12 +32,12 @@ class JsonDelegate {
      */
     def invokeMethod(String name, Object args) {
         if (args) {
-            if (args.size() == 1) {
+            if (args.size () == 1) {
                 content[name] = args[0]
-            } else if (args.size() == 2 && args[0] instanceof Collection && args[1] instanceof Closure) {
-                content[name] = args[0].collect { curryDelegateAndGetContent(args[1], it) }
+            } else if (args.size () == 2 && args[0] instanceof Collection && args[1] instanceof Closure) {
+                content[name] = args[0].collect {curryDelegateAndGetContent (args[1],it)}
             } else {
-                content[name] = args.toList()
+                content[name] = args.toList ()
             }
         }
     }
@@ -67,7 +67,7 @@ class JsonDelegate {
      */
     static curryDelegateAndGetContent(Closure c, Object o) {
         def delegate = new JsonDelegate()
-        Closure curried = c.curry(o)
+        Closure curried = c.curry (o)
         curried.delegate = delegate
         curried.resolveStrategy = Closure.DELEGATE_FIRST
         curried()

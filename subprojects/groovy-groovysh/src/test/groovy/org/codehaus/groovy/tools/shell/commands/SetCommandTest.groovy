@@ -27,7 +27,8 @@ import org.codehaus.groovy.tools.shell.util.SimpleCompletor
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class SetCommandTest
-        extends CommandTestSupport {
+    extends CommandTestSupport
+{
     void testSet() {
         shell << ':set'
     }

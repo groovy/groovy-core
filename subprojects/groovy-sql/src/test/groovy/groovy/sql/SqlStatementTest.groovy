@@ -46,7 +46,7 @@ class SqlStatementTest extends GroovyTestCase {
 
     void testWithStatement() {
         assert sql.rows("SELECT * FROM PERSON").size() == 5
-        sql.withStatement { it.maxRows = 3 }
+        sql.withStatement{ it.maxRows = 3 }
         assert sql.rows("SELECT * FROM PERSON").size() == 3
     }
 }

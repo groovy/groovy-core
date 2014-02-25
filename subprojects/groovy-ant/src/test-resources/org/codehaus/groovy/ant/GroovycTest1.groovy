@@ -16,7 +16,7 @@
 package org.codehaus.groovy.ant
 
 class GroovycTest1 {
-    static void main(String[] args) {
-        (new File('target/classes/test/org/codehaus/groovy/ant/GroovycTest1_Result.txt')).write('OK.')
-    }
+  static void main ( String[] args ) {
+    ( new File ( 'target/classes/test/org/codehaus/groovy/ant/GroovycTest1_Result.txt' ) ).write ( 'OK.' )
+  }
 }

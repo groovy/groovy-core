@@ -18,8 +18,8 @@ package org.codehaus.groovy.tools.groovydoc.testfiles;
 public class ClassWithAnonymousInnerClass {
 }
 
-class AnonymusInnerClass {
-
-    public void innerClassMethod() {
+class AnonymusInnerClass  {
+    
+    public void innerClassMethod(){
     }
 }

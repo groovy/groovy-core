@@ -19,7 +19,7 @@ import org.codehaus.groovy.runtime.InvokerHelper;
 
 /**
  * Represents a property of a value as a model.
- *
+ * 
  * @author <a href="mailto:james@coredevelopers.net">James Strachan</a>
  * @version $Revision$
  */
@@ -68,7 +68,7 @@ public class PropertyModel implements ValueModel, NestedValueModel {
             InvokerHelper.setProperty(source, property, value);
         }
     }
-
+    
     public Class getType() {
         return type;
     }

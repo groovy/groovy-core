@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.tools.groovydoc.testfiles
 
-class TestConstructors {
+class TestConstructors  {
 
     TestConstructors(ClassLoader parent, Binding binding) {
     }

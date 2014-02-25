@@ -41,7 +41,7 @@ class NotYetImplementedTransformTest extends GroovyShellTestCase {
     }
 
     void testNotYetImplementedWithException() {
-        def output = evaluate("""
+            def output = evaluate("""
                   import groovy.transform.NotYetImplemented
 
                   class MyTests extends GroovyTestCase {
@@ -53,9 +53,9 @@ class NotYetImplementedTransformTest extends GroovyShellTestCase {
                   junit.textui.TestRunner.run(new junit.framework.TestSuite(MyTests))
             """)
 
-        assertNotNull output
-        assertTrue "test method marked with @NotYetImplemented must NOT throw an AsssertionFailedError", output.wasSuccessful()
-    }
+            assertNotNull output
+            assertTrue "test method marked with @NotYetImplemented must NOT throw an AsssertionFailedError", output.wasSuccessful()
+        }
 
     void testNotYetImplementedPassThrough() {
         def output = evaluate("""
@@ -92,7 +92,7 @@ class NotYetImplementedTransformTest extends GroovyShellTestCase {
         assertTrue "empty test method must not throw an AssertionFailedError", output.wasSuccessful()
     }
 
-    void testNotYetImplementedJUnit4() {
+    void testNotYetImplementedJUnit4()  {
 
         def output = evaluate("""
         import groovy.transform.NotYetImplemented

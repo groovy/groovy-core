@@ -27,9 +27,10 @@ import org.codehaus.groovy.tools.shell.Groovysh
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class RecordCommand
-        extends ComplexCommandSupport {
+    extends ComplexCommandSupport
+{
     RecordCommand(final Groovysh shell) {
-        super(shell, ':record', ':r', ['start', 'stop', 'status'], 'status')
+        super(shell, ':record', ':r', [ 'start', 'stop', 'status' ], 'status')
 
         addShutdownHook {
             if (isRecording()) {
@@ -78,7 +79,7 @@ class RecordCommand
         }
     }
 
-    def do_start = { List<String> args ->
+    def do_start = {List<String> args ->
         if (isRecording()) {
             fail("Already recording to: $file")
         }
@@ -96,7 +97,7 @@ class RecordCommand
         writer = file.newPrintWriter()
         writer.println("// OPENED: " + new Date())
         writer.flush()
-
+        
         io.out.println("Recording session to: $file")
 
         return file

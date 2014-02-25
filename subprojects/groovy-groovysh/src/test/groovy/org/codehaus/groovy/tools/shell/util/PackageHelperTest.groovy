@@ -20,7 +20,8 @@ package org.codehaus.groovy.tools.shell.util
  * Unit tests for the {@link PackageHelper} class.
  */
 class PackageHelperTest
-        extends GroovyTestCase {
+    extends GroovyTestCase
+{
 
     void testLoadAndGetPackagesEmpty() {
         PackageHelper helper = new PackageHelper(null)

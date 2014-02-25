@@ -15,12 +15,12 @@
  */
 package groovy.swing.impl;
 
-import java.awt.*;
+import java.awt.GridBagConstraints;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-/**
+/** 
  * Represents a row in a table layout
  *
  * @author <a href="mailto:james@coredevelopers.net">James Strachan</a>
@@ -31,14 +31,13 @@ public class TableLayoutRow {
     private final TableLayout parent;
     private final List<groovy.swing.impl.TableLayoutCell> cells = new ArrayList<groovy.swing.impl.TableLayoutCell>();
     private int rowIndex;
-
+    
     public TableLayoutRow(TableLayout tableLayoutTag) {
         this.parent = tableLayoutTag;
     }
 
     /**
      * Adds a new cell to this row
-     *
      * @param tag the td element
      */
     public void addCell(groovy.swing.impl.TableLayoutCell tag) {
@@ -50,7 +49,7 @@ public class TableLayoutRow {
         tag.getConstraints().gridx = gridx;
         cells.add(tag);
     }
-
+    
     public void addComponentsForRow() {
         rowIndex = parent.nextRowIndex();
 
@@ -61,7 +60,7 @@ public class TableLayoutRow {
             c.gridy = rowIndex;
             // add the cell to the table
             parent.addCell(cell);
-        }
+        }        
     }
 
     /**

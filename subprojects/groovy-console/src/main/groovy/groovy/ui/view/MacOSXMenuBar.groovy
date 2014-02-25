@@ -56,39 +56,39 @@ return handler
 
 menuBar {
     menu(text: 'File', mnemonic: 'F') {
-        menuItem(newFileAction, icon: null)
-        menuItem(newWindowAction, icon: null)
-        menuItem(openAction, icon: null)
+        menuItem(newFileAction, icon:null)
+        menuItem(newWindowAction, icon:null)
+        menuItem(openAction, icon:null)
         separator()
-        menuItem(saveAction, icon: null)
-        menuItem(saveAsAction, icon: null)
+        menuItem(saveAction, icon:null)
+        menuItem(saveAsAction, icon:null)
         separator()
-        menuItem(printAction, icon: null)
+        menuItem(printAction, icon:null)
     }
 
     menu(text: 'Edit', mnemonic: 'E') {
-        menuItem(undoAction, icon: null)
-        menuItem(redoAction, icon: null)
+        menuItem(undoAction, icon:null)
+        menuItem(redoAction, icon:null)
         separator()
-        menuItem(cutAction, icon: null)
-        menuItem(copyAction, icon: null)
-        menuItem(pasteAction, icon: null)
+        menuItem(cutAction, icon:null)
+        menuItem(copyAction, icon:null)
+        menuItem(pasteAction, icon:null)
         separator()
-        menuItem(findAction, icon: null)
-        menuItem(findNextAction, icon: null)
-        menuItem(findPreviousAction, icon: null)
-        menuItem(replaceAction, icon: null)
+        menuItem(findAction, icon:null)
+        menuItem(findNextAction, icon:null)
+        menuItem(findPreviousAction, icon:null)
+        menuItem(replaceAction, icon:null)
         separator()
-        menuItem(selectAllAction, icon: null)
-        separator()
-        menuItem(commentAction, icon: null)
+        menuItem(selectAllAction, icon:null)
+	separator()
+	menuItem(commentAction, icon:null)
     }
 
     menu(text: 'View', mnemonic: 'V') {
-        menuItem(clearOutputAction, icon: null)
+        menuItem(clearOutputAction, icon:null)
         separator()
-        menuItem(largerFontAction, icon: null)
-        menuItem(smallerFontAction, icon: null)
+        menuItem(largerFontAction, icon:null)
+        menuItem(smallerFontAction, icon:null)
         separator()
         checkBoxMenuItem(captureStdOutAction, selected: controller.captureStdOut)
         checkBoxMenuItem(captureStdErrAction, selected: controller.captureStdErr)
@@ -101,25 +101,25 @@ menuBar {
     }
 
     menu(text: 'History', mnemonic: 'I') {
-        menuItem(historyPrevAction, icon: null)
-        menuItem(historyNextAction, icon: null)
+        menuItem(historyPrevAction, icon:null)
+        menuItem(historyNextAction, icon:null)
     }
 
     menu(text: 'Script', mnemonic: 'S') {
-        menuItem(runAction, icon: null)
+        menuItem(runAction, icon:null)
         checkBoxMenuItem(saveOnRunAction, selected: controller.saveOnRun)
-        menuItem(runSelectionAction, icon: null)
+        menuItem(runSelectionAction, icon:null)
         checkBoxMenuItem(threadInterruptAction, selected: controller.threadInterrupt)
-        menuItem(interruptAction, icon: null)
-        menuItem(compileAction, icon: null)
+        menuItem(interruptAction, icon:null)
+        menuItem(compileAction, icon:null)
         separator()
         menuItem(addClasspathJar)
         menuItem(addClasspathDir)
         menuItem(clearClassloader)
         separator()
-        menuItem(inspectLastAction, icon: null)
-        menuItem(inspectVariablesAction, icon: null)
-        menuItem(inspectAstAction, icon: null)
+        menuItem(inspectLastAction, icon:null)
+        menuItem(inspectVariablesAction, icon:null)
+        menuItem(inspectAstAction, icon:null)
     }
 }
 

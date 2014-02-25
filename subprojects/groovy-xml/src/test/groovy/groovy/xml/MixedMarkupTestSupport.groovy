@@ -5,7 +5,6 @@ class MixedMarkupTestSupport {
     private static final mixedXml = '''
 <p>Please read the <a href="index.html">Home</a> page</p>
 '''
-
     static void checkMixedMarkup(Closure getRoot) {
         def root = getRoot(mixedXml)
         assert root != null

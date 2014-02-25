@@ -35,7 +35,7 @@ class JmxBeansFactory extends AbstractFactory {
         def map
 
         // prepare metaMap for each object
-        targets.each { target ->
+        targets.each {target ->
             def metaMap = JmxMetaMapBuilder.buildObjectMapFrom(target)
             metaMap.server = metaMap.server ?: server
             metaMap.isMBean = JmxBuilderTools.isClassMBean(target.getClass())
@@ -59,7 +59,7 @@ class JmxBeansFactory extends AbstractFactory {
 
         def regPolicy = fsb.parentFactory?.registrationPolicy ?: "replace"
 
-        metaMaps.each { metaMap ->
+        metaMaps.each {metaMap ->
             def registeredBean = JmxBuilderTools.registerMBeanFromMap(regPolicy, metaMap)
 
             // if replace, remove from parent node and re add.

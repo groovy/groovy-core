@@ -24,7 +24,7 @@ import java.util.Map;
 
 /**
  * A helper class for creating namespaced GroovyMarkup
- *
+ * 
  * @author <a href="mailto:james@coredevelopers.net">James Strachan</a>
  * @author Paul King
  * @author Denver Dino
@@ -100,7 +100,7 @@ public class NamespaceBuilderSupport extends BuilderSupport {
         String prefix = autoPrefix ? nsMap.keySet().iterator().next() : "";
         String localPart = methodName;
         int idx = methodName.indexOf(':');
-        if (idx > 0) {
+        if (idx > 0 ) {
             prefix = methodName.substring(0, idx);
             localPart = methodName.substring(idx + 1);
         }

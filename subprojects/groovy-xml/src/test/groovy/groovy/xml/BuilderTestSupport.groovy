@@ -15,8 +15,8 @@
  */
 package groovy.xml
 
-import org.custommonkey.xmlunit.Diff
 import org.custommonkey.xmlunit.XMLUnit
+import org.custommonkey.xmlunit.Diff
 
 /**
  * Common test cases for StreamingMarkupBuilder and MarkupBuilder.
@@ -54,8 +54,8 @@ abstract class BuilderTestSupport extends GroovyTestCase {
     void testNestedQuotesSingle() {
         def m = {
             root {
-                one(foo: "bar('baz')", 'foo("baz")')
-                two(foo: 'bar("baz")', "foo('baz')")
+                one( foo:"bar('baz')", 'foo("baz")' )
+                two( foo:'bar("baz")', "foo('baz')" )
             }
         }
         assertExpectedXml m, '<root><one foo=\'bar(&apos;baz&apos;)\'>foo("baz")</one><two foo=\'bar("baz")\'>foo(\'baz\')</two></root>'
@@ -64,13 +64,11 @@ abstract class BuilderTestSupport extends GroovyTestCase {
     void testNestedQuotesDouble() {
         def m = {
             root {
-                one(foo: "bar('baz')", 'foo("baz")')
-                two(foo: 'bar("baz")', "foo('baz')")
+                one( foo:"bar('baz')", 'foo("baz")' )
+                two( foo:'bar("baz")', "foo('baz')" )
             }
         }
-        assertExpectedXml m, {
-            it.useDoubleQuotes = true
-        }, '<root><one foo="bar(\'baz\')">foo("baz")</one><two foo="bar(&quot;baz&quot;)">foo(\'baz\')</two></root>'
+        assertExpectedXml m, { it.useDoubleQuotes = true }, '<root><one foo="bar(\'baz\')">foo("baz")</one><two foo="bar(&quot;baz&quot;)">foo(\'baz\')</two></root>'
     }
 
     void testExpandEmptyElements() {
@@ -126,7 +124,7 @@ abstract class BuilderTestSupport extends GroovyTestCase {
 
         def m = {
             ELEM1 {
-                list.each { r ->
+                list.each {r ->
                     ELEM2(id: r, type: '2') {
                         ELEM3A(id: r)
                         ELEM3B(type: '3', 'text')
@@ -227,8 +225,8 @@ require escaping. The other characters consist of:
     void testNewlineCarriageReturnTabExpansion() {
         def m = {
             root {
-                a(b: '''one\n\r\ttwo''') {
-                    c('one\n\r\ttwo')
+                a( b:'''one\n\r\ttwo''' ) {
+                  c( 'one\n\r\ttwo' )
                 }
             }
         }

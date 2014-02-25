@@ -20,20 +20,35 @@ import groovy.util.slurpersupport.GPathResult;
 import groovy.util.slurpersupport.Node;
 import groovy.util.slurpersupport.NodeChild;
 import groovy.xml.FactorySupport;
-import groovy.xml.QName;
-import org.xml.sax.*;
-import org.xml.sax.helpers.DefaultHandler;
 
-import javax.xml.XMLConstants;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringReader;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Stack;
+
+import javax.xml.XMLConstants;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import groovy.xml.QName;
+import org.xml.sax.Attributes;
+import org.xml.sax.DTDHandler;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Parse XML into a document tree that may be traversed similar to XPath
@@ -47,7 +62,7 @@ import java.util.Stack;
  * assert rootNode.two.text() == 'Some text!'
  * rootNode.children().each { assert it.name() in ['one','two'] }
  * </pre>
- * <p/>
+ * <p>
  * Note that in some cases, a 'selector' expression may not resolve to a
  * single node.  For example:
  * <pre>
@@ -76,19 +91,20 @@ public class XmlSlurper extends DefaultHandler {
      * Creates a non-validating and non-namespace-aware <code>XmlSlurper</code> which does not allow DOCTYPE declarations in documents.
      *
      * @throws ParserConfigurationException if no parser which satisfies the requested configuration can be created.
-     * @throws SAXException                 for SAX errors.
+     * @throws SAXException for SAX errors.
      */
     public XmlSlurper() throws ParserConfigurationException, SAXException {
         this(false, true);
     }
-
+    
     /**
      * Creates a <code>XmlSlurper</code> which does not allow DOCTYPE declarations in documents.
-     *
-     * @param validating     <code>true</code> if the parser should validate documents as they are parsed; false otherwise.
+     * 
+     * @param validating <code>true</code> if the parser should validate documents as they are parsed; false otherwise.
      * @param namespaceAware <code>true</code> if the parser should provide support for XML namespaces; <code>false</code> otherwise.
+     *
      * @throws ParserConfigurationException if no parser which satisfies the requested configuration can be created.
-     * @throws SAXException                 for SAX errors.
+     * @throws SAXException for SAX errors.
      */
     public XmlSlurper(final boolean validating, final boolean namespaceAware) throws ParserConfigurationException, SAXException {
         this(validating, namespaceAware, false);
@@ -96,12 +112,13 @@ public class XmlSlurper extends DefaultHandler {
 
     /**
      * Creates a <code>XmlSlurper</code>.
-     *
-     * @param validating              <code>true</code> if the parser should validate documents as they are parsed; false otherwise.
-     * @param namespaceAware          <code>true</code> if the parser should provide support for XML namespaces; <code>false</code> otherwise.
+     * 
+     * @param validating <code>true</code> if the parser should validate documents as they are parsed; false otherwise.
+     * @param namespaceAware <code>true</code> if the parser should provide support for XML namespaces; <code>false</code> otherwise.
      * @param allowDocTypeDeclaration <code>true</code> if the parser should provide support for DOCTYPE declarations; <code>false</code> otherwise.
+     *
      * @throws ParserConfigurationException if no parser which satisfies the requested configuration can be created.
-     * @throws SAXException                 for SAX errors.
+     * @throws SAXException for SAX errors.
      */
     public XmlSlurper(final boolean validating, final boolean namespaceAware, boolean allowDocTypeDeclaration) throws ParserConfigurationException, SAXException {
         SAXParserFactory factory = FactorySupport.createSaxParserFactory();
@@ -119,14 +136,14 @@ public class XmlSlurper extends DefaultHandler {
     public XmlSlurper(final SAXParser parser) throws SAXException {
         this(parser.getXMLReader());
     }
-
+    
     private void setQuietly(SAXParserFactory factory, String feature, boolean value) {
         try {
             factory.setFeature(feature, value);
-        } catch (ParserConfigurationException ignored) {
-        } catch (SAXNotRecognizedException ignored) {
-        } catch (SAXNotSupportedException ignored) {
         }
+        catch (ParserConfigurationException ignored) { }
+        catch (SAXNotRecognizedException ignored) { }
+        catch (SAXNotSupportedException ignored) { }
     }
 
     /**
@@ -139,8 +156,8 @@ public class XmlSlurper extends DefaultHandler {
 
     /**
      * @return The GPathResult instance created by consuming a stream of SAX events
-     * Note if one of the parse methods has been called then this returns null
-     * Note if this is called more than once all calls after the first will return null
+     *         Note if one of the parse methods has been called then this returns null
+     *         Note if this is called more than once all calls after the first will return null
      */
     public GPathResult getDocument() {
         try {
@@ -156,8 +173,8 @@ public class XmlSlurper extends DefaultHandler {
      * @param input the InputSource to parse
      * @return An object which supports GPath expressions
      * @throws SAXException Any SAX exception, possibly wrapping another exception.
-     * @throws IOException  An IO exception from the parser, possibly from a byte stream
-     *                      or character stream supplied by the application.
+     * @throws IOException An IO exception from the parser, possibly from a byte stream
+     *         or character stream supplied by the application.
      */
     public GPathResult parse(final InputSource input) throws IOException, SAXException {
         reader.setContentHandler(this);
@@ -171,8 +188,8 @@ public class XmlSlurper extends DefaultHandler {
      * @param file the File to parse
      * @return An object which supports GPath expressions
      * @throws SAXException Any SAX exception, possibly wrapping another exception.
-     * @throws IOException  An IO exception from the parser, possibly from a byte stream
-     *                      or character stream supplied by the application.
+     * @throws IOException An IO exception from the parser, possibly from a byte stream
+     *         or character stream supplied by the application.
      */
     public GPathResult parse(final File file) throws IOException, SAXException {
         final FileInputStream fis = new FileInputStream(file);
@@ -194,8 +211,8 @@ public class XmlSlurper extends DefaultHandler {
      * @param input the InputStream to parse
      * @return An object which supports GPath expressions
      * @throws SAXException Any SAX exception, possibly wrapping another exception.
-     * @throws IOException  An IO exception from the parser, possibly from a byte stream
-     *                      or character stream supplied by the application.
+     * @throws IOException An IO exception from the parser, possibly from a byte stream
+     *         or character stream supplied by the application.
      */
     public GPathResult parse(final InputStream input) throws IOException, SAXException {
         return parse(new InputSource(input));
@@ -210,8 +227,8 @@ public class XmlSlurper extends DefaultHandler {
      * @param in the Reader to parse
      * @return An object which supports GPath expressions
      * @throws SAXException Any SAX exception, possibly wrapping another exception.
-     * @throws IOException  An IO exception from the parser, possibly from a byte stream
-     *                      or character stream supplied by the application.
+     * @throws IOException An IO exception from the parser, possibly from a byte stream
+     *         or character stream supplied by the application.
      */
     public GPathResult parse(final Reader in) throws IOException, SAXException {
         return parse(new InputSource(in));
@@ -223,8 +240,8 @@ public class XmlSlurper extends DefaultHandler {
      * @param uri a String containing the URI to parse
      * @return An object which supports GPath expressions
      * @throws SAXException Any SAX exception, possibly wrapping another exception.
-     * @throws IOException  An IO exception from the parser, possibly from a byte stream
-     *                      or character stream supplied by the application.
+     * @throws IOException An IO exception from the parser, possibly from a byte stream
+     *         or character stream supplied by the application.
      */
     public GPathResult parse(final String uri) throws IOException, SAXException {
         return parse(new InputSource(uri));
@@ -236,8 +253,8 @@ public class XmlSlurper extends DefaultHandler {
      * @param text a String containing XML to parse
      * @return An object which supports GPath expressions
      * @throws SAXException Any SAX exception, possibly wrapping another exception.
-     * @throws IOException  An IO exception from the parser, possibly from a byte stream
-     *                      or character stream supplied by the application.
+     * @throws IOException An IO exception from the parser, possibly from a byte stream
+     *         or character stream supplied by the application.
      */
     public GPathResult parseText(final String text) throws IOException, SAXException {
         return parse(new StringReader(text));

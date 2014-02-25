@@ -26,7 +26,8 @@ import org.codehaus.groovy.tools.shell.ComplexCommandSupport
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class ComplexCommandSupportTest
-        extends CommandTestSupport {
+    extends CommandTestSupport
+{
     void testNew() {
         ComplexCommandSupport com = new ComplexCommandSupport(shell, "fcom", "f", null) {}
         assertEquals("fcom", com.name)
@@ -99,7 +100,7 @@ class ComplexCommandSupportTest
     void testExecute() {
         ComplexCommandSupport com = new ComplexCommandSupport(shell, "fcom", "f", ["foo"]) {
             def invoked = []
-            def do_foo = { arg1 -> invoked.addAll(arg1) }
+            def do_foo = {arg1 -> invoked.addAll(arg1)}
         }
         try {
             com.execute([])
@@ -124,7 +125,7 @@ class ComplexCommandSupportTest
     void testExecuteDefault() {
         ComplexCommandSupport com = new ComplexCommandSupport(shell, "fcom", "f", ["foo"], "foo") {
             def invoked = []
-            def do_foo = { arg1 -> invoked.addAll(arg1) }
+            def do_foo = {arg1 -> invoked.addAll(arg1)}
         }
         // assert no fail
         com.execute([])
@@ -133,11 +134,11 @@ class ComplexCommandSupportTest
     void testExecuteFunction() {
         ComplexCommandSupport com = new ComplexCommandSupport(shell, "fcom", "f", ["foo"]) {
             def invoked = []
-            def do_foo = { arg1 -> invoked.addAll(arg1) }
+            def do_foo = {arg1 -> invoked.addAll(arg1)}
         }
         try {
             com.executeFunction("bar", ["baz"])
-        } catch (CommandException e) {
+        }  catch (CommandException e) {
             // pass
         }
         assertEquals([], com.invoked)
@@ -148,7 +149,7 @@ class ComplexCommandSupportTest
     }
 
     void testLoadFunction() {
-        Closure fun = { x -> x + 1 }
+        Closure fun = { x -> x+1}
         ComplexCommandSupport com = new ComplexCommandSupport(shell, "fcom", "f", ["foo"], "foo") {
             def invoked = []
             def do_foo = fun
@@ -157,7 +158,7 @@ class ComplexCommandSupportTest
         try {
             com.loadFunction("bar")
             fail()
-        } catch (CommandException e) {
+        } catch(CommandException e) {
             // pass
         }
     }

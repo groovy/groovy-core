@@ -25,8 +25,9 @@ import java.lang.reflect.Method;
 
 /**
  * Integration code for running TestNG tests in Groovy.
- *
+ * 
  * @author Paul King
+ *
  */
 public class TestNgRunner implements GroovyRunner {
 
@@ -35,7 +36,7 @@ public class TestNgRunner implements GroovyRunner {
      * test, i.e.&nsbp;checks whether it appears to be using the relevant TestNG annotations.
      *
      * @param scriptClass the class we want to check
-     * @param loader      the GroovyClassLoader to use to find classes
+     * @param loader the GroovyClassLoader to use to find classes
      * @return true if the class appears to be a test
      */
     @SuppressWarnings("unchecked")
@@ -76,7 +77,7 @@ public class TestNgRunner implements GroovyRunner {
      * Utility method to run a TestNG test.
      *
      * @param scriptClass the class we want to run as a test
-     * @param loader      the class loader to use
+     * @param loader the class loader to use
      * @return the result of running the test
      */
     public Object run(Class scriptClass, GroovyClassLoader loader) {

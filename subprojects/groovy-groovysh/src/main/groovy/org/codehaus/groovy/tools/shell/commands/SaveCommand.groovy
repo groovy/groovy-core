@@ -27,21 +27,22 @@ import org.codehaus.groovy.tools.shell.Groovysh
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class SaveCommand
-        extends CommandSupport {
+    extends CommandSupport
+{
     SaveCommand(final Groovysh shell) {
         super(shell, ':save', ':s')
     }
 
     protected List createCompleters() {
         return [
-                new FileNameCompleter(),
-                null
+            new FileNameCompleter(),
+            null
         ]
     }
 
     Object execute(final List<String> args) {
         assert args != null
-
+        
         if (args.size() != 1) {
             fail("Command 'save' requires a single file argument") // TODO: i18n
         }
@@ -54,7 +55,7 @@ class SaveCommand
         //
         // TODO: Support special '-' file to simply dump text to io.out
         //
-
+        
         def file = new File("${args[0]}")
 
         if (io.verbose) {
@@ -64,10 +65,10 @@ class SaveCommand
         def dir = file.parentFile
         if (dir && !dir.exists()) {
             log.debug("Creating parent directory path: $dir")
-
+            
             dir.mkdirs()
         }
-
+        
         file.write(buffer.join(NEWLINE))
     }
 }

@@ -15,10 +15,10 @@
  */
 package groovy.util
 
-import groovy.xml.NamespaceBuilder
 import org.apache.tools.ant.BuildEvent
 import org.apache.tools.ant.Project
 import org.apache.tools.ant.ProjectHelper
+import groovy.xml.NamespaceBuilder
 import org.apache.tools.ant.UnknownElement
 import org.junit.Assert
 
@@ -98,7 +98,7 @@ class AntTest extends GroovyTestCase {
         project.executeTarget(project.defaultTarget)
 
         def expectedSpoof =
-                '''SpoofTaskContainer ctor
+            '''SpoofTaskContainer ctor
 in addTask
 configuring UnknownElement
 SpoofTask ctor
@@ -132,7 +132,7 @@ end SpoofTaskContainer execute
         SpoofTaskContainer.resetSpoof()
 
         // and now run it with the AntBuilder
-        antNS.path(id: PATH) { antNS.pathelement(location: 'classes') }
+        antNS.path(id: PATH) {antNS.pathelement(location: 'classes')}
         ['spoofcontainer': SpoofTaskContainer, 'spoof': SpoofTask].each { pair ->
             antNS.taskdef(name: pair.key, classname: pair.value.name, classpathref: PATH,
                     uri: 'testNS')
@@ -200,7 +200,7 @@ end SpoofTaskContainer execute
         project.executeTarget('testAntBuilderWithinGroovyTask')
 
         def expectedSpoof =
-                '''started: taskdef[name:groovy, classname:org.codehaus.groovy.ant.Groovy]
+            '''started: taskdef[name:groovy, classname:org.codehaus.groovy.ant.Groovy]
 finished: taskdef[name:groovy, classname:org.codehaus.groovy.ant.Groovy]
 started: echo[message:before groovy task]
 finished: echo[message:before groovy task]

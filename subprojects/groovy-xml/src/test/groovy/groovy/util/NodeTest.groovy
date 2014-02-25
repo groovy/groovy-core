@@ -151,7 +151,7 @@ public class NodeTest extends GroovyTestCase {
         assert foo.children().size() == 4
         assert foo.children().collect { it.@id.toInteger() } == [1, 2, 3, 4]
 
-        def bar2 = foo.bar.find { it.@id == '2' }
+        def bar2 = foo.bar.find {it.@id == '2'}
         bar2.parent().remove(bar2)
         assert !bar2.parent()
         assert foo.bar.size() == 3
@@ -179,15 +179,15 @@ public class NodeTest extends GroovyTestCase {
 
         assert foo.bar.size() == 2
         assert foo.children().size() == 3
-        assert foo.children().collect { it.@id?.toInteger() }.grep { it } == [1, 2]
+        assert foo.children().collect { it.@id?.toInteger() }.grep {it} == [1, 2]
 
-        def bar2 = foo.bar.find { it.@id == '2' }
+        def bar2 = foo.bar.find {it.@id == '2'}
         bar2.parent().remove(bar2)
         def baz = foo.baz[0]
         assert !bar2.parent()
         baz.append(bar2)
         assert bar2.parent() == baz
-        assert foo.children().collect { it.@id?.toInteger() }.grep { it } == [1]
+        assert foo.children().collect { it.@id?.toInteger() }.grep {it} == [1]
         assert foo.baz.bar[0] == bar2
     }
 
@@ -202,14 +202,14 @@ public class NodeTest extends GroovyTestCase {
     void testUnsupportedReplaceForRootNode() {
         Node root = new Node(null, 'root')
         shouldFail(UnsupportedOperationException) {
-            root.replaceNode {}
+            root.replaceNode{}
         }
     }
 
     void testUnsupportedPlusOnRootNode() {
         Node root = new Node(null, 'root')
         shouldFail(UnsupportedOperationException) {
-            root.plus {}
+            root.plus{}
         }
     }
 

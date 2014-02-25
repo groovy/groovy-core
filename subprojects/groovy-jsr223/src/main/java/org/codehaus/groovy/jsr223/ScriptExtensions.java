@@ -36,12 +36,12 @@ public class ScriptExtensions {
      * <code>Bindings</code> of the <code>ScriptEngine</code>. Resulting variables in the <code>Bindings</code>
      * are returned back to the Groovy <code>Binding</code>.
      *
-     * @param self    A ScriptEngine
-     * @param script  The script language source to be executed
+     * @param self A ScriptEngine
+     * @param script The script language source to be executed
      * @param binding A Groovy binding
      * @return The value returned from the execution of the script (if supported by the Script engine)
      * @throws javax.script.ScriptException if error occurs in script
-     * @throws NullPointerException         if the argument is null
+     * @throws NullPointerException if the argument is null
      * @see #eval(javax.script.ScriptEngine, java.io.Reader, groovy.lang.Binding)
      * @since 1.7.3
      */
@@ -56,12 +56,12 @@ public class ScriptExtensions {
      * Same as <code>eval(ScriptEngine, Reader, Binding)</code> except that the
      * source of the script is provided as a <code>Reader</code>
      *
-     * @param self    A ScriptEngine
-     * @param reader  The source of the script
+     * @param self A ScriptEngine
+     * @param reader The source of the script
      * @param binding A Groovy binding
      * @return The value returned by the script
      * @throws javax.script.ScriptException if an error occurs in script
-     * @throws NullPointerException         if the argument is null
+     * @throws NullPointerException if the argument is null
      * @see #eval(javax.script.ScriptEngine, java.lang.String, groovy.lang.Binding)
      * @since 1.7.3
      */

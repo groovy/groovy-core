@@ -24,7 +24,8 @@ import java.security.Permission;
  * @version $Rev$ $Date$
  */
 public class NoExitSecurityManager
-        extends SecurityManager {
+    extends SecurityManager
+{
     private final SecurityManager parent;
 
     public NoExitSecurityManager(final SecurityManager parent) {

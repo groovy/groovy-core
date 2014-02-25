@@ -21,6 +21,7 @@ import jline.console.completer.ArgumentCompleter
 import jline.console.completer.Completer
 import jline.console.completer.StringsCompleter
 import org.codehaus.groovy.control.CompilationFailedException
+
 import org.codehaus.groovy.tools.shell.CommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.Interpreter
@@ -35,7 +36,8 @@ import org.codehaus.groovy.tools.shell.util.PackageHelper
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class ImportCommand
-        extends CommandSupport {
+    extends CommandSupport
+{
     ImportCommand(final Groovysh shell) {
         super(shell, 'import', ':i')
     }
@@ -71,7 +73,7 @@ class ImportCommand
         }
 
         def importSpec = args.join(' ')
-        if (!(importSpec ==~ '[a-zA-Z_. *]+;?$')) {
+        if (! (importSpec ==~ '[a-zA-Z_. *]+;?$')) {
             def msg = "Invalid import definition: '${importSpec}'" // TODO: i18n
             log.debug(msg)
             fail(msg)
@@ -79,22 +81,22 @@ class ImportCommand
         // remove last semicolon
         importSpec = importSpec.replaceAll(';', '')
 
-        def buff = ['import ' + args.join(' ')]
+        def buff = [ 'import ' + args.join(' ') ]
         buff << 'def dummp = false'
-
+        
         def type
         try {
             type = classLoader.parseClass(buff.join(NEWLINE))
-
+            
             // No need to keep duplicates, but order may be important so remove the previous def, since
             // the last defined import will win anyways
-
+            
             if (imports.remove(importSpec)) {
                 log.debug("Removed duplicate import from list")
             }
-
+            
             log.debug("Adding import: $importSpec")
-
+            
             imports.add(importSpec)
             return imports.join(', ')
         }
@@ -125,11 +127,9 @@ class ImportCompleter implements Completer {
     // matches empty, packagenames or fully qualified classNames
     public final static String PACK_OR_CLASSNAME_PATTERN = /^([a-z_]{1}[a-z0-9_]*(\.[a-z0-9_]*)*(\.[A-Z][^.]*)?)?$/
     // matches empty, packagenames or fully qualified classNames without special symbols
-    public final
-    static String PACK_OR_SIMPLE_CLASSNAME_PATTERN = '^([a-z_]{1}[a-z0-9_]*(\\.[a-z0-9_]*)*(\\.[A-Z][^.\$_]*)?)?\$'
+    public final static String PACK_OR_SIMPLE_CLASSNAME_PATTERN = '^([a-z_]{1}[a-z0-9_]*(\\.[a-z0-9_]*)*(\\.[A-Z][^.\$_]*)?)?\$'
     // matches empty, packagenames or fully qualified classNames or fully qualified method names
-    public final
-    static String PACK_OR_CLASS_OR_METHODNAME_PATTERN = '^([a-z_]{1}[a-z0-9.]*(\\.[a-z0-9_]*)*(\\.[A-Z][^.\$_]*(\\.[a-zA-Z0-9_]*)?)?)?\$'
+    public final static String PACK_OR_CLASS_OR_METHODNAME_PATTERN = '^([a-z_]{1}[a-z0-9.]*(\\.[a-z0-9_]*)*(\\.[A-Z][^.\$_]*(\\.[a-zA-Z0-9_]*)?)?)?\$'
 
 
     boolean staticImport
@@ -147,11 +147,11 @@ class ImportCompleter implements Completer {
     int complete(String buffer, int cursor, List result) {
         String currentImportExpression = buffer ? buffer.substring(0, cursor) : ""
         if (staticImport) {
-            if (!(currentImportExpression ==~ PACK_OR_CLASS_OR_METHODNAME_PATTERN)) {
+            if (! (currentImportExpression ==~ PACK_OR_CLASS_OR_METHODNAME_PATTERN)) {
                 return -1
             }
         } else {
-            if (!(currentImportExpression ==~ PACK_OR_SIMPLE_CLASSNAME_PATTERN)) {
+            if (! (currentImportExpression ==~ PACK_OR_SIMPLE_CLASSNAME_PATTERN)) {
                 return -1
             }
         }
@@ -165,12 +165,12 @@ class ImportCompleter implements Completer {
                 Set<String> classnames = packageHelper.getContents(currentImportExpression[0..-2])
                 if (classnames) {
                     if (staticImport) {
-                        result.addAll(classnames.collect { String it -> it + "." })
+                        result.addAll(classnames.collect { String it -> it + "."})
                     } else {
                         result.addAll(classnames.collect { String it -> filterMatches(it) })
                     }
                 }
-                if (!staticImport) {
+                if (! staticImport) {
                     result.add('* ')
                 }
                 return currentImportExpression.length()
@@ -200,7 +200,7 @@ class ImportCompleter implements Completer {
             Set<String> candidates = packageHelper.getContents(baseString)
             if (candidates == null || candidates.size() == 0) {
                 // At least give standard package completion, else static keyword is highly annoying
-                Collection<String> standards = org.codehaus.groovy.control.ResolveVisitor.DEFAULT_IMPORTS.findAll { String it -> it.startsWith(currentImportExpression) }
+                Collection<String> standards = org.codehaus.groovy.control.ResolveVisitor.DEFAULT_IMPORTS.findAll {String it -> it.startsWith(currentImportExpression)}
                 if (standards) {
                     result.addAll(standards)
                     return 0
@@ -228,8 +228,8 @@ class ImportCompleter implements Completer {
     }
 
     def filterMatches(String it) {
-        if (it[0] in 'A'..'Z') {
-            return it + ' '
+        if (it[0] in 'A' .. 'Z') {
+           return it + ' '
         }
         return it + '.'
     }

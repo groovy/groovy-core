@@ -15,8 +15,9 @@
  */
 package groovy.xml
 
-import org.custommonkey.xmlunit.Diff
 import org.custommonkey.xmlunit.XMLUnit
+import org.custommonkey.xmlunit.Diff
+import groovy.xml.XmlUtil
 
 /**
  * @author Paul King
@@ -116,8 +117,8 @@ class GpathSyntaxTestSupport {
         // let's find what Wallace likes in 1 query
         def answer = root.character.find { it['@id'] == '1' }.likes[0].text()
         assert answer == "cheese"
-        assert root.character.findAll { it.'@id'.toInteger() < 3 }*.likes*.text() == ['cheese', 'sleep']
-        assert root.character.findAll { it.'@id'.toInteger() < 3 }.likes*.text() == ['cheese', 'sleep']
+        assert root.character.findAll{ it.'@id'.toInteger() < 3 }*.likes*.text() == ['cheese', 'sleep']
+        assert root.character.findAll{ it.'@id'.toInteger() < 3 }.likes*.text() == ['cheese', 'sleep']
     }
 
     static void checkNestedSizeExpressions(Closure getRoot) {
@@ -127,17 +128,17 @@ class GpathSyntaxTestSupport {
         assert root.'*'.'*'.size() == 5
         assert root.a.'*'.size() == 3
         assert root.'*'.z.size() == 3
-        assert root.'*'.'*'.collect { it.name() } == ["z", "z", "y", "z", "x"]
-        assert root.a.'*'.collect { it.name() } == ["z", "z", "y"]
-        assert root.'*'.findAll { it.z.size() > 0 }.collect { it.name() } == ["a", "b"]
+        assert root.'*'.'*'.collect{it.name()} == ["z", "z", "y", "z", "x"]
+        assert root.a.'*'.collect{it.name()} == ["z", "z", "y"]
+        assert root.'*'.findAll{ it.z.size() > 0 }.collect{it.name()} == ["a", "b"]
     }
 
     static void checkElementTypes(Closure getRoot) {
         def root = getRoot(sampleXml)
         def numericValue = root.numericValue[0]
         def booleanValue = root.booleanValue[0]
-        def uriValue = root.uriValue[0]
-        def urlValue = root.urlValue[0]
+        def uriValue     = root.uriValue[0]
+        def urlValue     = root.urlValue[0]
         assert numericValue.text().toInteger() == 1
         assert numericValue.text().toLong() == 1
         assert numericValue.text().toFloat() == 1
@@ -163,7 +164,7 @@ class GpathSyntaxTestSupport {
 
     static void checkElementClosureInteraction(Closure getRoot) {
         def root = getRoot(sampleXml)
-        def sLikes = root.character.likes.findAll { it.text().startsWith('s') }
+        def sLikes = root.character.likes.findAll{ it.text().startsWith('s') }
         assert sLikes.size() == 1
         assert root.likes.size() == 0
         if (isDom(root)) {
@@ -171,23 +172,23 @@ class GpathSyntaxTestSupport {
             assert root.getElementsByTagName('likes').size() == 2
         }
         assert 'sleep' == sLikes[0].text()
-        assert 'cheesesleep' == root.character.likes.collect { it.text() }.join()
-        assert root.character.likes.every { it.text().contains('ee') }
+        assert 'cheesesleep' == root.character.likes.collect{ it.text() }.join()
+        assert root.character.likes.every{ it.text().contains('ee') }
         def groupLikesByFirstLetter
-        def likes = root.character.likes.collect { it }
+        def likes = root.character.likes.collect{ it }
         if (isSlurper(root)) {
             //groupLikesByFirstLetter = likes.groupBy{ like ->
             //    root.character.find{ it.likes[0].text() == like.text() }.@name.toString()[0]
             //}
             // TODO: Broken? Why doesn't below work? FIX with GROOVY-6125
-            groupLikesByFirstLetter = likes.groupBy { it.parent().@name.toString()[0] }
+            groupLikesByFirstLetter = likes.groupBy{ it.parent().@name.toString()[0] }
         } else {
-            groupLikesByFirstLetter = likes.groupBy { it.parent().'@name'[0] }
+            groupLikesByFirstLetter = likes.groupBy{ it.parent().'@name'[0] }
         }
-        groupLikesByFirstLetter.keySet().each {
+        groupLikesByFirstLetter.keySet().each{
             groupLikesByFirstLetter[it] = groupLikesByFirstLetter[it][0].text()
         }
-        assert groupLikesByFirstLetter == [W: 'cheese', G: 'sleep']
+        assert groupLikesByFirstLetter == [W:'cheese', G:'sleep']
     }
 
     static void checkElementTruth(Closure getRoot) {
@@ -208,19 +209,19 @@ class GpathSyntaxTestSupport {
             assert 'Wallace' == root.character[0].'@name'
             assert 'Wallace' == root.character[0]['@name']
             assert 'Wallace' == (root.character.'@name')[0]
-            assert ['Wallace', 'Gromit'] == root.character.collect { it.'@name' }
+            assert ['Wallace', 'Gromit'] == root.character.collect{ it.'@name' }
             assert 'WallaceGromit' == root.character.'@name'.join()
         }
         if (isSlurper(root)) {
             // additional slurper shorthand
             assert 'Wallace' == root.character[0].@name.text()
-            def gromit = root.character.find { it.@id == '2' }
+            def gromit = root.character.find{ it.@id == '2' }
             assert gromit.@name.name() == "name"
         }
         if (isParser(root)) {
             // additional parser shorthand
             assert 'Wallace' == root.character[0].@name
-            def gromit = root.character.find { it.@id == '2' }
+            def gromit = root.character.find {it.@id == '2'}
             def actualName = gromit.@name
             assert actualName == 'Gromit'
         }
@@ -242,10 +243,10 @@ class GpathSyntaxTestSupport {
     static void checkAttributes(Closure getRoot) {
         def root = getRoot(sampleXml)
         def attributes = root.character[0].attributes()
-        assert 2 == attributes.size()
+        assert         2 == attributes.size()
         assert 'Wallace' == attributes['name']
         assert 'Wallace' == attributes.name
-        assert '1' == attributes.'id'
+        assert       '1' == attributes.'id'
     }
 
     static void checkAttributeTruth(Closure getRoot) {
@@ -281,12 +282,12 @@ class GpathSyntaxTestSupport {
         assert gromit.likes[0].parent() == gromit
         assert gromit.likes[0].'..' == gromit
         assert gromit.likes[0].parent().parent() == root
-        assert root.character.likes.find { it.text() == 'sleep' }.parent() == gromit
+        assert root.character.likes.find{ it.text() == 'sleep' }.parent() == gromit
         assert gromit.parent() == root
         if (isSlurper(root)) {
             // additional slurper shorthand
             assert gromit.likes.parent() == gromit
-            assert gromit.likes.findAll { it.text() == 'sleep' } == gromit
+            assert gromit.likes.findAll{ it.text() == 'sleep' } == gromit
             // pop() method to backtrack on GPath
             assert gromit.'..'.pop() == gromit
         }

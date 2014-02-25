@@ -17,9 +17,8 @@
 package org.codehaus.groovy.tools.shell
 
 import org.codehaus.groovy.runtime.InvokerHelper
-import org.codehaus.groovy.runtime.MethodClosure
 import org.codehaus.groovy.tools.shell.util.Logger
-
+import org.codehaus.groovy.runtime.MethodClosure
 import java.lang.reflect.Method
 
 /**
@@ -28,9 +27,10 @@ import java.lang.reflect.Method
  * @version $Id$
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
-class Interpreter {
+class Interpreter
+{
     static final String SCRIPT_FILENAME = 'groovysh_evaluate'
-
+    
     private final Logger log = Logger.create(this.class)
 
     private final GroovyShell shell
@@ -64,7 +64,7 @@ class Interpreter {
 
             log.debug("Compiled script: $script")
 
-            if (type.declaredMethods.any { Method it -> it.name == 'main' }) {
+            if (type.declaredMethods.any {Method it -> it.name == 'main' }) {
                 result = script.run()
             }
 
@@ -73,7 +73,7 @@ class Interpreter {
 
             // Keep only the methods that have been defined in the script
             type.declaredMethods.each { Method m ->
-                if (!(m.name in ['main', 'run'] || m.name.startsWith('super$') || m.name.startsWith('class$') || m.name.startsWith('$'))) {
+                if (!(m.name in [ 'main', 'run' ] || m.name.startsWith('super$') || m.name.startsWith('class$') || m.name.startsWith('$'))) {
                     log.debug("Saving method definition: $m")
 
                     context["${m.name}"] = new MethodClosure(type.newInstance(), m.name)

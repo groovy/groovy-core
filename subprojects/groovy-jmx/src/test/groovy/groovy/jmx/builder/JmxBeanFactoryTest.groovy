@@ -68,7 +68,7 @@ class JmxBeanFactoryTest extends GroovyTestCase {
     void testAttributeMethodListeners() {
         def object = new MockManagedGroovyObject()
         def map = builder.bean(target: object, name: "jmx.builder:type=ExplicitObject",
-                attributes: ["Id": [onChange: { -> Hello }]]
+                attributes: ["Id": [onChange: {-> Hello}]]
         )
 
         assert map

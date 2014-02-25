@@ -15,7 +15,8 @@
  */
 package groovy.swing.binding
 
-import javax.swing.*
+import javax.swing.ComboBoxModel
+import javax.swing.JComboBox
 
 /**
  * @author <a href="mailto:shemnon@yahoo.com">Danno Ferrin</a>
@@ -25,23 +26,23 @@ class JComboBoxMetaMethods {
     public static void enhanceMetaClass(JComboBox comboBox) {
         AbstractSyntheticMetaMethods.enhance(comboBox, [
 
-                getElements       : { ->
-                    ComboBoxModel model = delegate.model;
-                    def results = []
-                    int size = model.size
-                    for (int i = 0; i < size; i++) {
-                        results += model.getElementAt(i)
-                    }
-                    return results
-                },
+            getElements:{->
+                ComboBoxModel model = delegate.model;
+                def results = []
+                int size = model.size
+                for (int i = 0; i < size; i++) {
+                    results += model.getElementAt(i)
+                }
+                return results
+            },
 
-                getSelectedElement: { ->
-                    return delegate.selectedItem
-                },
+            getSelectedElement:{->
+                return delegate.selectedItem
+            },
 
-                setSelectedElement: { def item ->
-                    return delegate.selectedItem = item
-                },
+            setSelectedElement:{def item->
+                return delegate.selectedItem = item
+            },
         ]);
     }
 }

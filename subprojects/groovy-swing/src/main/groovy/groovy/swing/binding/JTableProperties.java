@@ -43,22 +43,19 @@ public class JTableProperties {
                     public FullBinding createBinding(SourceBinding source, TargetBinding target) {
                         return new JTableElementsBinding((PropertyBinding) source, target);
                     }
-                }
-        );
+                });
         result.put(JTable.class.getName() + "#selectedElement",
                 new TriggerBinding() {
                     public FullBinding createBinding(SourceBinding source, TargetBinding target) {
                         return new JTableSelectedElementBinding((PropertyBinding) source, target, "selectedElement");
                     }
-                }
-        );
+                });
         result.put(JTable.class.getName() + "#selectedElements",
                 new TriggerBinding() {
                     public FullBinding createBinding(SourceBinding source, TargetBinding target) {
                         return new JTableSelectedElementBinding((PropertyBinding) source, target, "selectedElements");
                     }
-                }
-        );
+                });
         return result;
     }
 }
@@ -71,7 +68,7 @@ class JTableElementsBinding extends AbstractSyntheticBinding implements TableMod
     }
 
     protected void syntheticBind() {
-        boundTable = (JTable) ((PropertyBinding) sourceBinding).getBean();
+        boundTable = (JTable) ((PropertyBinding)sourceBinding).getBean();
         boundTable.addPropertyChangeListener("model", this);
         boundTable.getModel().addTableModelListener(this);
     }
@@ -100,7 +97,7 @@ class JTableSelectedElementBinding extends AbstractSyntheticBinding implements P
     }
 
     public synchronized void syntheticBind() {
-        boundTable = (JTable) ((PropertyBinding) sourceBinding).getBean();
+        boundTable = (JTable) ((PropertyBinding)sourceBinding).getBean();
         boundTable.addPropertyChangeListener("selectionModel", this);
         boundTable.getSelectionModel().addListSelectionListener(this);
     }

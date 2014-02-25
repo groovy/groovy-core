@@ -15,15 +15,15 @@
  */
 package org.codehaus.groovy.ant;
 
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.Task;
-import org.apache.tools.ant.types.FileSet;
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-/**
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.Task;
+import org.apache.tools.ant.types.FileSet;
+
+/** 
  * <p><code>FileScanner</code> is a bean which allows the iteration
  * over a number of files from a collection of FileSet instances.
  *
@@ -33,18 +33,16 @@ import java.util.List;
  */
 public class FileScanner extends Task {
 
-    /**
-     * FileSets
-     */
+    /** FileSets */
     private List filesets = new ArrayList();
 
     public FileScanner() {
     }
-
+    
     public FileScanner(final Project project) {
         setProject(project);
     }
-
+    
     public Iterator iterator() {
         return new FileIterator(getProject(), filesets.iterator());
     }

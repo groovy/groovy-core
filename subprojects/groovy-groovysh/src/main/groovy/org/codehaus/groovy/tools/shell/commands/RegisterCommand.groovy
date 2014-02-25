@@ -16,9 +16,9 @@
 
 package org.codehaus.groovy.tools.shell.commands
 
-import org.codehaus.groovy.tools.shell.Command
 import org.codehaus.groovy.tools.shell.CommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
+import org.codehaus.groovy.tools.shell.Command
 
 /**
  * The 'register' command.
@@ -29,7 +29,8 @@ import org.codehaus.groovy.tools.shell.Groovysh
  * @author <a href="mailto:chris@wensel.net">Chris K Wensel</a>
  */
 class RegisterCommand
-        extends CommandSupport {
+    extends CommandSupport
+{
     RegisterCommand(final Groovysh shell) {
         super(shell, ":register", ":rc")
     }
@@ -49,9 +50,11 @@ class RegisterCommand
 
         if (args.size() == 1) {                   // use default name
             command = type.newInstance(shell) as Command
-        } else if (args.size() == 2) {              // pass name to completor
+        }
+        else if (args.size() == 2) {              // pass name to completor
             command = type.newInstance(shell, args.get(1), null) as Command
-        } else if (args.size() == 3) {              // pass name, alias to completor
+        }
+        else if (args.size() == 3) {              // pass name, alias to completor
             command = type.newInstance(shell, args.get(1), args.get(2)) as Command
         }
 

@@ -16,7 +16,6 @@
 package groovy.text;
 
 import groovy.lang.*;
-import org.codehaus.groovy.control.CompilationFailedException;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -25,17 +24,19 @@ import java.security.PrivilegedAction;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.codehaus.groovy.control.CompilationFailedException;
+
 /**
  * Processes template source files substituting variables and expressions into
  * placeholders in a template source text to produce the desired output using
  * a streaming approach. This engine has equivalent functionality to the
  * {@link SimpleTemplateEngine} but creates the template using writable
  * closures making it potentially more scalable for large templates or in streaming scenarios.
- * <p/>
+ * <p>
  * The template engine uses JSP style &lt;% %&gt; script and &lt;%= %&gt; expression syntax
  * or GString style expressions. The variable '<code>out</code>' is bound to the writer that the template
  * is being written to.
- * <p/>
+ * <p>
  * Frequently, the template source will be in a file but here is a simple
  * example providing the template as a string:
  * <pre>
@@ -113,13 +114,13 @@ public class GStringTemplateEngine extends TemplateEngine {
          * When executed the closure evaluates all the code embedded in the
          * template and then writes a GString containing the fixed and variable items
          * to the writer passed as a parameter
-         * <p/>
+         * <p>
          * For example:
-         * <p/>
+         * <p>
          * '<%= "test" %> of expr and <% test = 1 %>${test} script.'
-         * <p/>
+         * <p>
          * would compile into:
-         * <p/>
+         * <p>
          * { out -> out << "${"test"} of expr and "; test = 1 ; out << "${test} script."}.asWritable()
          *
          * @param reader
@@ -177,7 +178,7 @@ public class GStringTemplateEngine extends TemplateEngine {
 
             templateExpressions.append("}}");
 
-            final GroovyClassLoader loader = parentLoader instanceof GroovyClassLoader ? (GroovyClassLoader) parentLoader : (
+            final GroovyClassLoader loader = parentLoader instanceof GroovyClassLoader?(GroovyClassLoader)parentLoader:(
                     (GroovyClassLoader) AccessController.doPrivileged(new PrivilegedAction() {
                         public Object run() {
                             return new GroovyClassLoader(parentLoader);

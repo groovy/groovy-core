@@ -16,23 +16,23 @@
 
 package groovy.xml
 
-import groovy.xml.streamingmarkupsupport.AbstractStreamingBuilder
-import groovy.xml.streamingmarkupsupport.BaseMarkupBuilder
+import javax.xml.parsers.DocumentBuilderFactory
 import org.w3c.dom.Node
 
-import javax.xml.parsers.DocumentBuilderFactory
+import groovy.xml.streamingmarkupsupport.AbstractStreamingBuilder
+import groovy.xml.streamingmarkupsupport.BaseMarkupBuilder
 
 class StreamingDOMBuilder extends AbstractStreamingBuilder {
     def pendingStack = []
     def defaultNamespaceStack = [""]
-    def commentClosure = { doc, pendingNamespaces, namespaces, namespaceSpecificTags, prefix, attrs, body, dom ->
+    def commentClosure = {doc, pendingNamespaces, namespaces, namespaceSpecificTags, prefix, attrs, body, dom ->
         def comment = dom.document.createComment(body)
         if (comment != null) {
             dom.element.appendChild(comment)
         }
     }
-    def piClosure = { doc, pendingNamespaces, namespaces, namespaceSpecificTags, prefix, attrs, body, dom ->
-        attrs.each { target, instruction ->
+    def piClosure = {doc, pendingNamespaces, namespaces, namespaceSpecificTags, prefix, attrs, body, dom ->
+        attrs.each {target, instruction ->
             def pi = null
             if (instruction instanceof Map) {
                 def buf = new StringBuffer()
@@ -40,7 +40,7 @@ class StreamingDOMBuilder extends AbstractStreamingBuilder {
                     if (value.toString().contains('"')) {
                         buf.append(" $name='$value'")
                     } else {
-                        buf.append(" $name=\"$value\"")
+                        buf.append(" $name=\"$value\"" )
                     }
                 }
                 pi = dom.document.createProcessingInstruction(target, buf.toString())
@@ -52,7 +52,7 @@ class StreamingDOMBuilder extends AbstractStreamingBuilder {
             }
         }
     }
-    def noopClosure = { doc, pendingNamespaces, namespaces, namespaceSpecificTags, prefix, attrs, body, dom ->
+    def noopClosure = {doc, pendingNamespaces, namespaces, namespaceSpecificTags, prefix, attrs, body, dom ->
         if (body instanceof Closure) {
             def body1 = body.clone()
             body1.delegate = doc
@@ -73,12 +73,12 @@ class StreamingDOMBuilder extends AbstractStreamingBuilder {
             }
         }
     }
-    def tagClosure = { tag, doc, pendingNamespaces, namespaces, namespaceSpecificTags, prefix, attrs, body, dom ->
+    def tagClosure = {tag, doc, pendingNamespaces, namespaces, namespaceSpecificTags, prefix, attrs, body, dom ->
         def attributes = []
         def nsAttributes = []
         def defaultNamespace = defaultNamespaceStack.last()
 
-        attrs.each { key, value ->
+        attrs.each {key, value ->
             if (key.contains('$')) {
                 def parts = key.tokenize('$')
                 def namespaceUri = null
@@ -98,7 +98,7 @@ class StreamingDOMBuilder extends AbstractStreamingBuilder {
 
         def hiddenNamespaces = [:]
 
-        pendingNamespaces.each { key, value ->
+        pendingNamespaces.each {key, value ->
             if (key == ':') {
                 defaultNamespace = "$value"
                 nsAttributes.add(["http://www.w3.org/2000/xmlns/", "xmlns", defaultNamespace])
@@ -174,24 +174,21 @@ class StreamingDOMBuilder extends AbstractStreamingBuilder {
         dom.element = dom.element.getParentNode()
 
         hiddenNamespaces.each { key, value ->
-            if (value == null) {
-                namespaces.remove key
-            } else {
-                namespaces[key] = value
-            }
+            if (value == null) namespaces.remove key
+            else namespaces[key] = value
         }
     }
 
     def builder = null
 
     StreamingDOMBuilder() {
-        specialTags.putAll(['yield'         : noopClosure,
-                            'yieldUnescaped': noopClosure,
-                            'comment'       : commentClosure,
-                            'pi'            : piClosure])
-        def nsSpecificTags = [':'                                             : [tagClosure, tagClosure, [:]],    // the default namespace
-                              'http://www.w3.org/2000/xmlns/'                 : [tagClosure, tagClosure, [:]],
-                              'http://www.codehaus.org/Groovy/markup/keywords': [badTagClosure, tagClosure, specialTags]]
+        specialTags.putAll(['yield':noopClosure,
+                            'yieldUnescaped':noopClosure,
+                            'comment':commentClosure,
+                            'pi':piClosure])
+        def nsSpecificTags = [':'                                          : [tagClosure, tagClosure, [:]],    // the default namespace
+                          'http://www.w3.org/2000/xmlns/'                  : [tagClosure, tagClosure, [:]],
+                          'http://www.codehaus.org/Groovy/markup/keywords' : [badTagClosure, tagClosure, specialTags]]
         this.builder = new BaseMarkupBuilder(nsSpecificTags)
     }
 
@@ -200,13 +197,13 @@ class StreamingDOMBuilder extends AbstractStreamingBuilder {
         return {
             if (it instanceof Node) {
                 def document = it.getOwnerDocument()
-                boundClosure.trigger = ['document': document, 'element': it]
+                boundClosure.trigger = ['document' : document, 'element' : it]
                 return document
             }
             def dBuilder = DocumentBuilderFactory.newInstance()
             dBuilder.namespaceAware = true
             def newDocument = dBuilder.newDocumentBuilder().newDocument()
-            boundClosure.trigger = ['document': newDocument, 'element': newDocument]
+            boundClosure.trigger = ['document' : newDocument, 'element' : newDocument]
             return newDocument
         }
     }

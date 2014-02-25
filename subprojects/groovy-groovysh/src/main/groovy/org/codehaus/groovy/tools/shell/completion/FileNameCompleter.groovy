@@ -1,7 +1,6 @@
 package org.codehaus.groovy.tools.shell.completion
 
 import jline.console.completer.Completer
-import jline.internal.Configuration
 
 /*
  * Copyright (c) 2002-2012, the original author or authors.
@@ -11,7 +10,11 @@ import jline.internal.Configuration
  *
  * http://www.opensource.org/licenses/bsd-license.php
  */
-import static jline.internal.Preconditions.checkNotNull
+
+
+import jline.internal.Configuration;
+
+import static jline.internal.Preconditions.checkNotNull;
 
 /**
  * PATCHED copy from jline2.10, included
@@ -38,7 +41,8 @@ import static jline.internal.Preconditions.checkNotNull
  * @since 2.3
  */
 public class FileNameCompleter
-        implements Completer {
+implements Completer
+{
     // TODO: Handle files with spaces in them
 
     private static final boolean OS_IS_WINDOWS;
@@ -76,9 +80,11 @@ public class FileNameCompleter
         // Special character: ~ maps to the user's home directory
         if (translated.startsWith("~" + separator())) {
             translated = homeDir.getPath() + translated.substring(1);
-        } else if (translated.startsWith("~")) {
+        }
+        else if (translated.startsWith("~")) {
             translated = homeDir.getParentFile().getAbsolutePath();
-        } else if (!(new File(translated).isAbsolute())) {
+        }
+        else if (!(new File(translated).isAbsolute())) {
             String cwd = getUserDir().getAbsolutePath();
             translated = cwd + separator() + translated;
         }
@@ -88,7 +94,8 @@ public class FileNameCompleter
 
         if (translated.endsWith(separator())) {
             dir = file;
-        } else {
+        }
+        else {
             dir = file.getParentFile();
         }
 
@@ -109,8 +116,7 @@ public class FileNameCompleter
         return new File(".");
     }
 
-    protected int matchFiles(
-            final String buffer, final String translated, final File[] files, final List<CharSequence> candidates) {
+    protected int matchFiles(final String buffer, final String translated, final File[] files, final List<CharSequence> candidates) {
         if (files == null) {
             return -1;
         }

@@ -38,8 +38,7 @@ public class JScrollBarProperties {
                     public FullBinding createBinding(SourceBinding source, TargetBinding target) {
                         return new JScrollBarValueBinding((PropertyBinding) source, target);
                     }
-                }
-        );
+                });
         return result;
     }
 }
@@ -54,7 +53,7 @@ class JScrollBarValueBinding extends AbstractSyntheticBinding implements Propert
     }
 
     public synchronized void syntheticBind() {
-        boundScrollBar = (JScrollBar) ((PropertyBinding) sourceBinding).getBean();
+        boundScrollBar = (JScrollBar) ((PropertyBinding)sourceBinding).getBean();
         boundScrollBar.addPropertyChangeListener("model", this);
         boundScrollBar.getModel().addChangeListener(this);
     }

@@ -133,9 +133,9 @@ class ReflectionCompletor {
                 Object instance = shell.interp.evaluate([shell.getImportStatements()] + ['true'] + [instanceRefExpression])
                 return instance
             } catch (MissingPropertyException |
-            MissingMethodException |
-            MissingFieldException |
-            MultipleCompilationErrorsException e) {
+                    MissingMethodException |
+                    MissingFieldException |
+                    MultipleCompilationErrorsException e) {
 
             }
         }
@@ -151,7 +151,7 @@ class ReflectionCompletor {
      * @return
      */
     static List<GroovySourceToken> getInvokerTokens(List<GroovySourceToken> groovySourceTokens) {
-        // implementation goes backwards on token list, adding strings
+       // implementation goes backwards on token list, adding strings
         // to be evaluated later
         // need to collect using Strings, to support evaluation of string literals
         Stack<Integer> expectedOpeners = new Stack<Integer>()
@@ -192,8 +192,8 @@ class ReflectionCompletor {
                 case RPAREN:
                     expectedOpeners.push(LPAREN)
                     break
-            // tokens which indicate we have reached the beginning of a statement
-            // operator tokens (must not be evaluated, as they can have side effects via evil overriding
+                // tokens which indicate we have reached the beginning of a statement
+                // operator tokens (must not be evaluated, as they can have side effects via evil overriding
                 case COMPARE_TO:
                 case EQUAL:
                 case NOT_EQUAL:
@@ -226,25 +226,25 @@ class ReflectionCompletor {
                         break outerloop
                     }
                     break
-            // tokens which indicate we have reached the beginning of a statement
+                // tokens which indicate we have reached the beginning of a statement
                 case LCURLY:
                 case SEMI:
                 case STRING_CTOR_START:
                     break outerloop
-            // tokens we accept
+                // tokens we accept
                 case IDENT:
-                    if (lastToken) {
-                        if (lastToken.getType() == LPAREN) {
-                            //Method invocation,must be avoided
-                            return null
-                        }
-                        if (lastToken.getType() == IDENT) {
-                            // could be attempt to invoke closure like "foo.each bar.baz"
-                            return null
-                        }
-                    }
+                   if (lastToken) {
+                       if (lastToken.getType() == LPAREN) {
+                           //Method invocation,must be avoided
+                           return null
+                       }
+                       if (lastToken.getType() == IDENT) {
+                           // could be attempt to invoke closure like "foo.each bar.baz"
+                           return null
+                       }
+                   }
                     break
-            // may begin expression when outside brackets (from back)
+                // may begin expression when outside brackets (from back)
                 case RANGE_INCLUSIVE:
                 case RANGE_EXCLUSIVE:
                 case COLON:
@@ -252,7 +252,7 @@ class ReflectionCompletor {
                     if (expectedOpeners.empty()) {
                         break outerloop
                     }
-            // harmless literals
+                // harmless literals
                 case LITERAL_true:
                 case LITERAL_false:
                 case NUM_INT:
@@ -267,7 +267,7 @@ class ReflectionCompletor {
                 default:
                     return null
             } // end switch
-            validIndex--
+            validIndex --
             lastToken = loopToken
         } // end for
         return groovySourceTokens[(validIndex)..-1]
@@ -275,7 +275,7 @@ class ReflectionCompletor {
 
     static String tokenListToEvalString(List<GroovySourceToken> groovySourceTokens) {
         StringBuilder builder = new StringBuilder()
-        for (GroovySourceToken token : groovySourceTokens) {
+        for (GroovySourceToken token: groovySourceTokens) {
             if (token.getType() == STRING_LITERAL) {
                 builder.append("\"").append(token.getText()).append("\"")
             } else {
@@ -293,7 +293,7 @@ class ReflectionCompletor {
     static Collection<String> getMetaclassMethods(Object instance, String prefix, boolean includeMetaClassImplMethods) {
         Set<String> rv = new HashSet<String>()
         MetaClass metaclass = InvokerHelper.getMetaClass(instance)
-        if (includeMetaClassImplMethods || !metaclass instanceof MetaClassImpl) {
+        if (includeMetaClassImplMethods || ! metaclass instanceof MetaClassImpl) {
             metaclass.metaMethods.each { MetaMethod mmit ->
                 if (acceptName(mmit.name, prefix)) {
                     rv << mmit.getName() + (mmit.parameterTypes.length == 0 ? "()" : "(")
@@ -351,7 +351,7 @@ class ReflectionCompletor {
     static removeStandardMethods(Collection<String> candidates) {
         for (String defaultMethod in [
                 'clone()', 'finalize()', 'getClass()',
-                'getMetaClass()', 'getProperty(', 'invokeMethod(', 'setMetaClass(', 'setProperty(',
+                'getMetaClass()', 'getProperty(',  'invokeMethod(', 'setMetaClass(', 'setProperty(',
                 'equals(', 'hashCode()', 'toString()',
                 'notify()', 'notifyAll()', 'wait(', 'wait()']) {
             candidates.remove(defaultMethod)
@@ -391,13 +391,13 @@ class ReflectionCompletor {
                     'toSet()',
                     'retainAll(', 'removeAll(',
                     'unique()', 'unique('
-            ].findAll({ it.startsWith(prefix) }).each({ candidates.add(it) })
+            ].findAll({it.startsWith(prefix)}).each({candidates.add(it)})
             if (instance instanceof List) {
                 [
                         'collate(',
                         'pop()',
                         'transpose()'
-                ].findAll({ it.startsWith(prefix) }).each({ candidates.add(it) })
+                ].findAll({it.startsWith(prefix)}).each({candidates.add(it)})
             }
         }
         if (instance instanceof Map) {
@@ -411,7 +411,7 @@ class ReflectionCompletor {
                     'spread()',
                     'subMap(',
                     'take(', 'takeWhile('
-            ].findAll({ it.startsWith(prefix) }).each({ candidates.add(it) })
+            ].findAll({it.startsWith(prefix)}).each({candidates.add(it)})
         }
         if (instance instanceof Number) {
             [
@@ -420,7 +420,7 @@ class ReflectionCompletor {
                     'times(',
                     'power(',
                     'upto('
-            ].findAll({ it.startsWith(prefix) }).each({ candidates.add(it) })
+            ].findAll({it.startsWith(prefix)}).each({candidates.add(it)})
         }
         Class clazz = instance.getClass()
         if (clazz != null && clazz != Class && clazz.isArray()) {
@@ -443,13 +443,15 @@ class ReflectionCompletor {
                     'sort()',
                     'split(',
                     'take(', 'takeWhile('
-            ].findAll({ it.startsWith(prefix) }).each({ candidates.add(it) })
+            ].findAll({it.startsWith(prefix)}).each({candidates.add(it)})
         }
     }
 
 
-    private static Collection<String> addClassFieldsAndMethods(
-            final Class clazz, final boolean staticOnly, final String prefix, Collection rv) {
+
+
+
+    private static Collection<String> addClassFieldsAndMethods(final Class clazz, final boolean staticOnly, final String prefix, Collection rv) {
         Field[] fields = staticOnly ? clazz.fields : clazz.getDeclaredFields()
         fields.each { Field fit ->
             if (acceptName(fit.name, prefix)) {

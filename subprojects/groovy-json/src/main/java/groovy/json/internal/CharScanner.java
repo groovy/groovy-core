@@ -18,11 +18,16 @@
 package groovy.json.internal;
 
 
+
 import static groovy.json.internal.Exceptions.die;
 import static groovy.json.internal.Exceptions.handle;
 
 
+
 public class CharScanner {
+
+
+
 
 
     protected static final int COMMA = ',';
@@ -51,23 +56,27 @@ public class CharScanner {
     protected static final int PLUS = '+';
 
 
+
     protected static final int DOUBLE_QUOTE = '"';
 
     protected static final int ESCAPE = '\\';
 
 
-    public static boolean isDigit(int c) {
+
+
+    public static boolean isDigit( int c ) {
         return c >= ALPHA_0 && c <= ALPHA_9;
     }
 
 
-    public static boolean isDecimalDigit(int c) {
-        return isDigit(c) || isDecimalChar(c);
+    public static boolean isDecimalDigit( int c ) {
+        return isDigit ( c ) || isDecimalChar ( c );
     }
 
 
-    public static boolean isDecimalChar(int currentChar) {
-        switch (currentChar) {
+
+    public static boolean isDecimalChar ( int currentChar ) {
+        switch ( currentChar ) {
             case MINUS:
             case PLUS:
             case LETTER_E:
@@ -80,14 +89,14 @@ public class CharScanner {
     }
 
 
-    public static boolean hasDecimalChar(char[] chars, boolean negative) {
+    public static boolean hasDecimalChar( char[] chars, boolean negative ) {
 
-        int index = 0;
+        int index =0;
 
         if (negative) index++;
 
         for (; index < chars.length; index++) {
-            switch (chars[index]) {
+            switch ( chars[index] ) {
                 case MINUS:
                 case PLUS:
                 case LETTER_E:
@@ -100,20 +109,20 @@ public class CharScanner {
 
     }
 
-    public static boolean isDigits(final char[] inputArray) {
-        for (int index = 0; index < inputArray.length; index++) {
-            char a = inputArray[index];
-            if (!isDigit(a)) {
+    public static boolean isDigits( final char[] inputArray ) {
+        for ( int index = 0; index < inputArray.length; index++ ) {
+            char a = inputArray[ index ];
+            if ( !isDigit( a ) ) {
                 return false;
             }
         }
         return true;
     }
 
-    public static char[][] splitExact(final char[] inputArray,
-                                      final char split, final int resultsArrayLength) {
+    public static char[][] splitExact( final char[] inputArray,
+                                       final char split, final int resultsArrayLength ) {
         /** Holds the results. */
-        char[][] results = new char[resultsArrayLength][];
+        char[][] results = new char[ resultsArrayLength ][];
 
         int resultIndex = 0;
         int startCurrentLineIndex = 0;
@@ -123,12 +132,12 @@ public class CharScanner {
         char c = '\u0000';
         int index = 0;
 
-        for (; index < inputArray.length; index++, currentLineLength++) {
-            c = inputArray[index];
-            if (c == split) {
+        for (; index < inputArray.length; index++, currentLineLength++ ) {
+            c = inputArray[ index ];
+            if ( c == split ) {
 
-                results[resultIndex] = Chr.copy(
-                        inputArray, startCurrentLineIndex, currentLineLength - 1);
+                results[ resultIndex ] = Chr.copy(
+                        inputArray, startCurrentLineIndex, currentLineLength - 1 );
                 startCurrentLineIndex = index + 1; //skip the char
 
                 currentLineLength = 0;
@@ -136,25 +145,25 @@ public class CharScanner {
             }
         }
 
-        if (c != split) {
+        if ( c != split ) {
 
-            results[resultIndex] = Chr.copy(
-                    inputArray, startCurrentLineIndex, currentLineLength - 1);
+            results[ resultIndex ] = Chr.copy(
+                    inputArray, startCurrentLineIndex, currentLineLength - 1 );
             resultIndex++;
         }
 
         int actualLength = resultIndex;
-        if (actualLength < resultsArrayLength) {
+        if ( actualLength < resultsArrayLength ) {
             final int newSize = resultsArrayLength - actualLength;
-            results = __shrink(results, newSize);
+            results = __shrink( results, newSize );
         }
         return results;
     }
 
-    public static char[][] splitExact(final char[] inputArray,
-                                      final int resultsArrayLength, char... delims) {
+    public static char[][] splitExact( final char[] inputArray,
+                                       final int resultsArrayLength, char... delims ) {
         /** Holds the results. */
-        char[][] results = new char[resultsArrayLength][];
+        char[][] results = new char[ resultsArrayLength ][];
 
         int resultIndex = 0;
         int startCurrentLineIndex = 0;
@@ -167,16 +176,16 @@ public class CharScanner {
         char split;
 
 
-        for (; index < inputArray.length; index++, currentLineLength++) {
-            c = inputArray[index];
+        for (; index < inputArray.length; index++, currentLineLength++ ) {
+            c = inputArray[ index ];
 
             inner:
-            for (j = 0; j < delims.length; j++) {
-                split = delims[j];
-                if (c == split) {
+            for ( j = 0; j < delims.length; j++ ) {
+                split = delims[ j ];
+                if ( c == split ) {
 
-                    results[resultIndex] = Chr.copy(
-                            inputArray, startCurrentLineIndex, currentLineLength - 1);
+                    results[ resultIndex ] = Chr.copy(
+                            inputArray, startCurrentLineIndex, currentLineLength - 1 );
                     startCurrentLineIndex = index + 1; //skip the char
 
                     currentLineLength = 0;
@@ -186,26 +195,26 @@ public class CharScanner {
             }
         }
 
-        if (!Chr.in(c, delims)) {
+        if ( !Chr.in( c, delims ) ) {
 
-            results[resultIndex] = Chr.copy(
-                    inputArray, startCurrentLineIndex, currentLineLength - 1);
+            results[ resultIndex ] = Chr.copy(
+                    inputArray, startCurrentLineIndex, currentLineLength - 1 );
             resultIndex++;
         }
 
 
         int actualLength = resultIndex;
-        if (actualLength < resultsArrayLength) {
+        if ( actualLength < resultsArrayLength ) {
             final int newSize = resultsArrayLength - actualLength;
-            results = __shrink(results, newSize);
+            results = __shrink( results, newSize );
         }
         return results;
     }
 
-    public static char[][] split(final char[] inputArray,
-                                 final char split) {
+    public static char[][] split( final char[] inputArray,
+                                  final char split ) {
         /** Holds the results. */
-        char[][] results = new char[16][];
+        char[][] results = new char[ 16 ][];
 
         int resultIndex = 0;
         int startCurrentLineIndex = 0;
@@ -215,18 +224,18 @@ public class CharScanner {
         char c = '\u0000';
         int index = 0;
 
-        for (; index < inputArray.length; index++, currentLineLength++) {
-            c = inputArray[index];
-            if (c == split) {
+        for (; index < inputArray.length; index++, currentLineLength++ ) {
+            c = inputArray[ index ];
+            if ( c == split ) {
 
-                if (resultIndex == results.length) {
+                if ( resultIndex == results.length ) {
 
-                    results = _grow(results);
+                    results = _grow( results );
                 }
 
 
-                results[resultIndex] = Chr.copy(
-                        inputArray, startCurrentLineIndex, currentLineLength - 1);
+                results[ resultIndex ] = Chr.copy(
+                        inputArray, startCurrentLineIndex, currentLineLength - 1 );
                 startCurrentLineIndex = index + 1; //skip the char
 
                 currentLineLength = 0;
@@ -234,25 +243,25 @@ public class CharScanner {
             }
         }
 
-        if (c != split) {
+        if ( c != split ) {
 
-            results[resultIndex] = Chr.copy(
-                    inputArray, startCurrentLineIndex, currentLineLength - 1);
+            results[ resultIndex ] = Chr.copy(
+                    inputArray, startCurrentLineIndex, currentLineLength - 1 );
             resultIndex++;
         }
 
         int actualLength = resultIndex;
-        if (actualLength < results.length) {
+        if ( actualLength < results.length ) {
             final int newSize = results.length - actualLength;
-            results = __shrink(results, newSize);
+            results = __shrink( results, newSize );
         }
         return results;
     }
 
-    public static char[][] splitByChars(final char[] inputArray,
-                                        final char... delims) {
+    public static char[][] splitByChars( final char[] inputArray,
+                                         final char... delims ) {
         /** Holds the results. */
-        char[][] results = new char[16][];
+        char[][] results = new char[ 16 ][];
 
         int resultIndex = 0;
         int startCurrentLineIndex = 0;
@@ -265,23 +274,23 @@ public class CharScanner {
         char split;
 
 
-        for (; index < inputArray.length; index++, currentLineLength++) {
+        for (; index < inputArray.length; index++, currentLineLength++ ) {
 
-            c = inputArray[index];
+            c = inputArray[ index ];
 
             inner:
-            for (j = 0; j < delims.length; j++) {
-                split = delims[j];
-                if (c == split) {
+            for ( j = 0; j < delims.length; j++ ) {
+                split = delims[ j ];
+                if ( c == split ) {
 
-                    if (resultIndex == results.length) {
+                    if ( resultIndex == results.length ) {
 
-                        results = _grow(results);
+                        results = _grow( results );
                     }
 
 
-                    results[resultIndex] = Chr.copy(
-                            inputArray, startCurrentLineIndex, currentLineLength - 1);
+                    results[ resultIndex ] = Chr.copy(
+                            inputArray, startCurrentLineIndex, currentLineLength - 1 );
                     startCurrentLineIndex = index + 1; //skip the char
 
                     currentLineLength = 0;
@@ -291,26 +300,26 @@ public class CharScanner {
             }
         }
 
-        if (!Chr.in(c, delims)) {
+        if ( !Chr.in( c, delims ) ) {
 
-            results[resultIndex] = Chr.copy(
-                    inputArray, startCurrentLineIndex, currentLineLength - 1);
+            results[ resultIndex ] = Chr.copy(
+                    inputArray, startCurrentLineIndex, currentLineLength - 1 );
             resultIndex++;
         }
 
 
         int actualLength = resultIndex;
-        if (actualLength < results.length) {
+        if ( actualLength < results.length ) {
             final int newSize = results.length - actualLength;
-            results = __shrink(results, newSize);
+            results = __shrink( results, newSize );
         }
         return results;
     }
 
-    public static char[][] splitByCharsFromToDelims(final char[] inputArray, int from, int to,
-                                                    final char... delims) {
+    public static char[][] splitByCharsFromToDelims( final char[] inputArray, int from, int to,
+                                                     final char... delims ) {
         /** Holds the results. */
-        char[][] results = new char[16][];
+        char[][] results = new char[ 16 ][];
 
         final int length = to - from;
 
@@ -325,23 +334,23 @@ public class CharScanner {
         char split;
 
 
-        for (; index < length; index++, currentLineLength++) {
+        for (; index < length; index++, currentLineLength++ ) {
 
-            c = inputArray[index];
+            c = inputArray[ index ];
 
             inner:
-            for (j = 0; j < delims.length; j++) {
-                split = delims[j];
-                if (c == split) {
+            for ( j = 0; j < delims.length; j++ ) {
+                split = delims[ j ];
+                if ( c == split ) {
 
-                    if (resultIndex == results.length) {
+                    if ( resultIndex == results.length ) {
 
-                        results = _grow(results);
+                        results = _grow( results );
                     }
 
 
-                    results[resultIndex] = Chr.copy(
-                            inputArray, startCurrentLineIndex, currentLineLength - 1);
+                    results[ resultIndex ] = Chr.copy(
+                            inputArray, startCurrentLineIndex, currentLineLength - 1 );
                     startCurrentLineIndex = index + 1; //skip the char
 
                     currentLineLength = 0;
@@ -351,164 +360,171 @@ public class CharScanner {
             }
         }
 
-        if (!Chr.in(c, delims)) {
+        if ( !Chr.in( c, delims ) ) {
 
-            results[resultIndex] = Chr.copy(
-                    inputArray, startCurrentLineIndex, currentLineLength - 1);
+            results[ resultIndex ] = Chr.copy(
+                    inputArray, startCurrentLineIndex, currentLineLength - 1 );
             resultIndex++;
         }
 
 
         int actualLength = resultIndex;
-        if (actualLength < results.length) {
+        if ( actualLength < results.length ) {
             final int newSize = results.length - actualLength;
-            results = __shrink(results, newSize);
+            results = __shrink( results, newSize );
         }
         return results;
     }
 
-    public static char[][] splitByCharsNoneEmpty(final char[] inputArray,
-                                                 final char... delims) {
+    public static char[][] splitByCharsNoneEmpty( final char[] inputArray,
+                                                  final char... delims ) {
 
-        final char[][] results = splitByChars(inputArray, delims);
-        return compact(results);
+        final char[][] results = splitByChars( inputArray, delims );
+        return compact( results );
     }
 
 
-    public static char[][] splitByCharsNoneEmpty(final char[] inputArray, int from, int to,
-                                                 final char... delims) {
+    public static char[][] splitByCharsNoneEmpty( final char[] inputArray, int from, int to,
+                                                  final char... delims ) {
 
-        final char[][] results = splitByCharsFromToDelims(inputArray, from, to, delims);
-        return compact(results);
+        final char[][] results = splitByCharsFromToDelims( inputArray, from, to, delims );
+        return compact( results );
     }
 
-    public static char[][] compact(char[][] array) {
+    public static char[][] compact( char[][] array ) {
 
         int nullCount = 0;
-        for (char[] ch : array) {
+        for ( char[] ch : array ) {
 
-            if (ch == null || ch.length == 0) {
+            if ( ch == null || ch.length == 0 ) {
                 nullCount++;
             }
         }
-        char[][] newArray = new char[array.length - nullCount][];
+        char[][] newArray = new char[ array.length - nullCount ][];
 
         int j = 0;
-        for (char[] ch : array) {
+        for ( char[] ch : array ) {
 
-            if (ch == null || ch.length == 0) {
+            if ( ch == null || ch.length == 0 ) {
                 continue;
             }
 
-            newArray[j] = ch;
+            newArray[ j ] = ch;
             j++;
         }
         return newArray;
     }
 
 
-    private static char[][] _grow(char[][] array) {
+    private static char[][] _grow( char[][] array ) {
 
-        char[][] newArray = new char[array.length * 2][];
-        System.arraycopy(array, 0, newArray, 0, array.length);
+        char[][] newArray = new char[ array.length * 2 ][];
+        System.arraycopy( array, 0, newArray, 0, array.length );
         return newArray;
     }
 
-    private static char[][] __shrink(char[][] array, int size) {
-        char[][] newArray = new char[array.length - size][];
+    private static char[][] __shrink( char[][] array, int size ) {
+        char[][] newArray = new char[ array.length - size ][];
 
-        System.arraycopy(array, 0, (char[][]) newArray, 0, array.length - size);
+        System.arraycopy( array, 0, ( char[][] ) newArray, 0, array.length - size );
         return newArray;
     }
 
 
-    final static String MIN_LONG_STR_NO_SIGN = String.valueOf(Long.MIN_VALUE);
-    final static String MAX_LONG_STR = String.valueOf(Long.MAX_VALUE);
+    final static String MIN_LONG_STR_NO_SIGN = String.valueOf( Long.MIN_VALUE );
+    final static String MAX_LONG_STR = String.valueOf( Long.MAX_VALUE );
 
 
-    final static String MIN_INT_STR_NO_SIGN = String.valueOf(Integer.MIN_VALUE);
-    final static String MAX_INT_STR = String.valueOf(Integer.MAX_VALUE);
+    final static String MIN_INT_STR_NO_SIGN = String.valueOf( Integer.MIN_VALUE );
+    final static String MAX_INT_STR = String.valueOf( Integer.MAX_VALUE );
 
 
-    public static boolean isLong(char[] digitChars) {
-        return isLong(digitChars, 0, digitChars.length);
+
+
+
+    public static boolean isLong( char[] digitChars ) {
+        return isLong ( digitChars, 0, digitChars.length );
     }
 
-    public static boolean isLong(char[] digitChars, int offset, int len
+    public static boolean isLong( char[] digitChars, int offset, int len
     ) {
-        String cmpStr = digitChars[offset] == '-' ? MIN_LONG_STR_NO_SIGN : MAX_LONG_STR;
+        String cmpStr = digitChars[offset]=='-' ? MIN_LONG_STR_NO_SIGN : MAX_LONG_STR;
         int cmpLen = cmpStr.length();
-        if (len < cmpLen) return true;
-        if (len > cmpLen) return false;
+        if ( len < cmpLen ) return true;
+        if ( len > cmpLen ) return false;
 
-        for (int i = 0; i < cmpLen; ++i) {
-            int diff = digitChars[offset + i] - cmpStr.charAt(i);
-            if (diff != 0) {
-                return (diff < 0);
+        for ( int i = 0; i < cmpLen; ++i ) {
+            int diff = digitChars[ offset + i ] - cmpStr.charAt( i );
+            if ( diff != 0 ) {
+                return ( diff < 0 );
             }
         }
         return true;
     }
 
 
-    public static boolean isInteger(char[] digitChars) {
-        return isInteger(digitChars, 0, digitChars.length);
+
+
+    public static boolean isInteger( char[] digitChars ) {
+        return isInteger ( digitChars, 0, digitChars.length );
     }
 
-    public static boolean isInteger(char[] digitChars, int offset, int len) {
+    public static boolean isInteger( char[] digitChars, int offset, int len) {
 
 
         String cmpStr = (digitChars[offset] == '-') ? MIN_INT_STR_NO_SIGN : MAX_INT_STR;
         int cmpLen = cmpStr.length();
-        if (len < cmpLen) return true;
-        if (len > cmpLen) return false;
+        if ( len < cmpLen ) return true;
+        if ( len > cmpLen ) return false;
 
-        for (int i = 0; i < cmpLen; ++i) {
-            int diff = digitChars[offset + i] - cmpStr.charAt(i);
-            if (diff != 0) {
-                return (diff < 0);
+        for ( int i = 0; i < cmpLen; ++i ) {
+            int diff = digitChars[ offset + i ] - cmpStr.charAt( i );
+            if ( diff != 0 ) {
+                return ( diff < 0 );
             }
         }
         return true;
     }
 
-    public static int parseInt(char[] digitChars) {
-        return parseIntFromTo(digitChars, 0, digitChars.length);
+    public static int parseInt( char[] digitChars ) {
+        return parseIntFromTo( digitChars, 0, digitChars.length );
     }
 
 
-    public static int parseIntFromTo(char[] digitChars, int offset, int to) {
+
+
+    public static int parseIntFromTo( char[] digitChars, int offset, int to ) {
 
         try {
 
 
             int num;
-            boolean negative = false;
-            char c = digitChars[offset];
+            boolean negative=false;
+            char c = digitChars[ offset ];
             if (c == '-') {
                 offset++;
-                negative = true;
+                negative=true;
             }
             if (negative) {
-                num = (digitChars[offset] - '0');
-                if (++offset < to) {
-                    num = (num * 10) + (digitChars[offset] - '0');
-                    if (++offset < to) {
-                        num = (num * 10) + (digitChars[offset] - '0');
-                        if (++offset < to) {
-                            num = (num * 10) + (digitChars[offset] - '0');
-                            if (++offset < to) {
-                                num = (num * 10) + (digitChars[offset] - '0');
-                                if (++offset < to) {
-                                    num = (num * 10) + (digitChars[offset] - '0');
-                                    if (++offset < to) {
-                                        num = (num * 10) + (digitChars[offset] - '0');
-                                        if (++offset < to) {
-                                            num = (num * 10) + (digitChars[offset] - '0');
-                                            if (++offset < to) {
-                                                num = (num * 10) + (digitChars[offset] - '0');
-                                                if (++offset < to) {
-                                                    num = (num * 10) + (digitChars[offset] - '0');
+                num = (digitChars[ offset ] - '0');
+                if ( ++offset < to ) {
+                    num = ( num * 10 ) + ( digitChars[ offset ] - '0' );
+                    if ( ++offset < to ) {
+                        num = ( num * 10 ) + ( digitChars[ offset ] - '0' );
+                        if ( ++offset < to ) {
+                            num = ( num * 10 ) + ( digitChars[ offset ] - '0' );
+                            if ( ++offset < to ) {
+                                num = ( num * 10 ) + ( digitChars[ offset ] - '0' );
+                                if ( ++offset < to ) {
+                                    num = ( num * 10 ) + ( digitChars[ offset ] - '0' );
+                                    if ( ++offset < to ) {
+                                        num = ( num * 10 ) + ( digitChars[ offset ] - '0' );
+                                        if ( ++offset < to ) {
+                                            num = ( num * 10 ) + ( digitChars[ offset ] - '0' );
+                                            if ( ++offset < to ) {
+                                                num = ( num * 10 ) + ( digitChars[ offset ] - '0' );
+                                                if ( ++offset < to ) {
+                                                    num = ( num * 10 ) + ( digitChars[ offset ] - '0' );
                                                 }
                                             }
                                         }
@@ -519,25 +535,25 @@ public class CharScanner {
                     }
                 }
             } else {
-                num = (digitChars[offset] - '0');
-                if (++offset < to) {
-                    num = (num * 10) + (digitChars[offset] - '0');
-                    if (++offset < to) {
-                        num = (num * 10) + (digitChars[offset] - '0');
-                        if (++offset < to) {
-                            num = (num * 10) + (digitChars[offset] - '0');
-                            if (++offset < to) {
-                                num = (num * 10) + (digitChars[offset] - '0');
-                                if (++offset < to) {
-                                    num = (num * 10) + (digitChars[offset] - '0');
-                                    if (++offset < to) {
-                                        num = (num * 10) + (digitChars[offset] - '0');
-                                        if (++offset < to) {
-                                            num = (num * 10) + (digitChars[offset] - '0');
-                                            if (++offset < to) {
-                                                num = (num * 10) + (digitChars[offset] - '0');
-                                                if (++offset < to) {
-                                                    num = (num * 10) + (digitChars[offset] - '0');
+                num = (digitChars[ offset ] - '0');
+                if ( ++offset < to ) {
+                    num = ( num * 10 ) + ( digitChars[ offset ] - '0' );
+                    if ( ++offset < to ) {
+                        num = ( num * 10 ) + ( digitChars[ offset ] - '0' );
+                        if ( ++offset < to ) {
+                            num = ( num * 10 ) + ( digitChars[ offset ] - '0' );
+                            if ( ++offset < to ) {
+                                num = ( num * 10 ) + ( digitChars[ offset ] - '0' );
+                                if ( ++offset < to ) {
+                                    num = ( num * 10 ) + ( digitChars[ offset ] - '0' );
+                                    if ( ++offset < to ) {
+                                        num = ( num * 10 ) + ( digitChars[ offset ] - '0' );
+                                        if ( ++offset < to ) {
+                                            num = ( num * 10 ) + ( digitChars[ offset ] - '0' );
+                                            if ( ++offset < to ) {
+                                                num = ( num * 10 ) + ( digitChars[ offset ] - '0' );
+                                                if ( ++offset < to ) {
+                                                    num = ( num * 10 ) + ( digitChars[ offset ] - '0' );
                                                 }
                                             }
                                         }
@@ -549,31 +565,31 @@ public class CharScanner {
                 }
 
             }
-            return negative ? num * -1 : num;
-        } catch (Exception ex) {
-            return handle(int.class, ex);
+            return negative ? num*-1 : num;
+        } catch ( Exception ex ) {
+            return handle( int.class, ex );
         }
     }
 
 
-    public static int parseIntFromToIgnoreDot(char[] digitChars, int offset, int to) {
+    public static int parseIntFromToIgnoreDot( char[] digitChars, int offset, int to ) {
 
         int num;
-        boolean negative = false;
-        char c = digitChars[offset];
+        boolean negative=false;
+        char c = digitChars[ offset ];
         if (c == '-') {
             offset++;
-            negative = true;
+            negative=true;
         }
 
-        c = digitChars[offset];
+        c = digitChars[ offset ];
         num = (c - '0');
         offset++;
 
         for (; offset < to; offset++) {
-            c = digitChars[offset];
+            c = digitChars[ offset ];
             if (c != '.') {
-                num = (num * 10) + (c - '0');
+                num = ( num * 10 ) + ( c - '0' );
             }
 
         }
@@ -582,24 +598,24 @@ public class CharScanner {
     }
 
 
-    public static long parseLongFromToIgnoreDot(char[] digitChars, int offset, int to) {
+    public static long parseLongFromToIgnoreDot( char[] digitChars, int offset, int to ) {
 
         long num;
-        boolean negative = false;
-        char c = digitChars[offset];
+        boolean negative=false;
+        char c = digitChars[ offset ];
         if (c == '-') {
             offset++;
-            negative = true;
+            negative=true;
         }
 
-        c = digitChars[offset];
+        c = digitChars[ offset ];
         num = (c - '0');
         offset++;
 
         for (; offset < to; offset++) {
-            c = digitChars[offset];
+            c = digitChars[ offset];
             if (c != '.') {
-                num = (num * 10) + (c - '0');
+                num = ( num * 10 ) + ( c - '0' );
             }
 
         }
@@ -607,27 +623,27 @@ public class CharScanner {
         return negative ? num * -1 : num;
     }
 
-    public static long parseLongFromTo(char[] digitChars, int offset, int to) {
+    public static long parseLongFromTo( char[] digitChars, int offset, int to ) {
 
 
         long num;
-        boolean negative = false;
-        char c = digitChars[offset];
+        boolean negative=false;
+        char c = digitChars[ offset ];
         if (c == '-') {
             offset++;
-            negative = true;
+            negative=true;
         }
 
-        c = digitChars[offset];
+        c = digitChars[ offset ];
         num = (c - '0');
         offset++;
 
         long digit;
 
         for (; offset < to; offset++) {
-            c = digitChars[offset];
-            digit = (c - '0');
-            num = (num * 10) + digit;
+            c = digitChars [offset];
+            digit = ( c - '0' );
+            num = ( num * 10 ) + digit;
         }
 
         return negative ? num * -1 : num;
@@ -635,32 +651,36 @@ public class CharScanner {
     }
 
 
-    public static long parseLong(char[] digitChars) {
-        return parseLongFromTo(digitChars, 0, digitChars.length);
+    public static long parseLong( char[] digitChars ) {
+        return parseLongFromTo( digitChars, 0, digitChars.length );
     }
 
 
-    public static Number parseJsonNumber(char[] buffer) {
-        return parseJsonNumber(buffer, 0, buffer.length);
+
+    public static Number parseJsonNumber( char[] buffer ) {
+        return parseJsonNumber( buffer, 0, buffer.length );
     }
 
 
-    public static Number parseJsonNumber(char[] buffer, int from, int to) {
-        return parseJsonNumber(buffer, from, to, null);
+
+    public static Number parseJsonNumber( char[] buffer, int from, int to ) {
+        return parseJsonNumber( buffer, from, to, null );
     }
 
 
-    public static final boolean isNumberDigit(int c) {
+
+    public static final boolean isNumberDigit (int c)  {
         return c >= ALPHA_0 && c <= ALPHA_9;
     }
 
 
-    protected static boolean isDelimiter(int c) {
+
+    protected static boolean isDelimiter ( int c ) {
 
         return c == COMMA || c == CLOSED_CURLY || c == CLOSED_BRACKET;
     }
 
-    public static Number parseJsonNumber(char[] buffer, int from, int max, int size[]) {
+    public static Number parseJsonNumber( char[] buffer, int from, int max, int size[] ) {
         Number value = null;
         boolean simple = true;
         int digitsPastPoint = 0;
@@ -673,61 +693,62 @@ public class CharScanner {
         }
 
         boolean foundDot = false;
-        for (; index < max; index++) {
-            char ch = buffer[index];
-            if (isNumberDigit(ch)) {
+        for (;index<max; index++)  {
+            char ch = buffer[ index ];
+            if ( isNumberDigit(ch) ) {
 
-                if (foundDot == true) {
+                if (foundDot==true) {
                     digitsPastPoint++;
                 }
-            } else if (ch <= 32 || isDelimiter(ch)) {
-                break;
-            } else if (ch == '.') {
+            } else if ( ch <= 32 || isDelimiter( ch ) ) { break;}
+            else if ( ch == '.' ) {
                 foundDot = true;
-            } else if (ch == 'E' || ch == 'e' || ch == '-' || ch == '+') {
+            }
+            else if (ch == 'E' || ch == 'e' || ch == '-' || ch == '+') {
                 simple = false;
             } else {
-                die("unexpected character " + ch);
+                die ("unexpected character " + ch);
             }
         }
 
 
-        if (digitsPastPoint >= powersOf10.length - 1) {
+        if ( digitsPastPoint >= powersOf10.length-1 ) {
             simple = false;
         }
 
 
-        final int length = index - from;
+        final int length = index -from;
 
         if (!foundDot && simple) {
-            if (isInteger(buffer, from, length)) {
-                value = parseIntFromTo(buffer, from, index);
+            if ( isInteger( buffer, from, length ) ) {
+                value = parseIntFromTo( buffer, from, index );
             } else {
-                value = parseLongFromTo(buffer, from, index);
+                value = parseLongFromTo( buffer, from, index );
             }
-        } else if (foundDot && simple) {
+        }
+        else if ( foundDot && simple ) {
             long lvalue;
 
 
-            if (length < powersOf10.length) {
+            if ( length < powersOf10.length ) {
 
-                if (isInteger(buffer, from, length)) {
-                    lvalue = parseIntFromToIgnoreDot(buffer, from, index);
+                if ( isInteger( buffer, from, length ) ) {
+                    lvalue = parseIntFromToIgnoreDot( buffer, from, index );
                 } else {
-                    lvalue = parseLongFromToIgnoreDot(buffer, from, index);
+                    lvalue = parseLongFromToIgnoreDot( buffer, from, index );
                 }
 
-                double power = powersOf10[digitsPastPoint];
+                double power = powersOf10[ digitsPastPoint ];
                 value = lvalue / power;
 
             } else {
-                value = Double.parseDouble(new String(buffer, from, length));
+                value =  Double.parseDouble( new String( buffer, from, length ) );
 
             }
 
 
         } else {
-            value = Double.parseDouble(new String(buffer, from, index - from));
+            value =  Double.parseDouble( new String( buffer, from, index - from ) );
         }
 
 
@@ -739,16 +760,16 @@ public class CharScanner {
     }
 
 
-    public static float parseFloat(char[] buffer, int from, int to) {
-        return (float) parseDouble(buffer, from, to);
+    public static float parseFloat( char[] buffer, int from, int to ) {
+        return (float) parseDouble( buffer, from , to );
     }
 
 
-    public static double parseDouble(char[] buffer) {
-        return parseDouble(buffer, 0, buffer.length);
+    public static double parseDouble( char[] buffer ) {
+        return parseDouble( buffer, 0, buffer.length );
     }
 
-    public static double parseDouble(char[] buffer, int from, int to) {
+    public static double parseDouble( char[] buffer, int from, int to ) {
         double value;
         boolean simple = true;
         int digitsPastPoint = 0;
@@ -761,60 +782,63 @@ public class CharScanner {
         }
 
         boolean foundDot = false;
-        for (; index < to; index++) {
-            char ch = buffer[index];
-            if (isNumberDigit(ch)) {
+        for (;index<to; index++)  {
+            char ch = buffer[ index ];
+            if ( isNumberDigit(ch) ) {
 
-                if (foundDot == true) {
+                if (foundDot==true) {
                     digitsPastPoint++;
                 }
-            } else if (ch == '.') {
+            } else if ( ch == '.' ) {
                 foundDot = true;
-            } else if (ch == 'E' || ch == 'e' || ch == '-' || ch == '+') {
+            }
+            else if (ch == 'E' || ch == 'e' || ch == '-' || ch == '+') {
                 simple = false;
             } else {
-                die("unexpected character " + ch);
+                die ("unexpected character " + ch);
             }
         }
 
 
-        if (digitsPastPoint >= powersOf10.length - 1) {
+        if ( digitsPastPoint >= powersOf10.length-1 ) {
             simple = false;
         }
 
 
-        final int length = index - from;
+        final int length = index -from;
 
         if (!foundDot && simple) {
-            if (isInteger(buffer, from, length)) {
-                value = parseIntFromTo(buffer, from, index);
+            if ( isInteger( buffer, from, length ) ) {
+                value = parseIntFromTo( buffer, from, index );
             } else {
-                value = parseLongFromTo(buffer, from, index);
+                value = parseLongFromTo( buffer, from, index );
             }
-        } else if (foundDot && simple) {
+        }
+        else if ( foundDot && simple ) {
             long lvalue;
 
 
-            if (length < powersOf10.length) {
+            if ( length < powersOf10.length ) {
 
-                if (isInteger(buffer, from, length)) {
-                    lvalue = parseIntFromToIgnoreDot(buffer, from, index);
+                if ( isInteger( buffer, from, length ) ) {
+                    lvalue = parseIntFromToIgnoreDot( buffer, from, index );
                 } else {
-                    lvalue = parseLongFromToIgnoreDot(buffer, from, index);
+                    lvalue = parseLongFromToIgnoreDot( buffer, from, index );
                 }
 
-                double power = powersOf10[digitsPastPoint];
+                double power = powersOf10[ digitsPastPoint ];
                 value = lvalue / power;
 
             } else {
-                value = Double.parseDouble(new String(buffer, from, length));
+                value =  Double.parseDouble( new String( buffer, from, length ) );
 
             }
 
 
         } else {
-            value = Double.parseDouble(new String(buffer, from, index - from));
+            value =  Double.parseDouble( new String( buffer, from, index - from ) );
         }
+
 
 
         return value;
@@ -844,11 +868,13 @@ public class CharScanner {
     };
 
 
-    public static int skipWhiteSpace(char[] array, int index) {
+
+
+    public static int skipWhiteSpace( char [] array, int index ) {
         int c;
-        for (; index < array.length; index++) {
-            c = array[index];
-            if (c > 32) {
+        for (; index< array.length; index++ ) {
+            c = array [index];
+            if ( c > 32 ) {
 
                 return index;
             }
@@ -857,60 +883,68 @@ public class CharScanner {
     }
 
 
-    public static int skipWhiteSpace(char[] array, int index, final int length) {
+
+
+    public static int skipWhiteSpace( char [] array, int index, final int length ) {
         int c;
-        for (; index < length; index++) {
-            c = array[index];
-            if (c > 32) {
+        for (; index< length; index++ ) {
+            c = array [index];
+            if ( c > 32 ) {
 
                 return index;
             }
         }
         return index;
     }
-
-    public static char[] readNumber(char[] array, int idx) {
+    public static char[] readNumber( char[] array, int idx ) {
         final int startIndex = idx;
 
         while (true) {
-            if (!CharScanner.isDecimalDigit(array[idx])) {
+            if ( !CharScanner.isDecimalDigit ( array[idx] )) {
                 break;
             } else {
                 idx++;
-                if (idx >= array.length) break;
+                if (idx  >= array.length) break;
             }
         }
 
-        return ArrayUtils.copyRange(array, startIndex, idx);
+        return  ArrayUtils.copyRange ( array, startIndex, idx );
 
 
     }
 
 
-    public static char[] readNumber(char[] array, int idx, final int len) {
+
+    public static char[] readNumber( char[] array, int idx, final int len ) {
         final int startIndex = idx;
 
         while (true) {
-            if (!CharScanner.isDecimalDigit(array[idx])) {
+            if ( !CharScanner.isDecimalDigit ( array[idx] )) {
                 break;
             } else {
                 idx++;
-                if (idx >= len) break;
+                if (idx  >= len ) break;
             }
         }
 
-        return ArrayUtils.copyRange(array, startIndex, idx);
+        return  ArrayUtils.copyRange ( array, startIndex, idx );
 
 
     }
 
 
-    public static int skipWhiteSpaceFast(char[] array) {
+
+
+
+
+
+
+    public static int  skipWhiteSpaceFast( char [] array ) {
         int c;
-        int index = 0;
-        for (; index < array.length; index++) {
-            c = array[index];
-            if (c > 32) {
+        int index=0;
+        for (; index< array.length; index++ ) {
+            c = array [index];
+            if ( c > 32 ) {
 
                 return index;
             }
@@ -919,35 +953,36 @@ public class CharScanner {
     }
 
 
-    public static int skipWhiteSpaceFast(char[] array, int index) {
+
+    public static int  skipWhiteSpaceFast( char [] array, int index ) {
         char c;
-        for (; index < array.length; index++) {
-            c = array[index];
-            if (c > 32) {
+        for (; index< array.length; index++ ) {
+            c = array [index];
+            if ( c > 32 ) {
 
                 return index;
             }
         }
-        return index - 1;
+        return index-1;
     }
 
-    public static String errorDetails(String message, char[] array, int index, int ch) {
-        CharBuf buf = CharBuf.create(255);
+    public static String errorDetails( String message, char[] array, int index, int ch ) {
+        CharBuf buf = CharBuf.create( 255 );
 
-        buf.addLine(message);
-
-
-        buf.addLine("");
-        buf.addLine("The current character read is " + debugCharDescription(ch));
+        buf.addLine( message );
 
 
-        buf.addLine(message);
+        buf.addLine( "" );
+        buf.addLine( "The current character read is " + debugCharDescription( ch ) );
+
+
+        buf.addLine( message );
 
         int line = 0;
         int lastLineIndex = 0;
 
-        for (int i = 0; i < index && i < array.length; i++) {
-            if (array[i] == '\n') {
+        for ( int i = 0; i < index && i < array.length; i++ ) {
+            if ( array[ i ] == '\n' ) {
                 line++;
                 lastLineIndex = i + 1;
             }
@@ -955,53 +990,53 @@ public class CharScanner {
 
         int count = 0;
 
-        for (int i = lastLineIndex; i < array.length; i++, count++) {
-            if (array[i] == '\n') {
+        for ( int i = lastLineIndex; i < array.length; i++, count++ ) {
+            if ( array[ i ] == '\n' ) {
                 break;
             }
         }
 
 
-        buf.addLine("line number " + (line + 1));
-        buf.addLine("index number " + index);
+        buf.addLine( "line number " + (line + 1) );
+        buf.addLine( "index number " + index );
 
 
         try {
-            buf.addLine(new String(array, lastLineIndex, count));
-        } catch (Exception ex) {
+            buf.addLine( new String( array, lastLineIndex, count ) );
+        } catch ( Exception ex ) {
 
             try {
-                int start = index = (index - 10 < 0) ? 0 : index - 10;
+                int start =  index = ( index - 10 < 0 ) ? 0 : index - 10;
 
-                buf.addLine(new String(array, start, index));
-            } catch (Exception ex2) {
-                buf.addLine(new String(array, 0, array.length));
+                buf.addLine( new String( array, start, index ) );
+            } catch ( Exception ex2 ) {
+                buf.addLine( new String( array, 0, array.length ) );
             }
         }
-        for (int i = 0; i < (index - lastLineIndex); i++) {
-            buf.add('.');
+        for ( int i = 0; i < ( index - lastLineIndex ); i++ ) {
+            buf.add( '.' );
         }
-        buf.add('^');
+        buf.add( '^' );
 
         return buf.toString();
     }
 
 
-    public static String debugCharDescription(int c) {
+    public static String debugCharDescription( int c ) {
         String charString;
-        if (c == ' ') {
+        if ( c == ' ' ) {
             charString = "[SPACE]";
-        } else if (c == '\t') {
+        } else if ( c == '\t' ) {
             charString = "[TAB]";
 
-        } else if (c == '\n') {
+        } else if ( c == '\n' ) {
             charString = "[NEWLINE]";
 
         } else {
-            charString = "'" + (char) c + "'";
+            charString = "'" + (char)c + "'";
         }
 
-        charString = charString + " with an int value of " + ((int) c);
+        charString = charString + " with an int value of " + ( ( int ) c );
         return charString;
     }
 

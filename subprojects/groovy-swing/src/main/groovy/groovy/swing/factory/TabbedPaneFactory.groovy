@@ -16,7 +16,8 @@
 
 package groovy.swing.factory
 
-import java.awt.*
+import java.awt.Component
+import java.awt.Window
 
 class TabbedPaneFactory extends BeanFactory {
 
@@ -36,8 +37,7 @@ class TabbedPaneFactory extends BeanFactory {
     public static final String DEFAULT_DELEGATE_PROPERTY_TAB_ENABLED = "tabEnabled";
     public static final String DELEGATE_PROPERTY_TAB_MNEMONIC = "_delegateProperty:tabMnemonic";
     public static final String DEFAULT_DELEGATE_PROPERTY_TAB_MNEMONIC = "tabMnemonic";
-    public static
-    final String DELEGATE_PROPERTY_TAB_DISPLAYED_MNEMONIC_INDEX = "_delegateProperty:tabDisplayedMnemonicIndex";
+    public static final String DELEGATE_PROPERTY_TAB_DISPLAYED_MNEMONIC_INDEX = "_delegateProperty:tabDisplayedMnemonicIndex";
     public static final String DEFAULT_DELEGATE_PROPERTY_TAB_DISPLAYED_MNEMONIC_INDEX = "tabDisplayedMnemonicIndex";
     public static final String CONTEXT_DATA_KEY = "TabbdePaneFactoryData";
 
@@ -48,9 +48,9 @@ class TabbedPaneFactory extends BeanFactory {
     public Object newInstance(FactoryBuilderSupport builder, Object name, Object value, Map attributes) throws InstantiationException, IllegalAccessException {
         def newChild = super.newInstance(builder, name, value, attributes)
         builder.context.tabbedPaneFactoryClosure =
-                { FactoryBuilderSupport cBuilder, Object cNode, Map cAttributes ->
-                    if (builder.current == newChild) inspectChild(cBuilder, cNode, cAttributes)
-                }
+            { FactoryBuilderSupport cBuilder, Object cNode, Map cAttributes ->
+                if (builder.current == newChild) inspectChild(cBuilder, cNode, cAttributes)
+            }
         builder.addAttributeDelegate(builder.context.tabbedPaneFactoryClosure)
         builder.context.selectedIndex = attributes.remove('selectedIndex')
         builder.context.selectedComponent = attributes.remove('selectedComponent')
@@ -117,7 +117,7 @@ class TabbedPaneFactory extends BeanFactory {
                     parent.setMnemonicAt(index, mnemonic.charAt(0) as int)
                 } else {
                     parent.setMnemonicAt(index, mnemonic as int)
-                }
+                } 
             }
             if (title[8]) {
                 parent.setDisplayedMnemonicIndexAt(index, title[8])
@@ -127,8 +127,8 @@ class TabbedPaneFactory extends BeanFactory {
         }
     }
 
-    public void onNodeCompleted(FactoryBuilderSupport builder, Object parent, Object node) {
-        super.onNodeCompleted(builder, parent, node)
+    public void onNodeCompleted( FactoryBuilderSupport builder, Object parent, Object node ) {
+        super.onNodeCompleted (builder, parent, node)
         builder.removeAttributeDelegate(builder.context.tabbedPaneFactoryClosure)
         if (builder.context.selectedComponent != null) {
             node.selectedComponent = builder.context.selectedComponent

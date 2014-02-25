@@ -15,7 +15,8 @@
  */
 package groovy.swing.factory
 
-import javax.swing.*
+import javax.swing.JComponent
+import javax.swing.RootPaneContainer
 
 abstract class SwingBorderFactory extends AbstractFactory {
 

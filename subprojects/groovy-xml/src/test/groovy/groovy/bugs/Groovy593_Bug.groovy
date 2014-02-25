@@ -31,7 +31,7 @@ class Groovy593_Bug extends GroovyTestCase {
     MarkupBuilder chars = new MarkupBuilder(writer)
     XmlParser parser = new XmlParser()
     String expectedXML =
-            """\
+    """\
 <chars>
   <ampersand a='&amp;'>&amp;</ampersand>
   <quote attr='"'>"</quote>

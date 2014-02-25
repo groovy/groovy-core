@@ -15,7 +15,11 @@
  */
 package groovy.xml.dom
 
-import groovy.xml.*
+import groovy.xml.DOMBuilder
+import groovy.xml.GpathSyntaxTestSupport
+import groovy.xml.MixedMarkupTestSupport
+import groovy.xml.TraversalTestSupport
+import groovy.xml.XmlUtil
 
 import static javax.xml.xpath.XPathConstants.*
 
@@ -23,7 +27,7 @@ class DOMCategoryTest extends GroovyTestCase {
 
     def getRoot = { xml ->
         def reader = new StringReader(xml)
-        def doc = DOMBuilder.parse(reader)
+        def doc    = DOMBuilder.parse(reader)
         doc.documentElement
     }
 
@@ -184,7 +188,7 @@ class DOMCategoryTest extends GroovyTestCase {
         }
 
         assert XmlUtil.serialize(oldRoot).readLines()*.trim().join('') ==
-                '<?xml version="1.0" encoding="UTF-8"?><root><new><child/></new></root>'
+            '<?xml version="1.0" encoding="UTF-8"?><root><new><child/></new></root>'
     }
 }
 

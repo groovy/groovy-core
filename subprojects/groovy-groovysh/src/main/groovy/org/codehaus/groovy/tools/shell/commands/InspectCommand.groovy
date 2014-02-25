@@ -17,13 +17,13 @@
 package org.codehaus.groovy.tools.shell.commands
 
 import groovy.inspect.swingui.ObjectBrowser
-import org.codehaus.groovy.tools.shell.CommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
-import org.codehaus.groovy.tools.shell.util.SimpleCompletor
 
-import javax.swing.*
-import java.awt.*
-import java.util.List
+import java.awt.HeadlessException
+import javax.swing.UIManager
+
+import org.codehaus.groovy.tools.shell.CommandSupport
+import org.codehaus.groovy.tools.shell.util.SimpleCompletor
 
 /**
  * The 'inspect' command.
@@ -32,32 +32,33 @@ import java.util.List
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class InspectCommand
-        extends CommandSupport {
+    extends CommandSupport
+{
     InspectCommand(final Groovysh shell) {
         super(shell, ':inspect', ':n')
     }
-
+    
     def lafInitialized = false
     def headless
-
+    
     protected List createCompleters() {
         return [
-                new InspectCommandCompletor(binding),
-                null
+            new InspectCommandCompletor(binding),
+            null
         ]
     }
 
     Object execute(final List<String> args) {
         assert args != null
-
+        
         log.debug("Inspecting w/args: $args")
-
+        
         if (args.size() > 1) {
             fail(messages.format('error.unexpected_args', args.join(' ')))
         }
-
+        
         def subject
-
+        
         if (args.size() == 1) {
             subject = binding.variables[args[0]]
         } else {
@@ -72,22 +73,22 @@ class InspectCommand
                 lafInitialized = true
                 try {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName())
-
+                    
                     // The setLAF doesn't throw a HeadlessException on Mac.
                     // So try really creating a frame.
                     new java.awt.Frame().dispose()
-
+                    
                     headless = false
                 } catch (HeadlessException he) {
                     headless = true
                 }
             }
-
+            
             if (headless) {
                 io.err.println("@|red ERROR:|@ Running in AWT Headless mode, 'inspect' is not available.")
                 return
             }
-
+            
             if (io.verbose) {
                 io.out.println("Launching object browser to inspect: $subject") // TODO: i18n
             }
@@ -104,9 +105,10 @@ class InspectCommand
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class InspectCommandCompletor
-        extends SimpleCompletor {
+    extends SimpleCompletor
+{
     private final Binding binding
-
+    
     InspectCommandCompletor(final Binding binding) {
         assert binding
 

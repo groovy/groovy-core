@@ -141,7 +141,7 @@ class JmxTimerFactory extends AbstractFactory {
         if (!list) return null
         def result = []
 
-        list.each { name ->
+        list.each {name ->
             def on
             if (name instanceof String) {
                 on = new ObjectName(name)

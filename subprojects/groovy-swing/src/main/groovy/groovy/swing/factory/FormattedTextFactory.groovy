@@ -16,11 +16,11 @@
 
 package groovy.swing.factory
 
-import javax.swing.*
 import java.text.Format
+import javax.swing.JFormattedTextField
 
 public class FormattedTextFactory extends AbstractFactory {
-
+    
     public Object newInstance(FactoryBuilderSupport builder, Object name, Object value, Map attributes) throws InstantiationException, IllegalAccessException {
         FactoryBuilderSupport.checkValueIsNull(value, name);
         //TODO expand value arg to take format

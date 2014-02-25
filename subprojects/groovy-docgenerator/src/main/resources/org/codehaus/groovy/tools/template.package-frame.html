@@ -2,19 +2,19 @@
 <!--NewPage-->
 <HTML>
 <HEAD>
-    <TITLE>
-        ${packageName} (Java 2 Platform SE 5.0)
-    </TITLE>
+<TITLE>
+${packageName} (Java 2 Platform SE 5.0)
+</TITLE>
 
-    <META NAME="keywords" CONTENT="${packageName}">
-    <%
-    def path = '..'
-    packageName.count('.').times {
+<META NAME="keywords" CONTENT="${packageName}">
+<%
+def path = '..'
+packageName.count('.').times {
     path += ('/..')
-    }
-    %>
+}
+%>
 
-    <LINK REL="stylesheet" TYPE="text/css" HREF="${path}/stylesheet.css" TITLE="Style">
+<LINK REL ="stylesheet" TYPE="text/css" HREF="${path}/stylesheet.css" TITLE="Style">
 
 
 </HEAD>
@@ -24,16 +24,16 @@
 
 
 <TABLE BORDER="0" WIDTH="100%" SUMMARY="">
-    <TR>
-        <TD NOWRAP>
-            <SPAN CLASS="FrameHeadingFont">Classes</SPAN>&nbsp;
+<TR>
+<TD NOWRAP>
+<SPAN CLASS="FrameHeadingFont">Classes</SPAN>&nbsp;
 <SPAN CLASS="FrameItemFont">
 <% classes.each { %>
 <BR>
 <A href="${it}.html" title="class in ${packageName}" target="classFrame">${it}</A>
 <% } %>
 </SPAN></TD>
-    </TR>
+</TR>
 </TABLE>
 
 

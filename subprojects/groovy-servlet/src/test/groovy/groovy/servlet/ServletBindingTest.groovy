@@ -15,13 +15,12 @@
  */
 package groovy.servlet
 
-import groovy.xml.MarkupBuilder
-
 import javax.servlet.ServletContext
 import javax.servlet.ServletOutputStream
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
+import groovy.xml.MarkupBuilder
 
 /**
  * This test case tests the ServletBinding class.
@@ -38,7 +37,7 @@ class ServletBindingTest extends GroovyTestCase {
         super.setUp()
     }
 
-    def makeDefaultBinding = { request ->
+    def makeDefaultBinding = {request ->
         new ServletBinding(
                 request as HttpServletRequest,
                 response as HttpServletResponse,
@@ -47,9 +46,9 @@ class ServletBindingTest extends GroovyTestCase {
     }
 
     def makeDefaultRequest = {
-        [getSession       : { session },
-         getParameterNames: { new Vector().elements() },
-         getHeaderNames   : { new Vector().elements() }] as HttpServletRequest
+        [getSession: {session},
+                getParameterNames: {new Vector().elements()},
+                getHeaderNames: {new Vector().elements()}] as HttpServletRequest
     }
 
     /**
@@ -78,9 +77,9 @@ class ServletBindingTest extends GroovyTestCase {
         parmNames.add("name2")
 
         def request = [
-                getSession        : { session },
-                getHeaderNames    : { new Vector().elements() },
-                getParameterNames : { parmNames.elements() },
+                getSession: {session},
+                getHeaderNames: {new Vector().elements()},
+                getParameterNames: {parmNames.elements()},
                 getParameterValues: {
                     //prepend string parm to known value to simulate attribute map
                     String[] arr = new String[1];
@@ -105,10 +104,10 @@ class ServletBindingTest extends GroovyTestCase {
         headerNames.add("name2")
 
         def request = [
-                getSession       : { session },
-                getParameterNames: { new Vector().elements() },
-                getHeaderNames   : { headerNames.elements() },
-                getHeader        : {
+                getSession: {session},
+                getParameterNames: {new Vector().elements()},
+                getHeaderNames: {headerNames.elements()},
+                getHeader: {
                     //prepend string parm to known value to simulate attribute map
                     "value_for_" + it
                 }] as HttpServletRequest
@@ -139,7 +138,7 @@ class ServletBindingTest extends GroovyTestCase {
     void testGetVariables_Contract() {
 
         def expectedVariables = ["request", "response", "context", "application",
-                                 "session", "params", "headers", "out", "sout", "html", "json"]
+                "session", "params", "headers", "out", "sout", "html", "json"]
         def request = makeDefaultRequest()
         def binding = makeDefaultBinding(request)
         def keys = binding.variables.keySet()
@@ -157,8 +156,8 @@ class ServletBindingTest extends GroovyTestCase {
         def outputStream = new OutputStreamStub()
 
         def response = [
-                getWriter      : { writer },
-                getOutputStream: { outputStream }] as HttpServletResponse
+                getWriter: {writer},
+                getOutputStream: {outputStream}] as HttpServletResponse
 
         def request = makeDefaultRequest()
 
@@ -173,15 +172,15 @@ class ServletBindingTest extends GroovyTestCase {
         assert binding.getVariable("sout") instanceof ServletOutputStream
         assert binding.getVariable("json") instanceof groovy.json.StreamingJsonBuilder
     }
-
+    
     void testOutSoutWriteException() {
 
         def writer = new PrintWriter(new StringWriter())
         def outputStream = new OutputStreamStub()
 
         def response = [
-                getWriter      : { writer },
-                getOutputStream: { outputStream }] as HttpServletResponse
+                getWriter: {writer},
+                getOutputStream: {outputStream}] as HttpServletResponse
 
         def request = makeDefaultRequest()
 
@@ -193,20 +192,20 @@ class ServletBindingTest extends GroovyTestCase {
 
         binding.out.print("foo")
         binding.html.foo()
-        binding.out.print(binding.json.foo())
+		binding.out.print(binding.json.foo())
         shouldFail(IllegalStateException) {
             binding.sout.print("foo")
         }
     }
-
+    
     void testSoutOutWriteException() {
 
         def writer = new PrintWriter(new StringWriter())
         def outputStream = new OutputStreamStub()
 
         def response = [
-                getWriter      : { writer },
-                getOutputStream: { outputStream }] as HttpServletResponse
+                getWriter: {writer},
+                getOutputStream: {outputStream}] as HttpServletResponse
 
         def request = makeDefaultRequest()
 
@@ -238,7 +237,7 @@ class ServletBindingTest extends GroovyTestCase {
         shouldFail(IllegalArgumentException) { binding.setVariable("out", null) }
         shouldFail(IllegalArgumentException) { binding.setVariable("sout", null) }
         shouldFail(IllegalArgumentException) { binding.setVariable("html", null) }
-        shouldFail(IllegalArgumentException) { binding.setVariable("json", null) }
+		shouldFail(IllegalArgumentException) { binding.setVariable("json", null) }
     }
 
     /**
@@ -258,5 +257,5 @@ class ServletBindingTest extends GroovyTestCase {
  * Test specific sub class to stub out the ServletOutputStream class.
  */
 class OutputStreamStub extends ServletOutputStream {
-    void write(int x) {}
+    void write(int x) { }
 }

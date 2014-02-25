@@ -22,8 +22,7 @@ package groovy.util
  */
 class GroovyShellTestCase extends GroovyTestCase {
 
-    @Delegate
-    protected GroovyShell shell
+    @Delegate protected GroovyShell shell
 
     protected void setUp() {
         super.setUp();
@@ -46,7 +45,7 @@ class GroovyShellTestCase extends GroovyTestCase {
     /**
      * Executes closure with given binding
      */
-    protected def withBinding(Map map, Closure closure) {
+    protected def withBinding (Map map, Closure closure) {
         Binding binding = shell.context
         Map bmap = binding.variables
         try {
@@ -64,7 +63,7 @@ class GroovyShellTestCase extends GroovyTestCase {
     /**
      * Evaluates script with given binding
      */
-    protected def withBinding(Map map, String script) {
+    protected def withBinding (Map map, String script) {
         Binding binding = shell.context
         Map bmap = binding.variables
         try {

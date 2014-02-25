@@ -44,7 +44,7 @@ public class SpoofTaskContainer extends Task implements TaskContainer {
 
     public void execute() throws BuildException {
         spoof("begin SpoofTaskContainer execute");
-        for (Iterator iter = tasks.iterator(); iter.hasNext(); ) {
+        for (Iterator iter = tasks.iterator(); iter.hasNext();) {
             Task task = (Task) iter.next();
             task.perform();
         }

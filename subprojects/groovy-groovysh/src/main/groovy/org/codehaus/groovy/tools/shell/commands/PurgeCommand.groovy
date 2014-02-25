@@ -27,41 +27,45 @@ import org.codehaus.groovy.tools.shell.util.Preferences
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class PurgeCommand
-        extends ComplexCommandSupport {
+    extends ComplexCommandSupport
+{
     PurgeCommand(final Groovysh shell) {
-        super(shell, ':purge', ':p', ['variables', 'classes', 'imports', 'preferences', 'all'])
+        super(shell, ':purge', ':p', [ 'variables', 'classes', 'imports', 'preferences', 'all' ])
     }
-
+    
     def do_variables = {
         if (variables.isEmpty()) {
             io.out.println('No variables defined') // TODO: i18n
-        } else {
+        }
+        else {
             variables.clear()
-
+            
             if (io.verbose) {
                 io.out.println("Custom variables purged") // TODO: i18n
             }
         }
     }
-
+    
     def do_classes = {
         if (classLoader.loadedClasses.size() == 0) {
             io.out.println("No classes have been loaded") // TODO: i18n
-        } else {
+        }
+        else {
             classLoader.clearCache()
-
+            
             if (io.verbose) {
                 io.out.println('Loaded classes purged') // TODO: i18n
             }
         }
     }
-
+    
     def do_imports = {
         if (imports.isEmpty()) {
             io.out.println("No custom imports have been defined") // TODO: i18n
-        } else {
+        }
+        else {
             imports.clear()
-
+            
             if (io.verbose) {
                 io.out.println("Custom imports purged") // TODO: i18n
             }
@@ -70,7 +74,7 @@ class PurgeCommand
 
     def do_preferences = {
         Preferences.clear()
-
+        
         if (io.verbose) {
             io.out.println("Preferences purged") // TODO: i18n
         }

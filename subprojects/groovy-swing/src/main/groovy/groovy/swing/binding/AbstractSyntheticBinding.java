@@ -64,7 +64,6 @@ public abstract class AbstractSyntheticBinding extends AbstractFullBinding {
     }
 
     protected abstract void syntheticBind();
-
     protected abstract void syntheticUnbind();
 
     public void rebind() {

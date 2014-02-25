@@ -42,11 +42,9 @@ public abstract class TestXmlSupport extends TestSupport {
         public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
             System.out.println("Start Element: " + localName);
         }
-
         public void endElement(String uri, String localName, String qName) throws SAXException {
             System.out.println("End Element: " + localName);
         }
-
         public void characters(char ch[], int start, int length) throws SAXException {
             System.out.println("Characters: " + new String(ch).substring(start, start + length - 1));
         }

@@ -35,23 +35,23 @@ class SqlCompleteTest extends SqlHelperTestCase {
         sql.close()
     }
 
-    def personMetaClosure = { metaData ->
+    def personMetaClosure = {metaData ->
         assert metaData.columnCount == 5
         assert metaData.getColumnName(1) == "FIRSTNAME"
         assert metaData.getColumnName(2) == "LASTNAME"
         assert metaData.getColumnName(3) == "ID"
         assert metaData.getColumnName(4) == "LOCATION_ID"
         assert metaData.getColumnName(5) == "LOCATION_NAME"
-        assert metaData.every { it.columnName.contains('I') || it.columnName == 'LASTNAME' }
+        assert metaData.every{ it.columnName.contains('I') || it.columnName == 'LASTNAME' }
         assert metaData*.columnName == ["FIRSTNAME", "LASTNAME", "ID", "LOCATION_ID", "LOCATION_NAME"]
         personMetaClosureCalled = true
     }
 
-    def foodMetaClosure = { metaData ->
+    def foodMetaClosure = {metaData ->
         assert metaData.columnCount == 2
         assert metaData.getColumnName(1) == "TYPE"
         assert metaData.getColumnName(2) == "NAME"
-        assert metaData.any { it.columnName.contains('Y') }
+        assert metaData.any{ it.columnName.contains('Y') }
         assert metaData*.columnName == ["TYPE", "NAME"]
         foodMetaClosureCalled = true
     }
@@ -132,7 +132,7 @@ class SqlCompleteTest extends SqlHelperTestCase {
         def lastPatHolder = new Expando()
         lastPatHolder.lastPat = '%a%'
         def results = [:]
-        sql.eachRow("select * from PERSON where firstname like ?1.firstPat and lastname like ?2.lastPat", [[firstPat: '%am%'], lastPatHolder]) {
+        sql.eachRow("select * from PERSON where firstname like ?1.firstPat and lastname like ?2.lastPat", [[firstPat:'%am%'], lastPatHolder]) {
             results.put(it.firstname, it['lastname'])
         }
         assert results == ["James": "Strachan", "Sam": "Pullara"]
@@ -156,9 +156,7 @@ class SqlCompleteTest extends SqlHelperTestCase {
 
     void testEachRowWithStringAndListAndClosure() {
         def results = []
-        sql.eachRow("select * from FOOD where type=? and name != ?", ["cheese", "edam"], foodMetaClosure) {
-            results.add(it.name)
-        }
+        sql.eachRow("select * from FOOD where type=? and name != ?", ["cheese", "edam"], foodMetaClosure) { results.add(it.name) }
         assert results == ["brie", "cheddar"]
         assert foodMetaClosureCalled
     }
@@ -311,7 +309,7 @@ class SqlCompleteTest extends SqlHelperTestCase {
         def answer = []
         def people = sql.dataSet(Person)
         def list = people.findAll { it.firstname != 'Bob' }
-        list.each { answer << it.firstname }
+        list.each{ answer << it.firstname }
         assert answer == ["James", "Sam"]
     }
 
@@ -328,9 +326,10 @@ class SqlCompleteTest extends SqlHelperTestCase {
         features.each {
             /** @todo HSQLDB doesn't yet support ResultSet updating
              if (it.id == 1) {
-             it.name = it.name + " Rocks!"
-             println("Changing name to ${it.name}")
-             }/*  */
+                 it.name = it.name + " Rocks!"
+                 println("Changing name to ${it.name}")
+             }
+             /* */
             results.add(it.name)
         }
         assert results == ["GDO", "GPath", "GroovyMarkup"]
@@ -375,25 +374,25 @@ class SqlCompleteTest extends SqlHelperTestCase {
         def rows = dataSet.rows()
         assert rows.size() == 5
         def results = []
-        rows.each { results.add(it.name) }
+        rows.each {results.add(it.name)}
         assert results == ["edam", "brie", "cheddar", "beer", "coffee"]
     }
 
     void testDataSetWithPaging() {
         def results = []
         def people = sql.dataSet("PERSON")
-        people.each(2, 1) { results.add(it.firstname) }
+        people.each(2,1) { results.add(it.firstname) }
         assert results == ["Bob"]
     }
 
     void testDataSetPagingWithRows() {
         def dataSet = new DataSet(sql, "FOOD")
-        def rows = dataSet.rows(2, 2)
+        def rows = dataSet.rows(2,2)
 
         //Checking to make sure I got two items back
         assert rows.size() == 2
         def results = []
-        rows.each { results.add(it.name) }
+        rows.each {results.add(it.name)}
 
         assert results == ["brie", "cheddar"]
     }
@@ -404,7 +403,7 @@ class SqlCompleteTest extends SqlHelperTestCase {
         assert result != null
         assert result["name"] == "edam"
     }
-
+    
     void testEachRowPaging() {
         def names = []
         sql.eachRow("select name from FOOD order by name", 2, 2) { row ->
@@ -439,23 +438,23 @@ class SqlCompleteTest extends SqlHelperTestCase {
     void testRowsPaging() {
         def names = sql.rows("select name from FOOD order by name", 2, 2)
         assert names.size() == 2
-        assert names[0] == ["NAME": "brie"]
-        assert names[1] == ["NAME": "cheddar"]
+        assert names[0] == ["NAME":"brie"]
+        assert names[1] == ["NAME":"cheddar"]
     }
 
     void testRowsPagingWithParams() {
         def names = sql.rows("select name from FOOD where name <> ? order by name", ['brie'], 2, 2)
         assert names.size() == 2
-        assert names[0] == ["NAME": "cheddar"]
-        assert names[1] == ["NAME": "coffee"]
+        assert names[0] == ["NAME":"cheddar"]
+        assert names[1] == ["NAME":"coffee"]
     }
 
     void testGStringRowsPaging() {
         def name = "brie"
         def names = sql.rows("select name from FOOD where name <> $name order by name", 2, 2)
         assert names.size() == 2
-        assert names[0] == ["NAME": "cheddar"]
-        assert names[1] == ["NAME": "coffee"]
+        assert names[0] == ["NAME":"cheddar"]
+        assert names[1] == ["NAME":"coffee"]
     }
 
     void testNewInstanceMapMustContainNonNullUrl() {
@@ -508,7 +507,7 @@ class SqlCompleteTest extends SqlHelperTestCase {
         props.password = password
         def args2 = [url: url2, driver: driver, properties: props]
         Sql.newInstance(args2)
-        assert args2 == [url: url2, driver: driver, properties: [user: user, password: password]]
+        assert args2 == [url: url2, driver:  driver, properties: [user: user, password:  password]]
     }
 
     void testWithQuoteEmbeddedInInlineComment_Groovy5898() {

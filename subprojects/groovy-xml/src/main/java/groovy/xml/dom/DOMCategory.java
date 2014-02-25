@@ -22,12 +22,23 @@ import groovy.xml.DOMBuilder;
 import groovy.xml.QName;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.XmlGroovyMethods;
-import org.w3c.dom.*;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Category class which adds GPath style operations to Java's DOM classes.
@@ -49,7 +60,7 @@ public class DOMCategory {
             // do implement Element, NodeList and Node. But here we prefer element,
             // so we force the usage of Element. Without this DOMCategoryTest may fail
             // in strange ways
-            return xgetAt((Element) nodeList, elementName);
+            return xgetAt((Element)nodeList, elementName);
         } else {
             return xgetAt(nodeList, elementName);
         }
@@ -77,7 +88,7 @@ public class DOMCategory {
         for (int i = 0; i < nodeList.getLength(); i++) {
             Node node = nodeList.item(i);
             if (node instanceof Element) {
-                addResult(results, get((Element) node, elementName));
+                addResult(results, get((Element)node, elementName));
             }
         }
         if (elementName.startsWith("@")) {
@@ -125,22 +136,22 @@ public class DOMCategory {
 
     private static Node nodeGetAt(Object o, int i) {
         if (o instanceof Element) {
-            Node n = xgetAt((Element) o, i);
+            Node n = xgetAt((Element)o, i);
             if (n != null) return n;
         }
         if (o instanceof NodeList) {
-            return xgetAt((NodeList) o, i);
+            return xgetAt((NodeList)o, i);
         }
         return null;
     }
 
     private static NodeList nodesGetAt(Object o, IntRange r) {
         if (o instanceof Element) {
-            NodeList n = xgetAt((Element) o, r);
+            NodeList n = xgetAt((Element)o, r);
             if (n != null) return n;
         }
         if (o instanceof NodeList) {
-            return xgetAt((NodeList) o, r);
+            return xgetAt((NodeList)o, r);
         }
         return null;
     }
@@ -199,7 +210,8 @@ public class DOMCategory {
         List<Node> nodes = new ArrayList<Node>(to - from + 1);
         if (r.isReverse()) {
             for (int i = to; i >= from; i--) nodes.add(nodeList.item(i));
-        } else {
+        }
+        else {
             for (int i = from; i <= to; i++) nodes.add(nodeList.item(i));
         }
         return new NodesHolder(nodes);
@@ -269,7 +281,7 @@ public class DOMCategory {
     }
 
     public static Element appendNode(Element self, Object name) {
-        return appendNode(self, name, (String) null);
+        return appendNode(self, name, (String)null);
     }
 
     public static Element appendNode(Element self, Object name, Map attributes) {

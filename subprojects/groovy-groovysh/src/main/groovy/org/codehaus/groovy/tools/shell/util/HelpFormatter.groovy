@@ -25,6 +25,7 @@ import org.apache.commons.cli.Options
 //       properly render options w/arguments.
 //
 
+
 /**
  * Custom CLI help formatter to render things correctly.
  *
@@ -32,7 +33,8 @@ import org.apache.commons.cli.Options
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class HelpFormatter
-        extends org.apache.commons.cli.HelpFormatter {
+    extends org.apache.commons.cli.HelpFormatter
+{
     HelpFormatter() {
         defaultLeftPad = 2
         defaultDescPad = 4
@@ -43,71 +45,73 @@ class HelpFormatter
         return Terminal.terminal.terminalWidth - 1
     }
 
-    protected StringBuffer renderOptions(
-            final StringBuffer sb, final int width, final Options options, final int leftPad, final int descPad) {
+    protected StringBuffer renderOptions(final StringBuffer sb, final int width, final Options options, final int leftPad, final int descPad) {
         assert sb != null
         assert options
-
+        
         List<StringBuffer> prefixes = []
         String lpad = ' ' * leftPad
-
-        List<Option> opts = options.shortOpts.values().sort { Option a, Option b ->
+        
+        List<Option> opts = options.shortOpts.values().sort {Option a, Option b ->
             return (a.opt == ' ' ? a.longOpt : a.opt) <=> (b.opt == ' ' ? b.longOpt : b.opt)
         }
-
+        
         // Render the prefixes (-X,--xxxx muck)
-        opts.each { Option option ->
+        opts.each {Option option ->
             StringBuffer buff = new StringBuffer(8)
-
+            
             if (option.opt == ' ') {
                 buff << "${lpad}    ${defaultLongOptPrefix}${option.longOpt}"
-            } else {
+            }
+            else {
                 buff << "${lpad}${defaultOptPrefix}${option.opt}"
-
+                
                 if (option.hasLongOpt()) {
                     buff << ", ${defaultLongOptPrefix}${option.longOpt}"
                 }
             }
-
+            
             if (option.hasArg()) {
                 if (option.hasArgName()) {
                     if (option.hasOptionalArg()) {
                         buff << "[=${option.argName}]"
-                    } else {
+                    }
+                    else {
                         buff << "=${option.argName}"
                     }
-                } else {
+                }
+                else {
                     buff << ' '
                 }
             }
-
+            
             prefixes << buff
         }
-
+        
         // Figure out how long the biggest prefix is
-        int maxPrefix = prefixes.max { StringBuffer a, StringBuffer b -> a.size() <=> b.size() }.size()
-
+        int maxPrefix = prefixes.max {StringBuffer a, StringBuffer b -> a.size() <=> b.size() }.size()
+        
         String dpad = ' ' * descPad
-
+        
         // And then render each option's prefix with its description
-        opts.eachWithIndex { Option option, int i ->
+        opts.eachWithIndex {Option option, int i ->
             def buff = new StringBuffer(prefixes[i].toString())
-
+            
             if (buff.size() < maxPrefix) {
                 buff << ' ' * (maxPrefix - buff.size())
             }
             buff << dpad
-
+            
             int nextLineTabStop = maxPrefix + descPad
             String text = buff << option.description
-
+            
             renderWrappedText(sb, width, nextLineTabStop, text)
-
+            
             if (i < opts.size() - 1) {
                 sb << defaultNewLine
             }
         }
-
+        
         return sb
     }
 }

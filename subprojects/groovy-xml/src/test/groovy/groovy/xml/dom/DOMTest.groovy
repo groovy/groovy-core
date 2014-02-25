@@ -91,8 +91,8 @@ class DOMTest extends GroovyTestCase {
         def standard = 0
         mydomtest.benchmark = true
         [{ mydomtest.testDOMParser() },
-         { mydomtest.testDOMBuilder() },
-         { mydomtest.testStreamingDOMBuilder() }].eachWithIndex { testMethod, index ->
+                { mydomtest.testDOMBuilder() },
+                { mydomtest.testStreamingDOMBuilder() }].eachWithIndex { testMethod, index ->
             // Run the method once to fill any caches and to load classes
             testMethod()
             def start = System.currentTimeMillis()

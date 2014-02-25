@@ -36,7 +36,7 @@ public class CustomClassSyntaxCompletor implements IdentifierCompletor {
         boolean foundMatch = false
         Class[] classes = shell.interp.classLoader.loadedClasses
         if (classes.size() > 0) {
-            List<String> classnames = classes.collect { Class it -> it.getName() }
+            List<String> classnames = classes.collect {Class it -> it.getName()}
             for (String varName in classnames) {
                 if (varName.startsWith(prefix)) {
                     candidates << varName

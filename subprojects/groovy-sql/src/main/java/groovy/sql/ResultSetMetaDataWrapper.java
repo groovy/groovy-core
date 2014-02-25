@@ -16,12 +16,12 @@
 
 package groovy.sql;
 
+import java.sql.ResultSetMetaData;
+
 import groovy.lang.GroovyObjectSupport;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.ReadOnlyPropertyException;
 import org.codehaus.groovy.runtime.InvokerHelper;
-
-import java.sql.ResultSetMetaData;
 
 /**
  * This class defines a wrapper for accessing a specific column in <code>ResultSetMetaData</code>.
@@ -33,7 +33,7 @@ import java.sql.ResultSetMetaData;
  * </pre>
  * All <code>ResultSetMetaData</code> column methods taking a column index
  * are available on a column either as a no-arg getter or via a property.
- * <p/>
+ * <p>
  * This wrapper is created by an iterator invoked for <code>ResultSetMetaData</code>.
  *
  * @author John Hurst

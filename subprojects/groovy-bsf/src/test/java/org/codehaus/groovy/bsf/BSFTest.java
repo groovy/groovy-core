@@ -42,8 +42,8 @@ public class BSFTest extends TestCase {
     }
 
     public void testScriptDefPrefixRemoval() throws Exception {
-        manager.exec("groovy", "scriptdef_foo", 0, 0, "assert bsf != null && this.class.name.equals('foo')");
-        manager.exec("groovy", "scriptdef_", 0, 0, "assert bsf != null && this.class.name.equals('_')");
+        manager.exec("groovy","scriptdef_foo", 0, 0, "assert bsf != null && this.class.name.equals('foo')");
+        manager.exec("groovy","scriptdef_", 0, 0, "assert bsf != null && this.class.name.equals('_')");
     }
 
     public void testInvalidName() throws Exception {

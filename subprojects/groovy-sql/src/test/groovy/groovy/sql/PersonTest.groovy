@@ -103,7 +103,7 @@ order by firstName DESC, age'''
 
     protected createDataSet() {
         def type = Person
-        assert type != null, "failed to load Person class"
+        assert type != null , "failed to load Person class"
         def dataSource = createDataSource()
         def sql = new Sql(dataSource)
         return sql.dataSet(type)

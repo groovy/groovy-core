@@ -15,12 +15,12 @@
  */
 package groovy.swing.binding
 
-import org.codehaus.groovy.runtime.InvokerHelper
-
-import javax.swing.*
+import javax.swing.JTable
 import javax.swing.table.TableColumn
 import javax.swing.table.TableColumnModel
 import javax.swing.table.TableModel
+import org.codehaus.groovy.runtime.InvokerHelper
+
 
 /**
  * Created by IntelliJ IDEA.
@@ -34,21 +34,21 @@ class JTableMetaMethods {
     public static void enhanceMetaClass(table) {
         AbstractSyntheticMetaMethods.enhance(table, [
 
-                getElements        : { ->
-                    def model = delegate.model;
-                    if (model instanceof javax.swing.table.DefaultTableModel) {
-                        return Collections.unmodifiableList(model.getDataVector())
-                    } else if (model instanceof groovy.model.DefaultTableModel) {
-                        return Collections.unmodifiableList(model.rows)
-                    }
-                },
-                getSelectedElement : { ->
-                    return getElement(delegate, delegate.selectedRow)
-                },
-                getSelectedElements: { ->
-                    def myTable = delegate
-                    return myTable.getSelectedRows().collect { getElement(myTable, it) }
+            getElements:{->
+                def model = delegate.model;
+                if (model instanceof javax.swing.table.DefaultTableModel) {
+                    return Collections.unmodifiableList(model.getDataVector())
+                } else if (model instanceof groovy.model.DefaultTableModel) {
+                    return Collections.unmodifiableList(model.rows)
                 }
+            },
+            getSelectedElement:{->
+                return getElement(delegate, delegate.selectedRow)
+            },
+            getSelectedElements:{->
+                def myTable = delegate
+                return myTable.getSelectedRows().collect { getElement(myTable, it) }
+            }
         ]);
     }
 
@@ -64,7 +64,7 @@ class JTableMetaMethods {
             for (int i = 0; i < cmodel.getColumnCount(); i++) {
                 TableColumn c = cmodel.getColumn(i);
                 value.put(c.getIdentifier(), // will fall through to headerValue
-                        table.getValueAt(row, c.getModelIndex()))
+                    table.getValueAt(row, c.getModelIndex()))
             }
             return value;
         } else if (model instanceof groovy.model.DefaultTableModel) {

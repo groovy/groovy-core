@@ -16,17 +16,18 @@
 
 package org.codehaus.groovy.tools.shell
 
-import antlr.RecognitionException
-import antlr.TokenStreamException
-import antlr.collections.AST
+import org.codehaus.groovy.control.SourceUnit
+import org.codehaus.groovy.control.CompilationFailedException
+import org.codehaus.groovy.tools.shell.util.Logger
+import org.codehaus.groovy.tools.shell.util.Preferences
 import org.codehaus.groovy.antlr.SourceBuffer
 import org.codehaus.groovy.antlr.UnicodeEscapingReader
 import org.codehaus.groovy.antlr.parser.GroovyLexer
 import org.codehaus.groovy.antlr.parser.GroovyRecognizer
-import org.codehaus.groovy.control.CompilationFailedException
-import org.codehaus.groovy.control.SourceUnit
-import org.codehaus.groovy.tools.shell.util.Logger
-import org.codehaus.groovy.tools.shell.util.Preferences
+import antlr.collections.AST
+import antlr.RecognitionException
+import antlr.TokenStreamException
+
 
 interface Parsing {
     ParseStatus parse(final Collection<String> buffer);
@@ -37,7 +38,8 @@ interface Parsing {
  *
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
-class Parser {
+class Parser
+{
     static final String NEWLINE = System.getProperty('line.separator')
 
     private static final Logger log = Logger.create(Parser)
@@ -48,7 +50,7 @@ class Parser {
         String flavor = Preferences.getParserFlavor()
 
         log.debug("Using parser flavor: $flavor")
-
+        
         switch (flavor) {
             case Preferences.PARSER_RELAXED:
                 delegate = new RelaxedParser()
@@ -64,7 +66,7 @@ class Parser {
                 break
         }
     }
-
+    
     ParseStatus parse(final Collection<String> buffer) {
         return delegate.parse(buffer)
     }
@@ -73,7 +75,8 @@ class Parser {
 /**
  * A relaxed parser, which tends to allow more, but won't really catch valid syntax errors.
  */
-final class RelaxedParser implements Parsing {
+final class RelaxedParser implements Parsing
+{
     private final Logger log = Logger.create(this.class)
 
     private SourceBuffer sourceBuffer
@@ -101,7 +104,7 @@ final class RelaxedParser implements Parsing {
                 case TokenStreamException:
                 case RecognitionException:
                     log.debug("Parse incomplete: $e (${e.getClass().getName()})")
-
+    
                     return new ParseStatus(ParseCode.INCOMPLETE)
 
                 default:
@@ -128,7 +131,8 @@ final class RelaxedParser implements Parsing {
 /**
  * A more rigid parser which catches more syntax errors, but also tends to barf on stuff that is really valid from time to time.
  */
-final class RigidParser implements Parsing {
+final class RigidParser implements Parsing
+{
     static final String SCRIPT_FILENAME = 'groovysh_parse'
 
     private final Logger log = Logger.create(this.class)
@@ -160,12 +164,13 @@ final class RigidParser implements Parsing {
             //
 
             if (parser.errorCollector.errorCount > 1 || !parser.failedWithUnexpectedEOF()) {
-
+ 
                 // HACK: Super insane hack... we detect a syntax error, but might still ignore
                 // it depending on the line ending
                 if (ignoreSyntaxErrorForLineEnding(buffer[-1].trim())) {
                     log.debug("Ignoring parse failure; might be valid: $e")
-                } else {
+                }
+                else {
                     error = e
                 }
             }
@@ -182,11 +187,11 @@ final class RigidParser implements Parsing {
         log.debug('Parse incomplete')
         return new ParseStatus(ParseCode.INCOMPLETE)
     }
-
+    
     private boolean ignoreSyntaxErrorForLineEnding(String line) {
         def lineEndings = ['{', '[', '(', ',', '.', '-', '+', '/', '*', '%', '&', '|', '?', '<', '>', '=', ':', "'''", '"""', '\\']
-        for (String lineEnding in lineEndings) {
-            if (line.endsWith(lineEnding)) return true
+        for(String lineEnding in lineEndings) {
+            if(line.endsWith(lineEnding)) return true
         }
         return false
     }
@@ -195,7 +200,8 @@ final class RigidParser implements Parsing {
 /**
  * Container for the parse code.
  */
-final class ParseCode {
+final class ParseCode
+{
     static final ParseCode COMPLETE = new ParseCode(0)
 
     static final ParseCode INCOMPLETE = new ParseCode(1)
@@ -216,7 +222,8 @@ final class ParseCode {
 /**
  * Container for parse status details.
  */
-final class ParseStatus {
+final class ParseStatus
+{
     final ParseCode code
 
     final Throwable cause

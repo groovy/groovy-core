@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 
 /**
  * Extracts and indexes named parameters from a sql string.
- * <p/>
+ *
  * This class is package-private scoped and is only intended for internal use.
  *
  * @see groovy.sql.Sql

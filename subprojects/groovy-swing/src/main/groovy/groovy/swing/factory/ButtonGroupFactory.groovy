@@ -15,9 +15,6 @@
  */
 
 package groovy.swing.factory
-
-import javax.swing.*
-
 /**
  * Created by IntelliJ IDEA.
  * User: Danno.Ferrin
@@ -25,6 +22,10 @@ import javax.swing.*
  * Time: 9:08:24 PM
  * To change this template use File | Settings | File Templates.
  */
+
+import javax.swing.AbstractButton
+import javax.swing.ButtonGroup
+
 class ButtonGroupFactory extends BeanFactory {
 
     public static final String DELEGATE_PROPERTY_BUTTON_GROUP = "_delegateProperty:buttonGroup";
@@ -47,7 +48,7 @@ class ButtonGroupFactory extends BeanFactory {
                 node.model.group = o
                 attributes.remove(buttonGroupAttr)
             }
-        }
+         }
     }
 
 }

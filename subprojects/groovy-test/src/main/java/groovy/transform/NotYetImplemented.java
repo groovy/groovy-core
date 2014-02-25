@@ -26,10 +26,10 @@ import java.lang.annotation.Target;
  * Method annotation used to invert test case results. If a JUnit 3/4 test case method is
  * annotated with {@code @NotYetImplemented} the test will fail if no test failure occurs and it will pass
  * if a test failure occurs.
- * <p/>
+ * <p>
  * This is helpful for tests that don't currently work but should work one day,
  * when the tested functionality has been implemented.
- * <p/>
+ * <p>
  * The idea for this AST transformation originated in {@link groovy.util.GroovyTestCase#notYetImplemented()}.
  *
  * @author Dierk König

@@ -24,75 +24,76 @@ import org.codehaus.groovy.tools.shell.util.Logger
  * @version $Id$
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
-class CommandRegistry {
+class CommandRegistry
+{
     protected final Logger log = Logger.create(CommandRegistry)
-
+    
     //
     // TODO: Hook up support so one can for (command in registry) { }
     //
-
+    
     /** A list of all of the registered commands. */
     final List<Command> commands = []
 
     /** A set of all of the command names and shortcuts to ensure they are unique. */
     private final Set<String> names = new TreeSet<String>()
-
+    
     Command register(final Command command) {
         assert command
 
         // Make sure that the command name and shortcut are unique
-        assert !names.contains(command.name): "Duplicate comamnd name: $command.name"
+        assert !names.contains(command.name) : "Duplicate comamnd name: $command.name"
         names << command.name
-
-        assert !names.contains(command.shortcut): "Duplicate command shortcut: $command.shortcut"
+        
+        assert !names.contains(command.shortcut) : "Duplicate command shortcut: $command.shortcut"
         names << command.shortcut
 
         // Hold on to the command in order
         commands << command
-
+        
         // Hookup context for alias commands
         if (command instanceof CommandSupport) {
             ((CommandSupport) command).registry = this
         }
 
         // Add any standard aliases for the command if any
-        command.aliases?.each { Command it -> this.register(it) }
-
+        command.aliases?.each {Command it -> this.register(it) }
+        
         if (log.debugEnabled) {
             log.debug("Registered command: $command.name")
         }
-
+        
         return command
     }
-
+    
     Command find(final String name) {
         assert name
-
+        
         for (c in commands) {
-            if (name in [c.name, c.shortcut]) {
+            if (name in [ c.name, c.shortcut ]) {
                 return c
             }
             if (name.equals(':' + c.name)) {
                 return c
             }
         }
-
+        
         return null
     }
-
+    
     void remove(final Command command) {
         assert command
-
+        
         commands.remove(command)
-
+        
         names.remove(command.name)
         names.remove(command.shortcut)
-
+        
         if (log.debugEnabled) {
             log.debug("Removed command: $command.name")
         }
     }
-
+    
     List<Command> commands() {
         return commands
     }
@@ -100,7 +101,7 @@ class CommandRegistry {
     Command getProperty(final String name) {
         return find(name)
     }
-
+    
     Iterator<Command> iterator() {
         return commands().iterator()
     }

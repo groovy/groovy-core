@@ -55,7 +55,7 @@ public class CurlyCountingGroovyLexer extends GroovyLexer {
     public List<GroovySourceToken> toList() {
         List<GroovySourceToken> tokens = []
         GroovySourceToken token
-        while (!endReached) {
+        while (! endReached) {
             token = nextToken() as GroovySourceToken
             tokens.add(token)
             if (token.getType() == GroovyTokenTypes.EOF) {

@@ -17,6 +17,23 @@ package org.codehaus.groovy.ant;
 
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyResourceLoader;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GroovyInternalPosixParser;
@@ -41,12 +58,6 @@ import org.codehaus.groovy.tools.ErrorReporter;
 import org.codehaus.groovy.tools.FileSystemCompiler;
 import org.codehaus.groovy.tools.RootLoader;
 import org.codehaus.groovy.tools.javac.JavaAwareCompilationUnit;
-
-import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.Charset;
-import java.util.*;
 
 /**
  * Compiles Groovy source files. This task can take the following arguments:
@@ -88,10 +99,10 @@ import java.util.*;
  * <li>javac</li>
  * </ul>
  * Of these arguments, the <b>srcdir</b> and <b>destdir</b> are required.
- * <p/>
+ * <p>
  * <p>When this task executes, it will recursively scan srcdir and destdir looking for Groovy source files
  * to compile. This task makes its compile decision based on timestamp.
- * <p/>
+ * <p>
  * Based heavily on the Javac implementation in Ant.
  *
  * @author <a href="mailto:james@coredevelopers.net">James Strachan</a>
@@ -587,7 +598,7 @@ public class Groovyc extends MatchingTask {
      * Get the result of the groovyc task (success or failure).
      *
      * @return true if compilation succeeded, or
-     * was not necessary, false if the compilation failed.
+     *         was not necessary, false if the compilation failed.
      */
     public boolean getTaskSuccess() {
         return taskSuccess;
@@ -707,7 +718,7 @@ public class Groovyc extends MatchingTask {
 
     /**
      * Set the forceLookupUnnamedFiles flag. Defaults to false.
-     * <p/>
+     *
      * The Groovyc Ant task is frequently used in the context of a build system
      * that knows the complete list of source files to be compiled. In such a
      * context, it is wasteful for the Groovy compiler to go searching the
@@ -829,8 +840,7 @@ public class Groovyc extends MatchingTask {
             throw new BuildException("destination directory \""
                     + destDir
                     + "\" does not exist or is not a directory",
-                    getLocation()
-            );
+                    getLocation());
         }
 
         if (encoding != null && !Charset.isSupported(encoding)) {
@@ -1209,11 +1219,12 @@ public class Groovyc extends MatchingTask {
                  * may not exist in the classpath yet
                  */
                 if (!found && new File(cpEntry).exists()) {
-                    try {
-                        antLoader.addPathElement(cpEntry);
-                    } catch (BuildException e) {
-                        log.warn("The classpath entry " + cpEntry + " is not a valid Java resource");
-                    }
+                	try {
+                		antLoader.addPathElement(cpEntry);
+                	}
+                	catch(BuildException e) {
+                		log.warn("The classpath entry " + cpEntry + " is not a valid Java resource");
+                	}
                 }
             }
         }

@@ -15,6 +15,7 @@
  */
 package groovy.json
 
+
 /**
  * @author Tim Yates
  * @author Guillaume Laforge
@@ -23,14 +24,14 @@ class StreamingJsonBuilderTest extends GroovyTestCase {
 
     void testJsonBuilderConstructor() {
         new StringWriter().with { w ->
-            new StreamingJsonBuilder(w, [a: 1, b: true])
+            new StreamingJsonBuilder( w, [a: 1, b: true])
             assert w.toString() == '{"a":1,"b":true}'
         }
     }
 
     void testEmptyArray() {
         new StringWriter().with { w ->
-            def json = new StreamingJsonBuilder(w)
+            def json = new StreamingJsonBuilder( w )
             json([])
             assert w.toString() == '[]'
         }
@@ -38,7 +39,7 @@ class StreamingJsonBuilderTest extends GroovyTestCase {
 
     void testSimpleArray() {
         new StringWriter().with { w ->
-            def json = new StreamingJsonBuilder(w)
+            def json = new StreamingJsonBuilder( w )
             json 1, 2, "a", "b"
 
             assert w.toString() == '[1,2,"a","b"]'
@@ -47,7 +48,7 @@ class StreamingJsonBuilderTest extends GroovyTestCase {
 
     void testComplexArray() {
         new StringWriter().with { w ->
-            def json = new StreamingJsonBuilder(w)
+            def json = new StreamingJsonBuilder( w )
             json 1, 2, [k: true], "a", "b", [3, "c"]
 
             assert w.toString() == '[1,2,{"k":true},"a","b",[3,"c"]]'
@@ -56,7 +57,7 @@ class StreamingJsonBuilderTest extends GroovyTestCase {
 
     void testMap() {
         new StringWriter().with { w ->
-            def json = new StreamingJsonBuilder(w)
+            def json = new StreamingJsonBuilder( w )
             json a: 1, b: 2
 
             assert w.toString() == '{"a":1,"b":2}'
@@ -65,7 +66,7 @@ class StreamingJsonBuilderTest extends GroovyTestCase {
 
     void testEmptyObject() {
         new StringWriter().with { w ->
-            def json = new StreamingJsonBuilder(w)
+            def json = new StreamingJsonBuilder( w )
             json {}
 
             assert w.toString() == '{}'
@@ -74,7 +75,7 @@ class StreamingJsonBuilderTest extends GroovyTestCase {
 
     void testBasicObject() {
         new StringWriter().with { w ->
-            def json = new StreamingJsonBuilder(w)
+            def json = new StreamingJsonBuilder( w )
             json {
                 a 1
                 b true
@@ -84,10 +85,10 @@ class StreamingJsonBuilderTest extends GroovyTestCase {
             assert w.toString() == '{"a":1,"b":true,"c":null}'
         }
     }
-
+    
     void testNestedObjects() {
         new StringWriter().with { w ->
-            def json = new StreamingJsonBuilder(w)
+            def json = new StreamingJsonBuilder( w )
             json {
                 a {
                     b {
@@ -102,7 +103,7 @@ class StreamingJsonBuilderTest extends GroovyTestCase {
 
     void testStandardBuilderStyle() {
         new StringWriter().with { w ->
-            def json = new StreamingJsonBuilder(w)
+            def json = new StreamingJsonBuilder( w )
             json.person {
                 name "Guillaume"
                 age 33
@@ -114,7 +115,7 @@ class StreamingJsonBuilderTest extends GroovyTestCase {
 
     void testMethodCallWithNamedArguments() {
         new StringWriter().with { w ->
-            def json = new StreamingJsonBuilder(w)
+            def json = new StreamingJsonBuilder( w )
             json.person name: "Guillaume", age: 33
 
             assert w.toString() == '{"person":{"name":"Guillaume","age":33}}'
@@ -123,7 +124,7 @@ class StreamingJsonBuilderTest extends GroovyTestCase {
 
     void testThrowAnExceptionWhenPassingSomethingElseThanAClosure() {
         new StringWriter().with { w ->
-            def json = new StreamingJsonBuilder(w)
+            def json = new StreamingJsonBuilder( w )
 
             shouldFail(JsonException) {
                 json.something 1, 2, 3
@@ -133,7 +134,7 @@ class StreamingJsonBuilderTest extends GroovyTestCase {
 
     void testListWithAnEmptyObject() {
         new StringWriter().with { w ->
-            def json = new StreamingJsonBuilder(w)
+            def json = new StreamingJsonBuilder( w )
             json([[:]])
 
             assert w.toString() == '[{}]'
@@ -142,7 +143,7 @@ class StreamingJsonBuilderTest extends GroovyTestCase {
 
     void testListOfObjects() {
         new StringWriter().with { w ->
-            def json = new StreamingJsonBuilder(w)
+            def json = new StreamingJsonBuilder( w )
             json([name: "Guillaume"], [name: "Jochen"], [name: "Paul"])
 
             assert w.toString() == '[{"name":"Guillaume"},{"name":"Jochen"},{"name":"Paul"}]'
@@ -151,7 +152,7 @@ class StreamingJsonBuilderTest extends GroovyTestCase {
 
     void testElementHasListOfObjects() {
         new StringWriter().with { w ->
-            def json = new StreamingJsonBuilder(w)
+            def json = new StreamingJsonBuilder( w )
             json.response {
                 results 1, [a: 2]
             }
@@ -165,10 +166,10 @@ class StreamingJsonBuilderTest extends GroovyTestCase {
     }
 
     void testCollectionAndClosure() {
-        def authors = [new Author(name: "Guillaume"), new Author(name: "Jochen"), new Author(name: "Paul")]
+        def authors = [new Author (name: "Guillaume"), new Author (name: "Jochen"), new Author (name: "Paul")]
 
         new StringWriter().with { w ->
-            def json = new StreamingJsonBuilder(w)
+            def json = new StreamingJsonBuilder( w )
             json authors, { Author author ->
                 name author.name
             }
@@ -178,10 +179,10 @@ class StreamingJsonBuilderTest extends GroovyTestCase {
     }
 
     void testMethodWithCollectionAndClosure() {
-        def authors = [new Author(name: "Guillaume"), new Author(name: "Jochen"), new Author(name: "Paul")]
+        def authors = [new Author (name: "Guillaume"), new Author (name: "Jochen"), new Author (name: "Paul")]
 
         new StringWriter().with { w ->
-            def json = new StreamingJsonBuilder(w)
+            def json = new StreamingJsonBuilder( w )
             json.authors authors, { Author author ->
                 name author.name
             }
@@ -191,10 +192,10 @@ class StreamingJsonBuilderTest extends GroovyTestCase {
     }
 
     void testNestedMethodWithCollectionAndClosure() {
-        def theAuthors = [new Author(name: "Guillaume"), new Author(name: "Jochen"), new Author(name: "Paul")]
+        def theAuthors = [new Author (name: "Guillaume"), new Author (name: "Jochen"), new Author (name: "Paul")]
 
         new StringWriter().with { w ->
-            def json = new StreamingJsonBuilder(w)
+            def json = new StreamingJsonBuilder( w )
             json {
                 authors theAuthors, { Author author ->
                     name author.name
@@ -207,7 +208,7 @@ class StreamingJsonBuilderTest extends GroovyTestCase {
 
     void testComplexStructureFromTheGuardian() {
         new StringWriter().with { w ->
-            def json = new StreamingJsonBuilder(w)
+            def json = new StreamingJsonBuilder( w )
             json.response {
                 status "ok"
                 userTier "free"
@@ -218,35 +219,35 @@ class StreamingJsonBuilderTest extends GroovyTestCase {
                 pages 242
                 orderBy "newest"
                 results([
-                        id                : "world/video/2011/jan/19/tunisia-demonstrators-democracy-video",
-                        sectionId         : "world",
-                        sectionName       : "World news",
-                        webPublicationDate: "2011-01-19T15:12:46Z",
-                        webTitle          : "Tunisian demonstrators demand new democracy - video",
-                        webUrl            : "http://www.guardian.co.uk/world/video/2011/jan/19/tunisia-demonstrators-democracy-video",
-                        apiUrl            : "http://content.guardianapis.com/world/video/2011/jan/19/tunisia-demonstrators-democracy-video"
+                    id: "world/video/2011/jan/19/tunisia-demonstrators-democracy-video",
+                    sectionId: "world",
+                    sectionName: "World news",
+                    webPublicationDate: "2011-01-19T15:12:46Z",
+                    webTitle: "Tunisian demonstrators demand new democracy - video",
+                    webUrl: "http://www.guardian.co.uk/world/video/2011/jan/19/tunisia-demonstrators-democracy-video",
+                    apiUrl: "http://content.guardianapis.com/world/video/2011/jan/19/tunisia-demonstrators-democracy-video"
                 ],
-                        [
-                                id                : "world/gallery/2011/jan/19/tunisia-protests-pictures",
-                                sectionId         : "world",
-                                sectionName       : "World news",
-                                webPublicationDate: "2011-01-19T15:01:09Z",
-                                webTitle          : "Tunisia protests continue in pictures ",
-                                webUrl            : "http://www.guardian.co.uk/world/gallery/2011/jan/19/tunisia-protests-pictures",
-                                apiUrl            : "http://content.guardianapis.com/world/gallery/2011/jan/19/tunisia-protests-pictures"
-                        ])
+                [
+                    id: "world/gallery/2011/jan/19/tunisia-protests-pictures",
+                    sectionId: "world",
+                    sectionName: "World news",
+                    webPublicationDate: "2011-01-19T15:01:09Z",
+                    webTitle: "Tunisia protests continue in pictures ",
+                    webUrl: "http://www.guardian.co.uk/world/gallery/2011/jan/19/tunisia-protests-pictures",
+                    apiUrl: "http://content.guardianapis.com/world/gallery/2011/jan/19/tunisia-protests-pictures"
+                ])
             }
 
             assert w.toString() ==
-                    '''{"response":{"status":"ok","userTier":"free","total":2413,"startIndex":1,"pageSize":10,"currentPage":1,"pages":242,"orderBy":"newest","results":[{"id":"world/video/2011/jan/19/tunisia-demonstrators-democracy-video","sectionId":"world","sectionName":"World news","webPublicationDate":"2011-01-19T15:12:46Z","webTitle":"Tunisian demonstrators demand new democracy - video","webUrl":"http://www.guardian.co.uk/world/video/2011/jan/19/tunisia-demonstrators-democracy-video","apiUrl":"http://content.guardianapis.com/world/video/2011/jan/19/tunisia-demonstrators-democracy-video"},{"id":"world/gallery/2011/jan/19/tunisia-protests-pictures","sectionId":"world","sectionName":"World news","webPublicationDate":"2011-01-19T15:01:09Z","webTitle":"Tunisia protests continue in pictures ","webUrl":"http://www.guardian.co.uk/world/gallery/2011/jan/19/tunisia-protests-pictures","apiUrl":"http://content.guardianapis.com/world/gallery/2011/jan/19/tunisia-protests-pictures"}]}}'''
+                '''{"response":{"status":"ok","userTier":"free","total":2413,"startIndex":1,"pageSize":10,"currentPage":1,"pages":242,"orderBy":"newest","results":[{"id":"world/video/2011/jan/19/tunisia-demonstrators-democracy-video","sectionId":"world","sectionName":"World news","webPublicationDate":"2011-01-19T15:12:46Z","webTitle":"Tunisian demonstrators demand new democracy - video","webUrl":"http://www.guardian.co.uk/world/video/2011/jan/19/tunisia-demonstrators-democracy-video","apiUrl":"http://content.guardianapis.com/world/video/2011/jan/19/tunisia-demonstrators-democracy-video"},{"id":"world/gallery/2011/jan/19/tunisia-protests-pictures","sectionId":"world","sectionName":"World news","webPublicationDate":"2011-01-19T15:01:09Z","webTitle":"Tunisia protests continue in pictures ","webUrl":"http://www.guardian.co.uk/world/gallery/2011/jan/19/tunisia-protests-pictures","apiUrl":"http://content.guardianapis.com/world/gallery/2011/jan/19/tunisia-protests-pictures"}]}}'''
         }
     }
 
     void testNestedListMap() {
         new StringWriter().with { w ->
-            def json = new StreamingJsonBuilder(w)
+            def json = new StreamingJsonBuilder( w )
             json.content {
-                list([:], [another: [a: [1, 2, 3]]])
+                list([:],[another:[a:[1,2,3]]])
             }
 
             assert w.toString() == '''{"content":{"list":[{},{"another":{"a":[1,2,3]}}]}}'''
@@ -255,7 +256,7 @@ class StreamingJsonBuilderTest extends GroovyTestCase {
 
     void testEmptyList() {
         new StringWriter().with { w ->
-            def json = new StreamingJsonBuilder(w)
+            def json = new StreamingJsonBuilder( w )
             json()
 
             assert w.toString() == '''[]'''
@@ -264,24 +265,24 @@ class StreamingJsonBuilderTest extends GroovyTestCase {
 
     void testTrendsFromTwitter() {
         new StringWriter().with { w ->
-            def json = new StreamingJsonBuilder(w)
+            def json = new StreamingJsonBuilder( w )
             json.trends {
-                "2010-06-22 17:20"([
-                        name : "Groovy rules",
+                "2010-06-22 17:20" ([
+                        name: "Groovy rules",
                         query: "Groovy rules"
                 ], {
-                    name "#worldcup"
-                    query "#worldcup"
+                        name "#worldcup"
+                        query "#worldcup"
                 }, [
-                        name : "Uruguai",
+                        name: "Uruguai",
                         query: "Uruguai"
                 ])
-                "2010-06-22 06:20"({
+                "2010-06-22 06:20" ({
                     name "#groovy"
                     query "#groovy"
                 }, [
-                        name : "#java",
-                        query: "#java"
+                    name: "#java",
+                    query: "#java"
                 ])
             }
             assert w.toString() == '''{"trends":{"2010-06-22 17:20":[{"name":"Groovy rules","query":"Groovy rules"},{"name":"#worldcup","query":"#worldcup"},{"name":"Uruguai","query":"Uruguai"}],"2010-06-22 06:20":[{"name":"#groovy","query":"#groovy"},{"name":"#java","query":"#java"}]}}'''
@@ -290,16 +291,16 @@ class StreamingJsonBuilderTest extends GroovyTestCase {
 
     void testExampleFromTheGep7Page() {
         new StringWriter().with { w ->
-            def builder = new StreamingJsonBuilder(w)
+            def builder = new StreamingJsonBuilder( w )
             builder.people {
                 person {
                     firstName 'Guillame'
                     lastName 'Laforge'
                     // Maps are valid values for objects too
                     address(
-                            city: 'Paris',
-                            country: 'France',
-                            zip: 12345,
+                        city: 'Paris',
+                        country: 'France',
+                        zip: 12345,
                     )
                     married true
                     conferences 'JavaOne', 'Gr8conf'
@@ -312,36 +313,37 @@ class StreamingJsonBuilderTest extends GroovyTestCase {
 
     void testEdgeCases() {
         new StringWriter().with { w ->
-            def builder = new StreamingJsonBuilder(w)
+            def builder = new StreamingJsonBuilder( w )
             builder { elem 1, 2, 3 }
-
+            
             assert w.toString() == '{"elem":[1,2,3]}'
         }
         new StringWriter().with { w ->
-            def builder = new StreamingJsonBuilder(w)
+            def builder = new StreamingJsonBuilder( w )
             builder.elem()
-
+            
             assert w.toString() == '{"elem":{}}'
         }
         new StringWriter().with { w ->
-            def builder = new StreamingJsonBuilder(w)
+            def builder = new StreamingJsonBuilder( w )
             builder.elem(a: 1, b: 2) { c 3 }
-
+            
             assert w.toString() == '{"elem":{"a":1,"b":2,"c":3}}'
         }
         new StringWriter().with { w ->
-            def builder = new StreamingJsonBuilder(w)
-            builder.elem([:]) { c 3 }
-
+            def builder = new StreamingJsonBuilder( w )
+            builder.elem( [:] ) { c 3 }
+            
             assert w.toString() == '{"elem":{"c":3}}'
         }
         new StringWriter().with { w ->
-            def builder = new StreamingJsonBuilder(w)
+            def builder = new StreamingJsonBuilder( w )
             shouldFail(JsonException) {
                 builder.elem(a: 1, b: 2, "ABCD")
             }
         }
     }
+
 
 
 }

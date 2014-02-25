@@ -15,7 +15,11 @@
  */
 package groovy.text;
 
-import groovy.lang.*;
+import groovy.lang.Binding;
+import groovy.lang.GroovyRuntimeException;
+import groovy.lang.GroovyShell;
+import groovy.lang.Script;
+import groovy.lang.Writable;
 import groovy.util.IndentPrinter;
 import groovy.util.Node;
 import groovy.util.XmlNodePrinter;
@@ -26,7 +30,11 @@ import org.codehaus.groovy.runtime.InvokerHelper;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,22 +42,22 @@ import java.util.Map;
 /**
  * Template engine for use in templating scenarios where both the template
  * source and the expected output are intended to be XML.
- * <p/>
+ * <p>
  * Templates may use the normal '${expression}' and '$variable' notations
  * to insert an arbitrary expression into the template.
  * In addition, support is also provided for special tags:
  * &lt;gsp:scriptlet&gt; (for inserting code fragments) and
  * &lt;gsp:expression&gt; (for code fragments which produce output).
- * <p/>
+ * <p>
  * Comments and processing instructions
  * will be removed as part of processing and special XML characters such as
  * &lt;, &gt;, &quot and &apos; will be escaped using the respective XML notation.
  * The output will also be indented using standard XML pretty printing.
- * <p/>
+ * <p>
  * The xmlns namespace definition for <code>gsp:</code> tags will be removed
  * but other namespace definitions will be preserved (but may change to an
  * equivalent position within the XML tree).
- * <p/>
+ * <p>
  * Normally, the template source will be in a file but here is a simple
  * example providing the XML template as a string:
  * <pre>
@@ -282,7 +290,7 @@ public class XmlTemplateEngine extends TemplateEngine {
     }
 
     public Template createTemplate(Reader reader) throws CompilationFailedException, ClassNotFoundException, IOException {
-        Node root;
+        Node root ;
         try {
             root = xmlParser.parse(reader);
         } catch (SAXException e) {

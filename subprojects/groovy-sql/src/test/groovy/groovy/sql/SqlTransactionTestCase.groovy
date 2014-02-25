@@ -34,15 +34,14 @@ class SqlTransactionTestCase extends GroovyTestCase {
 
     protected tryDrop(String tableName) {
         try {
-            sql.execute("DROP TABLE $tableName".toString())
-        } catch (Exception e) {
-        }
+           sql.execute("DROP TABLE $tableName".toString())
+        } catch(Exception e){ }
     }
 
     void setUp() {
         sql = setUpSql()
         // drop them in this order due to FK constraint
-        ["PERSON_FOOD", "PERSON"].each { tryDrop(it) }
+        ["PERSON_FOOD", "PERSON"].each{ tryDrop(it) }
 
         sql.execute("CREATE TABLE person ( id INTEGER, firstname VARCHAR(10), lastname VARCHAR(10), PRIMARY KEY (id))")
         sql.execute("CREATE TABLE person_food ( personid INTEGER, food VARCHAR(10), FOREIGN KEY (personid) REFERENCES person(id))")

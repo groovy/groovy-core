@@ -17,10 +17,6 @@
 package org.codehaus.groovy.tools.groovydoc;
 
 import groovy.util.GroovyTestCase;
-import org.codehaus.groovy.groovydoc.GroovyClassDoc;
-import org.codehaus.groovy.groovydoc.GroovyMethodDoc;
-import org.codehaus.groovy.groovydoc.GroovyRootDoc;
-import org.codehaus.groovy.tools.groovydoc.gstringTemplates.GroovyDocTemplateInfo;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -28,6 +24,11 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.codehaus.groovy.groovydoc.GroovyClassDoc;
+import org.codehaus.groovy.groovydoc.GroovyMethodDoc;
+import org.codehaus.groovy.groovydoc.GroovyRootDoc;
+import org.codehaus.groovy.tools.groovydoc.gstringTemplates.GroovyDocTemplateInfo;
 
 /**
  * @author Jeremy Rayner
@@ -47,7 +48,7 @@ public class GroovyDocToolTest extends GroovyTestCase {
 
         xmlTool = new GroovyDocTool(
                 new FileSystemResourceManager("src"), // template storage
-                new String[]{"src/main/java", "../../src/main", // source file dirs
+                new String[] {"src/main/java", "../../src/main", // source file dirs
                         "src/test/groovy"},
                 new String[]{TEMPLATES_DIR + "/topLevel/rootDocStructuredData.xml"},
                 new String[]{TEMPLATES_DIR + "/packageLevel/packageDocStructuredData.xml"},
@@ -58,7 +59,7 @@ public class GroovyDocToolTest extends GroovyTestCase {
 
         xmlToolForTests = new GroovyDocTool(
                 new FileSystemResourceManager("src"), // template storage
-                new String[]{"src/test/groovy", "../../src/test"}, // source file dirs
+                new String[] {"src/test/groovy", "../../src/test"}, // source file dirs
                 new String[]{TEMPLATES_DIR + "/topLevel/rootDocStructuredData.xml"},
                 new String[]{TEMPLATES_DIR + "/packageLevel/packageDocStructuredData.xml"},
                 new String[]{TEMPLATES_DIR + "/classLevel/classDocStructuredData.xml"},
@@ -74,7 +75,7 @@ public class GroovyDocToolTest extends GroovyTestCase {
 
         htmlTool = new GroovyDocTool(
                 new FileSystemResourceManager("src/main/resources"), // template storage
-                new String[]{"src/test/groovy", "../../src/test"}, // source file dirs
+                new String[] {"src/test/groovy", "../../src/test"}, // source file dirs
                 GroovyDocTemplateInfo.DEFAULT_DOC_TEMPLATES,
                 GroovyDocTemplateInfo.DEFAULT_PACKAGE_TEMPLATES,
                 GroovyDocTemplateInfo.DEFAULT_CLASS_TEMPLATES,

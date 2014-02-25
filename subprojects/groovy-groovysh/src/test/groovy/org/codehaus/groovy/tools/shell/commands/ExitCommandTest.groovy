@@ -24,7 +24,8 @@ import org.codehaus.groovy.tools.shell.ExitNotification
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class ExitCommandTest
-        extends CommandTestSupport {
+    extends CommandTestSupport
+{
     void testWithNoArgs() {
         try {
             shell << ':exit'

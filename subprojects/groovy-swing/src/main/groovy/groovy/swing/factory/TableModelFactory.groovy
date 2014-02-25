@@ -19,14 +19,13 @@ package groovy.swing.factory
 import groovy.model.DefaultTableModel
 import groovy.model.ValueHolder
 import groovy.model.ValueModel
-
-import javax.swing.*
-import javax.swing.table.TableModel
-import java.beans.PropertyChangeEvent
 import java.beans.PropertyChangeListener
+import java.beans.PropertyChangeEvent
+import javax.swing.JTable
+import javax.swing.table.TableModel
 
 public class TableModelFactory extends AbstractFactory {
-
+    
     public Object newInstance(FactoryBuilderSupport builder, Object name, Object value, Map attributes) throws InstantiationException, IllegalAccessException {
         if (FactoryBuilderSupport.checkValueIsType(value, name, TableModel)) {
             return value;
@@ -48,19 +47,19 @@ public class TableModelFactory extends AbstractFactory {
     public void onNodeCompleted(FactoryBuilderSupport builder, Object parent, Object node) {
         if ((node.columnCount > 0) && (parent instanceof JTable)) {
             parent.autoCreateColumnsFromModel = false;
-            PropertyChangeListener listener = { e ->
-                if ((e.propertyName == 'model') && e.newValue instanceof DefaultTableModel) {
-                    e.source.columnModel = e.newValue.columnModel
-                    e.source.revalidate()
-                    e.source.repaint()
-                }
-            } as PropertyChangeListener;
+            PropertyChangeListener listener = {e ->
+                    if ((e.propertyName == 'model') && e.newValue instanceof DefaultTableModel) {
+                        e.source.columnModel = e.newValue.columnModel
+                        e.source.revalidate()
+                        e.source.repaint()
+                    }
+                } as PropertyChangeListener;
 
             parent.addPropertyChangeListener('model', listener)
-            builder.addDisposalClosure({ parent.removePropertyChangeListener('model', listener) })
+            builder.addDisposalClosure( {parent.removePropertyChangeListener('model', listener)})
 
             // the table has already set the model, so fire the listener manually
-            listener.propertyChange(new PropertyChangeEvent(parent, 'model', null, node))
+            listener.propertyChange(new PropertyChangeEvent(parent, 'model', null, node)) 
         }
     }
 }

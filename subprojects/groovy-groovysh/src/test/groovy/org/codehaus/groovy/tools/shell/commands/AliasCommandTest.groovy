@@ -22,7 +22,8 @@ package org.codehaus.groovy.tools.shell.commands
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class AliasCommandTest
-        extends CommandTestSupport {
+    extends CommandTestSupport
+{
     void testAlias() {
         shell.execute(':alias')
         shell.execute(':alias foo bar')

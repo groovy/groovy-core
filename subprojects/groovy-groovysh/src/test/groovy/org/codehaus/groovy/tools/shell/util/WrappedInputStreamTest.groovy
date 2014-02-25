@@ -21,7 +21,8 @@ package org.codehaus.groovy.tools.shell.util
  *
  */
 class WrappedInputStreamTest
-        extends GroovyTestCase {
+    extends GroovyTestCase
+{
     void testWrapEmpty() {
         ByteArrayInputStream mockStream = new ByteArrayInputStream()
         WrappedInputStream stream = new WrappedInputStream(mockStream)

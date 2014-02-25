@@ -17,8 +17,7 @@
 package groovy.swing.factory
 
 import groovy.swing.binding.JTableMetaMethods
-
-import javax.swing.*
+import javax.swing.JTable
 import javax.swing.table.TableColumn
 import javax.swing.table.TableModel
 

@@ -161,13 +161,13 @@ public class GroovyFilter extends StructuredSyntaxDocumentFilter {
         getRootNode().putStyle(SINGLE_QUOTES, charQuotes);
         getRootNode().putStyle(SLASHY_QUOTES, slashyQuotes);
 
-        getRootNode().putStyle(new String[]{
-                HEX_INTEGER_LITERAL,
-                OCTAL_INTEGER_LITERAL,
-                BINARY_INTEGER_LITERAL,
-                DECIMAL_FLOATING_POINT_LITERAL,
-                HEXADECIMAL_FLOATING_POINT_LITERAL,
-                DECIMAL_INTEGER_LITERAL,
+        getRootNode().putStyle(new String[] {
+            HEX_INTEGER_LITERAL,
+            OCTAL_INTEGER_LITERAL,
+            BINARY_INTEGER_LITERAL,
+            DECIMAL_FLOATING_POINT_LITERAL,
+            HEXADECIMAL_FLOATING_POINT_LITERAL,
+            DECIMAL_INTEGER_LITERAL,
         }, digit);
 
         getRootNode().putStyle(OPERATION, operation);
@@ -200,7 +200,8 @@ public class GroovyFilter extends StructuredSyntaxDocumentFilter {
                 doc = (StyledDocument) tComp.getDocument();
                 try {
                     doc.getText(0, doc.getLength(), segment);
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     // should NEVER reach here
                     e.printStackTrace();
                 }
@@ -216,7 +217,8 @@ public class GroovyFilter extends StructuredSyntaxDocumentFilter {
                 try {
                     doc.insertString(offset, buffer.toString(),
                             doc.getDefaultRootElement().getAttributes());
-                } catch (BadLocationException ble) {
+                }
+                catch (BadLocationException ble) {
                     ble.printStackTrace();
                 }
             }

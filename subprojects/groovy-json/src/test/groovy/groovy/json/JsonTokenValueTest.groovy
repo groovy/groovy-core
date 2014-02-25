@@ -15,7 +15,10 @@
  */
 package groovy.json
 
-import static groovy.json.JsonTokenType.*
+import static JsonTokenType.*
+
+
+import groovy.util.GroovyTestCase
 
 /**
  * @author Guillaume Laforge

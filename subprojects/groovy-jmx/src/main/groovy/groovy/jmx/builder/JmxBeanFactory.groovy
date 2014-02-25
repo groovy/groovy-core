@@ -73,7 +73,7 @@ import javax.management.MBeanServer
  *         "opName3":[
  *             onCall:{event->
  *                 // onCall event callback code here.
- *}]
+ *             }]
  *         ],
  *
  *     listeners:[
@@ -81,7 +81,7 @@ import javax.management.MBeanServer
  *             event: "eventType", from:"object name"|ObjectName(),
  *             call:{event->
  *                 // handler code for event
- *}],
+ *             }],
  *     ]
  * )
  * </code></pre>

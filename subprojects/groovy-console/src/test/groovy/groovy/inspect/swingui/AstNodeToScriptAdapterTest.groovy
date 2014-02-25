@@ -16,10 +16,10 @@
 package groovy.inspect.swingui
 
 import org.codehaus.groovy.ast.VariableScope
-import org.codehaus.groovy.ast.expr.*
 import org.codehaus.groovy.ast.stmt.BlockStatement
 import org.codehaus.groovy.ast.stmt.DoWhileStatement
 import org.codehaus.groovy.control.CompilePhase
+import org.codehaus.groovy.ast.expr.*
 
 /**
  * Unit test for ScriptToTreeNodeAdapter.
@@ -439,7 +439,7 @@ class AstNodeToScriptAdapterTest extends GroovyTestCase {
                 boolean p2() default false;
             }
             '''
-
+        
         String result = compileToScript(script)
 
         assert result.contains('@java.lang.SuppressWarnings')

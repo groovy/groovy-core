@@ -23,7 +23,8 @@ package org.codehaus.groovy.tools.shell
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class ExitNotification
-        extends Error {
+    extends Error
+{
     /** The exit code. */
     final int code
 

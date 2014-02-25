@@ -19,12 +19,13 @@ package groovy.util.slurpersupport;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovyRuntimeException;
-import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Iterator;
 import java.util.Map;
+
+import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 
 /**
  * Lazy evaluated representation of a child node.
@@ -35,9 +36,9 @@ public class NodeChild extends GPathResult {
     private final Node node;
 
     /**
-     * @param node              a node
-     * @param parent            the GPathResult prior to the application of the expression creating this GPathResult
-     * @param namespacePrefix   the namespace prefix if any
+     * @param node a node
+     * @param parent the GPathResult prior to the application of the expression creating this GPathResult
+     * @param namespacePrefix the namespace prefix if any
      * @param namespaceTagHints the known tag to namespace mappings
      */
     public NodeChild(final Node node, final GPathResult parent, final String namespacePrefix, final Map<String, String> namespaceTagHints) {
@@ -46,14 +47,14 @@ public class NodeChild extends GPathResult {
     }
 
     /**
-     * @param node              a node
-     * @param parent            the GPathResult prior to the application of the expression creating this GPathResult
+     * @param node a node
+     * @param parent the GPathResult prior to the application of the expression creating this GPathResult
      * @param namespaceTagHints the known tag to namespace mappings
      */
     public NodeChild(final Node node, final GPathResult parent, final Map<String, String> namespaceTagHints) {
         this(node, parent, "*", namespaceTagHints);
     }
-
+    
     public GPathResult parent() {
         if (node.parent() != null)
             return new NodeChild(node.parent(), this, namespaceTagHints);
@@ -71,7 +72,6 @@ public class NodeChild extends GPathResult {
 
     /**
      * Returns the URI of the namespace of this NodeChild.
-     *
      * @return the namespace of this NodeChild
      */
     public String namespaceURI() {
@@ -140,7 +140,6 @@ public class NodeChild extends GPathResult {
 
     /**
      * Returns a map containing all attributes of the Node of this NodeChild.
-     *
      * @return a map containing all attributes
      */
     public Map attributes() {

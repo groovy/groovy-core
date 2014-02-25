@@ -13,17 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package groovy.swing.binding
+package groovy.swing.binding;
 
-import org.codehaus.groovy.binding.*
+import org.codehaus.groovy.binding.*;
 
-import javax.swing.*
-import javax.swing.event.ListDataEvent
-import javax.swing.event.ListDataListener
-import javax.swing.event.ListSelectionEvent
-import javax.swing.event.ListSelectionListener
-import java.beans.PropertyChangeEvent
-import java.beans.PropertyChangeListener
+import javax.swing.*;
+import javax.swing.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  * @author Andres Almiray
@@ -92,7 +89,7 @@ class JListElementsBinding extends AbstractSyntheticBinding implements ListDataL
     }
 
     protected void syntheticBind() {
-        boundList = (JList) ((PropertyBinding) sourceBinding).getBean();
+        boundList = (JList) ((PropertyBinding)sourceBinding).getBean();
         boundList.addPropertyChangeListener("model", this);
         boundList.getModel().addListDataListener(this);
     }
@@ -129,7 +126,7 @@ class JListSelectedElementBinding extends AbstractSyntheticBinding implements Pr
     }
 
     public synchronized void syntheticBind() {
-        boundList = (JList) ((PropertyBinding) sourceBinding).getBean();
+        boundList = (JList) ((PropertyBinding)sourceBinding).getBean();
         boundList.addPropertyChangeListener("selectionModel", this);
         boundList.addListSelectionListener(this);
     }

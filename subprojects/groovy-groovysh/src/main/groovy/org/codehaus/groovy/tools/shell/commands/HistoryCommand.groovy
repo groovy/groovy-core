@@ -28,9 +28,10 @@ import org.codehaus.groovy.tools.shell.util.SimpleCompletor
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class HistoryCommand
-        extends ComplexCommandSupport {
+    extends ComplexCommandSupport
+{
     HistoryCommand(final Groovysh shell) {
-        super(shell, ':history', ':H', ['show', 'clear', 'flush', 'recall'], 'show')
+        super(shell, ':history', ':H', [ 'show', 'clear', 'flush', 'recall' ], 'show')
     }
 
     protected List createCompleters() {
@@ -43,8 +44,8 @@ class HistoryCommand
         }
 
         return [
-                new SimpleCompletor(loader),
-                null
+            new SimpleCompletor(loader),
+            null
         ]
     }
 
@@ -89,14 +90,14 @@ class HistoryCommand
      * history show shows a list of indexes and past commands. recall serves to rerun one of those by their index.
      * There is is moving window of indexes, so the first valid index will usually be greater than zero.
      */
-    def do_recall = { args ->
+    def do_recall = {args ->
         String line
 
-        if (!args || ((List) args).size() != 1) {
+        if (!args || ((List)args).size() != 1) {
             fail("History recall requires a single history identifer")
         }
 
-        String ids = ((List<String>) args)[0]
+        String ids = ((List<String>)args)[0]
 
         //
         // FIXME: This won't work as desired because the history shifts when we run recall and could internally shift more from alias redirection
@@ -114,10 +115,10 @@ class HistoryCommand
             Iterator<History.Entry> listEntryIt = history.iterator()
             if (listEntryIt.hasNext()) {
                 History.Entry next = listEntryIt.next()
-                if (id < next.index() - 1) {
+                if (id < next.index() -1) {
                     // not using id on purpose, as might be decremented
                     fail("Unknown index:" + ids)
-                } else if (id == next.index() - 1) {
+                } else if (id == next.index() -1) {
                     line = shell.evictedLine
                 } else if (next.index() == id) {
                     line = next.value()

@@ -22,13 +22,13 @@ import org.codehaus.groovy.runtime.StringGroovyMethods;
 
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.Iterator;
 
 /**
  * A helper class for creating XML or HTML markup.
  * The builder supports various 'pretty printed' formats.
- * <p/>
+ * <p>
  * Example:
  * <pre>new MarkupBuilder().root {
  *   a( a1:'one' ) {
@@ -45,13 +45,12 @@ import java.util.Map;
  * &lt;/root&gt;</pre>
  * Notes:
  * <ul>
- * <li><code>mkp</code> is a special namespace used to escape
+ *    <li><code>mkp</code> is a special namespace used to escape
  * away from the normal building mode of the builder and get access
  * to helper markup methods such as 'yield' and 'yieldUnescaped'.
  * See the javadoc for {@link #getMkp()} for further details.</li>
- * <li>Note that tab, newline and carriage return characters are escaped within attributes, i.e. will become &#09;, &#10; and &#13; respectively</li>
+ *     <li>Note that tab, newline and carriage return characters are escaped within attributes, i.e. will become &#09;, &#10; and &#13; respectively</li>
  * </ul>
- *
  * @author <a href="mailto:james@coredevelopers.net">James Strachan</a>
  * @author Stefan Matthias Aust
  * @author <a href="mailto:scottstirling@rcn.com">Scott Stirling</a>
@@ -157,7 +156,7 @@ public class MarkupBuilder extends BuilderSupport {
      * Determine whether null attributes will appear in the produced markup.
      *
      * @return <code>true</code>, if null attributes will be
-     * removed from the resulting markup.
+     *         removed from the resulting markup.
      */
     public boolean isOmitNullAttributes() {
         return omitNullAttributes;
@@ -180,7 +179,7 @@ public class MarkupBuilder extends BuilderSupport {
      * Determine whether empty attributes will appear in the produced markup.
      *
      * @return <code>true</code>, if empty attributes will be
-     * removed from the resulting markup.
+     *         removed from the resulting markup.
      */
     public boolean isOmitEmptyAttributes() {
         return omitEmptyAttributes;
@@ -201,7 +200,7 @@ public class MarkupBuilder extends BuilderSupport {
      * Whether empty elements are expanded from &lt;tagName/&gt; to &lt;tagName&gt;&lt;/tagName&gt;.
      *
      * @return <code>true</code>, if empty elements will be represented by an opening tag
-     * followed immediately by a closing tag.
+     *                            followed immediately by a closing tag.
      */
     public boolean isExpandEmptyElements() {
         return expandEmptyElements;
@@ -337,14 +336,14 @@ public class MarkupBuilder extends BuilderSupport {
     protected Object getName(String methodName) {
         return super.getName(methodName);
     }
-
+    
     /**
      * Escapes a string so that it can be used directly as an XML
      * attribute value.
      *
      * @param value The string to escape.
      * @return A new string in which all characters that require escaping
-     * have been replaced with the corresponding XML entities.
+     *         have been replaced with the corresponding XML entities.
      * @see #escapeXmlValue(String, boolean)
      */
     private String escapeAttributeValue(String value) {
@@ -357,7 +356,7 @@ public class MarkupBuilder extends BuilderSupport {
      *
      * @param value The string to escape.
      * @return A new string in which all characters that require escaping
-     * have been replaced with the corresponding XML entities.
+     *         have been replaced with the corresponding XML entities.
      * @see #escapeXmlValue(String, boolean)
      */
     private String escapeElementContent(String value) {
@@ -383,7 +382,7 @@ public class MarkupBuilder extends BuilderSupport {
      * @param isAttrValue <code>true</code> if the string is to be used
      *                    as an attribute value, otherwise <code>false</code>.
      * @return A new string in which all characters that require escaping
-     * have been replaced with the corresponding XML entities.
+     *         have been replaced with the corresponding XML entities.
      */
     private String escapeXmlValue(String value, boolean isAttrValue) {
         if (value == null)

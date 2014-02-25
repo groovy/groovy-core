@@ -27,16 +27,15 @@ public class SimpleGroovyClassDoc extends SimpleGroovyAbstractableElementDoc imp
     public static final Pattern TAG_REGEX = Pattern.compile("(?sm)\\s*@([a-zA-Z.]+)\\s+(.*?)(?=\\s+@)");
 
     // group 1: tag name, group 2: tag body
-    public static final Pattern LINK_REGEX = Pattern.compile("(?m)[{]@(link)\\s+([^}]*)}");
+    public static final Pattern LINK_REGEX    = Pattern.compile("(?m)[{]@(link)\\s+([^}]*)}");
     public static final Pattern LITERAL_REGEX = Pattern.compile("(?m)[{]@(literal)\\s+([^}]*)}");
-    public static final Pattern CODE_REGEX = Pattern.compile("(?m)[{]@(code)\\s+([^}]*)}");
+    public static final Pattern CODE_REGEX    = Pattern.compile("(?m)[{]@(code)\\s+([^}]*)}");
 
     public static final Pattern REF_LABEL_REGEX = Pattern.compile("([\\w.#\\$]*(\\(.*\\))?)(\\s(.*))?");
     public static final Pattern NAME_ARGS_REGEX = Pattern.compile("([^(]+)\\(([^)]*)\\)");
     public static final Pattern SPLIT_ARGS_REGEX = Pattern.compile(",\\s*");
     private static final List<String> PRIMITIVES = Arrays.asList("void", "boolean", "byte", "short", "char", "int", "long", "float", "double");
     private static final Map<String, String> TAG_TEXT = new HashMap<String, String>();
-
     static {
         TAG_TEXT.put("see", "See Also");
         TAG_TEXT.put("param", "Parameters");
@@ -48,7 +47,6 @@ public class SimpleGroovyClassDoc extends SimpleGroovyAbstractableElementDoc imp
         TAG_TEXT.put("version", "Version");
         TAG_TEXT.put("default", "Default");
     }
-
     private final List<GroovyConstructorDoc> constructors;
     private final List<GroovyFieldDoc> fields;
     private final List<GroovyFieldDoc> properties;
@@ -254,7 +252,7 @@ public class SimpleGroovyClassDoc extends SimpleGroovyAbstractableElementDoc imp
             next = new HashSet<GroovyClassDoc>();
             for (GroovyClassDoc t : temp) {
                 if (t instanceof SimpleGroovyClassDoc) {
-                    next.addAll(((SimpleGroovyClassDoc) t).getParentInterfaces());
+                    next.addAll(((SimpleGroovyClassDoc)t).getParentInterfaces());
                 } else if (t instanceof ExternalGroovyClassDoc) {
                     ExternalGroovyClassDoc d = (ExternalGroovyClassDoc) t;
                     next.addAll(getJavaInterfaces(d));
@@ -358,13 +356,13 @@ public class SimpleGroovyClassDoc extends SimpleGroovyAbstractableElementDoc imp
         }
 
         // resolve property types
-        for (GroovyFieldDoc property : properties) {
-            if (property instanceof SimpleGroovyFieldDoc) {
+        for (GroovyFieldDoc property : properties)  {
+            if (property instanceof SimpleGroovyFieldDoc)  {
                 SimpleGroovyFieldDoc simpleGroovyFieldDoc = (SimpleGroovyFieldDoc) property;
-                if (simpleGroovyFieldDoc.type() instanceof SimpleGroovyType) {
+                if (simpleGroovyFieldDoc.type() instanceof SimpleGroovyType)  {
                     SimpleGroovyType simpleGroovyType = (SimpleGroovyType) simpleGroovyFieldDoc.type();
                     GroovyClassDoc propertyTypeClassDoc = resolveClass(rootDoc, simpleGroovyType.qualifiedTypeName());
-                    if (propertyTypeClassDoc != null) {
+                    if (propertyTypeClassDoc != null)  {
                         simpleGroovyFieldDoc.setType(propertyTypeClassDoc);
                     }
                 }
@@ -393,7 +391,7 @@ public class SimpleGroovyClassDoc extends SimpleGroovyAbstractableElementDoc imp
 
     private static String resolveMethodArgs(GroovyRootDoc rootDoc, SimpleGroovyClassDoc classDoc, String type) {
         if (!type.contains("(")) return type;
-        Matcher m = NAME_ARGS_REGEX.matcher(type);
+            Matcher m = NAME_ARGS_REGEX.matcher(type);
         if (m.matches()) {
             String name = m.group(1);
             String args = m.group(2);
@@ -494,7 +492,7 @@ public class SimpleGroovyClassDoc extends SimpleGroovyAbstractableElementDoc imp
         if (name.equals("T") || name.equals("U") || name.equals("K") || name.equals("V") || name.equals("G")) {
             name = "java/lang/Object";
         }
-        GroovyClassDoc doc = ((SimpleGroovyRootDoc) rootDoc).classNamedExact(name);
+        GroovyClassDoc doc = ((SimpleGroovyRootDoc)rootDoc).classNamedExact(name);
         if (doc != null) return doc;
         int slashIndex = name.lastIndexOf("/");
         if (slashIndex < 1) {
@@ -531,7 +529,7 @@ public class SimpleGroovyClassDoc extends SimpleGroovyAbstractableElementDoc imp
                 GroovyClassDoc gcd = resolveClass(rootDoc, outerName);
                 if (gcd instanceof ExternalGroovyClassDoc) {
                     ExternalGroovyClassDoc egcd = (ExternalGroovyClassDoc) gcd;
-                    String innerName = name.substring(slashIndex + 1);
+                    String innerName = name.substring(slashIndex+1);
                     Class outerClass = egcd.externalClass();
                     for (Class inner : outerClass.getDeclaredClasses()) {
                         if (inner.getName().equals(outerClass.getName() + "$" + innerName)) {
@@ -550,7 +548,7 @@ public class SimpleGroovyClassDoc extends SimpleGroovyAbstractableElementDoc imp
         }
 
         // check if the name is actually an aliased type name
-        if (hasAlias(name)) {
+        if (hasAlias(name))  {
             String fullyQualifiedTypeName = getFullyQualifiedTypeNameForAlias(name);
             GroovyClassDoc gcd = resolveClass(rootDoc, fullyQualifiedTypeName);
             if (gcd != null) return gcd;
@@ -583,10 +581,10 @@ public class SimpleGroovyClassDoc extends SimpleGroovyAbstractableElementDoc imp
         if (isPrimitiveType(baseName)) return null;
         for (String importName : importedClassesAndPackages) {
             if (importName.endsWith("/" + baseName)) {
-                GroovyClassDoc doc = ((SimpleGroovyRootDoc) rootDoc).classNamedExact(importName);
+                GroovyClassDoc doc = ((SimpleGroovyRootDoc)rootDoc).classNamedExact(importName);
                 if (doc != null) return doc;
             } else if (importName.endsWith("/*")) {
-                GroovyClassDoc doc = ((SimpleGroovyRootDoc) rootDoc).classNamedExact(importName.substring(0, importName.length() - 2) + baseName);
+                GroovyClassDoc doc = ((SimpleGroovyRootDoc)rootDoc).classNamedExact(importName.substring(0, importName.length() - 2) + baseName);
                 if (doc != null) return doc;
             }
         }
@@ -629,11 +627,11 @@ public class SimpleGroovyClassDoc extends SimpleGroovyAbstractableElementDoc imp
         return null;
     }
 
-    private boolean hasAlias(String alias) {
+    private boolean hasAlias(String alias)  {
         return aliases.containsKey(alias);
     }
 
-    private String getFullyQualifiedTypeNameForAlias(String alias) {
+    private String getFullyQualifiedTypeNameForAlias(String alias)  {
         if (!hasAlias(alias)) return "";
         return aliases.get(alias);
     }
@@ -853,7 +851,7 @@ public class SimpleGroovyClassDoc extends SimpleGroovyAbstractableElementDoc imp
     /**
      * Replaces angle brackets inside a tag.
      *
-     * @param text  GroovyDoc text to process
+     * @param text GroovyDoc text to process
      * @param regex has to capture tag name in group 1 and tag body in group 2
      */
     public static String encodeAngleBracketsInTagBody(String text, Pattern regex) {

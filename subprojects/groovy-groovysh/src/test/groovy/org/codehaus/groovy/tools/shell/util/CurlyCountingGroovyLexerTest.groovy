@@ -20,39 +20,40 @@ package org.codehaus.groovy.tools.shell.util
  * Unit tests for the {@link CurlyCountingGroovyLexer} class.
  */
 class CurlyCountingGroovyLexerTest
-        extends GroovyTestCase {
-    void testLexerEmpty() {
-        CurlyCountingGroovyLexer it = CurlyCountingGroovyLexer.createGroovyLexer("")
-        assertEquals(0, it.getParenLevel())
-        assertEquals([''], it.toList().collect { it.getText() })
-        assertEquals(0, it.getParenLevel())
-    }
+    extends GroovyTestCase
+{
+   void testLexerEmpty() {
+       CurlyCountingGroovyLexer it = CurlyCountingGroovyLexer.createGroovyLexer("")
+       assertEquals(0, it.getParenLevel())
+       assertEquals([''], it.toList().collect {it.getText()})
+       assertEquals(0, it.getParenLevel())
+   }
 
     void testLexerText() {
         CurlyCountingGroovyLexer it = CurlyCountingGroovyLexer.createGroovyLexer("foo bar baz")
         assertEquals(0, it.getParenLevel())
-        assertEquals(['foo', 'bar', 'baz', ''], it.toList().collect { it.getText() })
+        assertEquals(['foo', 'bar', 'baz', ''], it.toList().collect {it.getText()})
         assertEquals(0, it.getParenLevel())
     }
 
     void testLexerCurly() {
         CurlyCountingGroovyLexer it = CurlyCountingGroovyLexer.createGroovyLexer("Foo{")
         assertEquals(0, it.getParenLevel())
-        assertEquals(['Foo', '{', ''], it.toList().collect { it.getText() })
+        assertEquals(['Foo', '{', ''], it.toList().collect {it.getText()})
         assertEquals(1, it.getParenLevel())
     }
 
     void testLexerCurlyMore() {
         CurlyCountingGroovyLexer it = CurlyCountingGroovyLexer.createGroovyLexer("Foo{Baz{Bar{")
         assertEquals(0, it.getParenLevel())
-        assertEquals(['Foo', '{', 'Baz', '{', 'Bar', '{', ''], it.toList().collect { it.getText() })
+        assertEquals(['Foo', '{', 'Baz', '{', 'Bar', '{', ''], it.toList().collect {it.getText()})
         assertEquals(3, it.getParenLevel())
     }
 
     void testLexerCurlyMany() {
         CurlyCountingGroovyLexer it = CurlyCountingGroovyLexer.createGroovyLexer("Foo{Bar{}}{")
         assertEquals(0, it.getParenLevel())
-        assertEquals(['Foo', '{', 'Bar', '{', '}', '}', '{', ''], it.toList().collect { it.getText() })
+        assertEquals(['Foo', '{', 'Bar', '{', '}', '}', '{',''], it.toList().collect {it.getText()})
         assertEquals(1, it.getParenLevel())
     }
 }

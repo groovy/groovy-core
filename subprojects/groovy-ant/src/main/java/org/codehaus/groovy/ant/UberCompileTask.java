@@ -29,18 +29,19 @@ import java.io.IOException;
 
 /**
  * Compiles Java and Groovy source files.
- * <p/>
+ *
  * This works by invoking the {@link GenerateStubsTask} task, then the
  * {@link Javac} task and then the {@link GroovycTask}.  Each task can
  * be configured by creating a nested element.  Common configuration
  * such as the source dir and classpath is picked up from this tasks
  * configuration.
  *
- * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  * @version $Id$
+ * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 public class UberCompileTask
-        extends Task {
+    extends Task
+{
     private final LoggingHelper log = new LoggingHelper(this);
 
     private Path src;
@@ -67,7 +68,8 @@ public class UberCompileTask
 
         if (src == null) {
             src = dir;
-        } else {
+        }
+        else {
             src.append(dir);
         }
     }
@@ -84,10 +86,11 @@ public class UberCompileTask
 
     public void setClasspath(final Path path) {
         assert path != null;
-
+        
         if (classpath == null) {
             classpath = path;
-        } else {
+        }
+        else {
             classpath.append(path);
         }
     }
@@ -147,12 +150,12 @@ public class UberCompileTask
             throw new BuildException("Destination directory does not exist: " + destdir, getLocation());
         }
     }
-
+    
     public void execute() throws BuildException {
         validate();
 
         FileSet fileset;
-
+        
         GenStubsAdapter genstubs = createGeneratestubs();
         genstubs.classpath = classpath;
         genstubs.src = src;
@@ -165,7 +168,7 @@ public class UberCompileTask
             genstubs.createInclude().setName("**/*.java");
             genstubs.createInclude().setName("**/*.groovy");
         }
-
+                
         JavacAdapter javac = createJavac();
         javac.setSrcdir(src);
         javac.setDestdir(destdir);
@@ -188,7 +191,7 @@ public class UberCompileTask
         // HACK: For now force all classes to compile, so we pick up stub changes
         //
         groovyc.force = true;
-
+        
         fileset = groovyc.getFileSet();
         if (!fileset.hasPatterns()) {
             groovyc.createInclude().setName("**/*.groovy");
@@ -200,10 +203,11 @@ public class UberCompileTask
         groovyc.execute();
     }
 
-    private File createTempDir() {
+    private File createTempDir()  {
         try {
             return DefaultGroovyStaticMethods.createTempDir(null, "groovy-", "stubs");
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             throw new BuildException(e, getLocation());
         }
     }
@@ -211,9 +215,10 @@ public class UberCompileTask
     //
     // Nested task adapters
     //
-
+    
     private class GenStubsAdapter
-            extends GenerateStubsTask {
+        extends GenerateStubsTask
+    {
         public FileSet getFileSet() {
             return super.getImplicitFileSet();
         }
@@ -224,7 +229,8 @@ public class UberCompileTask
     }
 
     private class JavacAdapter
-            extends Javac {
+        extends Javac
+    {
         public FileSet getFileSet() {
             return super.getImplicitFileSet();
         }
@@ -235,7 +241,8 @@ public class UberCompileTask
     }
 
     private class GroovycAdapter
-            extends GroovycTask {
+        extends GroovycTask
+    {
         public FileSet getFileSet() {
             return super.getImplicitFileSet();
         }

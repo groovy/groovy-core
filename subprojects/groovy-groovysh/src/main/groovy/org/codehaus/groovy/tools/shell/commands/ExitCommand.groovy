@@ -17,8 +17,8 @@
 package org.codehaus.groovy.tools.shell.commands
 
 import org.codehaus.groovy.tools.shell.CommandSupport
-import org.codehaus.groovy.tools.shell.ExitNotification
 import org.codehaus.groovy.tools.shell.Groovysh
+import org.codehaus.groovy.tools.shell.ExitNotification
 
 /**
  * The 'exit' command.
@@ -27,7 +27,8 @@ import org.codehaus.groovy.tools.shell.Groovysh
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class ExitCommand
-        extends CommandSupport {
+    extends CommandSupport
+{
     ExitCommand(final Groovysh shell) {
         super(shell, ':exit', ':x')
 
@@ -36,15 +37,15 @@ class ExitCommand
 
     Object execute(final List<String> args) {
         assertNoArguments(args)
-
+        
         //
         // TODO: Maybe support a single arg for the code?
         //
-
+        
         if (io.verbose) {
             io.out.println(messages['info.bye'])
         }
-
+        
         throw new ExitNotification(0)
     }
 }

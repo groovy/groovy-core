@@ -16,15 +16,16 @@
 
 package groovy.swing.factory
 
-import javax.swing.*
-import java.awt.*
+import java.awt.Dimension
+import javax.swing.Box
+import javax.swing.BoxLayout
 
 public class BoxFactory extends ComponentFactory {
 
     public BoxFactory() {
         super(null);
     }
-
+    
     public Object newInstance(FactoryBuilderSupport builder, Object name, Object value, Map attributes) throws InstantiationException, IllegalAccessException {
         if (FactoryBuilderSupport.checkValueIsType(value, name, Box)) {
             return value;
@@ -33,7 +34,7 @@ public class BoxFactory extends ComponentFactory {
         if (attributes.containsKey("axis")) {
             Object o = attributes.remove("axis");
             if (o instanceof Number) {
-                axis = ((Number) o).intValue();
+                axis = ((Number)o).intValue();
             }
         }
         return new Box(axis);

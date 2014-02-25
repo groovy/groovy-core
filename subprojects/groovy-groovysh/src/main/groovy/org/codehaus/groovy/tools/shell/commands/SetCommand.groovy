@@ -19,8 +19,8 @@ package org.codehaus.groovy.tools.shell.commands
 import org.codehaus.groovy.tools.shell.CommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
 import org.codehaus.groovy.tools.shell.util.PackageHelper
-import org.codehaus.groovy.tools.shell.util.Preferences
 import org.codehaus.groovy.tools.shell.util.SimpleCompletor
+import org.codehaus.groovy.tools.shell.util.Preferences
 
 /**
  * The 'set' command, used to set preferences.
@@ -29,7 +29,8 @@ import org.codehaus.groovy.tools.shell.util.SimpleCompletor
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class SetCommand
-        extends CommandSupport {
+    extends CommandSupport
+{
     SetCommand(final Groovysh shell) {
         super(shell, ':set', ':=')
     }
@@ -55,17 +56,17 @@ class SetCommand
         }
 
         return [
-                new SimpleCompletor(loader),
-                null
+            new SimpleCompletor(loader),
+            null
         ]
     }
 
     Object execute(final List<String> args) {
         assert args != null
-
+        
         if (args.size() == 0) {
             def keys = Preferences.keys()
-
+            
             if (keys.size() == 0) {
                 io.out.println('No preferences are set')
                 return
@@ -78,22 +79,23 @@ class SetCommand
             }
             return
         }
-
+        
         if (args.size() > 2) {
             fail("Command '$name' requires arguments: <name> [<value>]")
         }
-
+        
         String name = args[0]
         def value
-
+        
         if (args.size() == 1) {
             value = true
-        } else {
+        }
+        else {
             value = args[1]
         }
-
+        
         log.debug("Setting preference: $name=$value")
-
+        
         Preferences.put(name, String.valueOf(value))
     }
 }

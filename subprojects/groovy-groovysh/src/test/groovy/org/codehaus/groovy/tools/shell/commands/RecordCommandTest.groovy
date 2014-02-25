@@ -24,7 +24,8 @@ import org.codehaus.groovy.tools.shell.CommandException
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class RecordCommandTest
-        extends CommandTestSupport {
+    extends CommandTestSupport
+{
     void testStopNotStarted() {
         shell << ':record stop'
     }

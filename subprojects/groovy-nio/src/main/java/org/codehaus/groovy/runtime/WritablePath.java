@@ -16,14 +16,23 @@
 
 package org.codehaus.groovy.runtime;
 
-import groovy.lang.Writable;
-
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.Writer;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.FileSystem;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
 import java.util.Iterator;
+
+import groovy.lang.Writable;
 
 /**
  * A Writable Path.
@@ -59,7 +68,8 @@ public class WritablePath implements Path, Writable {
                 out.write(c);
                 c = reader.read();
             }
-        } finally {
+        }
+        finally {
             reader.close();
         }
         return out;
@@ -177,12 +187,12 @@ public class WritablePath implements Path, Writable {
 
     @Override
     public WatchKey register(WatchService watcher, WatchEvent.Kind<?>[] events, WatchEvent.Modifier... modifiers) throws IOException {
-        return delegate.register(watcher, events, modifiers);
+        return delegate.register(watcher,events,modifiers);
     }
 
     @Override
     public WatchKey register(WatchService watcher, WatchEvent.Kind<?>... events) throws IOException {
-        return delegate.register(watcher, events);
+        return delegate.register(watcher,events);
     }
 
     @Override

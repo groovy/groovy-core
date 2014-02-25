@@ -82,11 +82,13 @@ public class GroovyMBean extends GroovyObjectSupport {
     public Object getProperty(String property) {
         try {
             return server.getAttribute(name, property);
-        } catch (MBeanException e) {
+        }
+        catch (MBeanException e) {
             throwExceptionWithTarget("Could not access property: " + property + ". Reason: ", e);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             if (!ignoreErrors)
-                throwException("Could not access property: " + property + ". Reason: ", e);
+            throwException("Could not access property: " + property + ". Reason: ", e);
         }
         return null;
     }
@@ -94,9 +96,11 @@ public class GroovyMBean extends GroovyObjectSupport {
     public void setProperty(String property, Object value) {
         try {
             server.setAttribute(name, new Attribute(property, value));
-        } catch (MBeanException e) {
+        }
+        catch (MBeanException e) {
             throwExceptionWithTarget("Could not set property: " + property + ". Reason: ", e);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throwException("Could not set property: " + property + ". Reason: ", e);
         }
     }
@@ -115,9 +119,11 @@ public class GroovyMBean extends GroovyObjectSupport {
         if (signature != null) {
             try {
                 return server.invoke(name, method, argArray, signature);
-            } catch (MBeanException e) {
+            }
+            catch (MBeanException e) {
                 throwExceptionWithTarget("Could not invoke method: " + method + ". Reason: ", e);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 throwException("Could not invoke method: " + method + ". Reason: ", e);
             }
             return null;

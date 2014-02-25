@@ -118,43 +118,40 @@ class ReflectionCompletorTest extends GroovyTestCase {
 
     interface ForTestInterface extends Comparable {
         static final int FOR_TEST_FIELD = 1
-
         void forTestMethod()
     }
 
     void testGetFieldsAndMethodsAnonymousClass() {
-        Collection<String> result = ReflectionCompletor.getPublicFieldsAndMethods(new ForTestInterface() {
+        Collection<String> result = ReflectionCompletor.getPublicFieldsAndMethods(new ForTestInterface(){
             @Override
             void forTestMethod() {}
 
             @Override
-            int compareTo(Object o) { return 0 }
+            int compareTo(Object o) {return 0}
         }, "")
         assert 'FOR_TEST_FIELD' in result
         assert 'forTestMethod()' in result
         assert 'compareTo(' in result
         GroovyLexer
         result = ReflectionCompletor.getPublicFieldsAndMethods(Set, "toA")
-        assert [] == result
+        assert []== result
     }
 
     enum ForTestEnum {
         val1, val2
         static final ForTestEnum VAL_3
-
-        int enumMethod() { return 0 }
-
-        static int staticMethod() { return 1 }
+        int enumMethod() {return 0}
+        static int staticMethod() {return 1}
     }
 
     void testEnum() {
         Collection<String> result = ReflectionCompletor.getPublicFieldsAndMethods(ForTestEnum, "")
         assert 'val1' in result
-        assert !('enumMethod()' in result)
+        assert ! ( 'enumMethod()' in result)
         assert 'staticMethod()' in result
         result = ReflectionCompletor.getPublicFieldsAndMethods(ForTestEnum.val1, "")
         // User will probably not want this
-        assert !('val1' in result)
+        assert ! ( 'val1' in result)
         assert 'enumMethod()' in result
         assert 'staticMethod()' in result
     }
@@ -171,21 +168,21 @@ class ReflectionCompletorTest extends GroovyTestCase {
         result = ReflectionCompletor.getMetaclassMethods(new GroovyLexer(new ByteArrayInputStream()), "", true)
         assert 'isCase(' in result
         result = ReflectionCompletor.getPublicFieldsAndMethods(GroovyLexer, "LITERAL_as")
-        assert ["LITERAL_as", "LITERAL_assert"] == result
+        assert ["LITERAL_as", "LITERAL_assert"]== result
         GroovyLexer lexer = new GroovyLexer(new ByteArrayInputStream("".getBytes()))
         result = ReflectionCompletor.getPublicFieldsAndMethods(lexer, "LITERAL_as")
-        assert ["LITERAL_as", "LITERAL_assert"] == result
+        assert ["LITERAL_as", "LITERAL_assert"]== result
     }
 
     void testGetFieldsAndMethodsClass() {
         Collection<String> result = ReflectionCompletor.getPublicFieldsAndMethods(Arrays, "")
         assert 'sort(' in result
         result = ReflectionCompletor.getPublicFieldsAndMethods(HashSet, "pro")
-        assert [] == result
+        assert []== result
         result = ReflectionCompletor.getPublicFieldsAndMethods(HashSet, "toA")
-        assert [] == result
+        assert []== result
         result = ReflectionCompletor.getPublicFieldsAndMethods(new HashSet(), "toA")
-        assert ["toArray(", "toArray()"] == result
+        assert ["toArray(", "toArray()"]== result
     }
 
     void testSuppressMetaAndDefaultMethods() {
@@ -193,8 +190,8 @@ class ReflectionCompletorTest extends GroovyTestCase {
         assert 'getMetaClass()' in result
         assert 'asBoolean()' in result
         result = ReflectionCompletor.getMetaclassMethods("foo", "", false)
-        assert !('getMetaClass()' in result)
-        assert !('asBoolean()' in result)
+        assert ! ('getMetaClass()' in result)
+        assert ! ('asBoolean()' in result)
     }
 
     void testGetFieldsAndMethodsCustomClass() {

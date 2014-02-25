@@ -30,14 +30,14 @@ import static groovy.json.JsonTokenType.*;
  * @since 1.8.0
  */
 public class JsonLexer implements Iterator<JsonToken> {
-    private static final char SPACE = ' ';
-    private static final char DOT = '.';
-    private static final char MINUS = '-';
-    private static final char PLUS = '+';
-    private static final char LOWER_E = 'e';
-    private static final char UPPER_E = 'E';
-    private static final char ZERO = '0';
-    private static final char NINE = '9';
+    private static final char SPACE    = ' ';
+    private static final char DOT      = '.';
+    private static final char MINUS    = '-';
+    private static final char PLUS     = '+';
+    private static final char LOWER_E  = 'e';
+    private static final char UPPER_E  = 'E';
+    private static final char ZERO     = '0';
+    private static final char NINE     = '9';
 
     private LineColumnReader reader;
 
@@ -61,7 +61,7 @@ public class JsonLexer implements Iterator<JsonToken> {
      * @param reader underlying reader
      */
     public JsonLexer(Reader reader) {
-        this.reader = reader instanceof LineColumnReader ? (LineColumnReader) reader : new LineColumnReader(reader);
+        this.reader = reader instanceof LineColumnReader ? (LineColumnReader)reader : new LineColumnReader(reader);
     }
 
     /**
@@ -102,7 +102,7 @@ public class JsonLexer implements Iterator<JsonToken> {
                 // consume the first double quote starting the string
                 reader.read();
                 boolean isEscaped = false;
-                for (; ; ) {
+                for (;;) {
                     int read = reader.read();
                     if (read == -1) return null;
 
@@ -121,7 +121,7 @@ public class JsonLexer implements Iterator<JsonToken> {
                 }
             } else if (possibleTokenType == NUMBER) {
                 StringBuilder currentContent = new StringBuilder();
-                for (; ; ) {
+                for (;;) {
                     reader.mark(1);
                     int read = reader.read();
                     if (read == -1) return null;
@@ -157,9 +157,9 @@ public class JsonLexer implements Iterator<JsonToken> {
     private void throwJsonException(String content, JsonTokenType type) {
         throw new JsonException(
                 "Lexing failed on line: " +
-                        reader.getLine() + ", column: " + reader.getColumn() +
-                        ", while reading '" + content + "', " +
-                        "was trying to match " + type.getLabel()
+                reader.getLine() + ", column: " + reader.getColumn() +
+                ", while reading '" + content + "', " +
+                "was trying to match " + type.getLabel()
         );
     }
 
@@ -177,13 +177,13 @@ public class JsonLexer implements Iterator<JsonToken> {
      * When a constant token type is expected, check that the expected constant is read,
      * and update the content of the token accordingly.
      *
-     * @param type  the token type
+     * @param type the token type
      * @param token the token
      * @return the token updated with end column and text updated
      */
     private JsonToken readingConstant(JsonTokenType type, JsonToken token) {
         try {
-            int numCharsToRead = ((String) type.getValidator()).length();
+            int numCharsToRead = ((String)type.getValidator()).length();
             char[] chars = new char[numCharsToRead];
             reader.read(chars);
             String stringRead = new String(chars);
@@ -208,10 +208,10 @@ public class JsonLexer implements Iterator<JsonToken> {
         try {
             int readChar = 20;
             char c = SPACE;
-            while (Character.isWhitespace(c)) {
+            while(Character.isWhitespace(c)) {
                 reader.mark(1);
                 readChar = reader.read();
-                c = (char) readChar;
+                c = (char)readChar;
             }
             reader.reset();
             return readChar;

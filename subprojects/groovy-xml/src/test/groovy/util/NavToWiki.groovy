@@ -2,7 +2,8 @@ package util
 
 if (args.size() < 1) {
     println "Usage: NavToWiki fileName"
-} else {
+}
+else {
     file = args[0]
     println "About to parse ${file}"
     doc = new XmlParser().parse(file)

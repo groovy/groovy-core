@@ -26,7 +26,8 @@ import groovy.transform.CompileStatic;
  */
 @CompileStatic
 public class CommandException
-        extends Exception {
+    extends Exception
+{
 
     private final Command command;
 

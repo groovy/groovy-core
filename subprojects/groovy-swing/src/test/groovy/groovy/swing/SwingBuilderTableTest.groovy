@@ -16,11 +16,11 @@
 
 package groovy.swing
 
-import groovy.inspect.swingui.TableSorter
 import groovy.model.DefaultTableColumn
 import groovy.model.DefaultTableModel
 import groovy.model.PropertyModel
 import groovy.model.ValueHolder
+import groovy.inspect.swingui.TableSorter
 
 class SwingBuilderTableTest extends GroovySwingTestCase {
 
@@ -49,8 +49,8 @@ class SwingBuilderTableTest extends GroovySwingTestCase {
                     }
                 }
             }
-            assert msg.contains("Must specify a property for a propertyColumn"):     \
-                "Instead found message: " + msg
+            assert msg.contains("Must specify a property for a propertyColumn"):    \
+               "Instead found message: " + msg
             swing.table {
                 tableModel(id: 'model') {
                     propertyColumn(propertyName: 'p')
@@ -86,8 +86,8 @@ class SwingBuilderTableTest extends GroovySwingTestCase {
                     }
                 }
             }
-            assert msg.contains("Must specify 'read' Closure property for a closureColumn"):     \
-                "Instead found message: " + msg
+            assert msg.contains("Must specify 'read' Closure property for a closureColumn"):    \
+               "Instead found message: " + msg
             def closure = { x -> x }
             def table = swing.table {
                 tableModel {
@@ -169,7 +169,7 @@ class SwingBuilderTableTest extends GroovySwingTestCase {
     }
 
     void testTableModelValues() {
-        testInEDT { ->
+        testInEDT {->
 
             def squares = [
                     [val: 1, square: 1],

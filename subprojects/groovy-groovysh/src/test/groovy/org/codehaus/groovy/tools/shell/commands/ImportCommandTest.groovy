@@ -22,7 +22,8 @@ package org.codehaus.groovy.tools.shell.commands
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class ImportCommandTest
-        extends CommandTestSupport {
+    extends CommandTestSupport
+{
     void testImport() {
         assert null == shell << 'import'
         assert 'java.awt.TextField' == shell << 'import java.awt.TextField'

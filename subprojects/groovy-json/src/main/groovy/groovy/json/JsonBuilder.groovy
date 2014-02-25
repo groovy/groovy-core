@@ -26,7 +26,9 @@ package groovy.json
  * Example:
  * <pre><code>
  *       def builder = new groovy.json.JsonBuilder()
- *       def root = builder.people {*           person {*               firstName 'Guillame'
+ *       def root = builder.people {
+ *           person {
+ *               firstName 'Guillame'
  *               lastName 'Laforge'
  *               // Named arguments are valid values for objects too
  *               address(
@@ -37,7 +39,9 @@ package groovy.json
  *               married true
  *               // a list of values
  *               conferences 'JavaOne', 'Gr8conf'
- *}*}*
+ *           }
+ *       }
+ *
  *       // creates a data structure made of maps (Json object) and lists (Json array)
  *       assert root instanceof Map
  *
@@ -128,13 +132,16 @@ class JsonBuilder implements Writable {
      * <p>
      * Example:
      * <pre><code>
-     * class Author {*      String name
-     *}* def authors = [new Author (name: "Guillaume"), new Author (name: "Jochen"), new Author (name: "Paul")]
+     * class Author {
+     *      String name
+     * }
+     * def authors = [new Author (name: "Guillaume"), new Author (name: "Jochen"), new Author (name: "Paul")]
      *
      * def json = new JsonBuilder()
      * json authors, { Author author ->
      *      name author.name
-     *}*
+     * }
+     *
      * assert json.toString() == '[{"name":"Guillaume"},{"name":"Jochen"},{"name":"Paul"}]'
      * </code></pre>
      * @param coll a collection
@@ -142,7 +149,7 @@ class JsonBuilder implements Writable {
      * @return a list of values
      */
     def call(Collection coll, Closure c) {
-        this.content = coll.collect { JsonDelegate.curryDelegateAndGetContent(c, it) }
+        this.content = coll.collect {JsonDelegate.curryDelegateAndGetContent(c, it)}
         return content
     }
 
@@ -152,9 +159,11 @@ class JsonBuilder implements Writable {
      * Example:
      * <pre><code>
      * def json = new JsonBuilder()
-     * def result = json {*      name "Guillaume"
+     * def result = json {
+     *      name "Guillaume"
      *      age 33
-     *}*
+     * }
+     *
      * assert result instanceof Map
      * assert json.toString() == '{"name":"Guillaume","age":33}'
      * </code></pre>
@@ -181,9 +190,11 @@ class JsonBuilder implements Writable {
      * Example with a classicala builder-style:
      * <pre><code>
      * def json = new JsonBuilder()
-     * def result = json.person {*      name "Guillaume"
+     * def result = json.person {
+     *      name "Guillaume"
      *      age 33
-     *}*
+     * }
+     *
      * assert result instanceof Map
      * assert json.toString() == '{"person":{"name":"Guillaume","age":33}}'
      * </code></pre>
@@ -204,7 +215,8 @@ class JsonBuilder implements Writable {
      * in case the same key is used.
      * <pre><code>
      * def json = new JsonBuilder()
-     * json.person(name: "Guillaume", age: 33) { town "Paris" }*
+     * json.person(name: "Guillaume", age: 33) { town "Paris" }
+     *
      * assert json.toString() == '{"person":{"name":"Guillaume","age":33,"town":"Paris"}}'
      * </code></pre>
      *
@@ -234,10 +246,10 @@ class JsonBuilder implements Writable {
             }
         } else if (args?.size() == 2) {
             if (args[0] instanceof Map && args[1] instanceof Closure) {
-                this.content = [(name): [*: args[0], *: JsonDelegate.cloneDelegateAndGetContent(args[1])]]
+                this.content = [(name): [*:args[0], *:JsonDelegate.cloneDelegateAndGetContent(args[1])]]
                 return content
             } else if (args[0] instanceof Collection && args[1] instanceof Closure) {
-                this.content = [(name): args[0].collect { JsonDelegate.curryDelegateAndGetContent(args[1], it) }]
+                this.content = [(name): args[0].collect {JsonDelegate.curryDelegateAndGetContent(args[1],it)}]
                 return content
             }
         }
@@ -250,7 +262,8 @@ class JsonBuilder implements Writable {
      * Example:
      * <pre><code>
      * def json = new JsonBuilder()
-     * json { temperature 37 }*
+     * json { temperature 37 }
+     * 
      * assert json.toString() == '{"temperature":37}'
      * </code></pre>
      *
@@ -281,7 +294,8 @@ class JsonBuilder implements Writable {
      * Example:
      * <pre><code>
      * def json = new JsonBuilder()
-     * json { temperature 37 }*
+     * json { temperature 37 }
+     *
      * def out = new StringWriter()
      * out << json
      *

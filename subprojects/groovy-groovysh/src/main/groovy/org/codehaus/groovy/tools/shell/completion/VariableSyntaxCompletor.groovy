@@ -39,7 +39,7 @@ public class VariableSyntaxCompletor implements IdentifierCompletor {
         for (String varName in vars.keySet()) {
             if (acceptName(varName, prefix)) {
                 if (vars.get(varName) instanceof MethodClosure) {
-                    if (((MethodClosure) vars.get(varName)).getMaximumNumberOfParameters() > 0) {
+                    if (((MethodClosure)vars.get(varName)).getMaximumNumberOfParameters() > 0) {
                         varName += "("
                     } else {
                         varName += "()"
@@ -55,6 +55,6 @@ public class VariableSyntaxCompletor implements IdentifierCompletor {
 
     private static boolean acceptName(String name, String prefix) {
         return (!prefix || name.startsWith(prefix)) &&
-                (!(name.contains('$')) && !name.startsWith("_"));
+               (!(name.contains('$')) && !name.startsWith("_"));
     }
 }

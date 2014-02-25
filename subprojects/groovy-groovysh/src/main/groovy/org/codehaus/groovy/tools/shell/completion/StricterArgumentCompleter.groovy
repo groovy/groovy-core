@@ -2,9 +2,11 @@ package org.codehaus.groovy.tools.shell.completion
 
 import groovy.transform.CompileStatic
 import jline.console.completer.ArgumentCompleter
+import jline.console.completer.ArgumentCompleter.ArgumentDelimiter
+import jline.console.completer.ArgumentCompleter.ArgumentList
 import jline.console.completer.Completer
 
-import static jline.internal.Preconditions.checkNotNull
+import static jline.internal.Preconditions.checkNotNull;
 
 /**
  * Similar to a strict jline ArgumentCompleter, this completer
@@ -19,7 +21,7 @@ class StricterArgumentCompleter extends ArgumentCompleter {
 
     /**
      *  Create a new completer with the default
-     *{ @link jline.console.completer.ArgumentCompleter.WhitespaceArgumentDelimiter } .
+     *  { @link jline.console.completer.ArgumentCompleter.WhitespaceArgumentDelimiter } .
      *
      * @param completers The embedded completers
      */
@@ -47,7 +49,7 @@ class StricterArgumentCompleter extends ArgumentCompleter {
                 }
 
                 boolean candidateMatches = false;
-                for (CharSequence subCandidate : subCandidates) {
+                for (CharSequence subCandidate: subCandidates) {
                     // Since we know delimiter is whitespace, we can use String.trim(), in contrast to super class
                     String trimmedCand = subCandidate.toString().trim();
                     if (trimmedCand.equals(arg)) {

@@ -29,7 +29,7 @@ public interface GroovyPackageDoc extends GroovyDoc {
      * limited to just the included ones.
      *
      * @param filter Specifying true filters according to the specified access modifier option.
-     *               Specifying false includes all classes and interfaces regardless of access modifier option.
+     * Specifying false includes all classes and interfaces regardless of access modifier option.
      * @return array of classes and interfaces found or empty array if none found
      */
     GroovyClassDoc[] allClasses(boolean filter);

@@ -2,7 +2,7 @@ dependencies {
     compile project(':')
     groovy project(':')
     testCompile project(':groovy-test')
-    testCompile('org.spockframework:spock-core:0.7-groovy-2.0') {
+    testCompile ('org.spockframework:spock-core:0.7-groovy-2.0') {
         exclude module: 'groovy-all'
     }
 }
@@ -14,10 +14,10 @@ task moduleDescriptor(type: org.codehaus.groovy.gradle.WriteExtensionDescriptorT
 compileJava.dependsOn moduleDescriptor
 
 tasks.withType(Compile) {
-    sourceCompatibility = 1.7
-    targetCompatibility = 1.7
+        sourceCompatibility = 1.7
+        targetCompatibility = 1.7
 }
 tasks.withType(Javadoc) {
-    options.source = "1.7"
+        options.source = "1.7"
 }
 

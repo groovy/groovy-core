@@ -27,7 +27,8 @@ import org.codehaus.groovy.tools.shell.Groovysh
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class LoadCommand
-        extends CommandSupport {
+    extends CommandSupport
+{
     LoadCommand(final Groovysh shell) {
         super(shell, ':load', ':l')
 
@@ -35,31 +36,31 @@ class LoadCommand
     }
 
     protected List createCompleters() {
-        return [new FileNameCompleter()]
+        return [ new FileNameCompleter() ]
     }
 
     Object execute(final List<String> args) {
         assert args != null
-
+        
         if (args.size() == 0) {
             fail("Command 'load' requires at least one argument") // TODO: i18n
         }
 
         for (source in args) {
             URL url
-
+            
             log.debug("Attempting to load: $url")
-
+            
             try {
                 url = new URL("$source")
             }
             catch (MalformedURLException e) {
                 def file = new File("$source")
-
+                
                 if (!file.exists()) {
                     fail("File not found: $file") // TODO: i18n
                 }
-
+                
                 url = file.toURI().toURL()
             }
 

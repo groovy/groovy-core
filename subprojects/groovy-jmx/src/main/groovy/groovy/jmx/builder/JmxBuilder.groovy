@@ -52,7 +52,7 @@ class JmxBuilder extends FactoryBuilderSupport {
         registerFactory "connectorServer", svrFactory
         registerFactory "serverConnector", svrFactory
 
-        def newClientFactory = { new JmxClientConnectorFactory() }
+        def newClientFactory = {new JmxClientConnectorFactory()}
         registerFactory "client", newClientFactory()
         registerFactory "connector", newClientFactory()
         registerFactory "clientConnector", newClientFactory()

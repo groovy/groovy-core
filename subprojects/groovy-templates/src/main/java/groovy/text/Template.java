@@ -22,11 +22,10 @@ import java.util.Map;
 
 /**
  * A template is a block of text with an associated binding that can be output to a writer or evaluated to a string.
- *
+ * 
  * @author sam
  */
 public interface Template {
     Writable make();
-
     Writable make(Map binding);
 }

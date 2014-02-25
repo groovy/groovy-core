@@ -16,7 +16,6 @@
 package groovy.test
 
 import org.junit.Test
-
 import static groovy.test.GroovyAssert.*
 
 /**
@@ -83,8 +82,7 @@ class GroovyAssertTest {
     }
 }
 
-@groovy.transform.PackageScope
-class GroovyAssertDummyClass {
+@groovy.transform.PackageScope class GroovyAssertDummyClass {
     static throwException() {
         throw new GroovyAssertDummyException()
     }
@@ -94,8 +92,7 @@ class GroovyAssertDummyClass {
     }
 }
 
-@groovy.transform.PackageScope
-class GroovyAssertDummyException extends RuntimeException {
+@groovy.transform.PackageScope class GroovyAssertDummyException extends RuntimeException {
     GroovyAssertDummyException(Throwable cause) {
         super(cause);
     }

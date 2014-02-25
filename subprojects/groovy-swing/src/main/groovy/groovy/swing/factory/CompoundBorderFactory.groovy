@@ -24,7 +24,7 @@ class CompoundBorderFactory extends SwingBorderFactory {
     public Object newInstance(FactoryBuilderSupport builder, Object name, Object value, Map attributes) {
         builder.context.applyBorderToParent = attributes.remove('parent')
 
-        Border border = null
+        Border border  = null
         if (value instanceof List) {
             switch (value.size()) {
                 case 0:
@@ -38,7 +38,7 @@ class CompoundBorderFactory extends SwingBorderFactory {
                 case 3:
                 default:
                     border = new CompoundBorder(value[0], value[1])
-                    border = value[2..-1].inject(border) { that, it -> new CompoundBorder(that, it) }
+                    border = value[2..-1].inject(border) {that, it -> new CompoundBorder(that, it) }
                     break;
             }
         }

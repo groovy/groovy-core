@@ -20,11 +20,10 @@ import groovy.ui.view.Defaults
 import groovy.ui.view.GTKDefaults
 import groovy.ui.view.MacOSXDefaults
 import groovy.ui.view.WindowsDefaults
-
-import javax.swing.*
-import javax.swing.event.DocumentListener
 import java.awt.datatransfer.DataFlavor
 import java.awt.dnd.*
+import javax.swing.UIManager
+import javax.swing.event.DocumentListener
 
 switch (UIManager.getSystemLookAndFeelClassName()) {
     case 'com.sun.java.swing.plaf.windows.WindowsLookAndFeel':
@@ -116,29 +115,29 @@ controller.inputArea.document.addDocumentListener({ controller.setDirty(true) } 
 controller.rootElement = inputArea.document.defaultRootElement
 
 
-def dtListener = [
-        dragEnter        : { DropTargetDragEvent evt ->
-            if (evt.dropTargetContext.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
-                evt.acceptDrag(DnDConstants.ACTION_COPY)
-            } else {
-                evt.rejectDrag()
-            }
-        },
-        dragOver         : { DropTargetDragEvent evt ->
-            //dragEnter(evt)
-        },
-        dropActionChanged: { DropTargetDragEvent evt ->
-            //dragEnter(evt)
-        },
-        dragExit         : { DropTargetEvent evt ->
-        },
-        drop             : { DropTargetDropEvent evt ->
-            evt.acceptDrop DnDConstants.ACTION_COPY
-            //println "Dropping! ${evt.transferable.getTransferData(DataFlavor.javaFileListFlavor)}"
-            if (controller.askToSaveFile()) {
-                controller.loadScriptFile(evt.transferable.getTransferData(DataFlavor.javaFileListFlavor)[0])
-            }
-        },
+def dtListener =  [
+    dragEnter:{DropTargetDragEvent evt ->
+        if (evt.dropTargetContext.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+            evt.acceptDrag(DnDConstants.ACTION_COPY)
+        } else {
+            evt.rejectDrag()
+        }
+    },
+    dragOver:{DropTargetDragEvent evt ->
+        //dragEnter(evt)
+    },
+    dropActionChanged:{DropTargetDragEvent evt ->
+        //dragEnter(evt)
+    },
+    dragExit:{DropTargetEvent evt  ->
+    },
+    drop:{DropTargetDropEvent evt  ->
+        evt.acceptDrop DnDConstants.ACTION_COPY
+        //println "Dropping! ${evt.transferable.getTransferData(DataFlavor.javaFileListFlavor)}"
+        if (controller.askToSaveFile()) {
+            controller.loadScriptFile(evt.transferable.getTransferData(DataFlavor.javaFileListFlavor)[0])
+        }
+    },
 ] as DropTargetListener
 
 [consoleFrame, inputArea, outputArea].each {

@@ -15,8 +15,13 @@
  */
 package groovy.swing.factory
 
-import javax.swing.*
-import java.awt.*
+import javax.swing.RootPaneContainer
+
+import java.awt.Insets
+import java.awt.GridBagConstraints
+import java.awt.Container
+import java.awt.GridBagLayout
+import java.awt.Component
 
 public class GridBagFactory extends LayoutFactory {
 
@@ -27,6 +32,7 @@ public class GridBagFactory extends LayoutFactory {
     public void addLayoutProperties(context) {
         addLayoutProperties(context, GridBagConstraints)
     }
+
 
 
     public static void processGridBagConstraintsAttributes(FactoryBuilderSupport builder, Object node, Map attributes) {
@@ -44,14 +50,15 @@ public class GridBagFactory extends LayoutFactory {
             return
         }
 
+
         // next, check to be sure we are in an appropriate container
         Object parent = builder.getCurrent()
         if (parent instanceof RootPaneContainer) {
-            if (!(((RootPaneContainer) parent).getContentPane().getLayout() instanceof GridBagLayout)) {
+            if (!(((RootPaneContainer)parent).getContentPane().getLayout() instanceof GridBagLayout)) {
                 return
             }
         } else if (parent instanceof Container) {
-            if (!(((Container) parent).getLayout() instanceof GridBagLayout)) {
+            if (!(((Container)parent).getLayout() instanceof GridBagLayout)) {
                 return
             }
         } else {

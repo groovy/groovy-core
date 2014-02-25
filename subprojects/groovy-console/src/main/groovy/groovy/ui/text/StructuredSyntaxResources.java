@@ -16,7 +16,9 @@
 
 package groovy.ui.text;
 
-import java.awt.*;
+import java.awt.Font;
+import java.awt.Toolkit;
+
 import java.awt.datatransfer.Clipboard;
 
 /**
@@ -30,9 +32,8 @@ public final class StructuredSyntaxResources {
     // ==================================================
     // ClipBoard
     // ==================================================
-
+    
     public static final Clipboard SYSTEM_CLIPBOARD;
-
     static {
         Clipboard systemClipboard = null;
         try {
@@ -43,11 +44,13 @@ public final class StructuredSyntaxResources {
                 mgr.checkSystemClipboardAccess();
             }
             systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-        } catch (SecurityException e) {
+        }
+        catch (SecurityException e) {
             // means we can't get to system clipboard, so create app level one
             systemClipboard = new Clipboard("UIResourceMgr");
-        } catch (Exception e) {
-            e.printStackTrace();
+        }
+        catch (Exception e) {
+            e.printStackTrace();               
         }
         SYSTEM_CLIPBOARD = systemClipboard;
     }
@@ -59,7 +62,7 @@ public final class StructuredSyntaxResources {
     public static final Font LARGE_FONT = Font.decode("Arial-24");
     public static final Font MEDIUM_FONT = Font.decode("Arial-18");
     public static final Font SMALL_FONT = Font.decode("Arial-12");
-
+    
     public static final Font EDITOR_FONT = Font.decode("Monospaced-12");
 
     // =====================================================
@@ -72,7 +75,7 @@ public final class StructuredSyntaxResources {
     public static final String FIND = "Find";
     public static final String FIND_NEXT = "Find Next";
     public static final String REPLACE = "Replace";
-
+        
     // singleton
     private StructuredSyntaxResources() {
     }

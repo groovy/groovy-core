@@ -16,20 +16,27 @@
 package org.codehaus.groovy.tools.xml;
 
 import groovy.util.IndentPrinter;
-import org.codehaus.groovy.syntax.Types;
 import org.w3c.dom.*;
+import org.codehaus.groovy.syntax.Types;
 import org.xml.sax.InputSource;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.*;
-import java.util.Collection;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.InputStream;
+import java.io.FileReader;
+import java.io.BufferedReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Collection;
 
 /**
  * A SAX handler for turning XML into Groovy scripts
- *
+ * 
  * @author James Strachan
  * @author paulk
  */
@@ -114,16 +121,16 @@ public class DomToGroovy {
 
     protected void print(Node node, Map namespaces, boolean endWithComma) {
         switch (node.getNodeType()) {
-            case Node.ELEMENT_NODE:
+            case Node.ELEMENT_NODE :
                 printElement((Element) node, namespaces, endWithComma);
                 break;
-            case Node.PROCESSING_INSTRUCTION_NODE:
+            case Node.PROCESSING_INSTRUCTION_NODE :
                 printPI((ProcessingInstruction) node, endWithComma);
                 break;
-            case Node.TEXT_NODE:
+            case Node.TEXT_NODE :
                 printText((Text) node, endWithComma);
                 break;
-            case Node.COMMENT_NODE:
+            case Node.COMMENT_NODE :
                 printComment((Comment) node, endWithComma);
                 break;
         }
@@ -208,7 +215,7 @@ public class DomToGroovy {
 
     protected void printComment(Comment comment, boolean endWithComma) {
         String text = comment.getData().trim();
-        if (text.length() > 0) {
+        if (text.length() >0) {
             printIndent();
             print("/* ");
             print(text);

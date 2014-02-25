@@ -75,7 +75,7 @@ public class MarkupBuilderHelper {
 
     /**
      * Produce a comment in the output.
-     * <p/>
+     * <p>
      * <code>mkp.comment 'string'</code> is equivalent to
      * <code>mkp.yieldUnescaped '&lt;!-- string --&gt;'</code>.
      * To create an element with the name 'comment', you need

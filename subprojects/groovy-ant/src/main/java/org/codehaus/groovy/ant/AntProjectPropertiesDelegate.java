@@ -18,7 +18,12 @@ package org.codehaus.groovy.ant;
 
 import org.apache.tools.ant.Project;
 
-import java.util.*;
+import java.util.Hashtable;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Map;
+import java.util.Set;
+import java.util.Iterator;
 
 /**
  * @author Guillaume Laforge
@@ -42,7 +47,7 @@ public class AntProjectPropertiesDelegate extends Hashtable {
 
     /**
      * @throws UnsupportedOperationException is always thrown when this method is invoked. The Project properties are immutable.
-     */
+     */    
     public synchronized void clear() {
         throw new UnsupportedOperationException("Impossible to clear the project properties.");
     }
@@ -93,7 +98,7 @@ public class AntProjectPropertiesDelegate extends Hashtable {
 
     public synchronized void putAll(Map t) {
         Set keySet = t.keySet();
-        for (Iterator iterator = keySet.iterator(); iterator.hasNext(); ) {
+        for (Iterator iterator = keySet.iterator(); iterator.hasNext();) {
             Object key = iterator.next();
             Object value = t.get(key);
             put(key, value);

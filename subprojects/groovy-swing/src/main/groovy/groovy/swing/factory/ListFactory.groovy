@@ -16,10 +16,9 @@
 
 package groovy.swing.factory
 
+import javax.swing.JList
 import groovy.swing.binding.JListMetaMethods
 import groovy.swing.impl.ListWrapperListModel
-
-import javax.swing.*
 
 /**
  * Create a JList, and handle the optional items attribute.
@@ -36,7 +35,7 @@ public class ListFactory extends AbstractFactory {
 
         if (value instanceof JList) {
             list = value
-        } else if (value instanceof Vector || value instanceof Object[]) {
+        } else if (value instanceof Vector || value instanceof Object[]){
             list = new JList(value)
         } else if (value instanceof List) {
             list = new JList(new ListWrapperListModel(items))
@@ -67,7 +66,7 @@ public class ListFactory extends AbstractFactory {
                 node.listData = listData.toArray()
             } else {
                 // allow any iterable ??
-                node.listData = listData.collect([]) { it } as Object[]
+                node.listData = listData.collect([]){it} as Object[]
             }
         }
         return true

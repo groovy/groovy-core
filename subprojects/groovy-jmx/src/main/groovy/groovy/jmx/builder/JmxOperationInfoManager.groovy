@@ -41,7 +41,7 @@ class JmxOperationInfoManager {
     public static List<ModelMBeanConstructorInfo> getConstructorInfosFromMap(Map metaMap) {
         if (!metaMap) return null
         def ctors = []
-        metaMap.each { ctorName, map ->
+        metaMap.each {ctorName, map ->
             ModelMBeanConstructorInfo info = getConstructorInfoFromMap(map)
             ctors << info
         }
@@ -71,7 +71,7 @@ class JmxOperationInfoManager {
         desc.setField(JmxBuilderTools.DESC_KEY_ROLE, map.remove(JmxBuilderTools.DESC_KEY_ROLE))
         desc.setField JmxBuilderTools.DESC_KEY_DISPLAY_NAME, map.remove(JmxBuilderTools.DESC_KEY_DISPLAY_NAME)
 
-        map.each { key, value ->
+        map.each {key, value ->
             desc.setField(key, value)
         }
 
@@ -93,7 +93,7 @@ class JmxOperationInfoManager {
     public static List<ModelMBeanOperationInfo> getOperationInfosFromMap(Map metaMap) {
         if (!metaMap) return null
         def ops = []
-        metaMap.each { opNames, map ->
+        metaMap.each {opNames, map ->
             ModelMBeanOperationInfo info = getOperationInfoFromMap(map)
             ops << info
         }
@@ -143,7 +143,7 @@ class JmxOperationInfoManager {
         if (!metaMap || metaMap.size() == 0) return null
         List<MBeanParameterInfo> result = new ArrayList<MBeanParameterInfo>(metaMap.size())
 
-        metaMap.each { paramType, param ->
+        metaMap.each {paramType, param ->
             String type = (param.type instanceof String) ? JmxBuilderTools.getNormalizedType(param.type) : JmxBuilderTools.getNormalizedType(param.type.name)
             MBeanParameterInfo info = new MBeanParameterInfo(param.name, type, param.displayName)
             result << info

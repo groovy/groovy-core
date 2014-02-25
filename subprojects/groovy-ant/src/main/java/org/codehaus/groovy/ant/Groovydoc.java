@@ -305,7 +305,7 @@ public class Groovydoc extends Task {
      * elements.
      *
      * @param resultantPackages a list to which we add the packages found
-     * @param sourcePath        a path to which we add each basedir found
+     * @param sourcePath a path to which we add each basedir found
      * @since 1.5
      */
     private void parsePackages(List<String> resultantPackages, Path sourcePath) {
@@ -483,12 +483,12 @@ public class Groovydoc extends Task {
         links.add(result);
         return result;
     }
-
+    
     /**
      * Creates and returns an array of package template classpath entries.
-     * <p/>
+     * <p>
      * This method is meant to be overridden by custom GroovyDoc implementations, using custom package templates.
-     *
+     * 
      * @return an array of package templates, whereas each entry is resolved as classpath entry, defaults to
      * {@link GroovyDocTemplateInfo#DEFAULT_PACKAGE_TEMPLATES}.
      */
@@ -498,9 +498,9 @@ public class Groovydoc extends Task {
 
     /**
      * Creates and returns an array of doc template classpath entries.
-     * <p/>
+     * <p>
      * This method is meant to be overridden by custom GroovyDoc implementations, using custom doc templates.
-     *
+     * 
      * @return an array of doc templates, whereas each entry is resolved as classpath entry, defaults to
      * {@link GroovyDocTemplateInfo#DEFAULT_DOC_TEMPLATES}.
      */
@@ -510,9 +510,9 @@ public class Groovydoc extends Task {
 
     /**
      * Creates and returns an array of class template classpath entries.
-     * <p/>
+     * <p>
      * This method is meant to be overridden by custom GroovyDoc implementations, using custom class templates.
-     *
+     * 
      * @return an array of class templates, whereas each entry is resolved as classpath entry, defaults to
      * {@link GroovyDocTemplateInfo#DEFAULT_CLASS_TEMPLATES}.
      */

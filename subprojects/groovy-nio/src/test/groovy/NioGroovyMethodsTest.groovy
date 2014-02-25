@@ -3,14 +3,13 @@
  * @author Paolo Di Tommaso <paolo.ditommaso@gmail.com>
  */
 package org.codehaus.groovy.runtime
-
-import groovy.io.FileType
-import spock.lang.Specification
-
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardCopyOption
+
+import groovy.io.FileType
+import spock.lang.Specification
 
 class NioGroovyMethodsTest extends Specification {
 
@@ -19,7 +18,7 @@ class NioGroovyMethodsTest extends Specification {
         when:
         def str = 'Hello world!'
         Path path = Files.createTempFile('test-size', null)
-        Files.copy(new ByteArrayInputStream(str.getBytes()), path, StandardCopyOption.REPLACE_EXISTING)
+        Files.copy( new ByteArrayInputStream(str.getBytes()), path, StandardCopyOption.REPLACE_EXISTING )
 
         then:
         path.size() == str.size()
@@ -86,10 +85,10 @@ class NioGroovyMethodsTest extends Specification {
         path.eachObject() { list << it }
 
         then:
-        list.size() == 3
-        list[0] == str1
-        list[1] == str2
-        list[2] == str3
+        list.size()==3
+        list[0]==str1
+        list[1]==str2
+        list[2]==str3
 
         cleanup:
         Files.deleteIfExists(path)
@@ -105,10 +104,10 @@ class NioGroovyMethodsTest extends Specification {
         def lines = file.toPath().readLines()
 
         then:
-        lines.size() == 3
-        lines[0] == 'alpha'
-        lines[1] == 'beta'
-        lines[2] == 'delta'
+        lines.size()==3
+        lines[0]=='alpha'
+        lines[1]=='beta'
+        lines[2]=='delta'
 
         cleanup:
         file?.delete()
@@ -160,7 +159,7 @@ class NioGroovyMethodsTest extends Specification {
         file?.delete()
     }
 
-    def testWrite() {
+    def testWrite( )  {
 
         when:
         String str = 'Hello there!'
@@ -213,7 +212,7 @@ class NioGroovyMethodsTest extends Specification {
         file.text = 'alpha'
 
         when:
-        file.toPath().append(new ByteArrayInputStream('-delta'.getBytes()))
+        file.toPath().append( new ByteArrayInputStream('-delta'.getBytes()) )
 
         then:
         file.text == 'alpha-delta'
@@ -231,11 +230,11 @@ class NioGroovyMethodsTest extends Specification {
         def file3 = Files.createTempFile(folder, 'file_X_', null)
         // sub-folder with two files
         def sub1 = Files.createTempDirectory(folder, 'sub1_')
-        def file4 = Files.createTempFile(sub1, 'file_4_', null)
-        def file5 = Files.createTempFile(sub1, 'file_5_', null)
+        def file4  = Files.createTempFile(sub1, 'file_4_', null)
+        def file5  = Files.createTempFile(sub1, 'file_5_', null)
         // sub-sub-folder with one file
         def sub2 = Files.createTempDirectory(sub1, 'sub2_')
-        def file6 = Files.createTempFile(sub2, 'file_6_', null)
+        def file6  = Files.createTempFile(sub2, 'file_6_', null)
 
         when:
         Set result = []
@@ -256,7 +255,7 @@ class NioGroovyMethodsTest extends Specification {
         folder.eachFile(FileType.DIRECTORIES) { result3 << it }
 
         then:
-        result3 == [sub1] as Set
+        result3 == [sub1]  as Set
 
         when:
         Set result4 = []
@@ -308,22 +307,22 @@ class NioGroovyMethodsTest extends Specification {
         folder.eachDir { result << it }
 
         then:
-        result as Set == [sub1, sub2, sub3] as Set
+        result as Set == [ sub1, sub2, sub3 ] as Set
 
         // test *eachMatchDir*
         when:
         def result2 = []
-        folder.eachDirMatch(~/sub_\d_.*+/) { result2 << it }
+        folder.eachDirMatch( ~/sub_\d_.*+/ ) { result2 << it }
 
         then:
-        result2 as Set == [sub1, sub2] as Set
+        result2 as Set == [ sub1, sub2 ] as Set
 
         when:
         def result3 = []
         folder.eachDirRecurse { result3 << it }
 
         then:
-        result3 as Set == [sub1, sub2, sub4, sub5, sub3] as Set
+        result3 as Set == [ sub1, sub2, sub4, sub5, sub3 ] as Set
 
         cleanup:
         folder?.deleteDir()

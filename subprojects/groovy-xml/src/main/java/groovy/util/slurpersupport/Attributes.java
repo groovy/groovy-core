@@ -22,10 +22,10 @@ import groovy.xml.QName;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
+import java.util.Map;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.ArrayList;
 
 /**
  * Lazy evaluated representation of a node's attributes.
@@ -36,9 +36,9 @@ public class Attributes extends NodeChildren {
     final String attributeName;
 
     /**
-     * @param parent            the GPathResult prior to the application of the expression creating this GPathResult
-     * @param name              if the GPathResult corresponds to something with a name, e.g. a node
-     * @param namespacePrefix   the namespace prefix if any
+     * @param parent the GPathResult prior to the application of the expression creating this GPathResult
+     * @param name if the GPathResult corresponds to something with a name, e.g. a node
+     * @param namespacePrefix the namespace prefix if any
      * @param namespaceTagHints the known tag to namespace mappings
      */
     public Attributes(final GPathResult parent, final String name, final String namespacePrefix, final Map<String, String> namespaceTagHints) {
@@ -47,8 +47,8 @@ public class Attributes extends NodeChildren {
     }
 
     /**
-     * @param parent            the GPathResult prior to the application of the expression creating this GPathResult
-     * @param name              if the GPathResult corresponds to something with a name, e.g. a node
+     * @param parent the GPathResult prior to the application of the expression creating this GPathResult
+     * @param name if the GPathResult corresponds to something with a name, e.g. a node
      * @param namespaceTagHints the known tag to namespace mappings
      */
     public Attributes(final GPathResult parent, final String name, final Map<String, String> namespaceTagHints) {

@@ -30,7 +30,11 @@ import org.xml.sax.helpers.AttributesImpl;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -315,26 +319,31 @@ public class AntBuilder extends BuilderSupport {
             DispatchUtils.execute(task);
 
             return realThing != null ? realThing : task;
-        } catch (BuildException ex) {
+        }
+        catch (BuildException ex) {
             if (ex.getLocation() == Location.UNKNOWN_LOCATION) {
                 ex.setLocation(task.getLocation());
             }
             reason = ex;
             throw ex;
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             reason = ex;
             BuildException be = new BuildException(ex);
             be.setLocation(task.getLocation());
             throw be;
-        } catch (Error ex) {
+        }
+        catch (Error ex) {
             reason = ex;
             throw ex;
-        } finally {
+        }
+        finally {
             try {
                 final Method fireTaskFinished = Project.class.getDeclaredMethod("fireTaskFinished", Task.class, Throwable.class);
                 fireTaskFinished.setAccessible(true);
                 fireTaskFinished.invoke(project, task, reason);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 BuildException be = new BuildException(e);
                 be.setLocation(task.getLocation());
                 throw be;
@@ -396,7 +405,8 @@ public class AntBuilder extends BuilderSupport {
 
         try {
             antElementHandler.onStartElement(ns, tagName, tagName, attrs, antXmlContext);
-        } catch (final SAXParseException e) {
+        }
+        catch (final SAXParseException e) {
             log.log(Level.SEVERE, "Caught: " + e, e);
         }
 
@@ -415,7 +425,7 @@ public class AntBuilder extends BuilderSupport {
 
             // execute dependencies (if any)
             final Vector targets = new Vector();
-            for (final Enumeration deps = newTarget.getDependencies(); deps.hasMoreElements(); ) {
+            for (final Enumeration deps = newTarget.getDependencies(); deps.hasMoreElements();) {
                 final String targetName = (String) deps.nextElement();
                 targets.add(project.getTargets().get(targetName));
             }
@@ -423,7 +433,8 @@ public class AntBuilder extends BuilderSupport {
 
             antXmlContext.setCurrentTarget(newTarget);
             return newTarget;
-        } catch (final SAXParseException e) {
+        }
+        catch (final SAXParseException e) {
             log.log(Level.SEVERE, "Caught: " + e, e);
         }
         return null;
@@ -433,7 +444,8 @@ public class AntBuilder extends BuilderSupport {
         final char[] characters = text.toCharArray();
         try {
             antElementHandler.characters(characters, 0, characters.length, antXmlContext);
-        } catch (final SAXParseException e) {
+        }
+        catch (final SAXParseException e) {
             log.log(Level.WARNING, "SetText failed: " + task + ". Reason: " + e, e);
         }
     }

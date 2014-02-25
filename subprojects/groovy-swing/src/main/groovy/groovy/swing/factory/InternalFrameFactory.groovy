@@ -16,7 +16,7 @@
 
 package groovy.swing.factory
 
-import javax.swing.*
+import javax.swing.JInternalFrame
 
 class InternalFrameFactory extends groovy.swing.factory.RootPaneContainerFactory {
 

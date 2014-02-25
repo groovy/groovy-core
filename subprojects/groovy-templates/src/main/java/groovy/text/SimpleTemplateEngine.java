@@ -16,20 +16,26 @@
 package groovy.text;
 
 import groovy.lang.*;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.util.Map;
+
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.runtime.InvokerHelper;
-
-import java.io.*;
-import java.util.Map;
 
 /**
  * Processes template source files substituting variables and expressions into
  * placeholders in a template source text to produce the desired output.
- * <p/>
+ * <p>
  * The template engine uses JSP style &lt;% %&gt; script and &lt;%= %&gt; expression syntax
  * or GString style expressions. The variable '<code>out</code>' is bound to the writer that the template
  * is being written to.
- * <p/>
+ * <p>
  * Frequently, the template source will be in a file but here is a simple
  * example providing the template as a string:
  * <pre>

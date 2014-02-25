@@ -17,7 +17,7 @@
 package groovy.swing.factory
 
 public class MapFactory extends AbstractFactory {
-
+    
     public Object newInstance(FactoryBuilderSupport builder, Object name, Object value, Map attributes) throws InstantiationException, IllegalAccessException {
         FactoryBuilderSupport.checkValueIsNull(value, name);
         return attributes;

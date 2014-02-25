@@ -15,16 +15,72 @@
  */
 package groovy.swing
 
-import groovy.swing.factory.*
-import org.codehaus.groovy.runtime.MethodClosure
-
-import javax.swing.*
+import java.lang.reflect.InvocationTargetException
+import java.util.logging.Logger
 import javax.swing.border.BevelBorder
 import javax.swing.border.EtchedBorder
 import javax.swing.table.TableColumn
+import org.codehaus.groovy.runtime.MethodClosure
+
 import java.awt.*
-import java.lang.reflect.InvocationTargetException
-import java.util.logging.Logger
+import javax.swing.*
+import groovy.swing.factory.ActionFactory
+import groovy.swing.factory.MapFactory
+import groovy.swing.factory.BindFactory
+import groovy.swing.factory.DialogFactory
+import groovy.swing.factory.FormattedTextFactory
+import groovy.swing.factory.ListFactory
+import groovy.swing.factory.SeparatorFactory
+import groovy.swing.factory.ScrollPaneFactory
+import groovy.swing.factory.TableModelFactory
+import groovy.swing.factory.PropertyColumnFactory
+import groovy.swing.factory.ClosureColumnFactory
+import groovy.swing.factory.LineBorderFactory
+import groovy.swing.factory.BevelBorderFactory
+import groovy.swing.factory.ComponentFactory
+
+import groovy.swing.factory.BoxLayoutFactory
+import groovy.swing.factory.LayoutFactory
+import groovy.swing.factory.EmptyBorderFactory
+import groovy.swing.factory.TitledBorderFactory
+import groovy.swing.factory.CellEditorPrepareFactory
+import groovy.swing.factory.CellEditorGetValueFactory
+import groovy.swing.factory.CellEditorFactory
+import groovy.swing.factory.RendererUpdateFactory
+import groovy.swing.factory.RendererFactory
+import groovy.swing.factory.InternalFrameFactory
+import groovy.swing.factory.RigidAreaFactory
+import groovy.swing.factory.GlueFactory
+import groovy.swing.factory.VStrutFactory
+import groovy.swing.factory.VGlueFactory
+import groovy.swing.factory.VBoxFactory
+import groovy.swing.factory.HStrutFactory
+import groovy.swing.factory.HGlueFactory
+import groovy.swing.factory.HBoxFactory
+import groovy.swing.factory.BoxFactory
+import groovy.swing.factory.ColumnFactory
+import groovy.swing.factory.BindGroupFactory
+import groovy.swing.factory.SplitPaneFactory
+import groovy.swing.factory.RichActionWidgetFactory
+import groovy.swing.factory.TDFactory
+import groovy.swing.factory.TRFactory
+import groovy.swing.factory.TableLayoutFactory
+import groovy.swing.factory.WindowFactory
+import groovy.swing.factory.ComboBoxFactory
+import groovy.swing.factory.CompoundBorderFactory
+import groovy.swing.factory.TextArgWidgetFactory
+import groovy.swing.factory.ButtonGroupFactory
+import groovy.swing.factory.WidgetFactory
+import groovy.swing.factory.EtchedBorderFactory
+import groovy.swing.factory.TableFactory
+import groovy.swing.factory.GridBagFactory
+import groovy.swing.factory.MatteBorderFactory
+import groovy.swing.factory.FrameFactory
+import groovy.swing.factory.ColumnModelFactory
+import groovy.swing.factory.TabbedPaneFactory
+import groovy.swing.factory.BindProxyFactory
+import groovy.swing.factory.ImageIconFactory
+import groovy.swing.factory.CollectionFactory
 
 /**
  * A helper class for creating Swing widgets using GroovyMarkup
@@ -70,7 +126,7 @@ public class SwingBuilder extends FactoryBuilderSupport {
         registerFactory("bind", bindFactory)
         addAttributeDelegate(bindFactory.&bindingAttributeDelegate)
         registerFactory("bindProxy", new BindProxyFactory())
-        registerFactory("bindGroup", new BindGroupFactory());
+        registerFactory ("bindGroup", new BindGroupFactory());
     }
 
     def registerPassThruNodes() {
@@ -220,9 +276,9 @@ public class SwingBuilder extends FactoryBuilderSupport {
     }
 
     def registerEditors() {
-        registerFactory("cellEditor", new CellEditorFactory())
-        registerFactory("editorValue", new CellEditorGetValueFactory())
-        registerFactory("prepareEditor", new CellEditorPrepareFactory())
+      registerFactory("cellEditor", new CellEditorFactory())
+      registerFactory("editorValue", new CellEditorGetValueFactory())
+      registerFactory("prepareEditor", new CellEditorPrepareFactory())
     }
 
     def registerThreading() {
@@ -230,6 +286,7 @@ public class SwingBuilder extends FactoryBuilderSupport {
         registerExplicitMethod "doOutside", this.&doOutside
         registerExplicitMethod "doLater", this.&doLater
     }
+
 
     /**
      * Do some overrides for standard component handlers, else use super
@@ -243,10 +300,10 @@ public class SwingBuilder extends FactoryBuilderSupport {
         } else if (JTable.isAssignableFrom(klass)) {
             registerFactory(nodeName, groupName, new TableFactory(klass))
         } else if (JComponent.isAssignableFrom(klass)
-                || JApplet.isAssignableFrom(klass)
-                || JDialog.isAssignableFrom(klass)
-                || JFrame.isAssignableFrom(klass)
-                || JWindow.isAssignableFrom(klass)
+            || JApplet.isAssignableFrom(klass)
+            || JDialog.isAssignableFrom(klass)
+            || JFrame.isAssignableFrom(klass)
+            || JWindow.isAssignableFrom(klass)
         ) {
             registerFactory(nodeName, groupName, new ComponentFactory(klass))
         } else {
@@ -320,11 +377,10 @@ public class SwingBuilder extends FactoryBuilderSupport {
         if (!(c instanceof MethodClosure)) {
             c = c.curry([this])
         }
-        if (SwingUtilities.isEventDispatchThread()) {
+        if( SwingUtilities.isEventDispatchThread() )
             new Thread(c).start()
-        } else {
+        else
             c.call()
-        }
         return this
     }
 
@@ -371,8 +427,7 @@ public class SwingBuilder extends FactoryBuilderSupport {
         if (ks == null) {
             return null
         } else {
-            return KeyStroke.getKeyStroke(ks.getKeyCode(), ks.getModifiers() | modifier | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())
-        }
+            return KeyStroke.getKeyStroke(ks.getKeyCode(), ks.getModifiers() | modifier | Toolkit.getDefaultToolkit().getMenuShortcutKeyMask())        }
     }
 
     public static LookAndFeel lookAndFeel(Object laf, Closure initCode) {
@@ -433,7 +488,7 @@ public class SwingBuilder extends FactoryBuilderSupport {
         def theID = attributes.remove(idAttr)
         if (theID) {
             builder.setVariable(theID, node)
-            if (node) {
+            if(node) {
                 try {
                     if (!node.name) node.name = theID
                 } catch (MissingPropertyException mpe) {
@@ -446,30 +501,30 @@ public class SwingBuilder extends FactoryBuilderSupport {
     public static clientPropertyAttributeDelegate(def builder, def node, def attributes) {
         def clientPropertyMap = attributes.remove("clientProperties")
         clientPropertyMap.each { key, value ->
-            node.putClientProperty key, value
+           node.putClientProperty key, value
         }
         attributes.findAll { it.key =~ /clientProperty(\w)/ }.each { key, value ->
-            attributes.remove(key)
-            node.putClientProperty(key - "clientProperty", value)
+           attributes.remove(key)
+           node.putClientProperty(key - "clientProperty", value)
         }
     }
 
-    public void createKeyStrokeAction(Map attributes, JComponent component = null) {
+    public void createKeyStrokeAction( Map attributes, JComponent component = null ) {
         component = findTargetComponent(attributes, component)
-        if (!attributes.containsKey("keyStroke")) {
+        if( !attributes.containsKey("keyStroke") ) {
             throw new RuntimeException("You must define a value for keyStroke:")
         }
-        if (!attributes.containsKey("action")) {
+        if( !attributes.containsKey("action") ) {
             throw new RuntimeException("You must define a value for action:")
         }
 
         def condition = attributes.remove("condition") ?: JComponent.WHEN_FOCUSED
         if (condition instanceof GString) condition = condition as String
-        if (condition instanceof String) {
-            condition = condition.toUpperCase().replaceAll(" ", "_")
-            if (!condition.startsWith("WHEN_")) condition = "WHEN_" + condition
+        if( condition instanceof String ) {
+            condition = condition.toUpperCase().replaceAll(" ","_")
+            if( !condition.startsWith("WHEN_") ) condition = "WHEN_"+condition
         }
-        switch (condition) {
+        switch(condition) {
             case JComponent.WHEN_FOCUSED:
             case JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT:
             case JComponent.WHEN_IN_FOCUSED_WINDOW:
@@ -489,16 +544,16 @@ public class SwingBuilder extends FactoryBuilderSupport {
                 condition = JComponent.WHEN_FOCUSED
         }
         def actionKey = attributes.remove("actionKey")
-        if (!actionKey) actionKey = "Action" + Math.abs(random.nextLong())
-
+        if( !actionKey ) actionKey = "Action"+Math.abs(random.nextLong())
+                           
         def keyStroke = attributes.remove("keyStroke")
         // accept String, Number, KeyStroke, List<String>, List<Number>, List<KeyStroke>
         def action = attributes.remove("action")
 
-        if (keyStroke instanceof GString) keyStroke = keyStroke as String
-        if (keyStroke instanceof String || keyStroke instanceof Number) keyStroke = [keyStroke]
+        if( keyStroke instanceof GString ) keyStroke = keyStroke as String
+        if( keyStroke instanceof String || keyStroke instanceof Number ) keyStroke = [keyStroke]
         keyStroke.each { ks ->
-            switch (ks) {
+            switch(ks) {
                 case KeyStroke:
                     component.getInputMap(condition).put(ks, actionKey)
                     break
@@ -515,17 +570,17 @@ public class SwingBuilder extends FactoryBuilderSupport {
         component.actionMap.put(actionKey, action)
     }
 
-    private findTargetComponent(Map attributes, JComponent component) {
-        if (component) return component
-        if (attributes.containsKey("component")) {
+    private findTargetComponent( Map attributes, JComponent component ) {
+        if( component ) return component
+        if( attributes.containsKey("component") ) {
             def c = attributes.remove("component")
-            if (!(c instanceof JComponent)) {
+            if( !(c instanceof JComponent) ) {
                 throw new RuntimeException("The property component: is not of type JComponent.")
             }
             return c
         }
         def c = getCurrent()
-        if (c instanceof JComponent) {
+        if( c instanceof JComponent ) {
             return c
         }
         throw new RuntimeException("You must define one of the following: a value of type JComponent, a component: attribute or nest this node inside another one that produces a JComponent.")

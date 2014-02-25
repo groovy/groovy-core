@@ -16,11 +16,17 @@
 
 package org.codehaus.groovy.tools.shell
 
-import org.codehaus.groovy.tools.shell.commands.*
+import groovy.mock.interceptor.MockFor
+import org.codehaus.groovy.tools.shell.commands.AliasCommand
+import org.codehaus.groovy.tools.shell.commands.ClearCommand
+import org.codehaus.groovy.tools.shell.commands.ImportCommand
+import org.codehaus.groovy.tools.shell.commands.SaveCommand
+import org.codehaus.groovy.tools.shell.commands.SetCommand
+import org.codehaus.groovy.tools.shell.commands.ShowCommand
 import org.codehaus.groovy.tools.shell.util.Preferences
 
 class CommandCompletorTest
-        extends CompletorTestSupport {
+extends CompletorTestSupport {
 
     void testEmpty() {
         CommandsMultiCompleter completor = new CommandsMultiCompleter()
@@ -53,10 +59,8 @@ class CommandCompletorTest
     void testSet() {
         CommandsMultiCompleter completor = new CommandsMultiCompleter()
         def candidates = []
-        groovyshMocker.demand.getAUTOINDENT_PREFERENCE_KEY(1) { "autoindent" }
-        groovyshMocker.demand.getMETACLASS_COMPLETION_PREFIX_LENGTH_PREFERENCE_KEY(1) {
-            "meta-completion-prefix-length"
-        }
+        groovyshMocker.demand.getAUTOINDENT_PREFERENCE_KEY(1){"autoindent"}
+        groovyshMocker.demand.getMETACLASS_COMPLETION_PREFIX_LENGTH_PREFERENCE_KEY(1){"meta-completion-prefix-length"}
         groovyshMocker.use {
             Groovysh groovyshMock = new Groovysh()
             completor.add(new SetCommand(groovyshMock))
@@ -114,11 +118,9 @@ class CommandCompletorTest
     void testSaveSetShow() {
         CommandsMultiCompleter completor = new CommandsMultiCompleter()
         def candidates = []
-        groovyshMocker.demand.getAUTOINDENT_PREFERENCE_KEY(1) { "autoindent" }
-        groovyshMocker.demand.getMETACLASS_COMPLETION_PREFIX_LENGTH_PREFERENCE_KEY(1) {
-            "meta-completion-prefix-length"
-        }
-        groovyshMocker.demand.getIo(1) { testio }
+        groovyshMocker.demand.getAUTOINDENT_PREFERENCE_KEY(1){"autoindent"}
+        groovyshMocker.demand.getMETACLASS_COMPLETION_PREFIX_LENGTH_PREFERENCE_KEY(1){"meta-completion-prefix-length"}
+        groovyshMocker.demand.getIo(1){testio}
         groovyshMocker.use {
             Groovysh groovyshMock = new Groovysh()
             completor.add(new SaveCommand(groovyshMock))
@@ -130,10 +132,10 @@ class CommandCompletorTest
             assert [':s', ':save', ':set ', ':show '] == candidates
             candidates = []
             assert 6 == completor.complete(":save ", ":save ".length(), candidates)
-            assert !candidates.contains('all')
+            assert ! candidates.contains('all')
             candidates = []
             assert 3 == completor.complete(":s ", ":s ".length(), candidates)
-            assert !candidates.contains('all')
+            assert ! candidates.contains('all')
 
         }
 

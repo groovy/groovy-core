@@ -15,19 +15,17 @@
  */
 package org.codehaus.groovy.tools.groovydoc;
 
-import org.codehaus.groovy.runtime.IOGroovyMethods;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import org.codehaus.groovy.runtime.IOGroovyMethods;
 
 public class ClasspathResourceManager implements ResourceManager {
     ClassLoader classLoader;
-
     public ClasspathResourceManager() {
         classLoader = getClass().getClassLoader();
     }
-
+    
     public ClasspathResourceManager(ClassLoader classLoader) {
         this.classLoader = classLoader;
     }

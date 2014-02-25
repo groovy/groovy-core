@@ -25,7 +25,8 @@ import org.codehaus.groovy.tools.shell.Shell
  * @author <a href="mailto:chris@wensel.net">Chris K Wensel</a>
  */
 class RegisterCommandTest
-        extends CommandTestSupport {
+    extends CommandTestSupport
+{
     void testRegister() {
         shell << ':register org.codehaus.groovy.tools.shell.commands.EchoCommand'
     }
@@ -41,12 +42,13 @@ class RegisterCommandTest
     }
 
     void testRegisterFail() {
-        shell << ':register'
-    }
+            shell << ':register'
+        }
 }
 
 class EchoCommand
-        extends CommandSupport {
+    extends CommandSupport
+{
     EchoCommand(final Shell shell, final String name, final String alias) {
         super(shell, name, alias)
     }

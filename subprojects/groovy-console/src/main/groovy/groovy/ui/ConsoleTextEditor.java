@@ -19,24 +19,32 @@ import groovy.ui.text.GroovyFilter;
 import groovy.ui.text.StructuredSyntaxResources;
 import groovy.ui.text.TextEditor;
 import groovy.ui.text.TextUndoManager;
-import org.codehaus.groovy.runtime.StringGroovyMethods;
 
-import javax.swing.*;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Document;
-import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.print.PrinterJob;
+import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.prefs.Preferences;
+
+import org.codehaus.groovy.runtime.StringGroovyMethods;
 
 /**
  * Component which provides a styled editor for the console.
@@ -70,9 +78,8 @@ public class ConsoleTextEditor extends JScrollPane {
             int start = textEditor.viewToModel(getViewport().getViewPosition());
             // end position in document
             int end = textEditor.viewToModel(new Point(10,
-                            getViewport().getViewPosition().y +
-                                    (int) textEditor.getVisibleRect().getHeight()
-                    )
+                    getViewport().getViewPosition().y +
+                            (int) textEditor.getVisibleRect().getHeight())
             );
 
             // translate offsets to lines
@@ -132,7 +139,7 @@ public class ConsoleTextEditor extends JScrollPane {
      */
     public ConsoleTextEditor() {
         textEditor.setFont(new Font(defaultFamily, Font.PLAIN,
-                Preferences.userNodeForPackage(Console.class).getInt("fontSize", 12)));
+		        Preferences.userNodeForPackage(Console.class).getInt("fontSize", 12)));
 
         setViewportView(new JPanel(new BorderLayout()) {{
             add(numbersPanel, BorderLayout.WEST);
@@ -205,7 +212,7 @@ public class ConsoleTextEditor extends JScrollPane {
     }
 
     public void setEditable(boolean editable) {
-        textEditor.setEditable(editable);
+        textEditor.setEditable(editable); 
     }
 
     public boolean clipBoardAvailable() {
@@ -237,7 +244,8 @@ public class ConsoleTextEditor extends JScrollPane {
                 if (PRINTER_JOB.printDialog()) {
                     PRINTER_JOB.print();
                 }
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 e.printStackTrace();
             }
         }

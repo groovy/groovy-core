@@ -37,7 +37,7 @@ import java.util.Map;
  * the XML into a Node for each element in the XML with attributes
  * and child Nodes and Strings. This simple model is sufficient for
  * most simple use cases of processing XML.
- * <p/>
+ * <p>
  * Example usage:
  * <pre>
  * def xml = '&lt;root&gt;&lt;one a1="uno!"/&gt;&lt;two&gt;Some text!&lt;/two&gt;&lt;/root&gt;'
@@ -66,7 +66,7 @@ public class XmlParser implements ContentHandler {
      * Creates a non-validating and non-namespace-aware <code>XmlParser</code> which does not allow DOCTYPE declarations in documents.
      *
      * @throws ParserConfigurationException if no parser which satisfies the requested configuration can be created.
-     * @throws SAXException                 for SAX errors.
+     * @throws SAXException for SAX errors.
      */
     public XmlParser() throws ParserConfigurationException, SAXException {
         this(false, true);
@@ -74,11 +74,12 @@ public class XmlParser implements ContentHandler {
 
     /**
      * Creates a <code>XmlParser</code> which does not allow DOCTYPE declarations in documents.
-     *
-     * @param validating     <code>true</code> if the parser should validate documents as they are parsed; false otherwise.
+     * 
+     * @param validating <code>true</code> if the parser should validate documents as they are parsed; false otherwise.
      * @param namespaceAware <code>true</code> if the parser should provide support for XML namespaces; <code>false</code> otherwise.
+     *
      * @throws ParserConfigurationException if no parser which satisfies the requested configuration can be created.
-     * @throws SAXException                 for SAX errors.
+     * @throws SAXException for SAX errors.
      */
     public XmlParser(boolean validating, boolean namespaceAware) throws ParserConfigurationException, SAXException {
         this(validating, namespaceAware, false);
@@ -86,12 +87,13 @@ public class XmlParser implements ContentHandler {
 
     /**
      * Creates a <code>XmlParser</code>.
-     *
-     * @param validating              <code>true</code> if the parser should validate documents as they are parsed; false otherwise.
-     * @param namespaceAware          <code>true</code> if the parser should provide support for XML namespaces; <code>false</code> otherwise.
+     * 
+     * @param validating <code>true</code> if the parser should validate documents as they are parsed; false otherwise.
+     * @param namespaceAware <code>true</code> if the parser should provide support for XML namespaces; <code>false</code> otherwise.
      * @param allowDocTypeDeclaration <code>true</code> if the parser should provide support for DOCTYPE declarations; <code>false</code> otherwise.
+     *
      * @throws ParserConfigurationException if no parser which satisfies the requested configuration can be created.
-     * @throws SAXException                 for SAX errors.
+     * @throws SAXException for SAX errors.
      */
     public XmlParser(boolean validating, boolean namespaceAware, boolean allowDocTypeDeclaration) throws ParserConfigurationException, SAXException {
         SAXParserFactory factory = FactorySupport.createSaxParserFactory();
@@ -110,14 +112,14 @@ public class XmlParser implements ContentHandler {
     public XmlParser(SAXParser parser) throws SAXException {
         reader = parser.getXMLReader();
     }
-
+    
     private void setQuietly(SAXParserFactory factory, String feature, boolean value) {
         try {
             factory.setFeature(feature, value);
-        } catch (ParserConfigurationException ignored) {
-        } catch (SAXNotRecognizedException ignored) {
-        } catch (SAXNotSupportedException ignored) {
         }
+        catch (ParserConfigurationException ignored) { }
+        catch (SAXNotRecognizedException ignored) { }
+        catch (SAXNotSupportedException ignored) { }
     }
 
     /**
@@ -176,7 +178,7 @@ public class XmlParser implements ContentHandler {
 
     /**
      * Parse the content of the specified input stream into a tree of Nodes.
-     * <p/>
+     * <p>
      * Note that using this method will not provide the parser with any URI
      * for which to find DTDs etc
      *
@@ -196,7 +198,7 @@ public class XmlParser implements ContentHandler {
 
     /**
      * Parse the content of the specified reader into a tree of Nodes.
-     * <p/>
+     * <p>
      * Note that using this method will not provide the parser with any URI
      * for which to find DTDs etc
      *

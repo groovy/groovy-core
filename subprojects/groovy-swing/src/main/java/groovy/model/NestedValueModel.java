@@ -18,7 +18,7 @@ package groovy.model;
 /**
  * Represents a nested value model such as a PropertyModel
  * or a ClosureModel
- *
+ * 
  * @author <a href="mailto:james@coredevelopers.net">James Strachan</a>
  * @version $Revision$
  */

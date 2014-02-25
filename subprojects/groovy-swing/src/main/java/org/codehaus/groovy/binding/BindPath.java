@@ -15,15 +15,16 @@
  */
 package org.codehaus.groovy.binding;
 
-import groovy.lang.MetaClass;
-import groovy.lang.MissingPropertyException;
-import groovy.lang.Reference;
 import org.codehaus.groovy.runtime.InvokerHelper;
 
 import java.beans.PropertyChangeListener;
-import java.util.Map;
 import java.util.Set;
+import java.util.Map;
 import java.util.TreeMap;
+
+import groovy.lang.MetaClass;
+import groovy.lang.MissingPropertyException;
+import groovy.lang.Reference;
 
 /**
  * The bind path object.  This class represents one "step" in the bind path.
@@ -61,7 +62,7 @@ public class BindPath {
      * Next, update the reference object the children have and recurse
      * Finally, add listeners if we have a different object
      *
-     * @param listener  This listener to attach.
+     * @param listener This listener to attach.
      * @param newObject The object we should read our property off of.
      * @param updateSet The list of objects we have added listeners to
      */
@@ -94,7 +95,7 @@ public class BindPath {
      * This assumes that we are not added as listeners to any of them, hence
      * it is not idempotent.
      *
-     * @param listener  This listener to attach.
+     * @param listener This listener to attach.
      * @param newObject The object we should read our property off of.
      * @param updateSet The list of objects we have added listeners to
      */
@@ -145,7 +146,7 @@ public class BindPath {
     /**
      * Add listeners to a specific object.  Updates the bould flags and update set
      *
-     * @param listener  This listener to attach.
+     * @param listener This listener to attach.
      * @param newObject The object we should read our property off of.
      * @param updateSet The list of objects we have added listeners to
      */
@@ -163,7 +164,7 @@ public class BindPath {
                 syntheticFullBinding.bind();
                 updateSet.add(newObject);
             } else if (!mc.respondsTo(newObject, "addPropertyChangeListener", NAME_PARAMS).isEmpty()) {
-                InvokerHelper.invokeMethod(newObject, "addPropertyChangeListener", new Object[]{propertyName, listener});
+                InvokerHelper.invokeMethod(newObject, "addPropertyChangeListener", new Object[] {propertyName, listener});
                 localListener = listener;
                 updateSet.add(newObject);
             } else if (!mc.respondsTo(newObject, "addPropertyChangeListener", GLOBAL_PARAMS).isEmpty()) {
@@ -190,7 +191,7 @@ public class BindPath {
         }
         if (localListener != null) {
             try {
-                InvokerHelper.invokeMethod(currentObject, "removePropertyChangeListener", new Object[]{propertyName, localListener});
+                InvokerHelper.invokeMethod(currentObject, "removePropertyChangeListener", new Object[] {propertyName, localListener});
             } catch (Exception e) {
                 //LOGME ignore the failure
             }

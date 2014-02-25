@@ -24,9 +24,10 @@ import org.codehaus.groovy.tools.shell.Groovysh
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 abstract class ExprTestSupport
-        extends GroovyTestCase {
+    extends GroovyTestCase
+{
     Groovysh shell
-
+    
     Object lastResult
 
     void setUp() {

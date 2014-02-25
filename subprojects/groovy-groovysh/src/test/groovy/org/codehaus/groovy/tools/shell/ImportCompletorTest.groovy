@@ -24,7 +24,7 @@ import org.codehaus.groovy.tools.shell.util.PackageHelper
 import org.codehaus.groovy.tools.shell.util.Preferences
 
 class ImportCompleterUnitTest
-        extends GroovyTestCase {
+extends GroovyTestCase {
 
     MockFor helperMocker
     MockFor preferencesMocker
@@ -33,7 +33,7 @@ class ImportCompleterUnitTest
         super.setUp()
         helperMocker = new MockFor(PackageHelper)
         helperMocker.demand.initializePackages(0..1) {}
-        helperMocker.demand.getClass(0..1) { PackageHelper }
+        helperMocker.demand.getClass(0..1) {PackageHelper}
         preferencesMocker = new MockFor(Preferences)
         preferencesMocker.demand.get(1) { "true" }
         preferencesMocker.demand.addChangeListener(1) {}
@@ -51,7 +51,7 @@ class ImportCompleterUnitTest
         assertTrue("java.util.Test123" ==~ ImportCompleter.PACK_OR_SIMPLE_CLASSNAME_PATTERN)
         // inverse
         assertFalse("." ==~ ImportCompleter.PACK_OR_SIMPLE_CLASSNAME_PATTERN)
-        assertFalse("Upper" ==~ ImportCompleter.PACK_OR_SIMPLE_CLASSNAME_PATTERN)
+        assertFalse("Upper" ==~ ImportCompleter.PACK_OR_SIMPLE_CLASSNAME_PATTERN )
         assertFalse("java.util.Test123." ==~ ImportCompleter.PACK_OR_SIMPLE_CLASSNAME_PATTERN)
         assertFalse("java.util.Test123.foo" ==~ ImportCompleter.PACK_OR_SIMPLE_CLASSNAME_PATTERN)
 
@@ -75,249 +75,215 @@ class ImportCompleterUnitTest
 
     void testCompleteEmpty() {
 
-        helperMocker.demand.getContents(1) { str -> assert (str == ''); ["java", "groovy"] }
-        helperMocker.use {
-            preferencesMocker.use {
-                def packageHelper2 = new PackageHelper()
-                ImportCompleter compl = new ImportCompleter(packageHelper2, null, false);
-                def candidates = []
-                String buffer = ""
-                assertEquals(0, compl.complete(buffer, buffer.length(), candidates))
-                assertEquals(["groovy.", "java."], candidates.sort())
-            }
-        }
+        helperMocker.demand.getContents(1) { str -> assert(str == '' ); ["java", "groovy"] }
+        helperMocker.use { preferencesMocker.use {
+            def packageHelper2 = new PackageHelper()
+            ImportCompleter compl = new ImportCompleter(packageHelper2, null, false);
+            def candidates = []
+            String buffer = ""
+            assertEquals(0, compl.complete(buffer, buffer.length(), candidates))
+            assertEquals(["groovy.", "java."], candidates.sort())
+        }}
     }
 
     void testCompleteStaticEmpty() {
-        helperMocker.demand.getContents(1) { str -> assert (str == ''); ["java", "groovy"] }
-        helperMocker.use {
-            preferencesMocker.use {
-                def packageHelper2 = new PackageHelper()
-                ImportCompleter compl = new ImportCompleter(packageHelper2, null, true);
-                def candidates = []
-                String buffer = ""
-                assertEquals(0, compl.complete(buffer, buffer.length(), candidates))
-                assertEquals(["groovy.", "java."], candidates.sort())
-            }
-        }
+        helperMocker.demand.getContents(1) { str -> assert(str == '' ); ["java", "groovy"] }
+        helperMocker.use { preferencesMocker.use {
+            def packageHelper2 = new PackageHelper()
+            ImportCompleter compl = new ImportCompleter(packageHelper2, null, true);
+            def candidates = []
+            String buffer = ""
+            assertEquals(0, compl.complete(buffer, buffer.length(), candidates))
+            assertEquals(["groovy.", "java."], candidates.sort())
+        }}
     }
 
     void testCompleteJ() {
-        helperMocker.demand.getContents(1) { str -> assert (str == ''); ["java", "javax"] }
-        helperMocker.use {
-            preferencesMocker.use {
-                def packageHelper2 = new PackageHelper()
-                ImportCompleter compl = new ImportCompleter(packageHelper2, null, false);
-                def candidates = []
-                String buffer = "j"
-                assertEquals(0, compl.complete(buffer, buffer.length(), candidates))
-                assertEquals(["java.", "javax."], candidates.sort())
-            }
+        helperMocker.demand.getContents(1) { str -> assert(str == '' ); ["java", "javax"] }
+        helperMocker.use { preferencesMocker.use {
+            def packageHelper2 = new PackageHelper()
+            ImportCompleter compl = new ImportCompleter(packageHelper2, null, false);
+            def candidates = []
+            String buffer = "j"
+            assertEquals(0, compl.complete(buffer, buffer.length(), candidates))
+            assertEquals(["java.", "javax."], candidates.sort())
         }
-    }
+    }}
 
     void testCompleteStaticJ() {
-        helperMocker.demand.getContents(1) { str -> assert (str == ''); ["java", "javax"] }
-        helperMocker.use {
-            preferencesMocker.use {
-                def packageHelper2 = new PackageHelper()
-                ImportCompleter compl = new ImportCompleter(packageHelper2, null, true);
-                def candidates = []
-                String buffer = "j"
-                assertEquals(0, compl.complete(buffer, buffer.length(), candidates))
-                assertEquals(["java.", "javax."], candidates.sort())
-            }
+        helperMocker.demand.getContents(1) { str -> assert(str == '' ); ["java", "javax"] }
+        helperMocker.use { preferencesMocker.use {
+            def packageHelper2 = new PackageHelper()
+            ImportCompleter compl = new ImportCompleter(packageHelper2, null, true);
+            def candidates = []
+            String buffer = "j"
+            assertEquals(0, compl.complete(buffer, buffer.length(), candidates))
+            assertEquals(["java.", "javax."], candidates.sort())
         }
-    }
+    }}
 
     void testCompleteCo() {
-        helperMocker.demand.getContents(1) { str -> assert (str == ''); ["com", "org"] }
-        helperMocker.use {
-            preferencesMocker.use {
-                def packageHelper2 = new PackageHelper()
-                ImportCompleter compl = new ImportCompleter(packageHelper2, null, false);
-                def candidates = []
-                String buffer = "co"
-                assertEquals(0, compl.complete(buffer, buffer.length(), candidates))
-                assertEquals(["com."], candidates.sort())
-            }
+        helperMocker.demand.getContents(1) { str -> assert(str == '' ); ["com", "org"] }
+        helperMocker.use { preferencesMocker.use {
+            def packageHelper2 = new PackageHelper()
+            ImportCompleter compl = new ImportCompleter(packageHelper2, null, false);
+            def candidates = []
+            String buffer = "co"
+            assertEquals(0, compl.complete(buffer, buffer.length(), candidates))
+            assertEquals(["com."], candidates.sort())
         }
-    }
+    }}
 
     void testCompleteJavaDot() {
         helperMocker.demand.getContents(1) { ["util", "math"] }
-        helperMocker.use {
-            preferencesMocker.use {
-                def packageHelper2 = new PackageHelper()
-                ImportCompleter compl = new ImportCompleter(packageHelper2, null, false);
-                def candidates = []
-                String buffer = "java."
-                assertEquals(5, compl.complete(buffer, buffer.length(), candidates))
-                assertEquals(["* ", "math.", "util."], candidates.sort())
-            }
+        helperMocker.use { preferencesMocker.use {
+            def packageHelper2 = new PackageHelper()
+            ImportCompleter compl = new ImportCompleter(packageHelper2, null, false);
+            def candidates = []
+            String buffer = "java."
+            assertEquals(5, compl.complete(buffer, buffer.length(), candidates))
+            assertEquals(["* ", "math.", "util."], candidates.sort())
         }
-    }
+    }}
 
     void testCompleteStaticJavaDot() {
         helperMocker.demand.getContents(1) { ["util", "math"] }
-        helperMocker.use {
-            preferencesMocker.use {
-                def packageHelper2 = new PackageHelper()
-                ImportCompleter compl = new ImportCompleter(packageHelper2, null, true);
-                def candidates = []
-                String buffer = "java."
-                assertEquals(5, compl.complete(buffer, buffer.length(), candidates))
-                assertEquals(["math.", "util."], candidates.sort())
-            }
+        helperMocker.use { preferencesMocker.use {
+            def packageHelper2 = new PackageHelper()
+            ImportCompleter compl = new ImportCompleter(packageHelper2, null, true);
+            def candidates = []
+            String buffer = "java."
+            assertEquals(5, compl.complete(buffer, buffer.length(), candidates))
+            assertEquals(["math.", "util."], candidates.sort())
         }
-    }
+    }}
 
     void testCompleteJavaDotU() {
         helperMocker.demand.getContents(1) { ["util", "math"] }
-        helperMocker.use {
-            preferencesMocker.use {
-                def packageHelper2 = new PackageHelper()
-                ImportCompleter compl = new ImportCompleter(packageHelper2, null, false);
-                def candidates = []
-                String buffer = "java.u"
-                assertEquals(5, compl.complete(buffer, buffer.length(), candidates))
-                assertEquals(["util."], candidates.sort())
-            }
+        helperMocker.use { preferencesMocker.use {
+            def packageHelper2 = new PackageHelper()
+            ImportCompleter compl = new ImportCompleter(packageHelper2, null, false);
+            def candidates = []
+            String buffer = "java.u"
+            assertEquals(5, compl.complete(buffer, buffer.length(), candidates))
+            assertEquals(["util."], candidates.sort())
         }
-    }
+    }}
 
     void testCompleteJavaDotUtil() {
         helperMocker.demand.getContents(1) { ["util"] }
-        helperMocker.use {
-            preferencesMocker.use {
-                def packageHelper2 = new PackageHelper()
-                ImportCompleter compl = new ImportCompleter(packageHelper2, null, false);
-                def candidates = []
-                String buffer = "java.util"
-                assertEquals(5, compl.complete(buffer, buffer.length(), candidates))
-                assertEquals(["util."], candidates.sort())
-            }
+        helperMocker.use { preferencesMocker.use {
+            def packageHelper2 = new PackageHelper()
+            ImportCompleter compl = new ImportCompleter(packageHelper2, null, false);
+            def candidates = []
+            String buffer = "java.util"
+            assertEquals(5, compl.complete(buffer, buffer.length(), candidates))
+            assertEquals(["util."], candidates.sort())
         }
-    }
+    }}
 
     void testCompleteJavaDotUtilDot() {
         helperMocker.demand.getContents(1) { ["zip", "jar"] }
-        helperMocker.use {
-            preferencesMocker.use {
-                def packageHelper2 = new PackageHelper()
-                ImportCompleter compl = new ImportCompleter(packageHelper2, null, false);
-                def candidates = []
-                String buffer = "java.util."
-                assertEquals(10, compl.complete(buffer, buffer.length(), candidates))
-                assertEquals(["* ", "jar.", "zip."], candidates.sort())
-            }
+        helperMocker.use { preferencesMocker.use {
+            def packageHelper2 = new PackageHelper()
+            ImportCompleter compl = new ImportCompleter(packageHelper2, null, false);
+            def candidates = []
+            String buffer = "java.util."
+            assertEquals(10, compl.complete(buffer, buffer.length(), candidates))
+            assertEquals(["* ", "jar.", "zip."], candidates.sort())
         }
-    }
+    }}
 
     void testCompleteJavaDotUtilDotZip() {
         helperMocker.demand.getContents(1) { ["zip"] }
-        helperMocker.use {
-            preferencesMocker.use {
-                def packageHelper2 = new PackageHelper()
-                ImportCompleter compl = new ImportCompleter(packageHelper2, null, false);
-                def candidates = []
-                String buffer = "java.util.zip"
-                assertEquals(10, compl.complete(buffer, buffer.length(), candidates))
-                assertEquals(["zip."], candidates.sort())
-            }
+        helperMocker.use { preferencesMocker.use {
+            def packageHelper2 = new PackageHelper()
+            ImportCompleter compl = new ImportCompleter(packageHelper2, null, false);
+            def candidates = []
+            String buffer = "java.util.zip"
+            assertEquals(10, compl.complete(buffer, buffer.length(), candidates))
+            assertEquals(["zip."], candidates.sort())
         }
-    }
+    }}
 
     void testCompleteJavaDotUtilDotZipDot() {
         helperMocker.demand.getContents(1) { ["Test1", "Test2"] }
-        helperMocker.use {
-            preferencesMocker.use {
-                def packageHelper2 = new PackageHelper()
-                ImportCompleter compl = new ImportCompleter(packageHelper2, null, false);
-                def candidates = []
-                String buffer = "java.util.zip."
-                assertEquals(14, compl.complete(buffer, buffer.length(), candidates))
-                assertEquals(["* ", "Test1 ", "Test2 "], candidates.sort())
-            }
+        helperMocker.use { preferencesMocker.use {
+            def packageHelper2 = new PackageHelper()
+            ImportCompleter compl = new ImportCompleter(packageHelper2, null, false);
+            def candidates = []
+            String buffer = "java.util.zip."
+            assertEquals(14, compl.complete(buffer, buffer.length(), candidates))
+            assertEquals(["* ", "Test1 ", "Test2 "], candidates.sort())
         }
-    }
+    }}
 
     void testCompleteStaticJavaDotUtilDotZipDot() {
         helperMocker.demand.getContents(1) { ["Test1", "Test2"] }
-        helperMocker.use {
-            preferencesMocker.use {
-                def packageHelper2 = new PackageHelper()
-                ImportCompleter compl = new ImportCompleter(packageHelper2, null, true);
-                def candidates = []
-                String buffer = "java.util.zip."
-                assertEquals(14, compl.complete(buffer, buffer.length(), candidates))
-                assertEquals(["Test1.", "Test2."], candidates.sort())
-            }
+        helperMocker.use { preferencesMocker.use {
+            def packageHelper2 = new PackageHelper()
+            ImportCompleter compl = new ImportCompleter(packageHelper2, null, true);
+            def candidates = []
+            String buffer = "java.util.zip."
+            assertEquals(14, compl.complete(buffer, buffer.length(), candidates))
+            assertEquals(["Test1.", "Test2."], candidates.sort())
         }
-    }
+    }}
 
     void testCompleteJavaDotUtilDotZipDotT() {
         helperMocker.demand.getContents(1) { ["Test", "NotThis"] }
-        helperMocker.use {
-            preferencesMocker.use {
-                def packageHelper2 = new PackageHelper()
-                ImportCompleter compl = new ImportCompleter(packageHelper2, null, false);
-                def candidates = []
-                String buffer = "java.util.zip.T"
-                assertEquals(14, compl.complete(buffer, buffer.length(), candidates))
-                assertEquals(["Test "], candidates.sort())
-            }
+        helperMocker.use { preferencesMocker.use {
+            def packageHelper2 = new PackageHelper()
+            ImportCompleter compl = new ImportCompleter(packageHelper2, null, false);
+            def candidates = []
+            String buffer = "java.util.zip.T"
+            assertEquals(14, compl.complete(buffer, buffer.length(), candidates))
+            assertEquals(["Test "], candidates.sort())
         }
-    }
+    }}
 
     void testCompleteStaticJavaDotUtilDotZipDotT() {
         helperMocker.demand.getContents(1) { ["Test", "NotThis"] }
-        helperMocker.use {
-            preferencesMocker.use {
-                def packageHelper2 = new PackageHelper()
-                ImportCompleter compl = new ImportCompleter(packageHelper2, null, true);
-                def candidates = []
-                String buffer = "java.util.zip.T"
-                assertEquals(14, compl.complete(buffer, buffer.length(), candidates))
-                assertEquals(["Test "], candidates.sort())
-            }
+        helperMocker.use { preferencesMocker.use {
+            def packageHelper2 = new PackageHelper()
+            ImportCompleter compl = new ImportCompleter(packageHelper2, null, true);
+            def candidates = []
+            String buffer = "java.util.zip.T"
+            assertEquals(14, compl.complete(buffer, buffer.length(), candidates))
+            assertEquals(["Test "], candidates.sort())
         }
-    }
+    }}
 
     void testCompleteStaticJavaDotUtilDotZipDotTestDot() {
-        helperMocker.use {
-            preferencesMocker.use {
-                def packageHelper2 = new PackageHelper()
-                def mockInterp = [evaluate: { expr -> assert (expr == ['java.util.zip.Test']); Math }]
-                ImportCompleter compl = new ImportCompleter(packageHelper2, mockInterp, true);
-                def candidates = ['previousitem']
-                String buffer = "java.util.zip.Test."
-                assertEquals(19, compl.complete(buffer, buffer.length(), candidates))
-                // using Math as mock class
-                assertTrue('* ' in candidates)
-                assertTrue(candidates.toString(), 'abs ' in candidates)
-                assertTrue('previousitem' in candidates)
-            }
+        helperMocker.use { preferencesMocker.use {
+            def packageHelper2 = new PackageHelper()
+            def mockInterp = [evaluate: {expr -> assert(expr == ['java.util.zip.Test']); Math}]
+            ImportCompleter compl = new ImportCompleter(packageHelper2, mockInterp, true);
+            def candidates = ['previousitem']
+            String buffer = "java.util.zip.Test."
+            assertEquals(19, compl.complete(buffer, buffer.length(), candidates))
+            // using Math as mock class
+            assertTrue('* ' in candidates)
+            assertTrue(candidates.toString(), 'abs ' in candidates)
+            assertTrue('previousitem' in candidates)
         }
-    }
+    }}
 
     void testCompleteStaticJavaDotUtilDotZipDotTestDotMa() {
-        helperMocker.use {
-            preferencesMocker.use {
-                def packageHelper2 = new PackageHelper()
-                def mockInterp = [evaluate: { expr -> assert (expr == ['java.util.zip.Test']); Math }]
-                ImportCompleter compl = new ImportCompleter(packageHelper2, mockInterp, true);
-                def candidates = []
-                String buffer = "java.util.zip.Test.ma"
-                assertEquals(19, compl.complete(buffer, buffer.length(), candidates))
-                assertEquals(["max "], candidates.sort())
-            }
+        helperMocker.use { preferencesMocker.use {
+            def packageHelper2 = new PackageHelper()
+            def mockInterp = [evaluate: {expr -> assert(expr == ['java.util.zip.Test']); Math}]
+            ImportCompleter compl = new ImportCompleter(packageHelper2, mockInterp, true);
+            def candidates = []
+            String buffer = "java.util.zip.Test.ma"
+            assertEquals(19, compl.complete(buffer, buffer.length(), candidates))
+            assertEquals(["max "], candidates.sort())
         }
-    }
+    }}
 }
 
 class ImportCompleterTest
-        extends CompletorTestSupport {
+extends CompletorTestSupport {
 
     void testEmpty() {
         mockPackageHelper = packageHelperMocker.proxyInstance()

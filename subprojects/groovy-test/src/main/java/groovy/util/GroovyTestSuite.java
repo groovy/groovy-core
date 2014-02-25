@@ -28,7 +28,7 @@ import java.io.File;
 /**
  * A TestSuite which will run a Groovy unit test case inside any Java IDE
  * either as a unit test case or as an application.
- * <p/>
+ * <p>
  * You can specify the GroovyUnitTest to run by running this class as an application
  * and specifying the script to run on the command line.
  * <code>

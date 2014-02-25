@@ -15,11 +15,11 @@
  */
 package groovy.ui.view
 
-import org.codehaus.groovy.runtime.InvokerHelper
-
-import javax.swing.*
+import javax.swing.JComponent
 import javax.swing.text.StyleConstants
 import javax.swing.text.StyleContext
+import org.codehaus.groovy.runtime.InvokerHelper
+
 import java.util.prefs.Preferences
 
 build(Defaults)
@@ -36,8 +36,8 @@ if (System.properties['os.version'] =~ /6\./) {
     // in JDK 1.5 we need to turn on anti-aliasing so consoles looks better
     if (System.properties['java.version'] =~ /^1\.5/) {
         key = InvokerHelper.getProperty('com.sun.java.swing.SwingUtilities2' as Class,
-                'AA_TEXT_PROPERTY_KEY')
-        addAttributeDelegate { builder, node, attributes ->
+            'AA_TEXT_PROPERTY_KEY')
+        addAttributeDelegate {builder, node, attributes ->
             if (node instanceof JComponent) {
                 node.putClientProperty(key, new Boolean(true));
             }

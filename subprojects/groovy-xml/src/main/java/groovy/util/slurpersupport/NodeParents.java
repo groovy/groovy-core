@@ -19,14 +19,14 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * Lazy evaluated representation of parent nodes without duplicates
- *
- * @author Jochen Eddel+
- */
+* Lazy evaluated representation of parent nodes without duplicates
+*
+* @author Jochen Eddel+
+*/
 public class NodeParents extends NodeChildren {
-
+    
     /**
-     * @param parent            the GPathResult prior to the application of the expression creating this GPathResult
+     * @param parent the GPathResult prior to the application of the expression creating this GPathResult
      * @param namespaceTagHints the known tag to namespace mappings
      */
     public NodeParents(final GPathResult parent, final Map<String, String> namespaceTagHints) {
@@ -35,12 +35,12 @@ public class NodeParents extends NodeChildren {
 
     public Iterator nodeIterator() {
         return new NodeIterator(this.parent.nodeIterator()) {
-
+            
             private Node prev = null;
-
+            
             protected Object getNextNode(final Iterator iter) {
                 while (iter.hasNext()) {
-                    final Node node = ((Node) iter.next()).parent();
+                    final Node node = ((Node)iter.next()).parent();
                     if (node != null && node != prev) {
                         prev = node;
                         return node;
@@ -50,5 +50,5 @@ public class NodeParents extends NodeChildren {
             }
         };
     }
-
+    
 }

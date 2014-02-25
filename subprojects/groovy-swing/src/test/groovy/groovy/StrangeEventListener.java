@@ -15,8 +15,8 @@
  */
 package groovy;
 
-import java.beans.PropertyChangeEvent;
 import java.util.EventListener;
+import java.beans.PropertyChangeEvent;
 
 public interface StrangeEventListener extends EventListener {
 
@@ -25,7 +25,7 @@ public interface StrangeEventListener extends EventListener {
      * good practice.  We need to test what can be done not what should be done
      */
     void somethingStrangeHappened(String what, String where);
-
+    
     void somethingChanged(PropertyChangeEvent changeEvent);
-
+    
 }

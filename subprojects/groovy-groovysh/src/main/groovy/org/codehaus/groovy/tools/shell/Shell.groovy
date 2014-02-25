@@ -28,7 +28,8 @@ import static org.fusesource.jansi.Ansi.ansi
  * @version $Id$
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
-class Shell {
+class Shell
+{
     protected final Logger log = Logger.create(this.class)
 
     final CommandRegistry registry = new CommandRegistry()
@@ -36,24 +37,24 @@ class Shell {
     final IO io
 
     Shell(final IO io) {
-        assert (io != null)
-
+        assert(io != null)
+        
         this.io = io
     }
-
+    
     Shell() {
         this(new IO())
     }
-
+    
     protected List parseLine(final String line) {
         assert line != null
-
+        
         return line.trim().tokenize()
     }
-
+    
     Command findCommand(final String line) {
         assert line
-
+        
         //
         // TODO: Introduce something like 'boolean Command.accepts(String)' to ask
         //       commands if they can take the line?
@@ -66,36 +67,37 @@ class Shell {
         //       Or maybe allow commands to register specific syntax hacks into the registry?
         //       then ask the registry for the command for a given line?
         //
-
+        
         List<String> args = parseLine(line)
-
+        
         assert args.size() > 0
 
         Command command = registry.find(args[0])
-
+        
         return command
     }
-
+    
     boolean isExecutable(final String line) {
         return findCommand(line) != null
     }
-
+    
     Object execute(final String line) {
         assert line
-
+        
         def command = findCommand(line)
-
+        
         def result = null
-
+        
         if (command) {
             List<String> args = parseLine(line)
-
+            
             if (args.size() == 1) {
                 args = []
-            } else {
+            }
+            else {
                 args = args[1..-1]
             }
-
+            
             log.debug("Executing command($command.name): $command; w/args: $args")
             try {
                 result = command.execute(args)
@@ -104,10 +106,10 @@ class Shell {
             }
             log.debug("Result: ${InvokerHelper.toString(result)}")
         }
-
+        
         return result
     }
-
+    
     Command register(final Command command) {
         return registry.register(command)
     }

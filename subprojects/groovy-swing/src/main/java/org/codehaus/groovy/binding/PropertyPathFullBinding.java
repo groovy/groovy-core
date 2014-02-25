@@ -15,10 +15,10 @@
  */
 package org.codehaus.groovy.binding;
 
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.HashSet;
+import java.beans.PropertyChangeEvent;
 import java.util.Set;
+import java.util.HashSet;
 
 /**
  * A property path full binding

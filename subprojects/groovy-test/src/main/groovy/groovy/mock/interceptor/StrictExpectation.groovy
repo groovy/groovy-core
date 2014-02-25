@@ -22,13 +22,13 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods
 /**
  *  Expects demanded call cardinalities to match demanded ranges in the sequence of recording.
  *
- * @see LooseExpectation
- * @author Dierk Koenig
+ *  @see LooseExpectation
+ *  @author Dierk Koenig
  */
 class StrictExpectation {
-    Demand fDemand = null
+    Demand fDemand  = null
     int fCallSpecIdx = 0
-    List fCalls = []
+    List fCalls      = []
 
     StrictExpectation(Demand demand) {
         fDemand = demand
@@ -41,7 +41,7 @@ class StrictExpectation {
      * Also skips over names matching ignore filter, if any.
      */
     Closure match(String name) {
-        def filter = fDemand.ignore.keySet().find { DefaultGroovyMethods.grep([name], it) }
+        def filter = fDemand.ignore.keySet().find{ DefaultGroovyMethods.grep([name], it) }
         if (filter) return fDemand.ignore.get(filter)
         if (!fCalls[fCallSpecIdx]) fCalls[fCallSpecIdx] = 0
 
@@ -52,9 +52,9 @@ class StrictExpectation {
         def call = fDemand.recorded[fCallSpecIdx]
         if (name != call.name) {                             // if name does not match...
             def open = call.range.from - fCalls[fCallSpecIdx]
-            if (open > 0) {                                 // ... if we haven't reached the minimum, yet -> Exception
-                throw new AssertionFailedError("No call to '$name' expected at this point. " +
-                        "Still $open call(s) to '${call.name}' expected.")
+            if ( open > 0) {                                 // ... if we haven't reached the minimum, yet -> Exception
+                throw new AssertionFailedError("No call to '$name' expected at this point. "+
+                "Still $open call(s) to '${call.name}' expected.")
             } else {                                         // ... proceed finding
                 fCallSpecIdx++
                 return match(name)
@@ -68,7 +68,7 @@ class StrictExpectation {
         def result = call.behavior
 
         // proceed to next callSpec if we need to
-        if (fCalls[fCallSpecIdx] >= call.range.to) fCallSpecIdx++
+        if (fCalls[fCallSpecIdx] >= call.range.to ) fCallSpecIdx++
 
         return result
     }
