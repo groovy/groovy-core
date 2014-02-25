@@ -21,12 +21,7 @@ import groovy.lang.Closure;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
 
 /**
  * List decorator that will trigger PropertyChangeEvents when a value changes.<br>
@@ -53,7 +48,7 @@ import java.util.ListIterator;
  * <li>ObservableList.MultiElementRemovedEvent - triggered by calling
  * list.removeAll()/list.retainAll()</li>
  * </ul>
- * <p>
+ * <p/>
  * <strong>Bound properties</strong>
  * <ul>
  * <li><tt>content</tt> - read-only.</li>
@@ -65,7 +60,7 @@ import java.util.ListIterator;
 public class ObservableList implements List {
     private List delegate;
     private PropertyChangeSupport pcs;
-    private Closure test;
+    private Closure<Boolean> test;
 
     public static final String SIZE_PROPERTY = "size";
     public static final String CONTENT_PROPERTY = "content";
@@ -78,11 +73,11 @@ public class ObservableList implements List {
         this(delegate, null);
     }
 
-    public ObservableList(Closure test) {
+    public ObservableList(Closure<Boolean> test) {
         this(new ArrayList(), test);
     }
 
-    public ObservableList(List delegate, Closure test) {
+    public ObservableList(List delegate, Closure<Boolean> test) {
         this.delegate = delegate;
         this.test = test;
         pcs = new PropertyChangeSupport(this);
@@ -96,7 +91,7 @@ public class ObservableList implements List {
         return delegate;
     }
 
-    protected Closure getTest() {
+    protected Closure<Boolean> getTest() {
         return test;
     }
 
@@ -136,8 +131,8 @@ public class ObservableList implements List {
         int oldSize = size();
         delegate.add(index, element);
         if (test != null) {
-            Object result = test.call(element);
-            if (result != null && result instanceof Boolean && (Boolean) result) {
+            Boolean result = test.call(element);
+            if (result != null && result instanceof Boolean && result) {
                 fireElementAddedEvent(index, element);
                 fireSizeChangedEvent(oldSize, size());
             }
@@ -152,8 +147,8 @@ public class ObservableList implements List {
         boolean success = delegate.add(o);
         if (success) {
             if (test != null) {
-                Object result = test.call(o);
-                if (result != null && result instanceof Boolean && (Boolean) result) {
+                Boolean result = test.call(o);
+                if (result != null && result instanceof Boolean && result) {
                     fireElementAddedEvent(size() - 1, o);
                     fireSizeChangedEvent(oldSize, size());
                 }
@@ -175,8 +170,8 @@ public class ObservableList implements List {
             List values = new ArrayList();
             for (Object element : c) {
                 if (test != null) {
-                    Object result = test.call(element);
-                    if (result != null && result instanceof Boolean && (Boolean) result) {
+                    Boolean result = test.call(element);
+                    if (result != null && result) {
                         values.add(element);
                     }
                 } else {
@@ -200,8 +195,8 @@ public class ObservableList implements List {
             List values = new ArrayList();
             for (Object element : c) {
                 if (test != null) {
-                    Object result = test.call(element);
-                    if (result != null && result instanceof Boolean && (Boolean) result) {
+                    Boolean result = test.call(element);
+                    if (result != null && result) {
                         values.add(element);
                     }
                 } else {
@@ -297,11 +292,9 @@ public class ObservableList implements List {
         }
 
         List values = new ArrayList();
-        if (c != null) {
-            for (Object element : c) {
-                if (delegate.contains(element)) {
-                    values.add(element);
-                }
+        for (Object element : c) {
+            if (delegate.contains(element)) {
+                values.add(element);
             }
         }
 
@@ -321,11 +314,9 @@ public class ObservableList implements List {
         }
 
         List values = new ArrayList();
-        if (c != null) {
-            for (Object element : delegate) {
-                if (!c.contains(element)) {
-                    values.add(element);
-                }
+        for (Object element : delegate) {
+            if (!c.contains(element)) {
+                values.add(element);
             }
         }
 
@@ -342,8 +333,8 @@ public class ObservableList implements List {
     public Object set(int index, Object element) {
         Object oldValue = delegate.set(index, element);
         if (test != null) {
-            Object result = test.call(element);
-            if (result != null && result instanceof Boolean && ((Boolean) result).booleanValue()) {
+            Boolean result = test.call(element);
+            if (result != null && result) {
                 fireElementUpdatedEvent(index, oldValue, element);
             }
         } else {
@@ -374,7 +365,7 @@ public class ObservableList implements List {
 
     protected class ObservableIterator implements Iterator {
         private Iterator iterDelegate;
-        protected int cursor = -1 ;
+        protected int cursor = -1;
 
         public ObservableIterator(Iterator iterDelegate) {
             this.iterDelegate = iterDelegate;
@@ -501,7 +492,7 @@ public class ObservableList implements List {
         private final ChangeType type;
         private final int index;
 
-        public ElementEvent(Object source, Object oldValue, Object newValue, int index, ChangeType type) {
+        public ElementEvent(ObservableList source, Object oldValue, Object newValue, int index, ChangeType type) {
             super(source, ObservableList.CONTENT_PROPERTY, oldValue, newValue);
             this.type = type;
             this.index = index;
@@ -525,19 +516,19 @@ public class ObservableList implements List {
     }
 
     public static class ElementAddedEvent extends ElementEvent {
-        public ElementAddedEvent(Object source, Object newValue, int index) {
+        public ElementAddedEvent(ObservableList source, Object newValue, int index) {
             super(source, null, newValue, index, ChangeType.ADDED);
         }
     }
 
     public static class ElementUpdatedEvent extends ElementEvent {
-        public ElementUpdatedEvent(Object source, Object oldValue, Object newValue, int index) {
+        public ElementUpdatedEvent(ObservableList source, Object oldValue, Object newValue, int index) {
             super(source, oldValue, newValue, index, ChangeType.UPDATED);
         }
     }
 
     public static class ElementRemovedEvent extends ElementEvent {
-        public ElementRemovedEvent(Object source, Object value, int index) {
+        public ElementRemovedEvent(ObservableList source, Object value, int index) {
             super(source, value, null, index, ChangeType.REMOVED);
         }
     }
@@ -545,7 +536,7 @@ public class ObservableList implements List {
     public static class ElementClearedEvent extends ElementEvent {
         private List values = new ArrayList();
 
-        public ElementClearedEvent(Object source, List values) {
+        public ElementClearedEvent(ObservableList source, List values) {
             super(source, ChangeType.oldValue, ChangeType.newValue, 0, ChangeType.CLEARED);
             if (values != null) {
                 this.values.addAll(values);
@@ -560,7 +551,7 @@ public class ObservableList implements List {
     public static class MultiElementAddedEvent extends ElementEvent {
         private List values = new ArrayList();
 
-        public MultiElementAddedEvent(Object source, int index, List values) {
+        public MultiElementAddedEvent(ObservableList source, int index, List values) {
             super(source, ChangeType.oldValue, ChangeType.newValue, index, ChangeType.MULTI_ADD);
             if (values != null) {
                 this.values.addAll(values);
@@ -575,7 +566,7 @@ public class ObservableList implements List {
     public static class MultiElementRemovedEvent extends ElementEvent {
         private List values = new ArrayList();
 
-        public MultiElementRemovedEvent(Object source, List values) {
+        public MultiElementRemovedEvent(ObservableList source, List values) {
             super(source, ChangeType.oldValue, ChangeType.newValue, 0, ChangeType.MULTI_REMOVE);
             if (values != null) {
                 this.values.addAll(values);

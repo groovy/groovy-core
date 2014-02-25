@@ -22,11 +22,11 @@ import java.lang.annotation.Target;
 
 /**
  * Used to exclude an indirectly referenced artifact (a transitive dependency) from the classpath.
- * <p>
+ * <p/>
  * Examples:<br>
  * {@code @GrabExclude(group='mysql', module='mysql-connector-java') // group/module form}<br>
  * {@code @GrabExclude('mysql:mysql-connector-java') // compact form}<br>
- * <p>
+ * <p/>
  * Further information about customising grape behavior can be found on the Grape documentation page:
  * <a href="http://groovy.codehaus.org/Grape">http://groovy.codehaus.org/Grape</a>.
  */

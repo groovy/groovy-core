@@ -31,7 +31,10 @@ import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.*;
 import java.security.*;
 import java.util.*;
@@ -148,7 +151,7 @@ public class GroovyClassLoader extends URLClassLoader {
 
     /**
      * Loads the given class node returning the implementation Class.
-     * <p>
+     * <p/>
      * WARNING: this compilation is not synchronized
      *
      * @param classNode
@@ -217,7 +220,7 @@ public class GroovyClassLoader extends URLClassLoader {
         scriptNameCounter++;
         return "script" + scriptNameCounter + ".groovy";
     }
-    
+
     /**
      * @deprecated Prefer using methods taking a Reader rather than an InputStream to avoid wrong encoding issues.
      */
@@ -265,7 +268,7 @@ public class GroovyClassLoader extends URLClassLoader {
         validate(codeSource);
         Class answer;  // Was neither already loaded nor compiling, so compile and add to cache.
         CompilationUnit unit = createCompilationUnit(config, codeSource.getCodeSource());
-        SourceUnit su = null;
+        SourceUnit su;
         if (codeSource.getFile() == null) {
             su = unit.addSource(codeSource.getName(), codeSource.getScriptText());
         } else {
@@ -341,7 +344,7 @@ public class GroovyClassLoader extends URLClassLoader {
         });
         PermissionCollection myPerms = myDomain.getPermissions();
         if (myPerms != null) {
-            for (Enumeration<Permission> elements = myPerms.elements(); elements.hasMoreElements();) {
+            for (Enumeration<Permission> elements = myPerms.elements(); elements.hasMoreElements(); ) {
                 perms.add(elements.nextElement());
             }
         }
@@ -371,7 +374,7 @@ public class GroovyClassLoader extends URLClassLoader {
             return delegate.findResource(name);
         }
 
-        public Enumeration findResources(String name) throws IOException {
+        public Enumeration<URL> findResources(String name) throws IOException {
             return delegate.findResources(name);
         }
 
@@ -476,7 +479,7 @@ public class GroovyClassLoader extends URLClassLoader {
                 SourceUnit msu = null;
                 if (mn != null) msu = mn.getContext();
                 ClassNode main = null;
-                if (mn != null) main = (ClassNode) mn.getClasses().get(0);
+                if (mn != null) main = mn.getClasses().get(0);
                 if (msu == su && main == classNode) generatedClass = theClass;
             }
 
@@ -578,7 +581,7 @@ public class GroovyClassLoader extends URLClassLoader {
      * recompilation, so the method should always return true here. Only classes that are
      * implementing GroovyObject are compilable and only if the timestamp in the class
      * is lower than Long.MAX_VALUE.
-     * <p>
+     * <p/>
      * NOTE: First the parent loaders will be asked and only if they don't return a
      * class the recompilation will happen. Recompilation also only happen if the source
      * file is newer.
@@ -594,8 +597,7 @@ public class GroovyClassLoader extends URLClassLoader {
         if (recompile != null && !recompile) return false;
         if (!GroovyObject.class.isAssignableFrom(cls)) return false;
         long timestamp = getTimeStamp(cls);
-        if (timestamp == Long.MAX_VALUE) return false;
-        return true;
+        return timestamp != Long.MAX_VALUE;
     }
 
     /**
@@ -731,9 +733,9 @@ public class GroovyClassLoader extends URLClassLoader {
                         try {
                             return parseClass(new GroovyCodeSource(new File(source.toURI()), config.getSourceEncoding()));
                         } catch (URISyntaxException e) {
-                          // do nothing and fall back to the other version
+                            // do nothing and fall back to the other version
                         }
-                    } 
+                    }
                     return parseClass(source.openStream(), name);
                 }
             }
@@ -775,7 +777,7 @@ public class GroovyClassLoader extends URLClassLoader {
      * This method will take a file name and try to "decode" any URL encoded characters.  For example
      * if the file name contains any spaces this method call will take the resulting %20 encoded values
      * and convert them to spaces.
-     * <p>
+     * <p/>
      * This method was added specifically to fix defect:  Groovy-1787.  The defect involved a situation
      * where two scripts were sitting in a directory with spaces in its name.  The code would fail
      * when the class loader tried to resolve the file name and would choke on the URLEncoded space values.
@@ -808,9 +810,9 @@ public class GroovyClassLoader extends URLClassLoader {
     private File fileReallyExists(URL ret, String fileWithoutPackage) {
         File path;
         try {
-            /* fix for GROOVY-5809 */ 
+            /* fix for GROOVY-5809 */
             path = new File(ret.toURI());
-        } catch(URISyntaxException e) {
+        } catch (URISyntaxException e) {
             path = new File(decodeFileName(ret.getFile()));
         }
         path = path.getParentFile();

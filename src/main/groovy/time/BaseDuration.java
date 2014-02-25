@@ -96,7 +96,7 @@ public abstract class BaseDuration implements Comparable<BaseDuration> {
     }
 
     public String toString() {
-        List buffer = new ArrayList();
+        List<Object> buffer = new ArrayList<Object>();
 
         if (this.years != 0) buffer.add(this.years + " years");
         if (this.months != 0) buffer.add(this.months + " months");

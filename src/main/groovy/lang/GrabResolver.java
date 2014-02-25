@@ -15,14 +15,14 @@
  */
 package groovy.lang;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.lang.annotation.ElementType;
 
 /**
  * Used to add a repository for resolving Grape dependencies.
- * <p>
+ * <p/>
  * For example:
  * <pre>
  * {@code @GrabResolver}(name='restlet.org', root='http://maven.restlet.org')
@@ -36,7 +36,7 @@ import java.lang.annotation.ElementType;
  * subsystem is shared globally, so added resolvers will become available for any subsequent
  * grab calls. Dependency resolution follows Ivy's artifact resolution which tries
  * to resolve artifacts in the order specified in the chain of resolvers.
- * <p>
+ * <p/>
  * Further information about customising grape behavior can be found on the Grape documentation page:
  * <a href="http://groovy.codehaus.org/Grape">http://groovy.codehaus.org/Grape</a>.
  *
@@ -52,8 +52,11 @@ import java.lang.annotation.ElementType;
         ElementType.TYPE})
 public @interface GrabResolver {
     String value() default "";
+
     String name();
+
     String root();
+
     boolean m2Compatible() default true;
 
     /**

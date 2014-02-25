@@ -16,11 +16,7 @@
 
 package groovy.transform.stc;
 
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.GenericsType;
-import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.SourceUnit;
 
@@ -35,17 +31,17 @@ import java.util.Map;
  * or on a key,value pair.</p>
  * <p>The result is a closure which can have the following forms:</p>
  * <ul>
- *     <li><code>{ key, value -> ...}</code> where key is the key of a map entry, and value the corresponding value</li>
- *     <li><code>{ entry -> ... }</code> where entry is a {@link java.util.Map.Entry} map entry</li>
- *     <li><code>{ ...}</code> where <i>it</i> is an implicit {@link java.util.Map.Entry} map entry</li>
+ * <li><code>{ key, value -> ...}</code> where key is the key of a map entry, and value the corresponding value</li>
+ * <li><code>{ entry -> ... }</code> where entry is a {@link java.util.Map.Entry} map entry</li>
+ * <li><code>{ ...}</code> where <i>it</i> is an implicit {@link java.util.Map.Entry} map entry</li>
  * </ul>
  * <p>This hint handles all those cases by picking the generics from the first argument of the method (by default).</p>
  * <p>The options array is used to modify the behavior of this hint. Each string in the option array consists of
  * a key=value pair.</p>
  * <ul>
- *     <li><i>argNum=index</i> of the parameter representing the map (by default, 0)</li>
- *     <li><i>index=true or false</i>, by default false. If true, then an additional "int" parameter is added,
- *     for "withIndex" variants</li>
+ * <li><i>argNum=index</i> of the parameter representing the map (by default, 0)</li>
+ * <li><i>index=true or false</i>, by default false. If true, then an additional "int" parameter is added,
+ * for "withIndex" variants</li>
  * </ul>
  * <code>void doSomething(String str, Map&lt;K,&gt;V map, @ClosureParams(value=MapEntryOrKeyValue.class,options="1") Closure c) { ... }</code>
  */
@@ -61,11 +57,11 @@ public class MapEntryOrKeyValue extends ClosureSignatureHint {
             return Collections.emptyList();
         }
         GenericsType[] genericsTypes = node.getParameters()[opt.parameterIndex].getOriginType().getGenericsTypes();
-        if (genericsTypes==null) {
+        if (genericsTypes == null) {
             // would happen if you have a raw Map type for example
-            genericsTypes = new GenericsType[] {
-                new GenericsType(ClassHelper.OBJECT_TYPE),
-                new GenericsType(ClassHelper.OBJECT_TYPE)
+            genericsTypes = new GenericsType[]{
+                    new GenericsType(ClassHelper.OBJECT_TYPE),
+                    new GenericsType(ClassHelper.OBJECT_TYPE)
             };
         }
         ClassNode[] firstSig;
@@ -73,16 +69,16 @@ public class MapEntryOrKeyValue extends ClosureSignatureHint {
         ClassNode mapEntry = MAPENTRY_TYPE.getPlainNodeReference();
         mapEntry.setGenericsTypes(genericsTypes);
         if (opt.generateIndex) {
-            firstSig = new ClassNode[] {genericsTypes[0].getType(), genericsTypes[1].getType(), ClassHelper.int_TYPE};
-            secondSig = new ClassNode[] {mapEntry, ClassHelper.int_TYPE};
+            firstSig = new ClassNode[]{genericsTypes[0].getType(), genericsTypes[1].getType(), ClassHelper.int_TYPE};
+            secondSig = new ClassNode[]{mapEntry, ClassHelper.int_TYPE};
 
         } else {
-            firstSig = new ClassNode[] {genericsTypes[0].getType(), genericsTypes[1].getType()};
-            secondSig = new ClassNode[] {mapEntry};
+            firstSig = new ClassNode[]{genericsTypes[0].getType(), genericsTypes[1].getType()};
+            secondSig = new ClassNode[]{mapEntry};
         }
         return Arrays.asList(firstSig, secondSig);
     }
-    
+
     private static class Options {
         final int parameterIndex;
         final boolean generateIndex;
@@ -91,13 +87,13 @@ public class MapEntryOrKeyValue extends ClosureSignatureHint {
             this.parameterIndex = parameterIndex;
             this.generateIndex = generateIndex;
         }
-        
+
         static Options parse(MethodNode mn, ASTNode source, String[] options) throws IncorrectTypeHintException {
             int pIndex = 0;
             boolean generateIndex = false;
             for (String option : options) {
                 String[] keyValue = option.split("=");
-                if (keyValue.length==2) {
+                if (keyValue.length == 2) {
                     String key = keyValue[0];
                     String value = keyValue[1];
                     if ("argNum".equals(key)) {
@@ -105,7 +101,7 @@ public class MapEntryOrKeyValue extends ClosureSignatureHint {
                     } else if ("index".equals(key)) {
                         generateIndex = Boolean.valueOf(value);
                     } else {
-                        throw new IncorrectTypeHintException(mn, "Unrecognized option: "+key, source.getLineNumber(), source.getColumnNumber());
+                        throw new IncorrectTypeHintException(mn, "Unrecognized option: " + key, source.getLineNumber(), source.getColumnNumber());
                     }
                 } else {
                     throw new IncorrectTypeHintException(mn, "Incorrect option format. Should be argNum=<num> or index=<boolean> ", source.getLineNumber(), source.getColumnNumber());
@@ -113,5 +109,5 @@ public class MapEntryOrKeyValue extends ClosureSignatureHint {
             }
             return new Options(pIndex, generateIndex);
         }
-    } 
+    }
 }

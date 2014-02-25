@@ -15,7 +15,9 @@
  */
 package org.codehaus.groovy.vmplugin;
 
-import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.AnnotationNode;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.CompileUnit;
 
 /**
  * Interface to access VM version based actions.

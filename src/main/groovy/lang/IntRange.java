@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * Represents a list of Integer objects from a specified int up (or down) to and including
  * a given to.<p>
- * <p>
+ * <p/>
  * This class is a copy of {@link ObjectRange} optimized for <code>int</code>. If you make any
  * changes to this class, you might consider making parallel changes to {@link ObjectRange}.
  * Instances of this class may be either inclusive aware or non-inclusive aware. See the
@@ -88,8 +88,7 @@ public class IntRange extends AbstractList<Integer> implements Range<Integer> {
         /**
          * Not supported.
          *
-         * @throws java.lang.UnsupportedOperationException
-         *          always
+         * @throws java.lang.UnsupportedOperationException always
          */
         public void remove() {
             IntRange.this.remove(index);
@@ -175,8 +174,8 @@ public class IntRange extends AbstractList<Integer> implements Range<Integer> {
     /**
      * Creates a new inclusive aware <code>IntRange</code>.
      *
-     * @param from    the first value in the range.
-     * @param to      the last value in the range.
+     * @param from      the first value in the range.
+     * @param to        the last value in the range.
      * @param inclusive <code>true</code> if the to value is included in the range.
      */
     public IntRange(boolean inclusive, int from, int to) {
@@ -193,7 +192,8 @@ public class IntRange extends AbstractList<Integer> implements Range<Integer> {
      * @return the calculated range information (with 1 added to the to value, ready for providing to subList
      */
     public RangeInfo subListBorders(int size) {
-        if (inclusive == null) throw new IllegalStateException("Should not call subListBorders on a non-inclusive aware IntRange");
+        if (inclusive == null)
+            throw new IllegalStateException("Should not call subListBorders on a non-inclusive aware IntRange");
         int tempFrom = from;
         if (tempFrom < 0) {
             tempFrom += size;
@@ -212,11 +212,11 @@ public class IntRange extends AbstractList<Integer> implements Range<Integer> {
      * Determines if this object is equal to another object. Delegates to
      * {@link AbstractList#equals(Object)} if <code>that</code> is anything
      * other than an {@link IntRange}.
-     * <p>
+     * <p/>
      * It is not necessary to override <code>hashCode</code>, as
      * {@link AbstractList#hashCode()} provides a suitable hash code.<p>
-     * <p>
-     * Note that equals is generally handled by {@link org.codehaus.groovy.runtime.DefaultGroovyMethods#equals(List,List)}
+     * <p/>
+     * Note that equals is generally handled by {@link org.codehaus.groovy.runtime.DefaultGroovyMethods#equals(List, List)}
      * instead of this method.
      *
      * @param that the object to compare
@@ -398,7 +398,7 @@ public class IntRange extends AbstractList<Integer> implements Range<Integer> {
             int value = getFrom();
             while (value <= getTo()) {
                 closure.call(Integer.valueOf(value));
-                if((0L + value + step) >= Integer.MAX_VALUE) {
+                if ((0L + value + step) >= Integer.MAX_VALUE) {
                     break;
                 }
                 value = value + step;
@@ -407,7 +407,7 @@ public class IntRange extends AbstractList<Integer> implements Range<Integer> {
             int value = getTo();
             while (value >= getFrom()) {
                 closure.call(Integer.valueOf(value));
-                if((0L + value + step) <= Integer.MIN_VALUE) {
+                if ((0L + value + step) <= Integer.MIN_VALUE) {
                     break;
                 }
                 value = value + step;

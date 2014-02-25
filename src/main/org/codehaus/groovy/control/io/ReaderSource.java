@@ -15,11 +15,11 @@
  */
 package org.codehaus.groovy.control.io;
 
-import java.io.IOException;
-import java.io.Reader;
-
 import org.codehaus.groovy.control.HasCleanup;
 import org.codehaus.groovy.control.Janitor;
+
+import java.io.IOException;
+import java.io.Reader;
 
 /**
  *  An interface for things that can supply (and potentially resupply) a Reader

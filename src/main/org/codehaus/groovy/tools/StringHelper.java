@@ -23,7 +23,7 @@ public class StringHelper {
         SPACE = ' ', SINGLE_QUOTE = '\'', DOUBLE_QUOTE = '"';
     
     /**
-     * This method tokenizes a string by space characters, 
+     * This method tokenizes a string by space characters,
      * but ignores spaces in quoted parts,that are parts in 
      * '' or "". The method does allows the usage of "" in '' 
      * and '' in "". The space character between tokens is not 
@@ -33,7 +33,7 @@ public class StringHelper {
      * @return the tokens
      */
     public static String[] tokenizeUnquoted(String s) {
-        List tokens = new LinkedList();
+        List<String> tokens = new LinkedList<String>();
         int first = 0;
         while (first < s.length()) {
             first = skipWhitespace(s, first);
@@ -43,7 +43,7 @@ public class StringHelper {
             }
             first = last;
         }
-        return (String[])tokens.toArray(new String[0]);
+        return tokens.toArray(new String[tokens.size()]);
     }
 
     private static int scanToken(String s, int pos0) {

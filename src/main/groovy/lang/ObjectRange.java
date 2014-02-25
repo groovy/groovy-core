@@ -15,10 +15,10 @@
  */
 package groovy.lang;
 
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.IteratorClosureAdapter;
 import org.codehaus.groovy.runtime.ScriptBytecodeAdapter;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 
 import java.math.BigDecimal;
@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * Represents an inclusive list of objects from a value to a value using
  * comparators.
- * <p>
+ * <p/>
  * This class is similar to {@link IntRange}. If you make any changes to this
  * class, you might consider making parallel changes to {@link IntRange}.
  *
@@ -273,7 +273,7 @@ public class ObjectRange extends AbstractList implements Range {
                 char toNum = (Character) to;
                 size = toNum - fromNum + 1;
             } else if (from instanceof BigDecimal || to instanceof BigDecimal ||
-                       from instanceof BigInteger || to instanceof BigInteger) {
+                    from instanceof BigInteger || to instanceof BigInteger) {
                 // let's fast calculate the size
                 BigDecimal fromNum = new BigDecimal("" + from);
                 BigDecimal toNum = new BigDecimal("" + to);

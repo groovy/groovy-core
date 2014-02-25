@@ -156,7 +156,7 @@ class LookAndFeelHelper {
         ]) {
             try {
                 return Class.forName(klass).getName()
-            } catch (Throwable t) {
+            } catch (Throwable ignored) {
                 // ignore it, try the next on the list
             }
         }
@@ -170,7 +170,7 @@ class LookAndFeelHelper {
         ]) {
             try {
                 return Class.forName(klass).getName()
-            } catch (Throwable t) {
+            } catch (Throwable ignored) {
                 // ignore it, try the next on the list
             }
         }
@@ -184,7 +184,7 @@ class LookAndFeelHelper {
         ]) {
             try {
                 return Class.forName(klass).getName()
-            } catch (Throwable t) {
+            } catch (Throwable ignored) {
                 // ignore it, try the next on the list
             }
         }

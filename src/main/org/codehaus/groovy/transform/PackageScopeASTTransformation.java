@@ -19,18 +19,14 @@ package org.codehaus.groovy.transform;
 import groovy.transform.PackageScope;
 import groovy.transform.PackageScopeTarget;
 import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.ListExpression;
-import org.codehaus.groovy.ast.expr.PropertyExpression;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.objectweb.asm.Opcodes;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.ArrayList;
 
 /**
  * Handles transformation for the @PackageScope annotation.

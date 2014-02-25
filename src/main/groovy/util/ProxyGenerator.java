@@ -16,7 +16,8 @@
 package groovy.util;
 
 import groovy.lang.*;
-import org.codehaus.groovy.runtime.*;
+import org.codehaus.groovy.runtime.InvokerHelper;
+import org.codehaus.groovy.runtime.ProxyGeneratorAdapter;
 import org.codehaus.groovy.runtime.memoize.LRUCache;
 import org.codehaus.groovy.runtime.typehandling.GroovyCastException;
 
@@ -34,7 +35,7 @@ import java.util.*;
  */
 public class ProxyGenerator {
     private static final Class[] EMPTY_INTERFACE_ARRAY = new Class[0];
-    private static final Map<Object,Object> EMPTY_CLOSURE_MAP = Collections.emptyMap();
+    private static final Map<Object, Object> EMPTY_CLOSURE_MAP = Collections.emptyMap();
     private static final Set<String> EMPTY_KEYSET = Collections.emptySet();
 
     public static final ProxyGenerator INSTANCE = new ProxyGenerator();
@@ -77,7 +78,7 @@ public class ProxyGenerator {
 
     /**
      * Changes generated methods to have empty implementations.
-     * <p>
+     * <p/>
      * Methods in generated aggregates not supplied in a closures map or
      * base class are given 'default' implementations. The implementation
      * will normally throw an <code>UnsupportedOperationException</code>
@@ -143,26 +144,26 @@ public class ProxyGenerator {
 
     @SuppressWarnings("unchecked")
     public GroovyObject instantiateAggregate(Map closureMap, List<Class> interfaces, Class clazz, Object[] constructorArgs) {
-        if (clazz!=null && Modifier.isFinal(clazz.getModifiers())) {
-            throw new GroovyCastException("Cannot coerce a map to class "+clazz.getName()+" because it is a final class");
+        if (clazz != null && Modifier.isFinal(clazz.getModifiers())) {
+            throw new GroovyCastException("Cannot coerce a map to class " + clazz.getName() + " because it is a final class");
         }
-        Map<Object,Object> map = closureMap!=null?closureMap: EMPTY_CLOSURE_MAP;
-        Class[] intfs = interfaces!=null? interfaces.toArray(new Class[interfaces.size()]): EMPTY_INTERFACE_ARRAY;
+        Map<Object, Object> map = closureMap != null ? closureMap : EMPTY_CLOSURE_MAP;
+        Class[] intfs = interfaces != null ? interfaces.toArray(new Class[interfaces.size()]) : EMPTY_INTERFACE_ARRAY;
         Class base = clazz;
-        if (base==null) {
-            if (intfs.length>0) {
-                base=intfs[0];
+        if (base == null) {
+            if (intfs.length > 0) {
+                base = intfs[0];
             } else {
                 base = Object.class;
             }
         }
-        Set<String> keys = map==EMPTY_CLOSURE_MAP?EMPTY_KEYSET:new HashSet<String>();
+        Set<String> keys = map == EMPTY_CLOSURE_MAP ? EMPTY_KEYSET : new HashSet<String>();
         for (Object o : map.keySet()) {
             keys.add(o.toString());
         }
         CacheKey key = new CacheKey(base, keys, intfs, emptyMethods, false);
         ProxyGeneratorAdapter adapter = (ProxyGeneratorAdapter) adapterCache.get(key);
-        if (adapter==null) {
+        if (adapter == null) {
             adapter = new ProxyGeneratorAdapter(map, base, intfs, base.getClassLoader(), emptyMethods, null);
             adapterCache.put(key, adapter);
         }
@@ -194,34 +195,34 @@ public class ProxyGenerator {
      *
      * @param closureMap the closure for methods not handled by the delegate
      * @param interfaces interfaces to be implemented
-     * @param delegate the delegate object
-     * @param baseClass the base class
-     * @param name the name of the proxy, unused, but kept for compatibility with previous versions of Groovy.
+     * @param delegate   the delegate object
+     * @param baseClass  the base class
+     * @param name       the name of the proxy, unused, but kept for compatibility with previous versions of Groovy.
      * @return a proxy object implementing the specified interfaces, and delegating to the provided object
      */
     @SuppressWarnings("unchecked")
     public GroovyObject instantiateDelegateWithBaseClass(Map closureMap, List<Class> interfaces, Object delegate, Class baseClass, String name) {
-        Map<Object,Object> map = closureMap!=null?closureMap: EMPTY_CLOSURE_MAP;
-        Class[] intfs = interfaces!=null? interfaces.toArray(new Class[interfaces.size()]): EMPTY_INTERFACE_ARRAY;
+        Map<Object, Object> map = closureMap != null ? closureMap : EMPTY_CLOSURE_MAP;
+        Class[] intfs = interfaces != null ? interfaces.toArray(new Class[interfaces.size()]) : EMPTY_INTERFACE_ARRAY;
         Class base = baseClass;
-        if (base==null) {
-            if (intfs.length>0) {
-                base=intfs[0];
+        if (base == null) {
+            if (intfs.length > 0) {
+                base = intfs[0];
             } else {
                 base = Object.class;
             }
         }
-        Set<String> keys = map==EMPTY_CLOSURE_MAP?EMPTY_KEYSET:new HashSet<String>();
+        Set<String> keys = map == EMPTY_CLOSURE_MAP ? EMPTY_KEYSET : new HashSet<String>();
         for (Object o : map.keySet()) {
             keys.add(o.toString());
         }
         CacheKey key = new CacheKey(base, keys, intfs, emptyMethods, true);
         ProxyGeneratorAdapter adapter = (ProxyGeneratorAdapter) adapterCache.get(key);
-        if (adapter==null) {
+        if (adapter == null) {
             adapter = new ProxyGeneratorAdapter(map, base, intfs, delegate.getClass().getClassLoader(), emptyMethods, delegate.getClass());
             adapterCache.put(key, adapter);
         }
-        return adapter.delegatingProxy(delegate, map, (Object[])null);
+        return adapter.delegatingProxy(delegate, map, (Object[]) null);
     }
 
     private static void setMetaClass(final MetaClass metaClass) {
@@ -233,7 +234,7 @@ public class ProxyGenerator {
         };
         GroovySystem.getMetaClassRegistry().setMetaClass(ProxyGenerator.class, newMetaClass);
     }
-    
+
     private static class CacheKey {
         private static final Comparator<Class> CLASSNAME_COMPARATOR = new Comparator<Class>() {
             public int compare(final Class o1, final Class o2) {
@@ -270,11 +271,10 @@ public class ProxyGenerator {
 
             if (emptyMethods != cacheKey.emptyMethods) return false;
             if (useDelegate != cacheKey.useDelegate) return false;
-            if (baseClass != null ? !baseClass.equals(cacheKey.baseClass) : cacheKey.baseClass != null) return false;
+            if (!baseClass.equals(cacheKey.baseClass)) return false;
             if (!Arrays.equals(interfaces, cacheKey.interfaces)) return false;
-            if (methods != null ? !methods.equals(cacheKey.methods) : cacheKey.methods != null) return false;
+            return !(methods != null ? !methods.equals(cacheKey.methods) : cacheKey.methods != null);
 
-            return true;
         }
 
         @Override
@@ -282,7 +282,7 @@ public class ProxyGenerator {
             int result = (emptyMethods ? 1 : 0);
             result = 31 * result + (useDelegate ? 1 : 0);
             result = 31 * result + (methods != null ? methods.hashCode() : 0);
-            result = 31 * result + (baseClass != null ? baseClass.hashCode() : 0);
+            result = 31 * result + (baseClass.hashCode());
             result = 31 * result + (interfaces != null ? Arrays.hashCode(interfaces) : 0);
             return result;
         }
@@ -309,7 +309,7 @@ public class ProxyGenerator {
             @Override
             public int hashCode() {
                 Class thisClass = this.get();
-                if (thisClass==null) return 0;
+                if (thisClass == null) return 0;
                 return thisClass.hashCode();
             }
         }

@@ -20,10 +20,10 @@ import org.codehaus.groovy.syntax.SyntaxException;
 
 public class IncorrectTypeHintException extends SyntaxException {
     public IncorrectTypeHintException(final MethodNode mn, final Throwable e, int line, int column) {
-        super("Incorrect type hint in @ClosureParams in class "+mn.getDeclaringClass().getName()+" method "+mn.getTypeDescriptor()+" : "+e.getMessage(), e, line, column);
+        super("Incorrect type hint in @ClosureParams in class " + mn.getDeclaringClass().getName() + " method " + mn.getTypeDescriptor() + " : " + e.getMessage(), e, line, column);
     }
 
     public IncorrectTypeHintException(final MethodNode mn, final String msg, final int line, final int column) {
-        super("Incorrect type hint in @ClosureParams in class "+mn.getDeclaringClass().getName()+" method "+mn.getTypeDescriptor()+" : "+msg, line, column);
+        super("Incorrect type hint in @ClosureParams in class " + mn.getDeclaringClass().getName() + " method " + mn.getTypeDescriptor() + " : " + msg, line, column);
     }
 }

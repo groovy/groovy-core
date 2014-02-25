@@ -16,37 +16,6 @@
 
 package org.codehaus.groovy.runtime;
 
-import static java.nio.file.StandardOpenOption.APPEND;
-import static java.nio.file.StandardOpenOption.CREATE;
-import static org.codehaus.groovy.runtime.DefaultGroovyMethods.get;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.net.URI;
-import java.nio.charset.Charset;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-
 import groovy.io.FileType;
 import groovy.io.FileVisitResult;
 import groovy.io.GroovyPrintWriter;
@@ -58,6 +27,20 @@ import groovy.transform.stc.FromString;
 import groovy.transform.stc.SimpleType;
 import org.codehaus.groovy.runtime.callsite.BooleanReturningMethodInvoker;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
+
+import java.io.*;
+import java.net.URI;
+import java.nio.charset.Charset;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.regex.Pattern;
+
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.nio.file.StandardOpenOption.CREATE;
+import static org.codehaus.groovy.runtime.DefaultGroovyMethods.get;
 
 /**
  * This class defines new groovy methods for Readers, Writers, InputStreams and
@@ -685,9 +668,7 @@ public class NioGroovyMethods extends DefaultGroovyMethodsSupport {
         checkDir(self);
 
         try ( DirectoryStream<Path> stream = Files.newDirectoryStream(self) ) {
-            Iterator<Path> itr = stream.iterator();
-            while( itr.hasNext() ) {
-                Path path = itr.next();
+            for (Path path : stream) {
                 if (fileType == FileType.ANY ||
                         (fileType != FileType.FILES && Files.isDirectory(path)) ||
                         (fileType != FileType.DIRECTORIES && Files.isRegularFile(path))) {
@@ -744,9 +725,7 @@ public class NioGroovyMethods extends DefaultGroovyMethodsSupport {
             // throws FileNotFoundException, IllegalArgumentException {
         checkDir(self);
         try ( DirectoryStream<Path> stream = Files.newDirectoryStream(self)) {
-            Iterator<Path> itr = stream.iterator();
-            while ( itr.hasNext() ) {
-                Path path = itr.next();
+            for (Path path : stream) {
                 if (Files.isDirectory(path)) {
                     if (fileType != FileType.FILES) closure.call(path);
                     eachFileRecurse(path, fileType, closure);
@@ -931,7 +910,7 @@ public class NioGroovyMethods extends DefaultGroovyMethodsSupport {
         try ( DirectoryStream<Path> stream = Files.newDirectoryStream(self) ) {
 
             final Iterator<Path> itr = stream.iterator();
-            List<Path> files = new LinkedList<Path>();
+            List<Path> files = new LinkedList<>();
             while(itr.hasNext()) { files.add(itr.next()); }
 
             if (sort != null) files = DefaultGroovyMethods.sort(files, sort);
@@ -1116,16 +1095,12 @@ public class NioGroovyMethods extends DefaultGroovyMethodsSupport {
         // delete contained files
         try ( DirectoryStream<Path> stream = Files.newDirectoryStream(self) ) {
 
-            Iterator<Path> itr = stream.iterator();
-
-            while (itr.hasNext()) {
-                Path path = itr.next();
+            for (Path path : stream) {
                 if (Files.isDirectory(path)) {
                     if (!deleteDir(path)) {
                         return false;
                     }
-                }
-                else {
+                } else {
                     Files.delete(path);
                 }
             }
@@ -1200,7 +1175,7 @@ public class NioGroovyMethods extends DefaultGroovyMethodsSupport {
         if (c == Writable.class) {
             return (T) asWritable(path);
         }
-        return DefaultGroovyMethods.asType((Object) path, c);
+        return DefaultGroovyMethods.asType(path, c);
     }
 
     /**

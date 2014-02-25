@@ -15,13 +15,9 @@
  */
 package groovy.beans
 
-import java.lang.annotation.Documented
-import java.lang.annotation.ElementType
-import java.lang.annotation.Retention
-import java.lang.annotation.RetentionPolicy
-import java.lang.annotation.Target
 import org.codehaus.groovy.transform.GroovyASTTransformationClass
 
+import java.lang.annotation.*
 
 /**
  * This annotation adds Java-style listener support to a class based on an annotated Collection-property.
@@ -33,55 +29,29 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass
  * <p>
  * Given the following example:<br>
  * <pre>
- * class MyClass {
- *     &#064;groovy.beans.ListenerList
+ * class MyClass {*     &#064;groovy.beans.ListenerList
  *     List&lt;java.awt.event.ActionListener&gt; listeners
- * }
- * </pre>
+ *}* </pre>
  * The following code is generated:
  * <pre>
- * public class MyClass extends java.lang.Object {
- *     &#064;groovy.beans.ListenerList
+ * public class MyClass extends java.lang.Object {*     &#064;groovy.beans.ListenerList
  *     private java.util.List&lt;java.awt.event.ActionListener&gt; listeners
  *
- *     public void addActionListener(java.awt.event.ActionListener listener) {
- *         if ( listener == null) {
- *             return null
- *         }
- *         if ( listeners == null) {
- *             listeners = []
- *         }
- *         listeners.add(listener)
- *     }
- *
- *     public void removeActionListener(java.awt.event.ActionListener listener) {
- *         if ( listener == null) {
- *             return null
- *         }
- *         if ( listeners == null) {
- *             listeners = []
- *         }
- *         listeners.remove(listener)
- *     }
- *
- *     public java.awt.event.ActionListener[] getActionListeners() {
- *         java.lang.Object __result = []
- *         if ( listeners != null) {
- *             __result.addAll(listeners)
- *         }
- *         return (( __result ) as java.awt.event.ActionListener[])
- *     }
- *
- *     public void fireActionPerformed(java.awt.event.ActionEvent param0) {
- *         if ( listeners != null) {
- *             def __list = new java.util.ArrayList(listeners)
- *             for (java.lang.Object listener : __list ) {
- *                 listener.actionPerformed(param0)
- *             }
- *         }
- *     }
- * }
- * </pre>
+ *     public void addActionListener(java.awt.event.ActionListener listener) {*         if ( listener == null) {*             return null
+ *}*         if ( listeners == null) {*             listeners = []
+ *}*         listeners.add(listener)
+ *}*
+ *     public void removeActionListener(java.awt.event.ActionListener listener) {*         if ( listener == null) {*             return null
+ *}*         if ( listeners == null) {*             listeners = []
+ *}*         listeners.remove(listener)
+ *}*
+ *     public java.awt.event.ActionListener[] getActionListeners() {*         java.lang.Object __result = []
+ *         if ( listeners != null) {*             __result.addAll(listeners)
+ *}*         return (( __result ) as java.awt.event.ActionListener[])
+ *}*
+ *     public void fireActionPerformed(java.awt.event.ActionEvent param0) {*         if ( listeners != null) {*             def __list = new java.util.ArrayList(listeners)
+ *             for (java.lang.Object listener : __list ) {*                 listener.actionPerformed(param0)
+ *}*}*}*}* </pre>
  * A fire method is created for each public method in the target class. In this case, ActionListener only has one
  * method. For a four method interface, four fire methods would be created.
  * <p>

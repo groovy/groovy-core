@@ -21,17 +21,16 @@ import org.codehaus.groovy.reflection.ClassInfo;
 /**
  * <p>A handle for the MetaClassRegistry that changes all classes loaded into the Grails VM
  * to use ExpandoMetaClass instances
- *
+ * <p/>
  * <p>The handle should be registered with the Groovy runtime <strong>before</strong> Groovy loads, for example
  * in your main method.
- *
+ * <p/>
  * <code>GroovySystem.metaClassRegistry.metaClassCreationHandle = new ExpandoMetaClassCreationHandle()</code>
  *
+ * @author Graeme Rocher
  * @see groovy.lang.MetaClassRegistry
  * @see groovy.lang.MetaClassRegistry.MetaClassCreationHandle
  * @see org.codehaus.groovy.runtime.metaclass.MetaClassRegistryImpl#setMetaClassCreationHandle(groovy.lang.MetaClassRegistry.MetaClassCreationHandle)
- *
- * @author Graeme Rocher
  * @since 1.5
  */
 public class ExpandoMetaClassCreationHandle extends MetaClassCreationHandle {
@@ -42,10 +41,9 @@ public class ExpandoMetaClassCreationHandle extends MetaClassCreationHandle {
      * @see groovy.lang.MetaClassRegistry.MetaClassCreationHandle#create(java.lang.Class, groovy.lang.MetaClassRegistry)
      */
     protected MetaClass createNormalMetaClass(Class theClass, MetaClassRegistry registry) {
-        if(theClass != ExpandoMetaClass.class) {
+        if (theClass != ExpandoMetaClass.class) {
             return new ExpandoMetaClass(theClass, true, true);
-        }
-        else {
+        } else {
             return super.createNormalMetaClass(theClass, registry);
         }
     }
@@ -57,7 +55,7 @@ public class ExpandoMetaClassCreationHandle extends MetaClassCreationHandle {
      */
     public void registerModifiedMetaClass(ExpandoMetaClass emc) {
         final Class klazz = emc.getJavaClass();
-        GroovySystem.getMetaClassRegistry().setMetaClass(klazz,emc);
+        GroovySystem.getMetaClassRegistry().setMetaClass(klazz, emc);
     }
 
     public boolean hasModifiedMetaClass(ExpandoMetaClass emc) {
@@ -66,9 +64,8 @@ public class ExpandoMetaClassCreationHandle extends MetaClassCreationHandle {
 
     /**
      * <p>Enables the ExpandoMetaClassCreationHandle with the registry
-     *
+     * <p/>
      * <code>ExpandoMetaClassCreationHandle.enable();</code>
-     *
      */
     public static void enable() {
         final MetaClassRegistry metaClassRegistry = GroovySystem.getMetaClassRegistry();

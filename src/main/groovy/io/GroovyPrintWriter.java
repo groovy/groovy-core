@@ -15,14 +15,9 @@
  */
 package groovy.io;
 
-import java.io.File;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.io.FileNotFoundException;
-import java.io.UnsupportedEncodingException;
-
 import org.codehaus.groovy.runtime.InvokerHelper;
+
+import java.io.*;
 
 /**
  * A PrintWriter that outputs objects in Groovy style.
@@ -32,63 +27,52 @@ import org.codehaus.groovy.runtime.InvokerHelper;
  * @author Jim White
  * @since 1.6
  */
-public class GroovyPrintWriter extends PrintWriter 
-{
-    public GroovyPrintWriter(File file) throws FileNotFoundException
-    {
+public class GroovyPrintWriter extends PrintWriter {
+    public GroovyPrintWriter(File file) throws FileNotFoundException {
         super(file);
     }
 
     public GroovyPrintWriter(File file, String csn)
-        throws FileNotFoundException, UnsupportedEncodingException
-    {
+            throws FileNotFoundException, UnsupportedEncodingException {
         super(file, csn);
     }
 
-    public GroovyPrintWriter(Writer out) 
-    {
+    public GroovyPrintWriter(Writer out) {
         super(out);
     }
 
-    public GroovyPrintWriter(Writer out, boolean autoflush) 
-    {
+    public GroovyPrintWriter(Writer out, boolean autoflush) {
         super(out, autoflush);
     }
 
-    public GroovyPrintWriter(OutputStream out) 
-    {
+    public GroovyPrintWriter(OutputStream out) {
         super(out);
     }
 
-    public GroovyPrintWriter(OutputStream out, boolean autoflush) 
-    {
+    public GroovyPrintWriter(OutputStream out, boolean autoflush) {
         super(out, autoflush);
     }
 
-    public GroovyPrintWriter(String filename) throws FileNotFoundException 
-    {
+    public GroovyPrintWriter(String filename) throws FileNotFoundException {
         super(filename);
     }
 
     public GroovyPrintWriter(String filename, String csn)
-        throws FileNotFoundException, UnsupportedEncodingException 
-    {
+            throws FileNotFoundException, UnsupportedEncodingException {
         super(filename, csn);
     }
-        
+
 // Don't need to do this if Groovy is going to print char[] like a string.
 //    public void print(char[] x) 
 //    {
 //        write(InvokerHelper.toString(x));
 //    }
 
-    public void print(Object x) 
-    {
+    public void print(Object x) {
         write(InvokerHelper.toString(x));
     }
 
-    public void println(Object x) 
-    {
+    public void println(Object x) {
         // JDK 1.6 has changed the implementation to do a
         // String.valueOf(x) rather than call print(x).
         // Probably to improve performance by doing the conversion outside the lock.

@@ -57,10 +57,12 @@ import java.util.Locale;
 @GroovyASTTransformationClass("org.codehaus.groovy.transform.LogASTTransformation")
 public @interface Commons {
     String value() default "log";
+
     String category() default LogASTTransformation.DEFAULT_CATEGORY_NAME;
+
     Class<? extends LogASTTransformation.LoggingStrategy> loggingStrategy() default CommonsLoggingStrategy.class;
 
-    public  static class CommonsLoggingStrategy extends LogASTTransformation.AbstractLoggingStrategy {
+    public static class CommonsLoggingStrategy extends LogASTTransformation.AbstractLoggingStrategy {
 
         private static final String LOGGER_NAME = "org.apache.commons.logging.Log";
         private static final String LOGGERFACTORY_NAME = "org.apache.commons.logging.LogFactory";
@@ -76,7 +78,8 @@ public @interface Commons {
                     new MethodCallExpression(
                             new ClassExpression(classNode(LOGGERFACTORY_NAME)),
                             "getLog",
-                            new ConstantExpression(getCategoryName(classNode, categoryName))));
+                            new ConstantExpression(getCategoryName(classNode, categoryName)))
+            );
         }
 
         public boolean isLoggingMethod(String methodName) {
@@ -94,5 +97,5 @@ public @interface Commons {
                     originalExpression,
                     ConstantExpression.NULL);
         }
-   }
+    }
 }

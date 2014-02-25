@@ -15,17 +15,13 @@
  */
 package groovy.util;
 
-import groovy.lang.Closure;
-import groovy.lang.GroovyObjectSupport;
-import groovy.lang.GroovyRuntimeException;
-import groovy.lang.MetaExpandoProperty;
-import groovy.lang.MissingPropertyException;
+import groovy.lang.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.List;
-import java.util.ArrayList;
 
 
 /**
@@ -38,28 +34,28 @@ import java.util.ArrayList;
  */
 public class Expando extends GroovyObjectSupport {
 
-    private Map expandoProperties;
+    private Map<String, Object> expandoProperties;
 
     public Expando() {
     }
 
-    public Expando(Map expandoProperties) {
+    public Expando(Map<String, Object> expandoProperties) {
         this.expandoProperties = expandoProperties;
     }
 
     /**
      * @return the dynamically expanded properties
      */
-    public Map getProperties() {
+    public Map<String, Object> getProperties() {
         if (expandoProperties == null) {
             expandoProperties = createMap();
         }
         return expandoProperties;
     }
 
-    public List getMetaPropertyValues() {
+    public List<MetaExpandoProperty> getMetaPropertyValues() {
         // run through all our current properties and create MetaProperty objects
-        List ret = new ArrayList();
+        List<MetaExpandoProperty> ret = new ArrayList<MetaExpandoProperty>();
         for (Object o : getProperties().entrySet()) {
             Entry entry = (Entry) o;
             ret.add(new MetaExpandoProperty(entry));
@@ -74,8 +70,7 @@ public class Expando extends GroovyObjectSupport {
         if (result != null) return result;
         try {
             return super.getProperty(property);
-        }
-        catch (MissingPropertyException e) {
+        } catch (MissingPropertyException e) {
             // IGNORE
         }
         return null;
@@ -89,8 +84,7 @@ public class Expando extends GroovyObjectSupport {
     public Object invokeMethod(String name, Object args) {
         try {
             return super.invokeMethod(name, args);
-        }
-        catch (GroovyRuntimeException e) {
+        } catch (GroovyRuntimeException e) {
             // br should get a "native" property match first. getProperty includes such fall-back logic
             Object value = this.getProperty(name);
             if (value instanceof Closure) {
@@ -135,8 +129,7 @@ public class Expando extends GroovyObjectSupport {
             // invoke overridden equals closure method
             Closure closure = (Closure) method;
             closure.setDelegate(this);
-            Boolean ret = (Boolean) closure.call(obj);
-            return ret.booleanValue();
+            return (Boolean) closure.call(obj);
         } else {
             return super.equals(obj);
         }
@@ -154,8 +147,7 @@ public class Expando extends GroovyObjectSupport {
             // invoke overridden hashCode closure method
             Closure closure = (Closure) method;
             closure.setDelegate(this);
-            Integer ret = (Integer) closure.call();
-            return ret.intValue();
+            return (Integer) closure.call();
         } else {
             return super.hashCode();
         }
@@ -166,8 +158,8 @@ public class Expando extends GroovyObjectSupport {
      *
      * @return a newly created Map implementation
      */
-    protected Map createMap() {
-        return new HashMap();
+    protected Map<String, Object> createMap() {
+        return new HashMap<String, Object>();
     }
 
 }

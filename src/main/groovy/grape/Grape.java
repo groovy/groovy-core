@@ -15,10 +15,10 @@
  */
 package groovy.grape;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.net.URI;
 
 /**
  * Facade to GrapeEngine.
@@ -55,18 +55,18 @@ public class Grape {
      * This is a static access auto download enabler.  It will set the
      * 'autoDownload' value to the passed in arguments map if not already set.
      * If 'autoDownload' is set the value will not be adjusted.
-     * <p>
+     * <p/>
      * This applies to the grab and resolve calls.
-     * <p>
+     * <p/>
      * If it is set to false, only previously downloaded grapes
      * will be used.  This may cause failure in the grape call
      * if the library has not yet been downloaded
-     * <p>
+     * <p/>
      * If it is set to true, then any jars not already downloaded will
      * automatically be downloaded.  Also, any versions expressed as a range
      * will be checked for new versions and downloaded (with dependencies)
      * if found.
-     * <p>
+     * <p/>
      * By default it is set to true.
      */
     public static boolean getEnableAutoDownload() {
@@ -77,13 +77,13 @@ public class Grape {
      * This is a static access auto download enabler.  It will set the
      * 'autoDownload' value to the passed in arguments map if not already
      * set.  If 'autoDownload' is set the value will not be adjusted.
-     * <p>
+     * <p/>
      * This applies to the grab and resolve calls.
-     * <p>
+     * <p/>
      * If it is set to false, only previously downloaded grapes
      * will be used.  This may cause failure in the grape call
      * if the library has not yet been downloaded.
-     * <p>
+     * <p/>
      * If it is set to true, then any jars not already downloaded will
      * automatically be downloaded.  Also, any versions expressed as a range
      * will be checked for new versions and downloaded (with dependencies)
@@ -183,7 +183,7 @@ public class Grape {
     public static URI[] resolve(Map<String, Object> args, Map... dependencies) {
         return resolve(args, null, dependencies);
     }
-    
+
     public static URI[] resolve(Map<String, Object> args, List depsInfo, Map... dependencies) {
         URI[] uris = null;
         if (enableGrapes) {
@@ -220,7 +220,7 @@ public class Grape {
         }
 
     }
-    
+
     public static void addResolver(Map<String, Object> args) {
         if (enableGrapes) {
             GrapeEngine instance = getInstance();

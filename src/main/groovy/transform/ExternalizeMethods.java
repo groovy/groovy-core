@@ -32,7 +32,7 @@ import java.lang.annotation.Target;
  * Properties or fields marked as {@code transient} are ignored.
  * This annotation is typically used in conjunction with the {@code @ExternalizeMethods} annotation but
  * most usually not directly but rather via {@code @AutoExternalizable} which is a shortcut for both annotations.
- * <p>
+ * <p/>
  * Example usage:
  * <pre>
  * import groovy.transform.*

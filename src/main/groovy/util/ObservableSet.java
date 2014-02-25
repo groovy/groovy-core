@@ -48,8 +48,8 @@ import java.util.*;
  * <li>ObservableSet.MultiElementRemovedEvent - triggered by calling
  * set.removeAll()/set.retainAll()</li>
  * </ul>
- *
- * <p>
+ * <p/>
+ * <p/>
  * <strong>Bound properties</strong>
  * <ul>
  * <li><tt>content</tt> - read-only.</li>
@@ -61,7 +61,7 @@ import java.util.*;
 public class ObservableSet<E> implements Set<E> {
     private Set<E> delegate;
     private PropertyChangeSupport pcs;
-    private Closure test;
+    private Closure<Boolean> test;
 
     public static final String SIZE_PROPERTY = "size";
     public static final String CONTENT_PROPERTY = "content";
@@ -74,11 +74,11 @@ public class ObservableSet<E> implements Set<E> {
         this(delegate, null);
     }
 
-    public ObservableSet(Closure test) {
+    public ObservableSet(Closure<Boolean> test) {
         this(new HashSet<E>(), test);
     }
 
-    public ObservableSet(Set<E> delegate, Closure test) {
+    public ObservableSet(Set<E> delegate, Closure<Boolean> test) {
         this.delegate = delegate;
         this.test = test;
         this.pcs = new PropertyChangeSupport(this);
@@ -92,7 +92,7 @@ public class ObservableSet<E> implements Set<E> {
         return delegate;
     }
 
-    protected Closure getTest() {
+    protected Closure<Boolean> getTest() {
         return test;
     }
 
@@ -112,7 +112,7 @@ public class ObservableSet<E> implements Set<E> {
         fireElementEvent(new ElementRemovedEvent(this, element));
     }
 
-    protected void fireMultiElementRemovedEvent(List values) {
+    protected void fireMultiElementRemovedEvent(List<Object> values) {
         fireElementEvent(new MultiElementRemovedEvent(this, values));
     }
 
@@ -175,7 +175,7 @@ public class ObservableSet<E> implements Set<E> {
     }
 
     public <T> T[] toArray(T[] ts) {
-        return (T[]) delegate.toArray(ts);
+        return delegate.toArray(ts);
     }
 
     public boolean add(E e) {
@@ -183,8 +183,8 @@ public class ObservableSet<E> implements Set<E> {
         boolean success = delegate.add(e);
         if (success) {
             if (test != null) {
-                Object result = test.call(e);
-                if (result != null && result instanceof Boolean && (Boolean) result) {
+                Boolean result = test.call(e);
+                if (result != null && result) {
                     fireElementAddedEvent(e);
                     fireSizeChangedEvent(oldSize, size());
                 }
@@ -222,12 +222,12 @@ public class ObservableSet<E> implements Set<E> {
         int oldSize = size();
         boolean success = delegate.addAll(c);
 
-        if (success && c != null) {
+        if (success) {
             List<E> values = new ArrayList<E>();
             for (E element : c) {
                 if (test != null) {
-                    Object result = test.call(element);
-                    if (result != null && result instanceof Boolean && (Boolean) result && !duplicates.contains(element)) {
+                    Boolean result = test.call(element);
+                    if (result != null && result && !duplicates.contains(element)) {
                         values.add(element);
                     }
                 } else if (!duplicates.contains(element)) {
@@ -248,8 +248,8 @@ public class ObservableSet<E> implements Set<E> {
             return false;
         }
 
-        List values = new ArrayList();
-        for (Object element : delegate) {
+        List<Object> values = new ArrayList<Object>();
+        for (E element : delegate) {
             if (!c.contains(element)) {
                 values.add(element);
             }
@@ -270,7 +270,7 @@ public class ObservableSet<E> implements Set<E> {
             return false;
         }
 
-        List values = new ArrayList();
+        List<Object> values = new ArrayList<Object>();
         for (Object element : c) {
             if (delegate.contains(element)) {
                 values.add(element);
@@ -398,16 +398,16 @@ public class ObservableSet<E> implements Set<E> {
     }
 
     public static class MultiElementRemovedEvent extends ElementEvent {
-        private List values = new ArrayList();
+        private List<Object> values = new ArrayList<Object>();
 
-        public MultiElementRemovedEvent(Object source, List values) {
+        public MultiElementRemovedEvent(Object source, List<Object> values) {
             super(source, ChangeType.oldValue, ChangeType.newValue, ChangeType.MULTI_REMOVE);
             if (values != null) {
                 this.values.addAll(values);
             }
         }
 
-        public List getValues() {
+        public List<Object> getValues() {
             return Collections.unmodifiableList(values);
         }
     }

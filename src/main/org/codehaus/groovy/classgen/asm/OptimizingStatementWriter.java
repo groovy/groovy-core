@@ -15,13 +15,10 @@
  */
 package org.codehaus.groovy.classgen.asm;
 
-import java.util.LinkedList;
-import java.util.List;
-
+import org.codehaus.groovy.GroovyBugError;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.*;
-import org.codehaus.groovy.GroovyBugError;
 import org.codehaus.groovy.classgen.AsmClassGenerator;
 import org.codehaus.groovy.classgen.Verifier;
 import org.codehaus.groovy.control.SourceUnit;
@@ -30,10 +27,14 @@ import org.codehaus.groovy.syntax.Types;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 
-import static org.objectweb.asm.Opcodes.*;
-import static org.codehaus.groovy.classgen.asm.BinaryExpressionMultiTypeDispatcher.*;
+import java.util.LinkedList;
+import java.util.List;
+
 import static org.codehaus.groovy.ast.ClassHelper.*;
 import static org.codehaus.groovy.ast.tools.WideningCategories.*;
+import static org.codehaus.groovy.classgen.asm.BinaryExpressionMultiTypeDispatcher.typeMap;
+import static org.codehaus.groovy.classgen.asm.BinaryExpressionMultiTypeDispatcher.typeMapKeyNames;
+import static org.objectweb.asm.Opcodes.*;
 
 /**
  * A class to write out the optimized statements

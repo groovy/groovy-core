@@ -32,5 +32,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @GroovyASTTransformationClass("org.codehaus.groovy.ast.MixinASTTransformation")
 public @interface Mixin {
-    Class [] value ();
+    Class[] value();
 }

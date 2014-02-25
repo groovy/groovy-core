@@ -15,7 +15,8 @@
  */
 package groovy.io;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 
 /**
@@ -27,6 +28,7 @@ import java.nio.charset.Charset;
 
 public class EncodingAwareBufferedWriter extends BufferedWriter {
     private OutputStreamWriter out;
+
     public EncodingAwareBufferedWriter(OutputStreamWriter out) {
         super(out);
         this.out = out;

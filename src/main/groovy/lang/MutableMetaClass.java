@@ -21,22 +21,23 @@ import java.lang.reflect.Method;
 /**
  * An interface that defines methods that implementers of mutable Meta classes should specify. It provides operations to perform mutations
  * on the MetaClass instance.
- * <p>
+ * <p/>
  * Whether a MetaClass allows mutation is up to the MetaClass itself and considerations of Thread safety
  * need to be taken into account when making a MetaClass mutable
- * <p>
+ * <p/>
  * The default implementation allows mutation of MetaClass instances before initialisation (before the initialize() method is called)
  * but not after, thus ensuring Thread safety once a MetaClass has been constructed and placed in the registry
  *
+ * @author Graeme Rocher
  * @see MetaClassImpl
  * @see MetaClass
- * @author Graeme Rocher
  * @since 1.5
  */
 public interface MutableMetaClass extends MetaClass {
 
     /**
      * Return whether the MetaClass has been modified or not
+     *
      * @return True if it has
      */
     boolean isModified();
@@ -49,7 +50,7 @@ public interface MutableMetaClass extends MetaClass {
      *
      * @param method the method to be added
      */
-     void addNewInstanceMethod(Method method);
+    void addNewInstanceMethod(Method method);
 
     /**
      * adds a new static method to this MetaClass. This is only
@@ -57,7 +58,7 @@ public interface MutableMetaClass extends MetaClass {
      *
      * @param method the method to be added
      */
-     void addNewStaticMethod(Method method);
+    void addNewStaticMethod(Method method);
 
     /**
      * Adds a new MetaMethod to the MetaClass
@@ -72,6 +73,6 @@ public interface MutableMetaClass extends MetaClass {
      * @param metaBeanProperty The MetaBeanProperty instance
      */
     void addMetaBeanProperty(MetaBeanProperty metaBeanProperty);
-    
+
     // TODO: Add methods like addMetaConstructor, addMetaAttribute, addMetaAnnotation etc.
 }

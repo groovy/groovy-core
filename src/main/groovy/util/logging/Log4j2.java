@@ -16,25 +16,18 @@
 package groovy.util.logging;
 
 import groovy.lang.GroovyClassLoader;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.transform.GroovyASTTransformationClass;
+import org.codehaus.groovy.transform.LogASTTransformation;
+import org.objectweb.asm.Opcodes;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Locale;
-
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.FieldNode;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.BooleanExpression;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.TernaryExpression;
-import org.codehaus.groovy.transform.GroovyASTTransformationClass;
-import org.codehaus.groovy.transform.LogASTTransformation;
-import org.objectweb.asm.Opcodes;
 
 /**
  * This local transform adds a logging ability to your program using
@@ -62,7 +55,9 @@ import org.objectweb.asm.Opcodes;
 @GroovyASTTransformationClass("org.codehaus.groovy.transform.LogASTTransformation")
 public @interface Log4j2 {
     String value() default "log";
+
     String category() default LogASTTransformation.DEFAULT_CATEGORY_NAME;
+
     Class<? extends LogASTTransformation.LoggingStrategy> loggingStrategy() default Log4j2LoggingStrategy.class;
 
     public static class Log4j2LoggingStrategy extends LogASTTransformation.AbstractLoggingStrategy {
@@ -80,7 +75,8 @@ public @interface Log4j2 {
                     new MethodCallExpression(
                             new ClassExpression(classNode(LOG_MANAGER_NAME)),
                             "getLogger",
-                            new ConstantExpression(getCategoryName(classNode, categoryName))));
+                            new ConstantExpression(getCategoryName(classNode, categoryName)))
+            );
         }
 
         public boolean isLoggingMethod(String methodName) {

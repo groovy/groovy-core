@@ -15,14 +15,14 @@
  */
 package groovy.lang;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.lang.annotation.ElementType;
 
 /**
  * Used to grab the referenced artifact and its dependencies and make it available on the Classpath.
- * <p>
+ * <p/>
  * Some examples:
  * <pre>
  * {@code @Grab}(group='commons-lang', module='commons-lang', version='2.4')
@@ -118,7 +118,7 @@ public @interface Grab {
 
     /**
      * Allows a more compact convenience form in one of two formats with optional appended attributes.
-     * <p>
+     * <p/>
      * You can choose either format but not mix-n-match:<br>
      * {@code group:module:version:classifier@ext} (where only group and module are required)<br>
      * {@code group#module;version[confs]} (where only group and module are required and confs,

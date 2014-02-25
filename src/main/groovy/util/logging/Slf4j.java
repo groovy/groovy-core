@@ -15,12 +15,6 @@
  */
 package groovy.util.logging;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.util.Locale;
-
 import groovy.lang.GroovyClassLoader;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
@@ -28,6 +22,12 @@ import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.transform.GroovyASTTransformationClass;
 import org.codehaus.groovy.transform.LogASTTransformation;
 import org.objectweb.asm.Opcodes;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.util.Locale;
 
 /**
  * This local transform adds a logging ability to your program using
@@ -57,7 +57,9 @@ import org.objectweb.asm.Opcodes;
 @GroovyASTTransformationClass("org.codehaus.groovy.transform.LogASTTransformation")
 public @interface Slf4j {
     String value() default "log";
+
     String category() default LogASTTransformation.DEFAULT_CATEGORY_NAME;
+
     Class<? extends LogASTTransformation.LoggingStrategy> loggingStrategy() default Slf4jLoggingStrategy.class;
 
     public static class Slf4jLoggingStrategy extends LogASTTransformation.AbstractLoggingStrategy {
@@ -75,7 +77,8 @@ public @interface Slf4j {
                     new MethodCallExpression(
                             new ClassExpression(classNode(FACTORY_NAME)),
                             "getLogger",
-                            new ConstantExpression(getCategoryName(classNode, categoryName))));
+                            new ConstantExpression(getCategoryName(classNode, categoryName)))
+            );
         }
 
         public boolean isLoggingMethod(String methodName) {

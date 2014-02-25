@@ -15,10 +15,9 @@
  */
 package org.codehaus.groovy.runtime.callsite;
 
-import org.codehaus.groovy.runtime.ScriptBytecodeAdapter;
-
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovyRuntimeException;
+import org.codehaus.groovy.runtime.ScriptBytecodeAdapter;
 
 public class PogoGetPropertySite extends AbstractCallSite {
     private final Class aClass;

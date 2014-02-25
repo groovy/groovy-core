@@ -257,7 +257,7 @@ class CliBuilder {
     OptionAccessor parse(args) {
         if (expandArgumentFiles) args = expandArgumentFiles(args)
         if (!parser) {
-            parser = posix == null ? new GroovyPosixParser() : posix == true ? new PosixParser() : new GnuParser()
+            parser = posix == null ? new GroovyPosixParser() : posix ? new PosixParser() : new GnuParser()
         }
         try {
             return new OptionAccessor(parser.parse(options, args as String[], stopAtNonOption))
@@ -318,7 +318,7 @@ class CliBuilder {
                 commentChar(charAsInt('#'))
                 quoteChar(charAsInt('"'))
                 quoteChar(charAsInt('\''))
-                while (nextToken() != StreamTokenizer.TT_EOF) {
+                while (nextToken() != TT_EOF) {
                     args << sval
                 }
             }

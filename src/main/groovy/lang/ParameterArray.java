@@ -31,7 +31,7 @@ public class ParameterArray {
 
     private Object packArray(Object object) {
         if (object instanceof Object[])
-            return (Object[]) object;
+            return object;
         else
             return object;
     }

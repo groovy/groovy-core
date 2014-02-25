@@ -20,10 +20,11 @@ import org.codehaus.groovy.tools.shell.IO;
 
 import java.io.IOException;
 
-import static org.fusesource.jansi.Ansi.ansi;
+import static org.fusesource.jansi.Ansi.Attribute.INTENSITY_BOLD;
 import static org.fusesource.jansi.Ansi.Color;
-import static org.fusesource.jansi.Ansi.Color.*;
-import static org.fusesource.jansi.Ansi.Attribute.*;
+import static org.fusesource.jansi.Ansi.Color.GREEN;
+import static org.fusesource.jansi.Ansi.Color.RED;
+import static org.fusesource.jansi.Ansi.ansi;
 
 /**
  * Provides a very, very basic logging API.

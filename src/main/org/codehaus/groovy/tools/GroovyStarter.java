@@ -15,8 +15,9 @@
  */
 package org.codehaus.groovy.tools;
 
-import java.lang.reflect .*;
 import java.io.FileInputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * Helper class to initialize the Groovy runtime.
@@ -77,9 +78,7 @@ public class GroovyStarter {
         
         // copy arguments for main class 
         String[] newArgs = new String[args.length-argsOffset];
-        for (int i=0; i<newArgs.length; i++) {
-            newArgs[i] = args[i+argsOffset];
-        }        
+        System.arraycopy(args, argsOffset, newArgs, 0, newArgs.length);
         // load configuration file
         if (conf!=null) {
             try {
@@ -91,7 +90,7 @@ public class GroovyStarter {
         }
         // create loader and execute main class
         ClassLoader loader = new RootLoader(lc);
-        Method m=null;
+        Method m = null;
         try {
             Class c = loader.loadClass(lc.getMainClass());
             m = c.getMethod("main", new Class[]{String[].class});
@@ -103,6 +102,7 @@ public class GroovyStarter {
             exit(e2);
         }
         try {
+            //noinspection ConstantConditions
             m.invoke(null, new Object[]{newArgs});
         } catch (IllegalArgumentException e3) {
             exit(e3);

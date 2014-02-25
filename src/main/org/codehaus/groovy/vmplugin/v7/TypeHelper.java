@@ -62,9 +62,7 @@ public class TypeHelper {
      * argument class is a wrapper.
      */
     protected static boolean argumentClassIsParameterClass(Class argumentClass, Class parameterClass) {
-        if (argumentClass == parameterClass) return true;
-        if (getWrapperClass(parameterClass) == argumentClass) return true;
-        return false;
+        return argumentClass == parameterClass || getWrapperClass(parameterClass) == argumentClass;
     }
 
     /**

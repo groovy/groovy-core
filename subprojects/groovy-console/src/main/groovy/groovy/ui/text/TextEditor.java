@@ -16,50 +16,17 @@
 
 package groovy.ui.text;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Rectangle;
-
+import javax.swing.*;
+import javax.swing.plaf.ComponentUI;
+import javax.swing.text.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
-import java.awt.print.Pageable;
-import java.awt.print.PageFormat;
-import java.awt.print.Paper;
-import java.awt.print.Printable;
-import java.awt.print.PrinterException;
-import java.awt.print.PrinterJob;
-
+import java.awt.print.*;
 import java.util.Calendar;
-
 import java.util.regex.Pattern;
-
-import javax.swing.Action;
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JTextPane;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
-
-import javax.swing.plaf.ComponentUI;
-
-import javax.swing.text.Caret;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultCaret;
-import javax.swing.text.DefaultEditorKit;
-import javax.swing.text.Document;
-import javax.swing.text.Element;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.Utilities;
 
 /**
  * A simple text pane that is printable and wrapping is optional.
@@ -282,7 +249,7 @@ public class TextEditor extends JTextPane implements Pageable, Printable {
                     (float) (paper.getImageableWidth() / 2 - width / 2),
                     (float) height - fm.getHeight() / 2);
 
-            ((Graphics2D) graphics).translate(0, fm.getHeight());
+            graphics.translate(0, fm.getHeight());
             width = SwingUtilities.computeStringWidth(fm, pageStr);
             ((Graphics2D) graphics).drawString(pageStr,
                     (float) (paper.getImageableWidth() / 2 - width / 2),

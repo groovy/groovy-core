@@ -15,11 +15,11 @@
  */
 package org.codehaus.groovy.ast;
 
+import org.codehaus.groovy.GroovyBugError;
+import org.codehaus.groovy.ast.expr.Expression;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.GroovyBugError;
 
 
 /**

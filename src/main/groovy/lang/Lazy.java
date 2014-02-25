@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
 
 /**
  * Field annotation to simplify lazy initialization.
- * <p>
+ * <p/>
  * Example usage without any special modifiers just defers initialization until the first call but is not thread-safe:
  * <pre>
  * {@code @Lazy} T x
@@ -43,10 +43,10 @@ import java.lang.annotation.Target;
  *    }
  * }
  * </pre>
- *
+ * <p/>
  * If the field is declared volatile then initialization will be synchronized using
  * the <a href="http://en.wikipedia.org/wiki/Double-checked_locking">double-checked locking</a> pattern as shown here:
- *
+ * <p/>
  * <pre>
  * {@code @Lazy} volatile T x
  * </pre>
@@ -68,12 +68,12 @@ import java.lang.annotation.Target;
  *    }
  * }
  * </pre>
- *
+ * <p/>
  * By default a field will be initialized by calling its default constructor.
- *
+ * <p/>
  * If the field has an initial value expression then this expression will be used instead of calling the default constructor.
  * In particular, it is possible to use closure <code>{ ... } ()</code> syntax as follows:
- *
+ * <p/>
  * <pre>
  * {@code @Lazy} T x = { [1, 2, 3] } ()
  * </pre>
@@ -95,9 +95,9 @@ import java.lang.annotation.Target;
  *    }
  * }
  * </pre>
- * <p>
+ * <p/>
  * <code>@Lazy(soft=true)</code> will use a soft reference instead of the field and use the above rules each time re-initialization is required.
- * <p>
+ * <p/>
  * If the <code>soft</code> flag for the annotation is not set but the field is static, then
  * the <a href="http://en.wikipedia.org/wiki/Initialization_on_demand_holder_idiom">initialization on demand holder idiom</a> is
  * used as follows:
@@ -153,5 +153,5 @@ public @interface Lazy {
     /**
      * @return if field should be soft referenced instead of hard referenced
      */
-    boolean soft () default false;
+    boolean soft() default false;
 }

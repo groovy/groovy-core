@@ -23,19 +23,9 @@
  */
 package org.codehaus.groovy.runtime.metaclass;
 
-import java.util.Map;
-import java.util.AbstractMap;
-import java.util.AbstractSet;
-import java.util.AbstractCollection;
-import java.util.Collection;
-import java.util.Set;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Enumeration;
-import java.util.NoSuchElementException;
-
-import java.io.Serializable;
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * A hash table that supports mostly-concurrent reading, but

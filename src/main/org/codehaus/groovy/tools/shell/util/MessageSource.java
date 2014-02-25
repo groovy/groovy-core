@@ -15,12 +15,11 @@
  */
 package org.codehaus.groovy.tools.shell.util;
 
-import java.util.ResourceBundle;
-import java.util.MissingResourceException;
+import groovy.lang.GroovyObjectSupport;
 
 import java.text.MessageFormat;
-
-import groovy.lang.GroovyObjectSupport;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
 /**
  * Message source backed up by one or more {@link java.util.ResourceBundle}
@@ -98,23 +97,17 @@ public class MessageSource
         MissingResourceException error = null;
         
         ResourceBundle[] bundles = getBundles();
-        
-        for (int i=0; i<bundles.length; i++) {
+
+        for (ResourceBundle bundle : bundles) {
             try {
-                return bundles[i].getString(code);
-            }
-            catch (MissingResourceException e) {
+                return bundle.getString(code);
+            } catch (MissingResourceException e) {
                 //
                 // FIXME: For now just save the first error, should really roll a new message with all of the details
                 //
-                
-                if (error != null) {
-                    error = e;
-                }
+
             }
         }
-        
-        assert error != null;
         
         throw error;
     }

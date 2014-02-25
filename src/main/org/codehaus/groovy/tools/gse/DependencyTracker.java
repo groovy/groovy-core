@@ -15,24 +15,14 @@
  */
 package org.codehaus.groovy.tools.gse;
 
+import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.ast.stmt.CatchStatement;
+import org.codehaus.groovy.control.SourceUnit;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
-import org.codehaus.groovy.ast.AnnotatedNode;
-import org.codehaus.groovy.ast.AnnotationNode;
-import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.FieldNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.expr.ArrayExpression;
-import org.codehaus.groovy.ast.expr.CastExpression;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
-import org.codehaus.groovy.ast.stmt.CatchStatement;
-import org.codehaus.groovy.control.SourceUnit;
 
 public class DependencyTracker extends ClassCodeVisitorSupport {
     private Set<String> current;
@@ -41,7 +31,7 @@ public class DependencyTracker extends ClassCodeVisitorSupport {
     private StringSetMap cache;
 
     public DependencyTracker(SourceUnit source, StringSetMap cache) {
-        this(source, cache, new HashMap());
+        this(source, cache, new HashMap<String, Object>());
     }
     
     public DependencyTracker(SourceUnit source, StringSetMap cache, Map<String, ?> precompiledEntries) {

@@ -18,11 +18,7 @@ package groovy.lang;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.StringGroovyMethods;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -75,8 +71,7 @@ public abstract class GString extends GroovyObjectSupport implements Comparable,
     public Object invokeMethod(String name, Object args) {
         try {
             return super.invokeMethod(name, args);
-        }
-        catch (MissingMethodException e) {
+        } catch (MissingMethodException e) {
             // lets try invoke the method on the real String
             return InvokerHelper.invokeMethod(toString(), name, args);
         }
@@ -160,8 +155,7 @@ public abstract class GString extends GroovyObjectSupport implements Comparable,
         StringWriter buffer = new StringWriter();
         try {
             writeTo(buffer);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new StringWriterIOException(e);
         }
         return buffer.toString();
@@ -213,10 +207,7 @@ public abstract class GString extends GroovyObjectSupport implements Comparable,
     }
 
     public boolean equals(Object that) {
-        if (that instanceof GString) {
-            return equals((GString) that);
-        }
-        return false;
+        return that instanceof GString && equals((GString) that);
     }
 
     public boolean equals(GString that) {
@@ -257,6 +248,6 @@ public abstract class GString extends GroovyObjectSupport implements Comparable,
     }
 
     public byte[] getBytes(String charset) throws UnsupportedEncodingException {
-       return toString().getBytes(charset);
+        return toString().getBytes(charset);
     }
 }

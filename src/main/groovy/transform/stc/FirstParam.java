@@ -24,7 +24,7 @@ import org.codehaus.groovy.control.SourceUnit;
 /**
  * <p>A hint used to instruct the type checker to pick the first parameter type. For example:</p>
  * <code>public &lt;T&gt; def doWith(T src, @ClosureParams(FirstParam.class) Closure c) { c.call(src); }</code>
- *
+ * <p/>
  * <p>This class has several inner classes that also helps picking generic argument types instead of the parameter type.</p>
  *
  * @author Cédric Champeau
@@ -32,7 +32,7 @@ import org.codehaus.groovy.control.SourceUnit;
  */
 public class FirstParam extends PickAnyArgumentHint {
     public FirstParam() {
-        super(0,-1);
+        super(0, -1);
     }
 
     /**
@@ -44,7 +44,7 @@ public class FirstParam extends PickAnyArgumentHint {
      */
     public static class FirstGenericType extends PickAnyArgumentHint {
         public FirstGenericType() {
-            super(0,0);
+            super(0, 0);
         }
     }
 
@@ -57,7 +57,7 @@ public class FirstParam extends PickAnyArgumentHint {
      */
     public static class SecondGenericType extends PickAnyArgumentHint {
         public SecondGenericType() {
-            super(0,1);
+            super(0, 1);
         }
     }
 
@@ -70,7 +70,7 @@ public class FirstParam extends PickAnyArgumentHint {
      */
     public static class ThirdGenericType extends PickAnyArgumentHint {
         public ThirdGenericType() {
-            super(0,2);
+            super(0, 2);
         }
     }
 

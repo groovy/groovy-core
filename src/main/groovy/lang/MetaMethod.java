@@ -39,8 +39,8 @@ public abstract class MetaMethod extends ParameterTypes implements Cloneable {
     public MetaMethod() {
     }
 
-    public MetaMethod(Class [] pt) {
-        super (pt);
+    public MetaMethod(Class[] pt) {
+        super(pt);
     }
 
     public abstract int getModifiers();
@@ -64,19 +64,20 @@ public abstract class MetaMethod extends ParameterTypes implements Cloneable {
         if (!isValidMethod(arguments)) {
             throw new IllegalArgumentException(
                     "Parameters to method: "
-                    + getName()
-                    + " do not match types: "
-                    + InvokerHelper.toString(getParameterTypes())
-                    + " for arguments: "
-                    + InvokerHelper.toString(arguments));
+                            + getName()
+                            + " do not match types: "
+                            + InvokerHelper.toString(getParameterTypes())
+                            + " for arguments: "
+                            + InvokerHelper.toString(arguments)
+            );
         }
     }
 
     public boolean isMethod(MetaMethod method) {
         return getName().equals(method.getName())
-            && getModifiers() == method.getModifiers()
-            && getReturnType().equals(method.getReturnType())
-            && equal(getParameterTypes(), method.getParameterTypes());
+                && getModifiers() == method.getModifiers()
+                && getReturnType().equals(method.getReturnType())
+                && equal(getParameterTypes(), method.getParameterTypes());
     }
 
     protected static boolean equal(CachedClass[] a, Class[] b) {
@@ -105,22 +106,21 @@ public abstract class MetaMethod extends ParameterTypes implements Cloneable {
 
     public String toString() {
         return super.toString()
-            + "[name: "
-            + getName()
-            + " params: "
-            + InvokerHelper.toString(getParameterTypes())
-            + " returns: "
-            + getReturnType()
-            + " owner: "
-            + getDeclaringClass()
-            + "]";
+                + "[name: "
+                + getName()
+                + " params: "
+                + InvokerHelper.toString(getParameterTypes())
+                + " returns: "
+                + getReturnType()
+                + " owner: "
+                + getDeclaringClass()
+                + "]";
     }
 
     public Object clone() {
         try {
             return super.clone();
-        }
-        catch (CloneNotSupportedException e) {
+        } catch (CloneNotSupportedException e) {
             throw new GroovyRuntimeException("This should never happen", e);
         }
     }
@@ -152,9 +152,9 @@ public abstract class MetaMethod extends ParameterTypes implements Cloneable {
      */
     public final boolean isSame(MetaMethod method) {
         return getName().equals(method.getName())
-            && compatibleModifiers(getModifiers(), method.getModifiers())
-            && getReturnType().equals(method.getReturnType())
-            && equal(getParameterTypes(), method.getParameterTypes());
+                && compatibleModifiers(getModifiers(), method.getModifiers())
+                && getReturnType().equals(method.getReturnType())
+                && equal(getParameterTypes(), method.getParameterTypes());
     }
 
     private static boolean compatibleModifiers(int modifiersA, int modifiersB) {
@@ -172,9 +172,9 @@ public abstract class MetaMethod extends ParameterTypes implements Cloneable {
 
     public synchronized String getSignature() {
         if (signature == null) {
-            CachedClass [] parameters = getParameterTypes();
+            CachedClass[] parameters = getParameterTypes();
             final String name = getName();
-            StringBuffer buf = new StringBuffer(name.length()+parameters.length*10);
+            StringBuilder buf = new StringBuilder(name.length() + parameters.length * 10);
             buf.append(getReturnType().getName());
             //
             buf.append(' ');
@@ -194,17 +194,17 @@ public abstract class MetaMethod extends ParameterTypes implements Cloneable {
 
     public String getMopName() {
         if (mopName == null) {
-          String name = getName();
-          CachedClass declaringClass = getDeclaringClass();
-          if (Modifier.isPrivate(getModifiers()))
-            mopName = new StringBuffer().append("this$").append(declaringClass.getSuperClassDistance()).append("$").append(name).toString();
-          else 
-            mopName = new StringBuffer().append("super$").append(declaringClass.getSuperClassDistance()).append("$").append(name).toString();
+            String name = getName();
+            CachedClass declaringClass = getDeclaringClass();
+            if (Modifier.isPrivate(getModifiers()))
+                mopName = "this$" + declaringClass.getSuperClassDistance() + "$" + name;
+            else
+                mopName = "super$" + declaringClass.getSuperClassDistance() + "$" + name;
         }
         return mopName;
     }
 
-    public final RuntimeException processDoMethodInvokeException (Exception e, Object object, Object [] argumentArray) {
+    public final RuntimeException processDoMethodInvokeException(Exception e, Object object, Object[] argumentArray) {
 //        if (e instanceof IllegalArgumentException) {
 //            //TODO: test if this is OK with new MOP, should be changed!
 //            // we don't want the exception being unwrapped if it is a IllegalArgumentException
@@ -220,7 +220,7 @@ public abstract class MetaMethod extends ParameterTypes implements Cloneable {
 //        }
 
         if (e instanceof RuntimeException)
-          return (RuntimeException) e;
+            return (RuntimeException) e;
 
         return MetaClassHelper.createExceptionText("failed to invoke method: ", this, object, argumentArray, e, true);
     }

@@ -15,11 +15,7 @@
  */
 package org.codehaus.groovy.util;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This represents a 
@@ -74,7 +70,7 @@ public class ListHashMap<K,V> implements Map<K,V> {
     }
 
     private Map<K,V> makeMap() {
-        Map<K,V> m = new HashMap();
+        Map<K,V> m = new HashMap<K,V>();
         for (int i=0; i<size; i++) {
             m.put((K) listKeys[i], (V) listValues[i]);
         }
@@ -83,7 +79,7 @@ public class ListHashMap<K,V> implements Map<K,V> {
 
     @SuppressWarnings("unchecked")
     public Set<java.util.Map.Entry<K, V>> entrySet() {
-        Map m = innerMap!=null?innerMap:makeMap();
+        Map<K, V> m = innerMap!=null?innerMap:makeMap();
         return m.entrySet();
     }
 
@@ -104,7 +100,7 @@ public class ListHashMap<K,V> implements Map<K,V> {
     }
 
     public Set<K> keySet() {
-        Map m = innerMap!=null?innerMap:makeMap();
+        Map<K, V> m = innerMap!=null?innerMap:makeMap();
         return m.keySet();
     }
 
@@ -177,7 +173,7 @@ public class ListHashMap<K,V> implements Map<K,V> {
 
     public Collection<V> values() {
         if (innerMap==null) {
-            ArrayList<V> list = new ArrayList(size);
+            ArrayList<V> list = new ArrayList<V>(size);
             for (int i=0; i<size; i++) {
                 list.add((V) listValues[i]);
             }

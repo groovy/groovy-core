@@ -15,14 +15,15 @@
  */
 package org.codehaus.groovy.control;
 
-import static org.codehaus.groovy.runtime.MetaClassHelper.capitalize;
-
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.syntax.Types;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+
+import static org.codehaus.groovy.runtime.MetaClassHelper.capitalize;
 
 /**
  * Visitor to resolve constants and method calls from static Imports

@@ -16,7 +16,6 @@
 package org.codehaus.groovy.runtime;
 
 import groovy.lang.*;
-
 import org.codehaus.groovy.runtime.metaclass.MissingMethodExceptionNoStack;
 import org.codehaus.groovy.runtime.metaclass.MissingMethodExecutionFailed;
 import org.codehaus.groovy.runtime.metaclass.MissingPropertyExceptionNoStack;
@@ -25,7 +24,10 @@ import org.codehaus.groovy.runtime.wrappers.GroovyObjectWrapper;
 import org.codehaus.groovy.runtime.wrappers.PojoWrapper;
 import org.codehaus.groovy.runtime.wrappers.Wrapper;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,9 +39,9 @@ import java.util.regex.Pattern;
  */
 public class ScriptBytecodeAdapter {
     public static final Object[] EMPTY_ARGS = {};
-    private static final Integer ZERO = Integer.valueOf(0);
-    private static final Integer MINUS_ONE = Integer.valueOf(-1);
-    private static final Integer ONE = Integer.valueOf(1);
+    private static final Integer ZERO = 0;
+    private static final Integer MINUS_ONE = -1;
+    private static final Integer ONE = 1;
 
     //  --------------------------------------------------------
     //                   exception handling
@@ -65,7 +67,7 @@ public class ScriptBytecodeAdapter {
     //                       methods for this
     //  --------------------------------------------------------
     public static Object invokeMethodOnCurrentN(Class senderClass, GroovyObject receiver, String messageName, Object[] messageArguments) throws Throwable {
-        Object result = null;
+        Object result;
         boolean intercepting = receiver instanceof GroovyInterceptable;
         try {
             try {
@@ -98,7 +100,7 @@ public class ScriptBytecodeAdapter {
     }
 
     public static Object invokeMethodOnCurrentNSpreadSafe(Class senderClass, GroovyObject receiver, String messageName, Object[] messageArguments) throws Throwable {
-        List answer = new ArrayList();
+        List<Object> answer = new ArrayList<Object>();
         for (Iterator it = InvokerHelper.asIterator(receiver); it.hasNext();) {
             answer.add(invokeMethodNSafe(senderClass, it.next(), messageName, messageArguments));
         }
@@ -137,7 +139,7 @@ public class ScriptBytecodeAdapter {
     }
 
     public static Object invokeMethodOnSuperNSpreadSafe(Class senderClass, GroovyObject receiver, String messageName, Object[] messageArguments) throws Throwable {
-        List answer = new ArrayList();
+        List<Object> answer = new ArrayList<Object>();
         for (Iterator it = InvokerHelper.asIterator(receiver); it.hasNext();) {
             answer.add(invokeMethodNSafe(senderClass, it.next(), messageName, messageArguments));
         }
@@ -174,7 +176,7 @@ public class ScriptBytecodeAdapter {
 
     public static Object invokeMethodNSpreadSafe(Class senderClass, Object receiver, String messageName, Object[] messageArguments) throws Throwable {
         if (receiver == null) return null;
-        List answer = new ArrayList();
+        List<Object> answer = new ArrayList<Object>();
         for (Iterator it = InvokerHelper.asIterator(receiver); it.hasNext();) {
             answer.add(invokeMethodNSafe(senderClass, it.next(), messageName, messageArguments));
         }
@@ -259,7 +261,7 @@ public class ScriptBytecodeAdapter {
     }
 
     public static Object getFieldOnSuperSpreadSafe(Class senderClass, Object receiver, String messageName) throws Throwable {
-        List answer = new ArrayList();
+        List<Object> answer = new ArrayList<Object>();
         for (Iterator it = InvokerHelper.asIterator(receiver); it.hasNext();) {
             answer.add(getFieldOnSuper(senderClass, it.next(), messageName));
         }
@@ -312,7 +314,7 @@ public class ScriptBytecodeAdapter {
 
     public static Object getFieldSpreadSafe(Class senderClass, Object receiver, String messageName) throws Throwable {
         if (receiver == null) return null;
-        List answer = new ArrayList();
+        List<Object> answer = new ArrayList<Object>();
         for (Iterator it = InvokerHelper.asIterator(receiver); it.hasNext();) {
             answer.add(getFieldSafe(senderClass, it.next(), messageName));
         }
@@ -366,7 +368,7 @@ public class ScriptBytecodeAdapter {
 
     public static Object getGroovyObjectFieldSpreadSafe(Class senderClass, GroovyObject receiver, String messageName) throws Throwable {
         if (receiver == null) return null;
-        List answer = new ArrayList();
+        List<Object> answer = new ArrayList<Object>();
         for (Iterator it = InvokerHelper.asIterator(receiver); it.hasNext();) {
             answer.add(getFieldSafe(senderClass, it.next(), messageName));
         }
@@ -414,7 +416,7 @@ public class ScriptBytecodeAdapter {
     }
 
     public static Object getPropertyOnSuperSpreadSafe(Class senderClass, GroovyObject receiver, String messageName) throws Throwable {
-        List answer = new ArrayList();
+        List<Object> answer = new ArrayList<Object>();
         for (Iterator it = InvokerHelper.asIterator(receiver); it.hasNext();) {
             answer.add(getPropertySafe(senderClass, it.next(), messageName));
         }
@@ -463,7 +465,7 @@ public class ScriptBytecodeAdapter {
     public static Object getPropertySpreadSafe(Class senderClass, Object receiver, String messageName) throws Throwable {
         if (receiver == null) return null;
 
-        List answer = new ArrayList();
+        List<Object> answer = new ArrayList<Object>();
         for (Iterator it = InvokerHelper.asIterator(receiver); it.hasNext();) {
             answer.add(getPropertySafe(senderClass, it.next(), messageName));
         }
@@ -512,7 +514,7 @@ public class ScriptBytecodeAdapter {
     public static Object getGroovyObjectPropertySpreadSafe(Class senderClass, GroovyObject receiver, String messageName) throws Throwable {
         if (receiver == null) return null;
 
-        List answer = new ArrayList();
+        List<Object> answer = new ArrayList<Object>();
         for (Iterator it = InvokerHelper.asIterator(receiver); it.hasNext();) {
             answer.add(getPropertySafe(senderClass, it.next(), messageName));
         }
@@ -682,19 +684,19 @@ public class ScriptBytecodeAdapter {
     }
 
     public static boolean compareLessThan(Object left, Object right) {
-        return compareTo(left, right).intValue() < 0;
+        return compareTo(left, right) < 0;
     }
 
     public static boolean compareLessThanEqual(Object left, Object right) {
-        return compareTo(left, right).intValue() <= 0;
+        return compareTo(left, right) <= 0;
     }
 
     public static boolean compareGreaterThan(Object left, Object right) {
-        return compareTo(left, right).intValue() > 0;
+        return compareTo(left, right) > 0;
     }
 
     public static boolean compareGreaterThanEqual(Object left, Object right) {
-        return compareTo(left, right).intValue() >= 0;
+        return compareTo(left, right) >= 0;
     }
 
     //regexpr
@@ -712,11 +714,11 @@ public class ScriptBytecodeAdapter {
 
     //spread expressions
     public static Object[] despreadList(Object[] args, Object[] spreads, int[] positions) {
-        List ret = new ArrayList();
+        List<Object> ret = new ArrayList<Object>();
         int argsPos = 0;
         int spreadPos = 0;
-        for (int pos = 0; pos < positions.length; pos++) {
-            for (; argsPos < positions[pos]; argsPos++) {
+        for (int position : positions) {
+            for (; argsPos < position; argsPos++) {
                 ret.add(args[argsPos]);
             }
             Object value = spreads[spreadPos];

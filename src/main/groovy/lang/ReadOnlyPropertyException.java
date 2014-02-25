@@ -18,7 +18,7 @@ package groovy.lang;
 
 /**
  * This exception is thrown if an attempt is made to set a read only property
- * 
+ *
  * @author <a href="mailto:james@coredevelopers.net">James Strachan</a>
  * @version $Revision$
  */

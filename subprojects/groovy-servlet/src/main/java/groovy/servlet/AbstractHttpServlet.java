@@ -18,21 +18,16 @@ package groovy.servlet;
 import groovy.util.ResourceConnector;
 import groovy.util.ResourceException;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.IOException;
+import java.net.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A base class dealing with common HTTP servlet API housekeeping aspects.
@@ -261,8 +256,8 @@ public abstract class AbstractHttpServlet extends HttpServlet implements Resourc
         // Why doesn't it use request.getRequestURI() or INC_REQUEST_URI?
         //
 
-        String uri = null;
-        String info = null;
+        String uri;
+        String info;
 
         //
         // Check to see if the requested script/template source file has been the

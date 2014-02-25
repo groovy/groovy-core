@@ -15,9 +15,9 @@
  */
 package groovy.util;
 
-import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
-import org.codehaus.groovy.runtime.ScriptBytecodeAdapter;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.ScriptBytecodeAdapter;
+import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 
 import java.util.*;
 
@@ -35,8 +35,8 @@ public class GroovyCollections {
      * @return a List of the combinations found
      * @see #combinations(Collection)
      */
-    public static List combinations(Object[] collections) {
-        return combinations((Iterable)Arrays.asList(collections));
+    public static List<List<Object>> combinations(Object[] collections) {
+        return combinations((Iterable) Arrays.asList(collections));
     }
 
     /**
@@ -71,8 +71,8 @@ public class GroovyCollections {
      * @deprecated use combinations(Iterable)
      */
     @Deprecated
-    public static List combinations(Collection collections) {
-        return combinations((Iterable)collections);
+    public static List<List<Object>> combinations(Collection collections) {
+        return combinations((Iterable) collections);
     }
 
     /**
@@ -88,22 +88,22 @@ public class GroovyCollections {
      * @return a List of the combinations found
      * @since 2.2.0
      */
-    public static List combinations(Iterable collections) {
-        List collectedCombos = new ArrayList();
+    public static List<List<Object>> combinations(Iterable collections) {
+        List<List<Object>> collectedCombos = new ArrayList<List<Object>>();
         for (Object collection : collections) {
             Iterable items = DefaultTypeTransformation.asCollection(collection);
             if (collectedCombos.isEmpty()) {
                 for (Object item : items) {
-                    List l = new ArrayList();
+                    List<Object> l = new ArrayList<Object>();
                     l.add(item);
                     collectedCombos.add(l);
                 }
             } else {
-                List savedCombos = new ArrayList(collectedCombos);
-                List newCombos = new ArrayList();
+                List<List<Object>> savedCombos = new ArrayList<List<Object>>(collectedCombos);
+                List<List<Object>> newCombos = new ArrayList<List<Object>>();
                 for (Object value : items) {
-                    for (Object savedCombo : savedCombos) {
-                        List oldList = new ArrayList((List) savedCombo);
+                    for (List<Object> savedCombo : savedCombos) {
+                        List<Object> oldList = new ArrayList<Object>(savedCombo);
                         oldList.add(value);
                         newCombos.add(oldList);
                     }
@@ -165,7 +165,7 @@ public class GroovyCollections {
      * @return the minimum value
      */
     public static <T> T min(T[] items) {
-        return min((Iterable<T>)Arrays.asList(items));
+        return min((Iterable<T>) Arrays.asList(items));
     }
 
     /**
@@ -173,7 +173,7 @@ public class GroovyCollections {
      */
     @Deprecated
     public static <T> T min(Collection<T> items) {
-        return min((Iterable<T>)items);
+        return min((Iterable<T>) items);
     }
 
     /**
@@ -203,7 +203,7 @@ public class GroovyCollections {
      * @return the maximum value
      */
     public static <T> T max(T[] items) {
-        return max((Iterable<T>)Arrays.asList(items));
+        return max((Iterable<T>) Arrays.asList(items));
     }
 
     /**
@@ -211,7 +211,7 @@ public class GroovyCollections {
      */
     @Deprecated
     public static <T> T max(Collection<T> items) {
-        return max((Iterable<T>)items);
+        return max((Iterable<T>) items);
     }
 
     /**
@@ -240,7 +240,7 @@ public class GroovyCollections {
      * @return the sum of the items
      */
     public static Object sum(Object[] items) {
-        return sum((Iterable)Arrays.asList(items));
+        return sum((Iterable) Arrays.asList(items));
     }
 
     /**
@@ -248,7 +248,7 @@ public class GroovyCollections {
      */
     @Deprecated
     public static Object sum(Collection items) {
-        return sum((Iterable)items);
+        return sum(items.toArray());
     }
 
     /**

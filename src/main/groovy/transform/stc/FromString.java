@@ -20,13 +20,7 @@ import antlr.TokenStreamException;
 import org.codehaus.groovy.antlr.AntlrParserPlugin;
 import org.codehaus.groovy.antlr.parser.GroovyLexer;
 import org.codehaus.groovy.antlr.parser.GroovyRecognizer;
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.GenericsType;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.ModuleNode;
-import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.stmt.EmptyStatement;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.ResolveVisitor;
@@ -44,15 +38,15 @@ import java.util.concurrent.atomic.AtomicReference;
  * <p>A closure parameter hint class that is convenient if you want to use a String representation
  * of the signature. It makes use of the {@link ClosureParams#options() option strings}, where
  * each string corresponds to a single signature.</p>
- *
+ * <p/>
  * <p>The following example describes a closure as accepting a single signature (List&lt;T&gt; list -&gt;):</p>
- *
+ * <p/>
  * <code>public &lt;T&gt; T apply(T src, @ClosureParams(value=FromString.class, options="List&lt;T&gt;" Closure&lt;T&gt; cl)</code>
- *
+ * <p/>
  * <p>The next example describes a closure as accepting two signatures (List&lt;T&gt; list -&gt;) and (T t -&gt;):</p>
- *
+ * <p/>
  * <code>public &lt;T&gt; T apply(T src, @ClosureParams(value=FromString.class, options={"List&lt;T&gt;","T"} Closure&lt;T&gt; cl)</code>
- *
+ * <p/>
  * <p>It is advisable not to use this hint as a replacement for the various {@link FirstParam}, {@link SimpleType},
  * ... hints because it is actually much slower. Using this hint should therefore be limited
  * to cases where it's not possible to express the signature using the existing hints.</p>
@@ -76,16 +70,15 @@ public class FromString extends ClosureSignatureHint {
      * For example, <i>"List&lt;T&gt;"</i> must be converted into the appropriate ClassNode
      * for which <i>T</i> matches the appropriate placeholder.
      *
-     *
-     * @param option a string representing a type
-     * @param sourceUnit the source unit (of the file beeing compiled)
+     * @param option          a string representing a type
+     * @param sourceUnit      the source unit (of the file beeing compiled)
      * @param compilationUnit the compilation unit (of the file being compiled)
-     * @param mn the method node
+     * @param mn              the method node
      * @param usage
      * @return a class node if it could be parsed and resolved, null otherwise
      */
     private ClassNode[] parseOption(final String option, final SourceUnit sourceUnit, final CompilationUnit compilationUnit, final MethodNode mn, final ASTNode usage) {
-        GroovyLexer lexer = new GroovyLexer(new StringReader("DummyNode<"+option+">"));
+        GroovyLexer lexer = new GroovyLexer(new StringReader("DummyNode<" + option + ">"));
         final GroovyRecognizer rn = GroovyRecognizer.make(lexer);
         try {
             rn.classOrInterfaceType(true);
@@ -101,7 +94,7 @@ public class FromString extends ClosureSignatureHint {
             ClassNode parsedNode = ref.get();
             // the returned node is DummyNode<Param1, Param2, Param3, ...)
             GenericsType[] parsedNodeGenericsTypes = parsedNode.getGenericsTypes();
-            if (parsedNodeGenericsTypes==null) {
+            if (parsedNodeGenericsTypes == null) {
                 return null;
             }
             ClassNode[] signature = new ClassNode[parsedNodeGenericsTypes.length];
@@ -121,7 +114,7 @@ public class FromString extends ClosureSignatureHint {
     }
 
     private ClassNode resolveClassNode(final SourceUnit sourceUnit, final CompilationUnit compilationUnit, final MethodNode mn, final ASTNode usage, final ClassNode parsedNode) {
-        ClassNode dummyClass = new ClassNode("dummy",0, ClassHelper.OBJECT_TYPE);
+        ClassNode dummyClass = new ClassNode("dummy", 0, ClassHelper.OBJECT_TYPE);
         dummyClass.setModule(new ModuleNode(sourceUnit));
         dummyClass.setGenericsTypes(mn.getDeclaringClass().getGenericsTypes());
         MethodNode dummyMN = new MethodNode(

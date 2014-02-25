@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
  * protected fields into properties and makes package protected methods
  * and classes public. This annotation allows this feature to be turned
  * off and revert back to Java behavior if needed.
- *
+ * <p/>
  * Place it on classes, fields or methods of interest as follows:
  * <pre>
  * {@code @}PackageScope class Bar {      // package protected
@@ -53,7 +53,7 @@ import java.lang.annotation.Target;
  *     def method2(){} // package protected
  * }
  * </pre>
- *
+ * <p/>
  * This transformation is typically only used in conjunction with a third-party
  * library or framework which relies upon package scoping.
  *

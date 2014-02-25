@@ -22,13 +22,13 @@ import java.util.Collection;
 
 /**
  * Utility class to guess the encoding of a given text file.
- * <p>
+ * <p/>
  * Unicode files encoded in UTF-16 (low or big endian) or UTF-8 files
  * with a Byte Order Marker are correctly discovered. For UTF-8 files with no BOM, if the buffer
  * is wide enough, the charset should also be discovered.
- * <p>
+ * <p/>
  * A byte buffer of 4KB is used to be able to guess the encoding.
- * <p>
+ * <p/>
  * Usage:
  * <pre>
  * CharsetToolkit toolkit = new CharsetToolkit(file);
@@ -72,17 +72,17 @@ public class CharsetToolkit {
             int bytesRead = input.read(bytes);
             if (bytesRead == -1) {
                 this.buffer = EMPTY_BYTE_ARRAY;
-            }
-            else if (bytesRead < 4096) {
+            } else if (bytesRead < 4096) {
                 byte[] bytesToGuess = new byte[bytesRead];
                 System.arraycopy(bytes, 0, bytesToGuess, 0, bytesRead);
                 this.buffer = bytesToGuess;
-            }
-            else {
+            } else {
                 this.buffer = bytes;
             }
         } finally {
-            try {input.close();} catch (IOException e){
+            try {
+                input.close();
+            } catch (IOException e) {
                 // IGNORE
             }
         }
@@ -93,7 +93,7 @@ public class CharsetToolkit {
      * an 8-bit <code>Charset</code>.
      *
      * @param defaultCharset the default <code>Charset</code> to be returned
-     * if an 8-bit <code>Charset</code> is encountered.
+     *                       if an 8-bit <code>Charset</code> is encountered.
      */
     public void setDefaultCharset(Charset defaultCharset) {
         if (defaultCharset != null)
@@ -140,11 +140,11 @@ public class CharsetToolkit {
      * If Byte Order Markers are encountered at the beginning of the buffer, we immediately
      * return the charset implied by this BOM. Otherwise, the file would not be a human
      * readable text file.
-     * <p>
+     * <p/>
      * If there is no BOM, this method tries to discern whether the file is UTF-8 or not.
      * If it is not UTF-8, we assume the encoding is the default system encoding
      * (of course, it might be any 8-bit charset, but usually, an 8-bit charset is the default one).
-     * <p>
+     * <p/>
      * It is possible to discern UTF-8 thanks to the pattern of characters with a multi-byte sequence.
      * <pre>
      * UCS-4 range (hex.)        UTF-8 octet sequence (binary)
@@ -224,9 +224,9 @@ public class CharsetToolkit {
                     // there must be four continuation bytes of the form 10xxxxxx,
                     // otherwise the following characteris is not a valid UTF-8 construct
                     if (!(isContinuationChar(b1)
-                        && isContinuationChar(b2)
-                        && isContinuationChar(b3)
-                        && isContinuationChar(b4)))
+                            && isContinuationChar(b2)
+                            && isContinuationChar(b3)
+                            && isContinuationChar(b4)))
                         validU8Char = false;
                     else
                         i += 4;
@@ -236,15 +236,14 @@ public class CharsetToolkit {
                     // there must be five continuation bytes of the form 10xxxxxx,
                     // otherwise the following characteris is not a valid UTF-8 construct
                     if (!(isContinuationChar(b1)
-                        && isContinuationChar(b2)
-                        && isContinuationChar(b3)
-                        && isContinuationChar(b4)
-                        && isContinuationChar(b5)))
+                            && isContinuationChar(b2)
+                            && isContinuationChar(b3)
+                            && isContinuationChar(b4)
+                            && isContinuationChar(b5)))
                         validU8Char = false;
                     else
                         i += 5;
-                }
-                else
+                } else
                     validU8Char = false;
             }
             if (!validU8Char)
@@ -343,10 +342,7 @@ public class CharsetToolkit {
      * @return true if the buffer has a BOM for UTF8.
      */
     public boolean hasUTF8Bom() {
-        if (buffer.length >= 3)
-            return (buffer[0] == -17 && buffer[1] == -69 && buffer[2] == -65);
-        else
-            return false;
+        return buffer.length >= 3 && (buffer[0] == -17 && buffer[1] == -69 && buffer[2] == -65);
     }
 
     /**
@@ -356,10 +352,7 @@ public class CharsetToolkit {
      * @return true if the buffer has a BOM for UTF-16 Low Endian.
      */
     public boolean hasUTF16LEBom() {
-        if (buffer.length >= 2)
-            return (buffer[0] == -1 && buffer[1] == -2);
-        else
-            return false;
+        return buffer.length >= 2 && (buffer[0] == -1 && buffer[1] == -2);
     }
 
     /**
@@ -369,10 +362,7 @@ public class CharsetToolkit {
      * @return true if the buffer has a BOM for UTF-16 Big Endian.
      */
     public boolean hasUTF16BEBom() {
-        if (buffer.length >= 2)
-            return (buffer[0] == -2 && buffer[1] == -1);
-        else
-            return false;
+        return buffer.length >= 2 && (buffer[0] == -2 && buffer[1] == -1);
     }
 
     /**
@@ -388,8 +378,7 @@ public class CharsetToolkit {
         if (hasUTF8Bom() || hasUTF16LEBom() || hasUTF16BEBom()) {
             try {
                 reader.read();
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 // should never happen, as a file with no content
                 // but with a BOM has at least one char
             }

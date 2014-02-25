@@ -15,14 +15,14 @@
  */
 package org.codehaus.groovy.ast.tools;
 
-import static org.codehaus.groovy.ast.ClassHelper.*;
-
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.GenericsType;
 import org.codehaus.groovy.ast.MethodNode;
 
 import java.util.*;
+
+import static org.codehaus.groovy.ast.ClassHelper.*;
 
 /**
  * This class provides helper methods to determine the type from a widening

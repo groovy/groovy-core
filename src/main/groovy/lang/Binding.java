@@ -16,7 +16,6 @@
 package groovy.lang;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -76,10 +75,10 @@ public class Binding extends GroovyObjectSupport {
             variables = new LinkedHashMap();
         variables.put(name, value);
     }
-    
+
     /**
      * Simple check for whether the binding contains a particular variable or not.
-     * 
+     *
      * @param name the name of the variable to check for
      */
     public boolean hasVariable(String name) {
@@ -99,8 +98,7 @@ public class Binding extends GroovyObjectSupport {
         /** @todo we should check if we have the property with the metaClass instead of try/catch  */
         try {
             return super.getProperty(property);
-        }
-        catch (MissingPropertyException e) {
+        } catch (MissingPropertyException e) {
             return getVariable(property);
         }
     }
@@ -112,10 +110,9 @@ public class Binding extends GroovyObjectSupport {
         /** @todo we should check if we have the property with the metaClass instead of try/catch  */
         try {
             super.setProperty(property, newValue);
-        }
-        catch (MissingPropertyException e) {
+        } catch (MissingPropertyException e) {
             setVariable(property, newValue);
         }
     }
-    
+
 }

@@ -17,28 +17,19 @@ package groovy.sql;
 
 import groovy.lang.Closure;
 import groovy.lang.GString;
+import groovy.lang.Tuple;
+import org.codehaus.groovy.runtime.InvokerHelper;
+import org.codehaus.groovy.runtime.SqlGroovyMethods;
 
+import javax.sql.DataSource;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
+import java.sql.*;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.sql.DataSource;
-
-import groovy.lang.Tuple;
-import org.codehaus.groovy.runtime.InvokerHelper;
-import org.codehaus.groovy.runtime.SqlGroovyMethods;
 
 /**
  * A facade over Java's normal JDBC APIs providing greatly simplified
@@ -2104,7 +2095,7 @@ public class Sql {
      * @throws SQLException if a database access error occurs
      */
     public GroovyRowResult firstRow(String sql) throws SQLException {
-        List<GroovyRowResult> rows = null;
+        List<GroovyRowResult> rows;
         try {
             rows = rows(sql, 1, 1, null);
         }
@@ -2176,7 +2167,7 @@ public class Sql {
      * @throws SQLException if a database access error occurs
      */
     public GroovyRowResult firstRow(String sql, List<Object> params) throws SQLException {
-        List<GroovyRowResult> rows = null;
+        List<GroovyRowResult> rows;
         try {
             rows = rows(sql, params, 1, 1, null);
         }
@@ -3599,7 +3590,7 @@ public class Sql {
                         boolean validBinding = true;
                         if (i < strings.length - 1) {
                             String nextText = strings[i + 1];
-                            if ((text.endsWith("\"") || text.endsWith("'")) && (nextText.startsWith("'") || nextText.startsWith("\""))) {
+                            if (((text != null ? text.endsWith("\"") : false) || text.endsWith("'")) && (nextText.startsWith("'") || nextText.startsWith("\""))) {
                                 if (!warned) {
                                     LOG.warning("In Groovy SQL please do not use quotes around dynamic expressions " +
                                             "(which start with $) as this means we cannot use a JDBC PreparedStatement " +

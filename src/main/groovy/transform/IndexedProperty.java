@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
  * Field annotation used with properties to provide an indexed getter and setter for the property.
  * Groovy provides nice GPath syntax support for accessing indexed properties but Java tools
  * or frameworks may expect the JavaBean style setters and getters.
- * <p>
+ * <p/>
  * <em>Example usage:</em> suppose you have a class with the following properties:
  * <pre>
  * {@code @IndexedProperty} FieldType[] someField
@@ -59,7 +59,7 @@ import java.lang.annotation.Target;
  * (i.e. no <code>public</code>, <code>private</code> or <code>package</code>
  * visibility can be specified) or you will receive a compile-time error message.
  * The normal Groovy property getters and setters will also be created.
- * <p>
+ * <p/>
  *
  * @author Paul King
  * @since 1.7.3

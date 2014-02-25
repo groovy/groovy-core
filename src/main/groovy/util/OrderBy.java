@@ -26,7 +26,7 @@ import java.util.List;
 /**
  * A helper class for sorting objects via a closure to return the field
  * or operation on which to sort.
- * 
+ *
  * @author <a href="mailto:james@coredevelopers.net">James Strachan</a>
  * @version $Revision$
  */

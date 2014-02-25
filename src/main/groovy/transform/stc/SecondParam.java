@@ -25,7 +25,7 @@ import org.codehaus.groovy.control.SourceUnit;
 /**
  * <p>A hint used to instruct the type checker to pick the second parameter type. For example:</p>
  * <code>public &lt;T,U&gt; def doWith(T first, U second, @ClosureParams(SecondParam.class) Closure c) { c.call(src); }</code>
- *
+ * <p/>
  * <p>This class has several inner classes that also helps picking generic argument types instead of the parameter type.</p>
  *
  * @author Cédric Champeau
@@ -33,7 +33,7 @@ import org.codehaus.groovy.control.SourceUnit;
  */
 public class SecondParam extends PickAnyArgumentHint {
     public SecondParam() {
-        super(1,-1);
+        super(1, -1);
     }
 
     /**
@@ -45,7 +45,7 @@ public class SecondParam extends PickAnyArgumentHint {
      */
     public static class FirstGenericType extends PickAnyArgumentHint {
         public FirstGenericType() {
-            super(1,0);
+            super(1, 0);
         }
     }
 
@@ -58,7 +58,7 @@ public class SecondParam extends PickAnyArgumentHint {
      */
     public static class SecondGenericType extends PickAnyArgumentHint {
         public SecondGenericType() {
-            super(1,1);
+            super(1, 1);
         }
     }
 
@@ -71,7 +71,7 @@ public class SecondParam extends PickAnyArgumentHint {
      */
     public static class ThirdGenericType extends PickAnyArgumentHint {
         public ThirdGenericType() {
-            super(1,2);
+            super(1, 2);
         }
     }
 

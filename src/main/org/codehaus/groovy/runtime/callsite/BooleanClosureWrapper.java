@@ -15,12 +15,11 @@
  */
 package org.codehaus.groovy.runtime.callsite;
 
-import java.util.Map;
-import java.util.Map.Entry;
-
+import groovy.lang.Closure;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 
-import groovy.lang.Closure;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Helper class for internal use only. This allows to call a {@link Closure} and 

@@ -16,12 +16,12 @@
 package org.codehaus.groovy.runtime.m12n;
 
 import groovy.lang.GroovyRuntimeException;
-import org.codehaus.groovy.runtime.metaclass.MetaClassRegistryImpl;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Properties;
 
 import static org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport.closeQuietly;
 

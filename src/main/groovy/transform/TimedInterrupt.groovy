@@ -16,14 +16,11 @@
 
 package groovy.transform
 
-import java.lang.annotation.Documented
-import java.lang.annotation.ElementType
-import java.lang.annotation.Retention
-import java.lang.annotation.RetentionPolicy
-import java.lang.annotation.Target
+import org.codehaus.groovy.transform.GroovyASTTransformationClass
+
+import java.lang.annotation.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
-import org.codehaus.groovy.transform.GroovyASTTransformationClass
 
 /**
  * Allows safe timed executions of scripts by adding elapsed time checks into loops (for, while)
@@ -45,35 +42,23 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass
  * import java.util.concurrent.TimeUnit
  *
  * {@code @TimedInterrupt}(value = 300L, unit = TimeUnit.SECONDS)
- * class MyClass {
- *      def method() {
- *          println '...'
- *      }
- * }
- * </pre>
+ * class MyClass {*      def method() {*          println '...'
+ *}*}* </pre>
  * This sample script will be transformed at compile time to something that resembles this:
  * <pre>
  * import java.util.concurrent.TimeUnit
  * import java.util.concurrent.TimeoutException
  *
- * public class MyClass {
- *     // XXXXXX below is a placeholder for a hashCode value at runtime
+ * public class MyClass {*     // XXXXXX below is a placeholder for a hashCode value at runtime
  *     final private long timedInterruptXXXXXX$expireTime
  *     final private java.util.Date timedInterruptXXXXXX$startTime
  *
- *     public MyClass() {
- *         timedInterruptXXXXXX$expireTime = System.nanoTime() + TimeUnit.NANOSECONDS.convert(300, TimeUnit.SECONDS)
+ *     public MyClass() {*         timedInterruptXXXXXX$expireTime = System.nanoTime() + TimeUnit.NANOSECONDS.convert(300, TimeUnit.SECONDS)
  *         timedInterruptXXXXXX$startTime = new java.util.Date()
- *     }
- *
- *     public java.lang.Object method() {
- *         if (timedInterruptXXXXXX$expireTime < System.nanoTime()) {
- *             throw new TimeoutException('Execution timed out after 300 units. Start time: ' + timedInterruptXXXXXX$startTime)
- *         }
- *         return this.println('...')
- *     }
- * }
- * </pre>
+ *}*
+ *     public java.lang.Object method() {*         if (timedInterruptXXXXXX$expireTime < System.nanoTime()) {*             throw new TimeoutException('Execution timed out after 300 units. Start time: ' + timedInterruptXXXXXX$startTime)
+ *}*         return this.println('...')
+ *}*}* </pre>
  * See the unit test for this class for additional examples.
  *
  * @author Hamlet D'Arcy
@@ -85,7 +70,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformationClass
  */
 @Documented
 @Retention(RetentionPolicy.SOURCE)
-@Target([ ElementType.PACKAGE, ElementType.METHOD, ElementType.FIELD, ElementType.TYPE, ElementType.LOCAL_VARIABLE])
+@Target([ElementType.PACKAGE, ElementType.METHOD, ElementType.FIELD, ElementType.TYPE, ElementType.LOCAL_VARIABLE])
 @GroovyASTTransformationClass(["org.codehaus.groovy.transform.TimedInterruptibleASTTransformation"])
 @interface TimedInterrupt {
     /**

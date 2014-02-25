@@ -16,15 +16,7 @@
 
 package groovy.util;
 
-import groovy.lang.Binding;
-import groovy.lang.Closure;
-import groovy.lang.DelegatingMetaClass;
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.MetaClass;
-import groovy.lang.MissingMethodException;
-import groovy.lang.MissingPropertyException;
-import groovy.lang.Reference;
-import groovy.lang.Script;
+import groovy.lang.*;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.runtime.metaclass.MissingMethodExceptionNoStack;
@@ -38,7 +30,7 @@ import java.util.logging.Logger;
 
 /**
  * Mix of BuilderSupport and SwingBuilder's factory support.
- *
+ * <p/>
  * Warning: this implementation is not thread safe and should not be used
  * across threads in a multi-threaded environment.  A locking mechanism
  * should be implemented by the subclass if use is expected across
@@ -65,8 +57,8 @@ public abstract class FactoryBuilderSupport extends Binding {
     private static final Comparator<Method> METHOD_COMPARATOR = new Comparator<Method>() {
         public int compare(final Method o1, final Method o2) {
             int cmp = o1.getName().compareTo(o2.getName());
-            if (cmp != 0) return cmp;
-            cmp = o1.getParameterTypes().length - o1.getParameterTypes().length;
+            if (cmp != 0)
+                return cmp;
             return cmp;
         }
     };
@@ -90,7 +82,7 @@ public abstract class FactoryBuilderSupport extends Binding {
      * @param name  the node's name
      * @param type  a Class that may be assignable to the value's class
      * @return true if type is assignable to the value's class, false if value
-     *         is null.
+     * is null.
      */
     public static boolean checkValueIsType(Object value, Object name, Class type) {
         if (value != null) {
@@ -112,7 +104,7 @@ public abstract class FactoryBuilderSupport extends Binding {
      * @param name  the node's name
      * @param type  a Class that may be assignable to the value's class
      * @return Returns true if type is assignable to the value's class, false if value is
-     *         null or a String.
+     * null or a String.
      */
     public static boolean checkValueIsTypeNotString(Object value, Object name, Class type) {
         if (value != null) {
@@ -133,7 +125,7 @@ public abstract class FactoryBuilderSupport extends Binding {
     protected LinkedList<Closure> attributeDelegates = new LinkedList<Closure>(); //
     private List<Closure> disposalClosures = new ArrayList<Closure>(); // because of reverse iteration use ArrayList
     private Map<String, Factory> factories = new HashMap<String, Factory>();
-    private Closure nameMappingClosure;
+    private Closure<String> nameMappingClosure;
     private ThreadLocal<FactoryBuilderSupport> localProxyBuilder = new ThreadLocal<FactoryBuilderSupport>();
     private FactoryBuilderSupport globalProxyBuilder;
     protected LinkedList<Closure> preInstantiateDelegates = new LinkedList<Closure>();
@@ -163,7 +155,7 @@ public abstract class FactoryBuilderSupport extends Binding {
 
     private Set<String> getRegistrationGroup(String name) {
         Set<String> group = registrationGroup.get(name);
-        if (group == null ) {
+        if (group == null) {
             group = new TreeSet<String>();
             registrationGroup.put(name, group);
         }
@@ -224,8 +216,8 @@ public abstract class FactoryBuilderSupport extends Binding {
     public Object getVariable(String name) {
         try {
             return getProxyBuilder().doGetVariable(name);
-        } catch(MissingPropertyException mpe) {
-            if(mpe.getProperty().equals(name) && propertyMissingDelegate != null) {
+        } catch (MissingPropertyException mpe) {
+            if (mpe.getProperty().equals(name) && propertyMissingDelegate != null) {
                 return propertyMissingDelegate.call(new Object[]{name});
             }
             throw mpe;
@@ -270,8 +262,8 @@ public abstract class FactoryBuilderSupport extends Binding {
             } else {
                 try {
                     return getMetaClass().getProperty(this, property);
-                } catch(MissingPropertyException mpe2) {
-                    if(mpe2.getProperty().equals(property) && propertyMissingDelegate != null) {
+                } catch (MissingPropertyException mpe2) {
+                    if (mpe2.getProperty().equals(property) && propertyMissingDelegate != null) {
                         return propertyMissingDelegate.call(new Object[]{property});
                     }
                     throw mpe2;
@@ -492,9 +484,9 @@ public abstract class FactoryBuilderSupport extends Binding {
     }
 
     public Object invokeMethod(String methodName, Object args) {
-        Object name = getProxyBuilder().getName(methodName);
+        String name = getProxyBuilder().getName(methodName);
         Object result;
-        Object previousContext = getProxyBuilder().getContext();
+        Map<String, Object> previousContext = getProxyBuilder().getContext();
         try {
             result = getProxyBuilder().doInvokeMethod(methodName, name, args);
         } catch (RuntimeException e) {
@@ -693,13 +685,13 @@ public abstract class FactoryBuilderSupport extends Binding {
      * @param value      the value arguments for the node
      * @return the object return from the factory
      */
-    protected Object createNode(Object name, Map attributes, Object value) {
+    protected Object createNode(String name, Map attributes, Object value) {
         Object node;
 
         Factory factory = getProxyBuilder().resolveFactory(name, attributes, value);
         if (factory == null) {
             LOG.log(Level.WARNING, "Could not find match for name '" + name + "'");
-            throw new MissingMethodExceptionNoStack((String) name, Object.class, new Object[]{attributes, value});
+            throw new MissingMethodExceptionNoStack(name, Object.class, new Object[]{attributes, value});
             //return null;
         }
         getProxyBuilder().getContext().put(CURRENT_FACTORY, factory);
@@ -770,16 +762,16 @@ public abstract class FactoryBuilderSupport extends Binding {
      * @param args       the arguments passed into the node
      * @return the object from the factory
      */
-    private Object doInvokeMethod(String methodName, Object name, Object args) {
+    private Object doInvokeMethod(String methodName, String name, Object args) {
         Reference explicitResult = new Reference();
         if (checkExplicitMethod(methodName, args, explicitResult)) {
             return explicitResult.get();
         } else {
             try {
                 return dispatchNodeCall(name, args);
-            } catch(MissingMethodException mme) {
-                if(mme.getMethod().equals(methodName) && methodMissingDelegate != null) {
-                    return methodMissingDelegate.call(new Object[]{methodName, args});
+            } catch (MissingMethodException mme) {
+                if (mme.getMethod().equals(methodName) && methodMissingDelegate != null) {
+                    return methodMissingDelegate.call(methodName, args);
                 }
                 throw mme;
             }
@@ -802,14 +794,14 @@ public abstract class FactoryBuilderSupport extends Binding {
     }
 
     /**
-     * Use {@link FactoryBuilderSupport#dispatchNodeCall(Object, Object)} instead.
+     * Use {@link FactoryBuilderSupport#dispatchNodeCall(String, Object)} instead.
      */
     @Deprecated
-    protected Object dispathNodeCall(Object name, Object args) {
+    protected Object dispathNodeCall(String name, Object args) {
         return dispatchNodeCall(name, args);
     }
 
-    protected Object dispatchNodeCall(Object name, Object args) {
+    protected Object dispatchNodeCall(String name, Object args) {
         Object node;
         Closure closure = null;
         List list = InvokerHelper.asList(args);
@@ -871,7 +863,7 @@ public abstract class FactoryBuilderSupport extends Binding {
                 if (processContent) {
                     // push new node on stack
                     String parentName = getProxyBuilder().getCurrentName();
-                    Map parentContext = getProxyBuilder().getContext();
+                    Map<String, Object> parentContext = getProxyBuilder().getContext();
                     getProxyBuilder().newContext();
                     try {
                         getProxyBuilder().getContext().put(OWNER, closure.getOwner());
@@ -909,7 +901,7 @@ public abstract class FactoryBuilderSupport extends Binding {
      * @param methodName the name of the desired method
      * @return the object representing the name
      */
-    public Object getName(String methodName) {
+    public String getName(String methodName) {
         if (getProxyBuilder().nameMappingClosure != null) {
             return getProxyBuilder().nameMappingClosure.call(methodName);
         }
@@ -940,11 +932,11 @@ public abstract class FactoryBuilderSupport extends Binding {
         globalProxyBuilder = proxyBuilder;
     }
 
-    public Closure getNameMappingClosure() {
+    public Closure<String> getNameMappingClosure() {
         return nameMappingClosure;
     }
 
-    public void setNameMappingClosure(Closure nameMappingClosure) {
+    public void setNameMappingClosure(Closure<String> nameMappingClosure) {
         this.nameMappingClosure = nameMappingClosure;
     }
 
@@ -970,7 +962,7 @@ public abstract class FactoryBuilderSupport extends Binding {
                 builder = (FactoryBuilderSupport) attrDelegate.getDelegate();
             }
 
-            attrDelegate.call(new Object[]{builder, node, attributes});
+            attrDelegate.call(builder, node, attributes);
         }
 
         if (getProxyBuilder().getCurrentFactory().onHandleNodeAttributes(getProxyBuilder().getChildBuilder(), node, attributes)) {
@@ -1019,7 +1011,7 @@ public abstract class FactoryBuilderSupport extends Binding {
      */
     protected void postInstantiate(Object name, Map attributes, Object node) {
         for (Closure postInstantiateDelegate : getProxyBuilder().getPostInstantiateDelegates()) {
-            (postInstantiateDelegate).call(new Object[]{this, attributes, node});
+            (postInstantiateDelegate).call(this, attributes, node);
         }
     }
 
@@ -1036,7 +1028,7 @@ public abstract class FactoryBuilderSupport extends Binding {
      */
     protected Object postNodeCompletion(Object parent, Object node) {
         for (Closure postNodeCompletionDelegate : getProxyBuilder().getPostNodeCompletionDelegates()) {
-            (postNodeCompletionDelegate).call(new Object[]{this, parent, node});
+            (postNodeCompletionDelegate).call(this, parent, node);
         }
 
         return node;
@@ -1053,7 +1045,7 @@ public abstract class FactoryBuilderSupport extends Binding {
      */
     protected void preInstantiate(Object name, Map attributes, Object value) {
         for (Closure preInstantiateDelegate : getProxyBuilder().getPreInstantiateDelegates()) {
-            (preInstantiateDelegate).call(new Object[]{this, attributes, value});
+            (preInstantiateDelegate).call(this, attributes, value);
         }
     }
 
@@ -1124,6 +1116,7 @@ public abstract class FactoryBuilderSupport extends Binding {
 
     /**
      * Stores the thread local states in a Map that can be passed across threads
+     *
      * @return the map
      */
     protected Map<String, Object> getContinuationData() {
@@ -1135,8 +1128,9 @@ public abstract class FactoryBuilderSupport extends Binding {
 
     /**
      * Restores the state of the current builder to the same state as an older build.
-     * 
+     * <p/>
      * Caution, this will destroy rather than merge the current build context if there is any,
+     *
      * @param data the data retrieved from a compatible getContinuationData call
      */
     protected void restoreFromContinuationData(Map<String, Object> data) {
@@ -1168,7 +1162,7 @@ public abstract class FactoryBuilderSupport extends Binding {
             getProxyBuilder().setVariable(SCRIPT_CLASS_NAME, script.getClass().getName());
             return script.run();
         } finally {
-            if(oldScriptName != null) {
+            if (oldScriptName != null) {
                 getProxyBuilder().setVariable(SCRIPT_CLASS_NAME, oldScriptName);
             } else {
                 getProxyBuilder().getVariables().remove(SCRIPT_CLASS_NAME);
@@ -1199,14 +1193,13 @@ public abstract class FactoryBuilderSupport extends Binding {
         }
 
         Object result = null;
-        Object previousContext = getProxyBuilder().getContext();
+        Map<String, Object> previousContext = getProxyBuilder().getContext();
         FactoryBuilderSupport previousProxyBuilder = localProxyBuilder.get();
         try {
             localProxyBuilder.set(builder);
             closure.setDelegate(builder);
             result = closure.call();
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
             // remove contexts created after we started
             localProxyBuilder.set(previousProxyBuilder);
             if (getProxyBuilder().getContexts().contains(previousContext)) {
@@ -1217,8 +1210,7 @@ public abstract class FactoryBuilderSupport extends Binding {
                 }
             }
             throw e;
-        }
-        finally {
+        } finally {
             localProxyBuilder.set(previousProxyBuilder);
         }
 
@@ -1237,7 +1229,7 @@ public abstract class FactoryBuilderSupport extends Binding {
      * @param name    the node to build on the 'parent' builder.
      * @param closure the closure to be executed under the temporary builder.
      * @return a node that responds to value of name with the closure's result as its
-     *         value.
+     * value.
      * @throws RuntimeException - any exception the closure might have thrown during
      *                          execution.
      */
@@ -1263,7 +1255,7 @@ public abstract class FactoryBuilderSupport extends Binding {
      * @param name       the node to build on the 'parent' builder.
      * @param closure    the closure to be executed under the temporary builder.
      * @return a node that responds to value of name with the closure's result as its
-     *         value.
+     * value.
      * @throws RuntimeException - any exception the closure might have thrown during
      *                          execution.
      */

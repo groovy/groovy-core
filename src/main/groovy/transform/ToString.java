@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
  * Class annotation used to assist in the creation of {@code toString()} methods in classes.
  * The {@code @ToString} annotation instructs the compiler to execute an
  * AST transformation which adds the necessary toString() method.
- * <p>
+ * <p/>
  * It allows you to write classes in this shortened form:
  * <pre>
  * {@code @ToString}
@@ -77,7 +77,7 @@ import java.lang.annotation.Target;
  * AgedThing(age:5, super:NamedThing(Lassie))
  * </pre>
  * {@code @ToString} can also be used in conjunction with {@code @Canonical} and {@code @Immutable}.
- * <p>
+ * <p/>
  * If you want to omit fields or properties referring to <tt>null</tt>, you can use the <tt>ignoreNulls</tt> flag:
  * <pre>
  * import groovy.transform.ToString
@@ -90,7 +90,7 @@ import java.lang.annotation.Target;
  * <pre>
  * NamedThing()
  * </pre>
- * <p>
+ * <p/>
  * By default the fully-qualified class name is used as part of the generated toString.
  * If you want to exclude the package, you can set the includePackage flag to false, e.g.:
  * <pre>
@@ -158,6 +158,7 @@ public @interface ToString {
     /**
      * Whether to include the fully-qualified class name (i.e. including
      * the package) or just the simple class name in the generated toString.
+     *
      * @since 2.0.6
      */
     boolean includePackage() default true;
@@ -165,6 +166,7 @@ public @interface ToString {
     /**
      * Whether to cache toString() calculations. You should only set this to true if
      * you know the object is immutable (or technically mutable but never changed).
+     *
      * @since 2.1.0
      */
     boolean cache() default false;

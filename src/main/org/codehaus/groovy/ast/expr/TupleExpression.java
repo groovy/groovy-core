@@ -15,9 +15,9 @@
  */
 package org.codehaus.groovy.ast.expr;
 
-import java.util.*;
-
 import org.codehaus.groovy.ast.GroovyCodeVisitor;
+
+import java.util.*;
 
 /**
  * Represents a tuple expression {1, 2, 3} which creates an immutable List

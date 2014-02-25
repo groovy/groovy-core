@@ -75,13 +75,13 @@ public interface Range<T extends Comparable> extends List<T> {
      * @param step the amount by which to step. If negative, steps through the
      *             range backwards.
      * @return the list formed by stepping through the range by the indicated
-     *         interval.
+     * interval.
      */
     List<T> step(int step);
 
     /**
      * @return the verbose {@link String} representation of this {@link Range} as would be typed into a console
-     *         to create the {@link Range} instance
+     * to create the {@link Range} instance
      */
     String inspect();
 }

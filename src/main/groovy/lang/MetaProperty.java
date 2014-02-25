@@ -15,13 +15,13 @@
  */
 package groovy.lang;
 
-import java.lang.reflect.Modifier;
-
 import org.codehaus.groovy.runtime.MetaClassHelper;
+
+import java.lang.reflect.Modifier;
 
 /**
  * Represents a property on a bean which may have a getter and/or a setter
- * 
+ *
  * @author <a href="mailto:james@coredevelopers.net">James Strachan</a>
  * @version $Revision$
  */
@@ -44,8 +44,8 @@ public abstract class MetaProperty {
 
     /**
      * Sets the property on the given object to the new value
-     * 
-     * @param object on which to set the property
+     *
+     * @param object   on which to set the property
      * @param newValue the new value of the property
      * @throws RuntimeException if the property could not be set
      */
@@ -61,7 +61,7 @@ public abstract class MetaProperty {
     public Class getType() {
         return type;
     }
-    
+
     public int getModifiers() {
         return Modifier.PUBLIC;
     }

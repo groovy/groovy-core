@@ -15,13 +15,9 @@
  */
 package groovy.io;
 
-import java.io.File;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.FileNotFoundException;
-import java.io.UnsupportedEncodingException;
-
 import org.codehaus.groovy.runtime.InvokerHelper;
+
+import java.io.*;
 
 /**
  * A PrintStream that outputs objects in Groovy style.
@@ -31,8 +27,7 @@ import org.codehaus.groovy.runtime.InvokerHelper;
  * @author Jim White
  * @since 1.6
  */
-public class GroovyPrintStream extends PrintStream
-{
+public class GroovyPrintStream extends PrintStream {
     /**
      * Creates a new print stream.  This stream will not flush automatically.
      *
@@ -57,8 +52,7 @@ public class GroovyPrintStream extends PrintStream
      * @see java.io.PrintStream#PrintStream(java.io.OutputStream, boolean, String)
      */
     public GroovyPrintStream(OutputStream out, boolean autoFlush, String encoding)
-        throws UnsupportedEncodingException
-    {
+            throws UnsupportedEncodingException {
         super(out, autoFlush, encoding);
     }
 
@@ -74,19 +68,18 @@ public class GroovyPrintStream extends PrintStream
 
     /**
      * Creates a new print stream, without automatic line flushing, with the
-     * specified file name and charset. 
+     * specified file name and charset.
      *
      * @see java.io.PrintStream#PrintStream(String, String)
      */
     public GroovyPrintStream(String fileName, String csn)
-        throws FileNotFoundException, UnsupportedEncodingException
-    {
+            throws FileNotFoundException, UnsupportedEncodingException {
         super(fileName, csn);
     }
 
     /**
      * Creates a new print stream, without automatic line flushing, with the
-     * specified file. 
+     * specified file.
      *
      * @see java.io.PrintStream#PrintStream(File)
      */
@@ -96,29 +89,28 @@ public class GroovyPrintStream extends PrintStream
 
     /**
      * Creates a new print stream, without automatic line flushing, with the
-     * specified file and charset. 
+     * specified file and charset.
      *
      * @see java.io.PrintStream#PrintStream(File, String)
      */
     public GroovyPrintStream(File file, String csn)
-        throws FileNotFoundException, UnsupportedEncodingException
-    {
+            throws FileNotFoundException, UnsupportedEncodingException {
         super(file, csn);
     }
 
     /**
      * Prints an object Groovy style.
      *
-     * @param      obj   The <code>Object</code> to be printed
+     * @param obj The <code>Object</code> to be printed
      */
     public void print(Object obj) {
         print(InvokerHelper.toString(obj));
     }
 
     /**
-     * Prints an object Groovy style followed by a newline.  
+     * Prints an object Groovy style followed by a newline.
      *
-     * @param      obj   The <code>Object</code> to be printed
+     * @param obj The <code>Object</code> to be printed
      */
     public void println(Object obj) {
         println(InvokerHelper.toString(obj));

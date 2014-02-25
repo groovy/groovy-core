@@ -19,6 +19,7 @@ package org.codehaus.groovy.tools;
 import groovy.lang.Binding;
 import groovy.lang.GroovyResourceLoader;
 import groovy.lang.GroovyShell;
+import groovy.lang.GroovySystem;
 import org.apache.commons.cli.*;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
@@ -27,12 +28,16 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.codehaus.groovy.runtime.DefaultGroovyStaticMethods;
 import org.codehaus.groovy.tools.javac.JavaAwareCompilationUnit;
 
-import groovy.lang.GroovySystem;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Command-line compiler (aka. <tt>groovyc</tt>).
@@ -136,12 +141,14 @@ public class FileSystemCompiler {
         //
         // Load the file name list
         String[] filenames = generateFileNamesFromOptions(cli);
+
         boolean fileNameErrors = filenames == null;
         if (!fileNameErrors && (filenames.length == 0)) {
             displayHelp(options);
             return;
         }
 
+        //noinspection ConstantConditions
         fileNameErrors = fileNameErrors && !validateFiles(filenames);
 
         if (!fileNameErrors) {
@@ -363,8 +370,10 @@ public class FileSystemCompiler {
             file.delete();
         } else if (file.isDirectory()) {
             File[] files = file.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                deleteRecursive(files[i]);
+            if (files != null) {
+                for (File file1 : files) {
+                    deleteRecursive(file1);
+                }
             }
             file.delete();
         }

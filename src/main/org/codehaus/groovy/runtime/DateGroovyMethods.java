@@ -21,11 +21,7 @@ import groovy.lang.GroovyRuntimeException;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TimeZone;
+import java.util.*;
 
 /**
  * This class defines new groovy methods which appear on normal JDK

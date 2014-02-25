@@ -15,19 +15,8 @@
  */
 package groovy.ui;
 
-import groovy.lang.Binding;
-import groovy.lang.GroovyRuntimeException;
-import groovy.lang.GroovyShell;
-import groovy.lang.GroovySystem;
-import groovy.lang.MissingMethodException;
-import groovy.lang.Script;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.GroovyInternalPosixParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
+import groovy.lang.*;
+import org.apache.commons.cli.*;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
@@ -39,7 +28,6 @@ import org.codehaus.groovy.runtime.StackTraceUtils;
 import java.io.*;
 import java.math.BigInteger;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -112,8 +100,8 @@ public class GroovyMain {
                 printHelp(out, options);
             } else if (cmd.hasOption('v')) {
                 String version = GroovySystem.getVersion();
-                out.println("Groovy Version: " + version + " JVM: " + System.getProperty("java.version") + 
-                        " Vendor: " + System.getProperty("java.vm.vendor")  + " OS: " + System.getProperty("os.name"));
+                out.println("Groovy Version: " + version + " JVM: " + System.getProperty("java.version") +
+                        " Vendor: " + System.getProperty("java.vm.vendor") + " OS: " + System.getProperty("os.name"));
             } else {
                 // If we fail, then exit with an error so scripting frameworks can catch it
                 // TODO: pass printstream(s) down through process
@@ -134,16 +122,16 @@ public class GroovyMain {
         PrintWriter pw = new PrintWriter(out);
 
         formatter.printHelp(
-            pw,
-            80,
-            "groovy [options] [args]",
-            "options:",
-            options,
-            2,
-            4,
-            null, // footer
-            false);
-       
+                pw,
+                80,
+                "groovy [options] [args]",
+                "options:",
+                options,
+                2,
+                4,
+                null, // footer
+                false);
+
         pw.flush();
     }
 
@@ -172,88 +160,103 @@ public class GroovyMain {
         options.addOption(OptionBuilder.withLongOpt("classpath").hasArg().withArgName("path").withDescription("Aliases for '-classpath'").create("cp"));
 
         options.addOption(
-            OptionBuilder.withLongOpt("define").
-            withDescription("define a system property").
-            hasArg(true).
-            withArgName("name=value").
-            create('D'));
+                OptionBuilder.withLongOpt("define").
+                        withDescription("define a system property").
+                        hasArg(true).
+                        withArgName("name=value").
+                        create('D')
+        );
         options.addOption(
-            OptionBuilder.withLongOpt("disableopt").
-            withDescription("disables one or all optimization elements. " +
-                            "optlist can be a comma separated list with the elements: " +
-                            "all (disables all optimizations), " +
-                            "int (disable any int based optimizations)").
-            hasArg(true).
-            withArgName("optlist").
-            create());
+                OptionBuilder.withLongOpt("disableopt").
+                        withDescription("disables one or all optimization elements. " +
+                                "optlist can be a comma separated list with the elements: " +
+                                "all (disables all optimizations), " +
+                                "int (disable any int based optimizations)").
+                        hasArg(true).
+                        withArgName("optlist").
+                        create()
+        );
         options.addOption(
-            OptionBuilder.hasArg(false)
-            .withDescription("usage information")
-            .withLongOpt("help")
-            .create('h'));
+                OptionBuilder.hasArg(false)
+                        .withDescription("usage information")
+                        .withLongOpt("help")
+                        .create('h')
+        );
         options.addOption(
-            OptionBuilder.hasArg(false)
-            .withDescription("debug mode will print out full stack traces")
-            .withLongOpt("debug")
-            .create('d'));
+                OptionBuilder.hasArg(false)
+                        .withDescription("debug mode will print out full stack traces")
+                        .withLongOpt("debug")
+                        .create('d')
+        );
         options.addOption(
-            OptionBuilder.hasArg(false)
-            .withDescription("display the Groovy and JVM versions")
-            .withLongOpt("version")
-            .create('v'));
+                OptionBuilder.hasArg(false)
+                        .withDescription("display the Groovy and JVM versions")
+                        .withLongOpt("version")
+                        .create('v')
+        );
         options.addOption(
-            OptionBuilder.withArgName("charset")
-            .hasArg()
-            .withDescription("specify the encoding of the files")
-            .withLongOpt("encoding")
-            .create('c'));
+                OptionBuilder.withArgName("charset")
+                        .hasArg()
+                        .withDescription("specify the encoding of the files")
+                        .withLongOpt("encoding")
+                        .create('c')
+        );
         options.addOption(
-            OptionBuilder.withArgName("script")
-            .hasArg()
-            .withDescription("specify a command line script")
-            .create('e'));
+                OptionBuilder.withArgName("script")
+                        .hasArg()
+                        .withDescription("specify a command line script")
+                        .create('e')
+        );
         options.addOption(
-            OptionBuilder.withArgName("extension")
-            .hasOptionalArg()
-            .withDescription("modify files in place; create backup if extension is given (e.g. \'.bak\')")
-            .create('i'));
+                OptionBuilder.withArgName("extension")
+                        .hasOptionalArg()
+                        .withDescription("modify files in place; create backup if extension is given (e.g. \'.bak\')")
+                        .create('i')
+        );
         options.addOption(
-            OptionBuilder.hasArg(false)
-            .withDescription("process files line by line using implicit 'line' variable")
-            .create('n'));
+                OptionBuilder.hasArg(false)
+                        .withDescription("process files line by line using implicit 'line' variable")
+                        .create('n')
+        );
         options.addOption(
-            OptionBuilder.hasArg(false)
-            .withDescription("process files line by line and print result (see also -n)")
-            .create('p'));
+                OptionBuilder.hasArg(false)
+                        .withDescription("process files line by line and print result (see also -n)")
+                        .create('p')
+        );
         options.addOption(
-            OptionBuilder.withArgName("port")
-            .hasOptionalArg()
-            .withDescription("listen on a port and process inbound lines (default: 1960)")
-            .create('l'));
+                OptionBuilder.withArgName("port")
+                        .hasOptionalArg()
+                        .withDescription("listen on a port and process inbound lines (default: 1960)")
+                        .create('l')
+        );
         options.addOption(
-            OptionBuilder.withArgName("splitPattern")
-            .hasOptionalArg()
-            .withDescription("split lines using splitPattern (default '\\s') using implicit 'split' variable")
-            .withLongOpt("autosplit")
-            .create('a'));
+                OptionBuilder.withArgName("splitPattern")
+                        .hasOptionalArg()
+                        .withDescription("split lines using splitPattern (default '\\s') using implicit 'split' variable")
+                        .withLongOpt("autosplit")
+                        .create('a')
+        );
         options.addOption(
-            OptionBuilder.withLongOpt("indy")
-            .withDescription("enables compilation using invokedynamic")
-            .create());
+                OptionBuilder.withLongOpt("indy")
+                        .withDescription("enables compilation using invokedynamic")
+                        .create()
+        );
         options.addOption(
-            OptionBuilder.withLongOpt("configscript")
-            .hasArg().withDescription("A script for tweaking the configuration options")
-            .create());
+                OptionBuilder.withLongOpt("configscript")
+                        .hasArg().withDescription("A script for tweaking the configuration options")
+                        .create()
+        );
         options.addOption(
                 OptionBuilder.withLongOpt("basescript")
-                .hasArg().withArgName("class").withDescription("Base class name for scripts (must derive from Script)")
-                .create('b'));
+                        .hasArg().withArgName("class").withDescription("Base class name for scripts (must derive from Script)")
+                        .create('b')
+        );
         return options;
 
     }
 
     private static void setSystemPropertyFrom(final String nameValue) {
-        if(nameValue==null) throw new IllegalArgumentException("argument should not be null");
+        if (nameValue == null) throw new IllegalArgumentException("argument should not be null");
 
         String name, value;
         int i = nameValue.indexOf("=");
@@ -261,8 +264,7 @@ public class GroovyMain {
         if (i == -1) {
             name = nameValue;
             value = Boolean.TRUE.toString();
-        }
-        else {
+        } else {
             name = nameValue.substring(0, i);
             value = nameValue.substring(i + 1, nameValue.length());
         }
@@ -277,21 +279,21 @@ public class GroovyMain {
      * @param line the parsed command line.
      * @throws ParseException if invalid options are chosen
      */
-     private static boolean process(CommandLine line) throws ParseException, IOException {
+    private static boolean process(CommandLine line) throws ParseException, IOException {
         List args = line.getArgList();
-        
+
         if (line.hasOption('D')) {
             String[] values = line.getOptionValues('D');
 
-            for (int i=0; i<values.length; i++) {
-                setSystemPropertyFrom(values[i]);
+            for (String value : values) {
+                setSystemPropertyFrom(value);
             }
         }
 
         GroovyMain main = new GroovyMain();
-        
+
         // add the ability to parse scripts with a specified encoding
-        main.conf.setSourceEncoding(line.getOptionValue('c',main.conf.getSourceEncoding()));
+        main.conf.setSourceEncoding(line.getOptionValue('c', main.conf.getSourceEncoding()));
 
         main.isScriptFile = !line.hasOption('e');
         main.debug = line.hasOption('d');
@@ -323,40 +325,40 @@ public class GroovyMain {
             String p = line.getOptionValue('l', "1960"); // default port to listen to
             main.port = Integer.parseInt(p);
         }
-        
+
         // we use "," as default, because then split will create
         // an empty array if no option is set
         String disabled = line.getOptionValue("disableopt", ",");
         String[] deopts = disabled.split(",");
         for (String deopt_i : deopts) {
-            main.conf.getOptimizationOptions().put(deopt_i,false);
+            main.conf.getOptimizationOptions().put(deopt_i, false);
         }
-        
+
         if (line.hasOption("indy")) {
             CompilerConfiguration.DEFAULT.getOptimizationOptions().put("indy", true);
             main.conf.getOptimizationOptions().put("indy", true);
         }
 
-         if (line.hasOption("basescript")) {
-             main.conf.setScriptBaseClass(line.getOptionValue("basescript"));
-         }
+        if (line.hasOption("basescript")) {
+            main.conf.setScriptBaseClass(line.getOptionValue("basescript"));
+        }
 
-         if (line.hasOption("configscript")) {
-             String path = line.getOptionValue("configscript");
-             File groovyConfigurator = new File(path);
-             Binding binding = new Binding();
-             binding.setVariable("configuration", main.conf);
+        if (line.hasOption("configscript")) {
+            String path = line.getOptionValue("configscript");
+            File groovyConfigurator = new File(path);
+            Binding binding = new Binding();
+            binding.setVariable("configuration", main.conf);
 
-             CompilerConfiguration configuratorConfig = new CompilerConfiguration();
-             ImportCustomizer customizer = new ImportCustomizer();
-             customizer.addStaticStars("org.codehaus.groovy.control.customizers.builder.CompilerCustomizationBuilder");
-             configuratorConfig.addCompilationCustomizers(customizer);
+            CompilerConfiguration configuratorConfig = new CompilerConfiguration();
+            ImportCustomizer customizer = new ImportCustomizer();
+            customizer.addStaticStars("org.codehaus.groovy.control.customizers.builder.CompilerCustomizationBuilder");
+            configuratorConfig.addCompilationCustomizers(customizer);
 
-             GroovyShell shell = new GroovyShell(binding, configuratorConfig);
-             shell.evaluate(groovyConfigurator);
-         }
+            GroovyShell shell = new GroovyShell(binding, configuratorConfig);
+            shell.evaluate(groovyConfigurator);
+        }
 
-         main.args = args;
+        main.args = args;
 
         return main.run();
     }
@@ -423,7 +425,7 @@ public class GroovyMain {
 
     /**
      * Hunt for the script file, doesn't bother if it is named precisely.
-     *
+     * <p/>
      * Tries in this order:
      * - actual supplied name
      * - name.groovy
@@ -434,7 +436,7 @@ public class GroovyMain {
     public File huntForTheScriptFile(String input) {
         String scriptFileName = input.trim();
         File scriptFile = new File(scriptFileName);
-        String[] standardExtensions = {".groovy",".gvy",".gy",".gsh"};
+        String[] standardExtensions = {".groovy", ".gvy", ".gy", ".gsh"};
         int i = 0;
         while (i < standardExtensions.length && !scriptFile.exists()) {
             scriptFile = new File(scriptFileName + standardExtensions[i]);
@@ -477,9 +479,8 @@ public class GroovyMain {
             }
 
         } else {
-            Iterator i = args.iterator();
-            while (i.hasNext()) {
-                String filename = (String) i.next();
+            for (Object arg : args) {
+                String filename = (String) arg;
                 File file = huntForTheScriptFile(filename);
                 processFile(s, file);
             }
@@ -554,9 +555,9 @@ public class GroovyMain {
 
         while ((line = reader.readLine()) != null) {
             s.setProperty("line", line);
-            s.setProperty(lineCountName, ((BigInteger)s.getProperty(lineCountName)).add(BigInteger.ONE));
+            s.setProperty(lineCountName, ((BigInteger) s.getProperty(lineCountName)).add(BigInteger.ONE));
 
-            if(autoSplit) {
+            if (autoSplit) {
                 s.setProperty(autoSplitName, line.split(splitPattern));
             }
 

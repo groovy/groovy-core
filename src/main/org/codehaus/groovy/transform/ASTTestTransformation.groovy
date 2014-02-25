@@ -1,22 +1,18 @@
 package org.codehaus.groovy.transform
 
-import org.codehaus.groovy.ast.AnnotationNode
-import org.codehaus.groovy.ast.ClassHelper
+import groovy.transform.CompilationUnitAware
+import org.codehaus.groovy.ast.*
 import org.codehaus.groovy.ast.expr.ClassExpression
 import org.codehaus.groovy.ast.expr.ClosureExpression
 import org.codehaus.groovy.ast.expr.PropertyExpression
 import org.codehaus.groovy.ast.expr.VariableExpression
+import org.codehaus.groovy.ast.stmt.Statement
+import org.codehaus.groovy.control.*
 import org.codehaus.groovy.control.customizers.ImportCustomizer
 import org.codehaus.groovy.control.io.ReaderSource
+import org.codehaus.groovy.runtime.MethodClosure
 import org.codehaus.groovy.syntax.SyntaxException
 import org.codehaus.groovy.tools.Utilities
-import org.codehaus.groovy.control.*
-import groovy.transform.CompilationUnitAware
-import org.codehaus.groovy.ast.ClassCodeVisitorSupport
-import org.codehaus.groovy.ast.stmt.Statement
-import org.codehaus.groovy.ast.MethodNode
-import org.codehaus.groovy.ast.ClassNode
-import org.codehaus.groovy.runtime.MethodClosure
 
 @GroovyASTTransformation(phase = CompilePhase.SEMANTIC_ANALYSIS)
 class ASTTestTransformation extends AbstractASTTransformation implements CompilationUnitAware {

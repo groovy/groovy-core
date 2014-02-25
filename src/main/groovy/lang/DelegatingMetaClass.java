@@ -262,8 +262,7 @@ public class DelegatingMetaClass implements MetaClass, MutableMetaClass, GroovyO
     public Object invokeMethod(String name, Object args) {
         try {
             return getMetaClass().invokeMethod(this, name, args);
-        }
-        catch (MissingMethodException e) {
+        } catch (MissingMethodException e) {
             if (delegate instanceof GroovyObject)
                 return ((GroovyObject) delegate).invokeMethod(name, args);
             else
@@ -274,8 +273,7 @@ public class DelegatingMetaClass implements MetaClass, MutableMetaClass, GroovyO
     public Object getProperty(String property) {
         try {
             return getMetaClass().getProperty(this, property);
-        }
-        catch (MissingPropertyException e) {
+        } catch (MissingPropertyException e) {
             if (delegate instanceof GroovyObject)
                 return ((GroovyObject) delegate).getProperty(property);
             else
@@ -286,8 +284,7 @@ public class DelegatingMetaClass implements MetaClass, MutableMetaClass, GroovyO
     public void setProperty(String property, Object newValue) {
         try {
             getMetaClass().setProperty(this, property, newValue);
-        }
-        catch (MissingPropertyException e) {
+        } catch (MissingPropertyException e) {
             if (delegate instanceof GroovyObject)
                 ((GroovyObject) delegate).setProperty(property, newValue);
             else

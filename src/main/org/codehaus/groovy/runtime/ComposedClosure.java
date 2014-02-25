@@ -92,7 +92,7 @@ public final class ComposedClosure<V> extends Closure<V> {
         return first.getParameterTypes();
     }
 
-    public Object doCall(Object... args) {
+    public V doCall(Object... args) {
         return call(args);
     }
 

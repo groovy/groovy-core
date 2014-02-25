@@ -16,7 +16,6 @@
 package groovy.transform.stc;
 
 import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.control.CompilationUnit;
@@ -31,4 +30,4 @@ public class SimpleType extends SingleSignatureClosureHint {
         }
         return result;
     }
- }
+}

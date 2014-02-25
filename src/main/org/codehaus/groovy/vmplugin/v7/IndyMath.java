@@ -15,15 +15,16 @@
  */
 package org.codehaus.groovy.vmplugin.v7;
 
-import java.lang.invoke.*;
-import java.math.BigDecimal;
-import java.util.*;
-
+import groovy.lang.MetaMethod;
 import org.codehaus.groovy.GroovyBugError;
 
-import groovy.lang.MetaMethod;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodType;
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 
-import static org.codehaus.groovy.vmplugin.v7.IndyInterface.*;
+import static org.codehaus.groovy.vmplugin.v7.IndyInterface.LOOKUP;
 import static org.codehaus.groovy.vmplugin.v7.TypeHelper.*;
 
 /**
@@ -54,14 +55,14 @@ public class IndyMath {
         OOV  = MethodType.methodType(Void.TYPE, Object.class, Object.class);
 
     private static void makeMapEntry(String method, MethodType[] keys, MethodType[] values) throws NoSuchMethodException, IllegalAccessException {
-        Map<MethodType,MethodHandle> xMap = new HashMap();
+        Map<MethodType,MethodHandle> xMap = new HashMap<MethodType, MethodHandle>();
         methods.put(method, xMap);
         for (int i=0; i<keys.length; i++) {
             xMap.put(keys[i], LOOKUP.findStatic(IndyMath.class, method, values[i]));
         }
     }
     
-    private static Map<String, Map<MethodType,MethodHandle>> methods = new HashMap();
+    private static Map<String, Map<MethodType,MethodHandle>> methods = new HashMap<String, Map<MethodType, MethodHandle>>();
     static {
         try {
             

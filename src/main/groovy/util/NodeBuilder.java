@@ -19,9 +19,9 @@ import java.util.ArrayList;
 import java.util.Map;
 
 /**
- * A helper class for creating nested trees of Node objects for 
+ * A helper class for creating nested trees of Node objects for
  * handling arbitrary data
- * 
+ *
  * @author <a href="mailto:james@coredevelopers.net">James Strachan</a>
  * @version $Revision$
  */

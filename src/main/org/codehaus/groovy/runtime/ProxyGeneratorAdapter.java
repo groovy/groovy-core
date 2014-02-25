@@ -18,7 +18,6 @@ package org.codehaus.groovy.runtime;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovyRuntimeException;
-
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.classgen.asm.BytecodeHelper;
 import org.objectweb.asm.*;
@@ -631,7 +630,7 @@ public class ProxyGeneratorAdapter extends ClassVisitor implements Opcodes {
 //        TraceMethodVisitor tmv = new TraceMethodVisitor(mv);
 //        mv = tmv;
         mv.visitCode();
-        int stackSize = 0;
+        int stackSize;
         // method body should be:
         //  this.$delegate$closure$methodName.call(new Object[] { method arguments })
         Type[] args = Type.getArgumentTypes(desc);

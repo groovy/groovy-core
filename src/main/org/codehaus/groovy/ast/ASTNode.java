@@ -111,7 +111,7 @@ public class ASTNode {
      */
     public <T> T getNodeMetaData(Object key) {
         if (metaDataMap == null) {
-            return (T) null;
+            return null;
         }
         return (T) metaDataMap.get(key);
     }

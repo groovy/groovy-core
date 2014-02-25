@@ -16,14 +16,14 @@
 
 package org.codehaus.groovy.vmplugin.v5;
 
-import groovy.lang.IntRange;
 import groovy.lang.EmptyRange;
-import org.codehaus.groovy.runtime.InvokerHelper;
+import groovy.lang.IntRange;
 import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.RangeInfo;
 
-import java.util.Arrays;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 /**
  * This class defines new Java 5 specific groovy methods which extend the normal
@@ -43,8 +43,7 @@ public class PluginDefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      */
     public static Object next(Enum self) {
         final Method[] methods = self.getClass().getMethods();
-        for (int i = 0; i < methods.length; i++) {
-            Method method = methods[i];
+        for (Method method : methods) {
             if (method.getName().equals("next") && method.getParameterTypes().length == 0) {
                 return InvokerHelper.invokeMethod(self, "next", NO_ARGS);
             }
@@ -64,8 +63,7 @@ public class PluginDefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      */
     public static Object previous(Enum self) {
         final Method[] methods = self.getClass().getMethods();
-        for (int i = 0; i < methods.length; i++) {
-            Method method = methods[i];
+        for (Method method : methods) {
             if (method.getName().equals("previous") && method.getParameterTypes().length == 0) {
                 return InvokerHelper.invokeMethod(self, "previous", NO_ARGS);
             }

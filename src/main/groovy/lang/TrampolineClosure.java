@@ -52,6 +52,7 @@ final class TrampolineClosure<V> extends Closure<V> {
 
     /**
      * Starts the trampoline loop and calls the wrapped closure as the first step.
+     *
      * @return The final result of the trampoline
      */
     @Override
@@ -61,6 +62,7 @@ final class TrampolineClosure<V> extends Closure<V> {
 
     /**
      * Starts the trampoline loop and calls the wrapped closure as the first step.
+     *
      * @return The final result of the trampoline
      */
     @Override
@@ -70,6 +72,7 @@ final class TrampolineClosure<V> extends Closure<V> {
 
     /**
      * Starts the trampoline loop and calls the wrapped closure as the first step.
+     *
      * @return The final result of the trampoline
      */
     @Override
@@ -80,25 +83,27 @@ final class TrampolineClosure<V> extends Closure<V> {
     private V loop(final Object lastResult) {
         Object result = lastResult;
 
-        for (;;) {
+        for (; ; ) {
             if (result instanceof TrampolineClosure) {
-                result = ((TrampolineClosure)result).original.call();
+                result = ((TrampolineClosure) result).original.call();
             } else return (V) result;
         }
     }
 
     /**
      * Builds a trampolined variant of the current closure.
+     *
      * @param args Parameters to curry to the underlying closure.
      * @return An instance of TrampolineClosure wrapping the original closure after currying.
      */
     @Override
-   public Closure<V> trampoline(final Object... args) {
+    public Closure<V> trampoline(final Object... args) {
         return new TrampolineClosure<V>(original.curry(args));
     }
 
     /**
      * Returns itself, since it is a good enough trampolined variant of the current closure.
+     *
      * @return An instance of TrampolineClosure wrapping the original closure.
      */
     @Override

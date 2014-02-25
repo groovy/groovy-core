@@ -18,17 +18,8 @@ package org.codehaus.groovy.runtime;
 import groovy.io.FileType;
 import groovy.io.GroovyPrintWriter;
 import groovy.lang.*;
-import groovy.transform.stc.ClosureParams;
-import groovy.transform.stc.FirstParam;
-import groovy.transform.stc.FromString;
-import groovy.transform.stc.MapEntryOrKeyValue;
-import groovy.transform.stc.SimpleType;
-import groovy.util.ClosureComparator;
-import groovy.util.GroovyCollections;
-import groovy.util.MapEntry;
-import groovy.util.OrderBy;
-import groovy.util.PermutationGenerator;
-import groovy.util.ProxyGenerator;
+import groovy.transform.stc.*;
+import groovy.util.*;
 import org.codehaus.groovy.classgen.Verifier;
 import org.codehaus.groovy.reflection.ClassInfo;
 import org.codehaus.groovy.reflection.MixinInMetaClass;
@@ -55,12 +46,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.net.MalformedURLException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.*;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.*;
@@ -468,7 +454,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the value returned from the closure
      * @since 1.0
      */
-    public static <T> T use(Object self, List<Class> categoryClassList, Closure<T> closure) {
+    public static <T> T use(Object self, List<Class<?>> categoryClassList, Closure<T> closure) {
         return GroovyCategorySupport.use(categoryClassList, closure);
     }
 
@@ -504,11 +490,11 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
         } catch (ClassCastException e) {
             throw new IllegalArgumentException("Expecting a Closure to be the last argument");
         }
-        List<Class> list = new ArrayList<Class>(array.length - 1);
+        List<Class<?>> list = new ArrayList<Class<?>>(array.length - 1);
         for (int i = 0; i < array.length - 1; ++i) {
-            Class categoryClass;
+            Class<?> categoryClass;
             try {
-                categoryClass = (Class) array[i];
+                categoryClass = (Class<?>) array[i];
             } catch (ClassCastException e) {
                 throw new IllegalArgumentException("Expecting a Category Class for argument " + i);
             }

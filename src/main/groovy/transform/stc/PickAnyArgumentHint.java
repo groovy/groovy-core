@@ -47,13 +47,14 @@ public class PickAnyArgumentHint extends SingleSignatureClosureHint {
      * Creates the an argument picker which extracts the type of the first parameter.
      */
     public PickAnyArgumentHint() {
-        this(0,-1);
+        this(0, -1);
     }
 
     /**
      * Creates a picker which will extract the parameterIndex-th parameter type, or its
      * genericTypeIndex-th generic type genericTypeIndex is &gt;=0.
-     * @param parameterIndex the index of the parameter from which to extract the type
+     *
+     * @param parameterIndex   the index of the parameter from which to extract the type
      * @param genericTypeIndex if &gt;=0, then returns the corresponding generic type instead of the parameter type.
      */
     public PickAnyArgumentHint(final int parameterIndex, final int genericTypeIndex) {
@@ -64,7 +65,7 @@ public class PickAnyArgumentHint extends SingleSignatureClosureHint {
     @Override
     public ClassNode[] getParameterTypes(final MethodNode node, final String[] options, final SourceUnit sourceUnit, final CompilationUnit unit, final ASTNode usage) {
         ClassNode type = node.getParameters()[parameterIndex].getOriginType();
-        if (genericTypeIndex>=0) {
+        if (genericTypeIndex >= 0) {
             type = pickGenericType(type, genericTypeIndex);
         }
         return new ClassNode[]{type};

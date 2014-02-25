@@ -237,12 +237,12 @@ public class XmlTemplateEngine extends TemplateEngine {
 
         private final Binding binding;
         private final Script script;
-        private WeakReference result;
+        private WeakReference<String> result;
 
         public XmlWritable(Script script, Binding binding) {
             this.script = script;
             this.binding = binding;
-            this.result = new WeakReference(null);
+            this.result = new WeakReference<String>(null);
         }
 
         public Writer writeTo(Writer out) {
@@ -256,10 +256,10 @@ public class XmlTemplateEngine extends TemplateEngine {
 
         public String toString() {
             if (result.get() != null) {
-                return result.get().toString();
+                return result.get();
             }
             String string = writeTo(new StringWriter(1024)).toString();
-            result = new WeakReference(string);
+            result = new WeakReference<String>(string);
             return string;
         }
     }

@@ -18,15 +18,19 @@ package groovy.lang;
 
 import org.codehaus.groovy.runtime.InvokerHelper;
 
-import java.util.*;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Constructing Ranges like 0..<0
+ *
  * @author Dierk Koenig
  * @author Edwin Tellman
  */
 public class EmptyRange extends AbstractList implements Range {
-    
+
     /**
      * The value at which the range originates (may be <code>null</code>).
      */
@@ -34,11 +38,11 @@ public class EmptyRange extends AbstractList implements Range {
 
     /**
      * Creates a new {@link EmptyRange}.
-     * 
+     *
      * @param at the value at which the range starts (may be <code>null</code>).
      */
     public EmptyRange(Comparable at) {
-       this.at = at;
+        this.at = at;
     }
 
     /**
@@ -57,7 +61,7 @@ public class EmptyRange extends AbstractList implements Range {
 
     /**
      * Never true for an empty range.
-     * 
+     *
      * @return <code>false</code>
      */
     public boolean isReverse() {
@@ -84,14 +88,14 @@ public class EmptyRange extends AbstractList implements Range {
      * {@inheritDoc}
      */
     public String toString() {
-        return (null == at) 
-            ? "null..<null"
-            : at.toString() + "..<" + at.toString();
+        return (null == at)
+                ? "null..<null"
+                : at.toString() + "..<" + at.toString();
     }
 
     /**
      * Always 0 for an empty range.
-     * 
+     *
      * @return 0
      */
     public int size() {
@@ -100,7 +104,7 @@ public class EmptyRange extends AbstractList implements Range {
 
     /**
      * Always throws <code>IndexOutOfBoundsException</code> for an empty range.
-     * 
+     *
      * @throws IndexOutOfBoundsException always
      */
     public Object get(int index) {
@@ -133,7 +137,7 @@ public class EmptyRange extends AbstractList implements Range {
     public boolean addAll(Collection c) {
         throw new UnsupportedOperationException("cannot add to Empty Ranges");
     }
-    
+
     /**
      * Always throws <code>UnsupportedOperationException</code> for an empty range.
      *
@@ -170,9 +174,9 @@ public class EmptyRange extends AbstractList implements Range {
         throw new UnsupportedOperationException("cannot retainAll in Empty Ranges");
     }
 
-     /**
-      * Always throws <code>UnsupportedOperationException</code> for an empty range.
-      *
+    /**
+     * Always throws <code>UnsupportedOperationException</code> for an empty range.
+     *
      * @throws UnsupportedOperationException
      */
     public Object set(int index, Object element) {

@@ -23,7 +23,7 @@ import java.beans.IntrospectionException;
  * an Interceptor. To this end, it acts as a decorator (decorator pattern) allowing
  * to add or withdraw this feature at runtime.
  * See groovy/lang/InterceptorTest.groovy for details.
- * <p>
+ * <p/>
  * WARNING: This implementation of ProxyMetaClass is NOT thread-safe and hence should only be used for
  * as a per-instance MetaClass running in a single thread. Do not place this MetaClass in the MetaClassRegistry
  * as it will result in unpredictable behaviour

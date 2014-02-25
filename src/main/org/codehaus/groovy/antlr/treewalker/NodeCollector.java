@@ -15,10 +15,10 @@
  */
 package org.codehaus.groovy.antlr.treewalker;
 
+import org.codehaus.groovy.antlr.GroovySourceAST;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.codehaus.groovy.antlr.GroovySourceAST;
 
 /**
  * A simple antlr AST visitor that collects all nodes into a List.

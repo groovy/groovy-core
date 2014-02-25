@@ -34,7 +34,7 @@ public class ManagedDoubleKeyMap<K1,K2,V> extends AbstractConcurrentDoubleKeyMap
         }
 
         protected AbstractConcurrentDoubleKeyMap.Entry<K1,K2,V> createEntry(K1 key1, K2 key2, int hash) {
-            return new EntryWithValue(bundle, key1, key2, hash, this);
+            return new EntryWithValue<K1, K2, V>(bundle, key1, key2, hash, this);
         }
     }
 
@@ -59,8 +59,8 @@ public class ManagedDoubleKeyMap<K1,K2,V> extends AbstractConcurrentDoubleKeyMap
         public Entry(ReferenceBundle bundle, K1 key1, K2 key2, int hash, Segment segment) {
             this.hash = hash;
             this.segment = segment;
-            ref1 = new Ref(bundle, key1, this);
-            ref2 = new Ref(bundle, key2, this);
+            ref1 = new Ref<K1>(bundle, key1, this);
+            ref2 = new Ref<K2>(bundle, key2, this);
         }
 
         public boolean isValid() {
@@ -72,7 +72,7 @@ public class ManagedDoubleKeyMap<K1,K2,V> extends AbstractConcurrentDoubleKeyMap
         }
 
         public V getValue() {
-            return (V)this;
+            return (V) this;
         }
 
         public void setValue(V value) {

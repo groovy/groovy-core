@@ -20,17 +20,12 @@ import groovy.lang.Closure;
 import groovy.lang.GString;
 import groovy.lang.MetaProperty;
 import groovy.lang.MissingPropertyException;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.regex.Pattern;
-import java.lang.reflect.Type;
-import java.lang.reflect.ParameterizedType;
-
 import org.codehaus.groovy.runtime.InvokerHelper;
+
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * A builder for creating object graphs.<br>
@@ -90,7 +85,7 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
      * Returns the current name of the 'bean' node.
      */
     public String getBeanFactoryName() {
-        return beanFactoryName; 
+        return beanFactoryName;
     }
 
     /**
@@ -157,7 +152,7 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
                                      String propertyName) {
                     Closure cls = (Closure) childPropertySetter;
                     cls.setDelegate(self);
-                    cls.call(new Object[]{parent, child, parentName, propertyName});
+                    cls.call(parent, child, parentName, propertyName);
                 }
             };
         } else {
@@ -270,7 +265,7 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
                         throws InstantiationException, IllegalAccessException {
                     Closure cls = (Closure) newInstanceResolver;
                     cls.setDelegate(self);
-                    return cls.call(new Object[]{klass, attributes});
+                    return cls.call(klass, attributes);
                 }
             };
         } else {
@@ -601,7 +596,8 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
             // set child first
             childPropertySetter.setChild(ref.parent, child, ref.parentName,
                     relationNameResolver.resolveChildRelationName(ref.parentName,
-                            ref.parent, ref.childName, child));
+                            ref.parent, ref.childName, child)
+            );
 
             // set parent afterwards
             String propertyName = relationNameResolver.resolveParentRelationName(ref.parentName,
@@ -631,7 +627,7 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
         }
 
         protected Class resolveClass(FactoryBuilderSupport builder, String classname, Object name, Object value,
-                                  Map properties) throws InstantiationException, IllegalAccessException {
+                                     Map properties) throws InstantiationException, IllegalAccessException {
             ObjectGraphBuilder ogbuilder = (ObjectGraphBuilder) builder;
             Class klass = ogbuilder.resolvedClasses.get(classname);
             if (klass == null) {
@@ -659,7 +655,7 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
         }
 
         protected Object resolveInstance(FactoryBuilderSupport builder, Object name, Object value, Class klass,
-                                  Map properties) throws InstantiationException, IllegalAccessException {
+                                         Map properties) throws InstantiationException, IllegalAccessException {
             ObjectGraphBuilder ogbuilder = (ObjectGraphBuilder) builder;
             if (value != null && klass.isAssignableFrom(value.getClass())) {
                 return value;
@@ -708,7 +704,8 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
 
                 ogbuilder.childPropertySetter.setChild(parent, child, parentName,
                         ogbuilder.relationNameResolver.resolveChildRelationName(parentName,
-                                parent, childName, child));
+                                parent, childName, child)
+                );
             }
         }
 
@@ -727,19 +724,19 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
     private static class ObjectBeanFactory extends ObjectFactory {
         public Object newInstance(FactoryBuilderSupport builder, Object name, Object value,
                                   Map properties) throws InstantiationException, IllegalAccessException {
-            if(value == null) return super.newInstance(builder, name, value, properties);
+            if (value == null) return super.newInstance(builder, name, value, properties);
 
             Object bean = null;
             Class klass = null;
             Map context = builder.getContext();
-            if(value instanceof String || value instanceof GString) {
+            if (value instanceof String || value instanceof GString) {
                 /*
                 String classname = value.toString();
                 klass = resolveClass(builder, classname, name, value, properties);
                 bean = resolveInstance(builder, name, value, klass, properties);
                 */
-                throw new IllegalArgumentException("ObjectGraphBuilder."+((ObjectGraphBuilder)builder).getBeanFactoryName()+"() does not accept String nor GString as value.");
-            } else if(value instanceof Class) {
+                throw new IllegalArgumentException("ObjectGraphBuilder." + ((ObjectGraphBuilder) builder).getBeanFactoryName() + "() does not accept String nor GString as value.");
+            } else if (value instanceof Class) {
                 klass = (Class) value;
                 bean = resolveInstance(builder, name, value, klass, properties);
             } else {
@@ -748,7 +745,7 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
             }
 
             String nodename = klass.getSimpleName();
-            if(nodename.length() > 1) {
+            if (nodename.length() > 1) {
                 nodename = nodename.substring(0, 1).toLowerCase() + nodename.substring(1);
             } else {
                 nodename = nodename.toLowerCase();
@@ -797,7 +794,7 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
                         "You can not modify the properties of a referenced object.");
             }
 
-            Map context = ogbuilder.getContext();
+            Map<String, Object> context = ogbuilder.getContext();
             context.put(ObjectGraphBuilder.NODE_NAME, name);
             context.put(ObjectGraphBuilder.LAZY_REF, lazy);
 
@@ -824,12 +821,12 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
 
         public void setChild(FactoryBuilderSupport builder, Object parent, Object child) {
             Boolean lazy = (Boolean) builder.getContext().get(ObjectGraphBuilder.LAZY_REF);
-            if (!lazy.booleanValue()) super.setChild(builder, parent, child);
+            if (!lazy) super.setChild(builder, parent, child);
         }
 
         public void setParent(FactoryBuilderSupport builder, Object parent, Object child) {
             Boolean lazy = (Boolean) builder.getContext().get(ObjectGraphBuilder.LAZY_REF);
-            if (!lazy.booleanValue()) super.setParent(builder, parent, child);
+            if (!lazy) super.setParent(builder, parent, child);
         }
     }
 
@@ -847,10 +844,7 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
         }
 
         public String toString() {
-            return new StringBuilder().append("[parentName=").append(parentName)
-                    .append(", childName=").append(childName)
-                    .append(", refId=").append(refId)
-                    .append("]").toString();
+            return "[parentName=" + parentName + ", childName=" + childName + ", refId=" + refId + "]";
         }
     }
 }

@@ -15,10 +15,10 @@
  */
 package org.codehaus.groovy.control.io;
 
+import org.codehaus.groovy.control.CompilerConfiguration;
+
 import java.io.*;
 import java.nio.charset.Charset;
-
-import org.codehaus.groovy.control.CompilerConfiguration;
 
 /**
  *  A ReaderSource for source files.

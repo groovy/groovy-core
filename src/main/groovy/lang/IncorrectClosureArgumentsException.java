@@ -20,7 +20,7 @@ import org.codehaus.groovy.runtime.InvokerHelper;
 /**
  * An exception occurred when invoking a Closure with the wrong number and/or
  * types of arguments
- * 
+ *
  * @author <a href="mailto:james@coredevelopers.net">James Strachan</a>
  * @version $Revision$
  */
@@ -32,12 +32,13 @@ public class IncorrectClosureArgumentsException extends GroovyRuntimeException {
 
     public IncorrectClosureArgumentsException(Closure closure, Object arguments, Class[] expected) {
         super(
-            "Incorrect arguments to closure: "
-                + closure
-                + ". Expected: "
-                + InvokerHelper.toString(expected)
-                + ", actual: "
-                + InvokerHelper.toString(arguments));
+                "Incorrect arguments to closure: "
+                        + closure
+                        + ". Expected: "
+                        + InvokerHelper.toString(expected)
+                        + ", actual: "
+                        + InvokerHelper.toString(arguments)
+        );
         this.closure = closure;
         this.arguments = arguments;
         this.expected = expected;

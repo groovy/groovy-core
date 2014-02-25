@@ -25,18 +25,18 @@ import java.lang.annotation.Target;
 
 /**
  * This annotation is used in conjunction with {@link WithReadLock} to support read and write synchronization on a method.
- * <p>
+ * <p/>
  * To use this annotation, declare {@code @WithWriteLock} on your method. The method may be either an instance method or
  * a static method. The resulting method will allow only one thread access to the method at a time, and will wait to access
  * the method until any other read locks have been released.
- * <p>
+ * <p/>
  * This annotation is a declarative wrapper around the JDK's <code>java.util.concurrent.locks.ReentrantReadWriteLock</code>.
  * Objects containing this annotation will have a ReentrantReadWriteLock field named <code>$reentrantLock</code> added to the class,
  * and method access is protected by the lock. If the method is static then the field is static and named <code>$REENTRANTLOCK</code>.
- * <p>
+ * <p/>
  * The annotation takes an optional parameter for the name of the field. This field must exist on the class and must be
  * of type ReentrantReadWriteLock.
- * <p>
+ * <p/>
  * To understand how this annotation works, it is convenient to think in terms of the source code it replaces. The following
  * is a typical usage of this annotation from Groovy:
  * <pre>
@@ -97,9 +97,9 @@ import java.lang.annotation.Target;
 public @interface WithWriteLock {
     /**
      * @return if a user specified lock object with the given name should be used
-     *      the lock object must exist. If the annotated method is static then the 
-     *      lock object must be static. If the annotated method is not static then 
-     *      the lock object must not be static. 
+     * the lock object must exist. If the annotated method is static then the
+     * lock object must be static. If the annotated method is not static then
+     * the lock object must not be static.
      */
-    String value () default "";
+    String value() default "";
 }

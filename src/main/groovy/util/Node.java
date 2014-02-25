@@ -166,7 +166,7 @@ public class Node implements Serializable, Cloneable {
     /**
      * Creates a new node as a child of the current node.
      *
-     * @param name the name of the new node
+     * @param name       the name of the new node
      * @param attributes the attributes of the new node
      * @return the newly created <code>Node</code>
      */
@@ -187,7 +187,7 @@ public class Node implements Serializable, Cloneable {
     /**
      * Creates a new node as a child of the current node.
      *
-     * @param name the name of the new node
+     * @param name  the name of the new node
      * @param value the value of the new node
      * @return the newly created <code>Node</code>
      */
@@ -198,9 +198,9 @@ public class Node implements Serializable, Cloneable {
     /**
      * Creates a new node as a child of the current node.
      *
-     * @param name the name of the new node
+     * @param name       the name of the new node
      * @param attributes the attributes of the new node
-     * @param value the value of the new node
+     * @param value      the value of the new node
      * @return the newly created <code>Node</code>
      */
     public Node appendNode(Object name, Map attributes, Object value) {
@@ -540,7 +540,8 @@ public class Node implements Serializable, Cloneable {
                 Node childNode = (Node) child;
                 List children = childNode.depthFirstRest();
                 answer.add(childNode);
-                if (children.size() > 1 || (children.size() == 1 && !(children.get(0) instanceof String))) answer.addAll(children);
+                if (children.size() > 1 || (children.size() == 1 && !(children.get(0) instanceof String)))
+                    answer.addAll(children);
             } else if (child instanceof String) {
                 answer.add(child);
             }
@@ -572,7 +573,8 @@ public class Node implements Serializable, Cloneable {
                 if (child instanceof Node) {
                     Node childNode = (Node) child;
                     List children = childNode.getDirectChildren();
-                    if (children.size() > 1 || (children.size() == 1 && !(children.get(0) instanceof String))) nextLevelChildren.addAll(children);
+                    if (children.size() > 1 || (children.size() == 1 && !(children.get(0) instanceof String)))
+                        nextLevelChildren.addAll(children);
                 }
             }
         }

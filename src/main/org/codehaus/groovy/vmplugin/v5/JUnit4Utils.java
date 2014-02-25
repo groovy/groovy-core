@@ -20,9 +20,9 @@ import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyRuntimeException;
 import org.codehaus.groovy.runtime.InvokerHelper;
 
-import java.util.List;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.List;
 
 /**
  * Java 5 code for working with JUnit 4 tests.
@@ -45,15 +45,14 @@ public class JUnit4Utils {
         boolean isTest = false;
         try {
             try {
-                Class runWithAnnotationClass = loader.loadClass("org.junit.runner.RunWith");
+                Class<?> runWithAnnotationClass = loader.loadClass("org.junit.runner.RunWith");
                 Annotation annotation = scriptClass.getAnnotation(runWithAnnotationClass);
                 if (annotation != null) {
                     isTest = true;
                 } else {
                     Class testAnnotationClass = loader.loadClass("org.junit.Test");
                     Method[] methods = scriptClass.getMethods();
-                    for (int i = 0; i < methods.length; i++) {
-                        Method method = methods[i];
+                    for (Method method : methods) {
                         annotation = method.getAnnotation(testAnnotationClass);
                         if (annotation != null) {
                             isTest = true;
@@ -87,8 +86,7 @@ public class JUnit4Utils {
             System.out.print(", Failures: " + InvokerHelper.getProperty(result, "failureCount"));
             System.out.println(", Time: " + InvokerHelper.getProperty(result, "runTime"));
             List failures = (List) InvokerHelper.getProperty(result, "failures");
-            for (int i = 0; i < failures.size(); i++) {
-                Object f = failures.get(i);
+            for (Object f : failures) {
                 System.out.println("Test Failure: " + InvokerHelper.getProperty(f, "description"));
                 System.out.println(InvokerHelper.getProperty(f, "trace"));
             }

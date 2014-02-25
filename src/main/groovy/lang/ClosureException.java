@@ -17,16 +17,16 @@ package groovy.lang;
 
 /**
  * An exception thrown by a closure invocation
- * 
+ *
  * @author <a href="mailto:james@coredevelopers.net">James Strachan</a>
  * @version $Revision$
  */
 public class ClosureException extends RuntimeException {
 
     private final Closure closure;
-    
+
     public ClosureException(Closure closure, Throwable cause) {
-        super("Exception thrown by call to closure: " + closure + " reaason: " + cause, cause);
+        super("Exception thrown by call to closure: " + closure + " reason: " + cause, cause);
         this.closure = closure;
     }
 

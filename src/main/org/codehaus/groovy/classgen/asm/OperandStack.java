@@ -15,10 +15,6 @@
  */
 package org.codehaus.groovy.classgen.asm;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayList;
-
 import org.codehaus.groovy.GroovyBugError;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.CastExpression;
@@ -30,6 +26,10 @@ import org.codehaus.groovy.classgen.ClassGeneratorException;
 import org.codehaus.groovy.runtime.ScriptBytecodeAdapter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.ArrayList;
 
 import static org.objectweb.asm.Opcodes.*;
 

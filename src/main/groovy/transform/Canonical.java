@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
 
 /**
  * Class annotation used to assist in the creation of mutable classes.
- * <p>
+ * <p/>
  * It allows you to write classes in this shortened form:
  * <pre>
  * {@code @Canonical} class Customer {
@@ -32,7 +32,7 @@ import java.lang.annotation.Target;
  *     int age
  *     Date since
  *     Collection favItems = ['Food']
- *     def object 
+ *     def object
  * }
  * def d = new Date()
  * def anyObject = new Object()
@@ -40,7 +40,7 @@ import java.lang.annotation.Target;
  * def c2 = new Customer('Tom', 'Jones', 21, d, ['Books', 'Games'], anyObject)
  * assert c1 == c2
  * </pre>
- *
+ * <p/>
  * You don't need to provide all arguments in constructor calls. If using named parameters, any property names not
  * referenced will be given their default value (as per Java's default unless an explicit initialization constant is
  * provided when defining the property). If using a tuple constructor, parameters are supplied in the order in which
@@ -54,7 +54,7 @@ import java.lang.annotation.Target;
  * assert 0 == c4.age
  * assert c3.favItems == ['Food'] && c4.favItems == ['Food']
  * </pre>
- *
+ * <p/>
  * The {@code @Canonical} annotation instructs the compiler to execute an
  * AST transformation which adds positional constructors,
  * equals, hashCode and a pretty print toString to your class. There are additional
@@ -62,7 +62,7 @@ import java.lang.annotation.Target;
  * {@code @ToString} and {@code @TupleConstructor}. In addition, you can add one of
  * the other annotations if you need to further customize the behavior of the
  * AST transformation.
- * <p>
+ * <p/>
  * A class created in this way has the following characteristics:
  * <ul>
  * <li>A no-arg constructor is provided which allows you to set properties by name using Groovy's normal bean conventions.
@@ -81,10 +81,10 @@ import java.lang.annotation.Target;
  * </pre>
  * If an "underscore" version of the respective method already exists, then no default implementation is provided.
  * </ul>
- * <p>
+ * <p/>
  * If you want similar functionality to what this annotation provides but also require immutability, see the
  * {@code @}{@link Immutable} annotation.
- * <p>
+ * <p/>
  * Limitations:
  * <ul>
  * <li>If you explicitly add your own constructors, then the transformation will not add any other constructor to the class</li>
@@ -109,7 +109,7 @@ public @interface Canonical {
      * List of field and/or property names to exclude.
      * Must not be used if 'includes' is used. For convenience, a String with comma separated names
      * can be used in addition to an array (using Groovy's literal list notation) of String values.
-     *
+     * <p/>
      * If the {@code @Canonical} behavior is customised by using it in conjunction with one of the more specific
      * related annotations (i.e. {@code @ToString}, {@code @EqualsAndHashCode} or {@code @TupleConstructor}), then
      * the value of this attribute can be overriden within the more specific annotation.
@@ -120,7 +120,7 @@ public @interface Canonical {
      * List of field and/or property names to include.
      * Must not be used if 'excludes' is used. For convenience, a String with comma separated names
      * can be used in addition to an array (using Groovy's literal list notation) of String values.
-     *
+     * <p/>
      * If the {@code @Canonical} behavior is customised by using it in conjunction with one of the more specific
      * related annotations (i.e. {@code @ToString}, {@code @EqualsAndHashCode} or {@code @TupleConstructor}), then
      * the value of this attribute can be overriden within the more specific annotation.

@@ -19,29 +19,29 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
 /**
- * An exception occurred if a dynamic property dispatch fails with a 
+ * An exception occurred if a dynamic property dispatch fails with a
  * field not accessible.
- * 
+ *
  * @author <a href="mailto:blackdrag@uni.de">Jochen Theodorou</a>
  * @version $Revision$
  */
 public class IllegalPropertyAccessException extends MissingPropertyException {
-    
+
     private static String makeMessage(String propertyName, Class clazz, int modifiers, boolean isField) {
         String access = "private";
         if (Modifier.isProtected(modifiers)) access = "protected";
         if (Modifier.isPublic(modifiers)) access = "public";
         String propertyType = "property";
         if (isField) propertyType = "field";
-        return  "Can not access the "+access+" "+propertyType+" "+propertyName+" in class "+clazz.getName();
+        return "Can not access the " + access + " " + propertyType + " " + propertyName + " in class " + clazz.getName();
     }
-    
+
     public IllegalPropertyAccessException(String propertyName, Class clazz, int modifiers) {
-        super(makeMessage(propertyName,clazz,modifiers,false),propertyName,clazz);
+        super(makeMessage(propertyName, clazz, modifiers, false), propertyName, clazz);
     }
-    
+
     public IllegalPropertyAccessException(Field field, Class clazz) {
-        super(makeMessage(field.getName(),clazz,field.getModifiers(),true),field.getName(),clazz);
+        super(makeMessage(field.getName(), clazz, field.getModifiers(), true), field.getName(), clazz);
     }
-    
+
 }

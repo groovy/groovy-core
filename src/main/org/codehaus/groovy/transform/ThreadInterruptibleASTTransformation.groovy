@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.transform;
-
+package org.codehaus.groovy.transform
 
 import groovy.transform.ThreadInterrupt
 import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.MethodNode
-import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.ast.expr.*
+import org.codehaus.groovy.control.CompilePhase
 
 /**
  * Allows "interrupt-safe" executions of scripts by adding Thread.currentThread().isInterrupted()
