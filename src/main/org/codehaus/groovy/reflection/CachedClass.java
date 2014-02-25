@@ -16,11 +16,10 @@
 package org.codehaus.groovy.reflection;
 
 import groovy.lang.*;
-
 import org.codehaus.groovy.classgen.asm.BytecodeHelper;
 import org.codehaus.groovy.runtime.callsite.CallSiteClassLoader;
-import org.codehaus.groovy.util.LazyReference;
 import org.codehaus.groovy.util.FastArray;
+import org.codehaus.groovy.util.LazyReference;
 import org.codehaus.groovy.util.ReferenceBundle;
 
 import java.lang.reflect.AccessibleObject;

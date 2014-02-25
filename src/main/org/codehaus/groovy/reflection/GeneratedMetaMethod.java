@@ -18,9 +18,9 @@ package org.codehaus.groovy.reflection;
 import groovy.lang.GroovyRuntimeException;
 import groovy.lang.MetaMethod;
 
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Constructor;
 import java.io.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.util.*;
 
 public abstract class GeneratedMetaMethod extends MetaMethod {

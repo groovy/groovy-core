@@ -15,13 +15,7 @@
  */
 package org.codehaus.groovy.reflection;
 
-import groovy.lang.DelegatingMetaClass;
-import groovy.lang.ExpandoMetaClass;
-import groovy.lang.GroovyRuntimeException;
-import groovy.lang.GroovySystem;
-import groovy.lang.MetaClass;
-import groovy.lang.MetaMethod;
-import groovy.lang.MetaProperty;
+import groovy.lang.*;
 import org.codehaus.groovy.runtime.HandleMetaClass;
 import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.runtime.metaclass.MixedInMetaClass;

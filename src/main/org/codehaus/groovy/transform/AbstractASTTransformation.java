@@ -16,13 +16,7 @@
 package org.codehaus.groovy.transform;
 
 import org.codehaus.groovy.GroovyBugError;
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.AnnotatedNode;
-import org.codehaus.groovy.ast.AnnotationNode;
-import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.ClassNode;
-//import org.codehaus.groovy.ast.MethodNode;
-//import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.ListExpression;
@@ -35,6 +29,9 @@ import org.objectweb.asm.Opcodes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+//import org.codehaus.groovy.ast.MethodNode;
+//import org.codehaus.groovy.ast.expr.ClassExpression;
 
 public abstract class AbstractASTTransformation implements Opcodes, ASTTransformation {
     private SourceUnit sourceUnit;

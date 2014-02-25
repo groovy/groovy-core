@@ -16,10 +16,10 @@
 package org.codehaus.groovy.transform.stc;
 
 import groovy.lang.*;
-import groovy.transform.stc.ClosureParams;
-import groovy.transform.stc.ClosureSignatureHint;
 import groovy.transform.TypeChecked;
 import groovy.transform.TypeCheckingMode;
+import groovy.transform.stc.ClosureParams;
+import groovy.transform.stc.ClosureSignatureHint;
 import groovy.transform.stc.FromAbstractTypeMethods;
 import org.codehaus.groovy.GroovyBugError;
 import org.codehaus.groovy.ast.*;

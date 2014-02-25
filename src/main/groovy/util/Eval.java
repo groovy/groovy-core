@@ -16,10 +16,9 @@
 
 package groovy.util;
 
-import org.codehaus.groovy.control.CompilationFailedException;
-
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
+import org.codehaus.groovy.control.CompilationFailedException;
 
 /**
  * Allow easy integration from Groovy into Java through convenience methods.

@@ -15,17 +15,13 @@
  */
 package groovy.util;
 
-import groovy.lang.Closure;
-import groovy.lang.GroovyObjectSupport;
-import groovy.lang.GroovyRuntimeException;
-import groovy.lang.MetaExpandoProperty;
-import groovy.lang.MissingPropertyException;
+import groovy.lang.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.List;
-import java.util.ArrayList;
 
 
 /**

@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.control;
 
+import org.codehaus.groovy.GroovyBugError;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
@@ -23,7 +24,6 @@ import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.ClassNodeResolver.LookupResult;
 import org.codehaus.groovy.syntax.Types;
-import org.codehaus.groovy.GroovyBugError;
 import org.objectweb.asm.Opcodes;
 
 import java.lang.annotation.Retention;

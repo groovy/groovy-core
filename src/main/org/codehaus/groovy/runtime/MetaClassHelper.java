@@ -17,12 +17,11 @@
 package org.codehaus.groovy.runtime;
 
 import groovy.lang.*;
-
 import org.codehaus.groovy.reflection.CachedClass;
-import org.codehaus.groovy.util.FastArray;
 import org.codehaus.groovy.reflection.ParameterTypes;
 import org.codehaus.groovy.reflection.ReflectionCache;
 import org.codehaus.groovy.runtime.wrappers.Wrapper;
+import org.codehaus.groovy.util.FastArray;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;

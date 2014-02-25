@@ -16,17 +16,17 @@
 package org.codehaus.groovy.runtime.metaclass;
 
 import groovy.lang.*;
-
 import org.codehaus.groovy.classgen.Verifier;
 import org.codehaus.groovy.reflection.*;
-import org.codehaus.groovy.runtime.*;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.DefaultGroovyStaticMethods;
 import org.codehaus.groovy.runtime.m12n.ExtensionModule;
 import org.codehaus.groovy.runtime.m12n.ExtensionModuleRegistry;
 import org.codehaus.groovy.runtime.m12n.ExtensionModuleScanner;
-import org.codehaus.groovy.vmplugin.VMPluginFactory;
 import org.codehaus.groovy.util.FastArray;
 import org.codehaus.groovy.util.ManagedLinkedList;
 import org.codehaus.groovy.util.ReferenceBundle;
+import org.codehaus.groovy.vmplugin.VMPluginFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

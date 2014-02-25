@@ -15,11 +15,11 @@
  */
 package org.codehaus.groovy.runtime;
 
-import java.util.Collections;
-import java.util.Iterator;
-
 import groovy.lang.Closure;
 import groovy.lang.GroovyObjectSupport;
+
+import java.util.Collections;
+import java.util.Iterator;
 
 public class NullObject extends GroovyObjectSupport {
     private static final NullObject INSTANCE = new NullObject();

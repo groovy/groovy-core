@@ -15,8 +15,10 @@
  */
 package org.codehaus.groovy.runtime.callsite;
 
-import groovy.lang.*;
-
+import groovy.lang.GroovyObject;
+import groovy.lang.MetaClass;
+import groovy.lang.MetaClassImpl;
+import groovy.lang.MetaProperty;
 import org.codehaus.groovy.reflection.CachedClass;
 import org.codehaus.groovy.reflection.CachedField;
 import org.codehaus.groovy.reflection.ParameterTypes;

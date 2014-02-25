@@ -16,7 +16,8 @@
 package groovy.util;
 
 import groovy.lang.*;
-import org.codehaus.groovy.runtime.*;
+import org.codehaus.groovy.runtime.InvokerHelper;
+import org.codehaus.groovy.runtime.ProxyGeneratorAdapter;
 import org.codehaus.groovy.runtime.memoize.LRUCache;
 import org.codehaus.groovy.runtime.typehandling.GroovyCastException;
 

@@ -17,21 +17,20 @@
 package org.codehaus.groovy.ast;
 
 import groovy.lang.*;
-
 import org.codehaus.groovy.runtime.GeneratedClosure;
 import org.codehaus.groovy.util.ManagedConcurrentMap;
 import org.codehaus.groovy.util.ReferenceBundle;
 import org.codehaus.groovy.vmplugin.VMPluginFactory;
 import org.objectweb.asm.Opcodes;
 
+import java.lang.ref.SoftReference;
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-import java.lang.ref.SoftReference;
-import java.lang.reflect.Modifier;
 
 /**
  * This class is a Helper for ClassNode and classes handling ClassNodes.

@@ -1,11 +1,6 @@
 package groovy.util;
 
-import groovy.lang.Binding;
-import groovy.lang.Closure;
-import groovy.lang.MetaClass;
-import groovy.lang.MissingMethodException;
-import groovy.lang.MissingPropertyException;
-import groovy.lang.Script;
+import groovy.lang.*;
 import org.codehaus.groovy.runtime.InvokerHelper;
 
 /**

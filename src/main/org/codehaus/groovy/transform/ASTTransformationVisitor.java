@@ -16,14 +16,13 @@
 
 package org.codehaus.groovy.transform;
 
+import groovy.lang.GroovyClassLoader;
 import groovy.transform.CompilationUnitAware;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.*;
 import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.codehaus.groovy.control.messages.WarningMessage;
-
-import groovy.lang.GroovyClassLoader;
 
 import java.io.BufferedReader;
 import java.io.IOException;

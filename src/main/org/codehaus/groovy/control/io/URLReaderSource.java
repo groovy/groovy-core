@@ -15,12 +15,12 @@
  */
 package org.codehaus.groovy.control.io;
 
+import org.codehaus.groovy.control.CompilerConfiguration;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
-
-import org.codehaus.groovy.control.CompilerConfiguration;
 
 /**
  *  A ReaderSource for source files hosted at a URL.

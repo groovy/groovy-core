@@ -15,13 +15,9 @@
  */
 package groovy.io;
 
-import java.io.File;
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.FileNotFoundException;
-import java.io.UnsupportedEncodingException;
-
 import org.codehaus.groovy.runtime.InvokerHelper;
+
+import java.io.*;
 
 /**
  * A PrintStream that outputs objects in Groovy style.

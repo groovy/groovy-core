@@ -16,10 +16,6 @@
 package org.codehaus.groovy.transform;
 
 import groovy.transform.AnnotationCollector;
-
-import java.lang.reflect.Method;
-import java.util.*;
-
 import org.codehaus.groovy.GroovyBugError;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
@@ -29,6 +25,9 @@ import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
+
+import java.lang.reflect.Method;
+import java.util.*;
 
 import static org.objectweb.asm.Opcodes.*;
 
