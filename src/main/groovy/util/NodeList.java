@@ -182,7 +182,7 @@ public class NodeList extends ArrayList {
         if (size() <= 0 || size() > 1) {
             throw new GroovyRuntimeException("replaceNode() can only be used to replace a single node.");
         }
-        return ((Node)get(0)).replaceNode(c);
+        return ((Node) get(0)).replaceNode(c);
     }
 
     public void plus(Closure c) {

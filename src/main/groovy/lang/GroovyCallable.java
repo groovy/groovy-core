@@ -26,4 +26,5 @@ import java.util.concurrent.Callable;
  * @see java.util.concurrent.Callable
  * @since 1.8.0
  */
-public interface GroovyCallable<V> extends Callable<V> { }
+public interface GroovyCallable<V> extends Callable<V> {
+}

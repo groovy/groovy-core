@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
  * accepts an annotation (types, methods, annotations, constructors, fields, local variables, packages
  * or parameters), then use a script which is run against this AST node at a specific phase. For example,
  * you could test the {@link Field} AST transformation this way:
- *
+ * <p/>
  * <pre>
  * import groovy.transform.*
  *
@@ -40,7 +40,7 @@ import java.lang.annotation.Target;
  * {@code @Field int x}
  *
  * </pre>
- *
+ * <p/>
  * The closure code is executed after the specified phase has completed. If no phase is selected, then the
  * code is executed after the {@link org.codehaus.groovy.control.CompilePhase#SEMANTIC_ANALYSIS semantic analysis} phase.
  * The <code>node</code> variable refers to the AST node where the AST test annotation is put. In the previous example,
@@ -48,12 +48,11 @@ import java.lang.annotation.Target;
  *
  * @author Cedric Champeau
  * @since 2.0.0
- *
  */
 @java.lang.annotation.Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD, ElementType.ANNOTATION_TYPE, ElementType.CONSTRUCTOR, ElementType.FIELD,
-ElementType.LOCAL_VARIABLE, ElementType.PACKAGE, ElementType.PARAMETER})
+        ElementType.LOCAL_VARIABLE, ElementType.PACKAGE, ElementType.PARAMETER})
 @GroovyASTTransformationClass("org.codehaus.groovy.transform.ASTTestTransformation")
 public @interface ASTTest {
     /**

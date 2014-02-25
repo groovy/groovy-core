@@ -41,7 +41,7 @@ import java.util.regex.Pattern;
 /**
  * Transformation for declarative dependency management.
  */
-@GroovyASTTransformation(phase=CompilePhase.CONVERSION)
+@GroovyASTTransformation(phase = CompilePhase.CONVERSION)
 public class GrabAnnotationTransformation extends ClassCodeVisitorSupport implements ASTTransformation, CompilationUnitAware {
     private static final String GRAB_CLASS_NAME = Grab.class.getName();
     private static final String GRAB_DOT_NAME = GRAB_CLASS_NAME.substring(GRAB_CLASS_NAME.lastIndexOf("."));
@@ -141,31 +141,28 @@ public class GrabAnnotationTransformation extends ClassCodeVisitorSupport implem
             String alias = im.getAlias();
             String className = im.getClassName();
             if ((className.endsWith(GRAB_DOT_NAME) && ((alias == null) || (alias.length() == 0)))
-                || (GRAB_CLASS_NAME.equals(alias)))
-            {
+                    || (GRAB_CLASS_NAME.equals(alias))) {
                 allowShortGrab = false;
             } else if (GRAB_CLASS_NAME.equals(className)) {
                 grabAliases.add(im.getAlias());
             }
             if ((className.endsWith(GRAPES_DOT_NAME) && ((alias == null) || (alias.length() == 0)))
-                || (GRAPES_CLASS_NAME.equals(alias)))
-            {
+                    || (GRAPES_CLASS_NAME.equals(alias))) {
                 allowShortGrapes = false;
             } else if (GRAPES_CLASS_NAME.equals(className)) {
                 grapesAliases.add(im.getAlias());
             }
             if ((className.endsWith(GRABRESOLVER_DOT_NAME) && ((alias == null) || (alias.length() == 0)))
-                || (GRABRESOLVER_CLASS_NAME.equals(alias)))
-            {
+                    || (GRABRESOLVER_CLASS_NAME.equals(alias))) {
                 allowShortGrabResolver = false;
             } else if (GRABRESOLVER_CLASS_NAME.equals(className)) {
                 grabResolverAliases.add(im.getAlias());
             }
         }
 
-        List<Map<String,Object>> grabMaps = new ArrayList<Map<String,Object>>();
-        List<Map<String,Object>> grabMapsInit = new ArrayList<Map<String,Object>>();
-        List<Map<String,Object>> grabExcludeMaps = new ArrayList<Map<String,Object>>();
+        List<Map<String, Object>> grabMaps = new ArrayList<Map<String, Object>>();
+        List<Map<String, Object>> grabMapsInit = new ArrayList<Map<String, Object>>();
+        List<Map<String, Object>> grabExcludeMaps = new ArrayList<Map<String, Object>>();
 
         for (ClassNode classNode : sourceUnit.getAST().getClasses()) {
             grabAnnotations = new ArrayList<AnnotationNode>();
@@ -185,7 +182,7 @@ public class GrabAnnotationTransformation extends ClassCodeVisitorSupport implem
                     Expression init = node.getMember("initClass");
                     Expression value = node.getMember("value");
                     if (value instanceof ListExpression) {
-                        for (Object o : ((ListExpression)value).getExpressions()) {
+                        for (Object o : ((ListExpression) value).getExpressions()) {
                             if (o instanceof ConstantExpression) {
                                 extractGrab(init, (ConstantExpression) o);
                             }
@@ -278,7 +275,7 @@ public class GrabAnnotationTransformation extends ClassCodeVisitorSupport implem
                             addError("Attribute \"" + s + "\" has value " + member.getText() + " but should be an inline constant in @" + node.getClassNode().getNameWithoutPackage() + " annotations", node);
                             continue grabExcludeAnnotationLoop;
                         }
-                        grabExcludeMap.put(s, ((ConstantExpression)member).getValue());
+                        grabExcludeMap.put(s, ((ConstantExpression) member).getValue());
                     }
                     grabExcludeMaps.add(grabExcludeMap);
                 }
@@ -326,7 +323,7 @@ public class GrabAnnotationTransformation extends ClassCodeVisitorSupport implem
             try {
                 Grape.grab(basicArgs, grabMaps.toArray(new Map[grabMaps.size()]));
                 // grab may have added more transformations through new URLs added to classpath, so do one more scan
-                if (compilationUnit!=null) {
+                if (compilationUnit != null) {
                     ASTTransformationVisitor.addGlobalTransformsAfterGrab(compilationUnit.getASTTransformationsContext());
                 }
             } catch (RuntimeException re) {
@@ -340,6 +337,7 @@ public class GrabAnnotationTransformation extends ClassCodeVisitorSupport implem
 
     /**
      * Get the URL for the sourceUnit.  This belongs in org.codehaus.groovy.control.SourceUnit.
+     *
      * @return URL URL for the sourceUnit.
      */
     private URL getSourceURL() throws MalformedURLException {
@@ -355,14 +353,14 @@ public class GrabAnnotationTransformation extends ClassCodeVisitorSupport implem
         return new URL(sourceName);
     }
 
-    private void callGrabAsStaticInitIfNeeded(ClassNode classNode, ClassNode grapeClassNode, List<Map<String,Object>> grabMapsInit, List<Map<String, Object>> grabExcludeMaps) {
+    private void callGrabAsStaticInitIfNeeded(ClassNode classNode, ClassNode grapeClassNode, List<Map<String, Object>> grabMapsInit, List<Map<String, Object>> grabExcludeMaps) {
         List<Statement> grabInitializers = new ArrayList<Statement>();
         MapExpression basicArgs = new MapExpression();
-        if (autoDownload != null)  {
+        if (autoDownload != null) {
             basicArgs.addMapEntryExpression(new ConstantExpression(AUTO_DOWNLOAD_SETTING), new ConstantExpression(autoDownload));
         }
 
-        if (disableChecksums != null)  {
+        if (disableChecksums != null) {
             basicArgs.addMapEntryExpression(new ConstantExpression(DISABLE_CHECKSUMS_SETTING), new ConstantExpression(disableChecksums));
         }
         if (!grabExcludeMaps.isEmpty()) {
@@ -401,10 +399,9 @@ public class GrabAnnotationTransformation extends ClassCodeVisitorSupport implem
     }
 
     private void addGrabResolverAsStaticInitIfNeeded(ClassNode grapeClassNode, AnnotationNode node,
-                                                      List<Statement> grabResolverInitializers, Map<String, Object> grabResolverMap) {
+                                                     List<Statement> grabResolverInitializers, Map<String, Object> grabResolverMap) {
         if ((node.getMember("initClass") == null)
-            || (node.getMember("initClass") == ConstantExpression.TRUE))
-        {
+                || (node.getMember("initClass") == ConstantExpression.TRUE)) {
             MapExpression resolverArgs = new MapExpression();
             for (Map.Entry<String, Object> next : grabResolverMap.entrySet()) {
                 resolverArgs.addMapEntryExpression(new ConstantExpression(next.getKey()), new ConstantExpression(next.getValue()));
@@ -435,7 +432,7 @@ public class GrabAnnotationTransformation extends ClassCodeVisitorSupport implem
     private void checkForClassLoader(AnnotationNode node) {
         Object val = node.getMember("systemClassLoader");
         if (val == null || !(val instanceof ConstantExpression)) return;
-        Object systemClassLoaderObject = ((ConstantExpression)val).getValue();
+        Object systemClassLoaderObject = ((ConstantExpression) val).getValue();
         if (!(systemClassLoaderObject instanceof Boolean)) return;
         Boolean systemClassLoader = (Boolean) systemClassLoaderObject;
         if (systemClassLoader) loader = ClassLoader.getSystemClassLoader();
@@ -444,7 +441,7 @@ public class GrabAnnotationTransformation extends ClassCodeVisitorSupport implem
     private void checkForInitContextClassLoader(AnnotationNode node) {
         Object val = node.getMember("initContextClassLoader");
         if (val == null || !(val instanceof ConstantExpression)) return;
-        Object initContextClassLoaderObject = ((ConstantExpression)val).getValue();
+        Object initContextClassLoaderObject = ((ConstantExpression) val).getValue();
         if (!(initContextClassLoaderObject instanceof Boolean)) return;
         initContextClassLoader = (Boolean) initContextClassLoaderObject;
     }
@@ -452,7 +449,7 @@ public class GrabAnnotationTransformation extends ClassCodeVisitorSupport implem
     private void checkForAutoDownload(AnnotationNode node) {
         Object val = node.getMember(AUTO_DOWNLOAD_SETTING);
         if (val == null || !(val instanceof ConstantExpression)) return;
-        Object autoDownloadValue = ((ConstantExpression)val).getValue();
+        Object autoDownloadValue = ((ConstantExpression) val).getValue();
         if (!(autoDownloadValue instanceof Boolean)) return;
         autoDownload = (Boolean) autoDownloadValue;
     }
@@ -460,7 +457,7 @@ public class GrabAnnotationTransformation extends ClassCodeVisitorSupport implem
     private void checkForDisableChecksums(AnnotationNode node) {
         Object val = node.getMember(DISABLE_CHECKSUMS_SETTING);
         if (val == null || !(val instanceof ConstantExpression)) return;
-        Object disableChecksumsValue = ((ConstantExpression)val).getValue();
+        Object disableChecksumsValue = ((ConstantExpression) val).getValue();
         if (!(disableChecksumsValue instanceof Boolean)) return;
         disableChecksums = (Boolean) disableChecksumsValue;
     }
@@ -468,7 +465,7 @@ public class GrabAnnotationTransformation extends ClassCodeVisitorSupport implem
     private void checkForConvenienceForm(AnnotationNode node, boolean exclude) {
         Object val = node.getMember("value");
         if (val == null || !(val instanceof ConstantExpression)) return;
-        Object allParts = ((ConstantExpression)val).getValue();
+        Object allParts = ((ConstantExpression) val).getValue();
         if (!(allParts instanceof String)) return;
         String allstr = (String) allParts;
 
@@ -504,7 +501,8 @@ public class GrabAnnotationTransformation extends ClassCodeVisitorSupport implem
             node.addMember("group", new ConstantExpression(m.group(1)));
             if (m.group(6) != null) node.addMember("conf", new ConstantExpression(m.group(6)));
             if (m.group(4) != null) node.addMember("version", new ConstantExpression(m.group(4)));
-            else if (!exclude && node.getMember("version") == null) node.addMember("version", new ConstantExpression("*"));
+            else if (!exclude && node.getMember("version") == null)
+                node.addMember("version", new ConstantExpression("*"));
             node.getMembers().remove("value");
         } else if (allstr.contains(":")) {
             // assume gradle syntax

@@ -106,14 +106,12 @@ class ListenerListASTTransformation implements ASTTransformation, Opcodes {
     /**
      * Adds the add&lt;Listener&gt; method like:
      * <pre>
-     * synchronized void add${name.capitalize}(${listener.name} listener) {
-     *     if (listener == null)
+     * synchronized void add${name.capitalize}(${listener.name} listener) {*     if (listener == null)
      *         return
      *     if (${field.name} == null)
      *        ${field.name} = []
      *     ${field.name}.add(listener)
-     * }
-     * </pre>
+     *}* </pre>
      */
     void addAddListener(SourceUnit source, AnnotationNode node, ClassNode declaringClass, FieldNode field, ClassNode listener, String name, synchronize) {
 
@@ -122,7 +120,7 @@ class ListenerListASTTransformation implements ASTTransformation, Opcodes {
         def methodName = "add${name.capitalize()}"
         def cn = ClassHelper.makeWithoutCaching(listener.name)
         cn.redirect = listener
-        def methodParameter = [new Parameter(cn,'listener')] as Parameter[]
+        def methodParameter = [new Parameter(cn, 'listener')] as Parameter[]
 
         if (declaringClass.hasMethod(methodName, methodParameter)) {
             addError node, source, "Conflict using @${MY_CLASS.name}. Class $declaringClass.name already has method $methodName"
@@ -169,14 +167,12 @@ class ListenerListASTTransformation implements ASTTransformation, Opcodes {
     /**
      * Adds the remove<Listener> method like:
      * <pre>
-     * synchronized void remove${name.capitalize}(${listener.name} listener) {
-     *     if (listener == null)
+     * synchronized void remove${name.capitalize}(${listener.name} listener) {*     if (listener == null)
      *         return
      *     if (${field.name} == null)
      *         ${field.name} = []
      *     ${field.name}.remove(listener)
-     * }
-     * </pre>
+     *}* </pre>
      */
     void addRemoveListener(SourceUnit source, AnnotationNode node, ClassNode declaringClass, FieldNode field, ClassNode listener, String name, synchronize) {
         def methodModifiers = synchronize ? ACC_PUBLIC | ACC_SYNCHRONIZED : ACC_PUBLIC
@@ -184,7 +180,7 @@ class ListenerListASTTransformation implements ASTTransformation, Opcodes {
         def methodName = "remove${name.capitalize()}"
         def cn = ClassHelper.makeWithoutCaching(listener.name)
         cn.redirect = listener
-        def methodParameter = [new Parameter(cn,'listener')] as Parameter[]
+        def methodParameter = [new Parameter(cn, 'listener')] as Parameter[]
 
         if (declaringClass.hasMethod(methodName, methodParameter)) {
             addError node, source, "Conflict using @${MY_CLASS.name}. Class $declaringClass.name already has method $methodName"
@@ -231,13 +227,11 @@ class ListenerListASTTransformation implements ASTTransformation, Opcodes {
     /**
      * Adds the get&lt;Listener&gt;s method like:
      * <pre>
-     * synchronized ${name.capitalize}[] get${name.capitalize}s() {
-     *     def __result = []
+     * synchronized ${name.capitalize}[] get${name.capitalize}s() {*     def __result = []
      *     if (${field.name} != null)
      *         __result.addAll(${field.name})
      *     return __result as ${name.capitalize}[]
-     * }
-     * </pre>
+     *}* </pre>
      */
     void addGetListeners(SourceUnit source, AnnotationNode node, ClassNode declaringClass, FieldNode field, ClassNode listener, String name, synchronize) {
         def methodModifiers = synchronize ? ACC_PUBLIC | ACC_SYNCHRONIZED : ACC_PUBLIC
@@ -284,15 +278,10 @@ class ListenerListASTTransformation implements ASTTransformation, Opcodes {
     /**
      * Adds the fire&lt;Event&gt; methods like:
      * <pre>
-     * void fire${fireMethod.capitalize()}(${parameterList.join(', ')}) {
-     *     if (${field.name} != null) {
-     *         def __list = new ArrayList(${field.name})
+     * void fire${fireMethod.capitalize()}(${parameterList.join(', ')}) {*     if (${field.name} != null) {*         def __list = new ArrayList(${field.name})
      *         __list.each { listener ->
      *             listener.$eventMethod(${evt})
-     *         }
-     *     }
-     * }
-     * </pre>
+     *}*}*}* </pre>
      */
     void addFireMethods(SourceUnit source, AnnotationNode node, ClassNode declaringClass, FieldNode field, GenericsType[] types, boolean synchronize, MethodNode method) {
 

@@ -25,23 +25,23 @@ import java.lang.annotation.Target;
 
 /**
  * Annotates a groovy property or a class.
- *
+ * <p/>
  * When annotating a property it indicates that the property should be a
  * bound property according to the JavaBeans spec, announcing to listeners
  * that the value has changed.
- * <p>
+ * <p/>
  * When annotating a class it indicates that all groovy properties in that
  * class should be bound as though each property had the annotation (even
  * if it already has it explicitly).
- * <p>
+ * <p/>
  * It is a compilation error to place this annotation on a field (that is
  * not a property, i.e. has scope visibility modifiers).
- * <p>
+ * <p/>
  * If a property with a user defined setter method is annotated the code
  * block is wrapped with the needed code to fire off the event.
- * <p>
+ * <p/>
  * The following example shows how you can use this annotation on fields
- * of a class: 
+ * of a class:
  * <pre>
  * class Person {
  *    &#064;groovy.beans.Bindable
@@ -51,60 +51,60 @@ import java.lang.annotation.Target;
  *    def zipCode
  * }
  * </pre>
- * The above example will generate code that is similar to the next snippet. 
- * Notice the difference between a String property and a def/Object property: 
+ * The above example will generate code that is similar to the next snippet.
+ * Notice the difference between a String property and a def/Object property:
  * <pre>
- * public class Person { 
+ * public class Person {
  *     &#064;groovy.beans.Bindable
- *     private java.lang.String firstName 
+ *     private java.lang.String firstName
  *     &#064;groovy.beans.Bindable
- *     private java.lang.Object zipCode 
- *     final private java.beans.PropertyChangeSupport this$propertyChangeSupport 
- * 
+ *     private java.lang.Object zipCode
+ *     final private java.beans.PropertyChangeSupport this$propertyChangeSupport
+ *
  *     public Person() {
  *         this$propertyChangeSupport = new java.beans.PropertyChangeSupport(this)
  *     }
- * 
+ *
  *     public void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
  *         this$propertyChangeSupport.addPropertyChangeListener(listener)
  *     }
- * 
+ *
  *     public void addPropertyChangeListener(java.lang.String name, java.beans.PropertyChangeListener listener) {
  *         this$propertyChangeSupport.addPropertyChangeListener(name, listener)
  *     }
- * 
+ *
  *     public void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
  *         this$propertyChangeSupport.removePropertyChangeListener(listener)
  *     }
- * 
+ *
  *     public void removePropertyChangeListener(java.lang.String name, java.beans.PropertyChangeListener listener) {
  *         this$propertyChangeSupport.removePropertyChangeListener(name, listener)
  *     }
- * 
+ *
  *     public void firePropertyChange(java.lang.String name, java.lang.Object oldValue, java.lang.Object newValue) {
  *         this$propertyChangeSupport.firePropertyChange(name, oldValue, newValue)
  *     }
- * 
+ *
  *     public java.beans.PropertyChangeListener[] getPropertyChangeListeners() {
  *         return this$propertyChangeSupport.getPropertyChangeListeners()
  *     }
- * 
+ *
  *     public java.beans.PropertyChangeListener[] getPropertyChangeListeners(java.lang.String name) {
  *         return this$propertyChangeSupport.getPropertyChangeListeners(name)
  *     }
- * 
+ *
  *     public void setFirstName(java.lang.String value) {
  *         this.firePropertyChange('firstName', firstName, firstName = value )
  *     }
- * 
+ *
  *     public void setZipCode(java.lang.Object value) {
  *         this.firePropertyChange('zipCode', zipCode, zipCode = value )
  *     }
  * }
  * </pre>
  *
- * @see BindableASTTransformation
  * @author Danno Ferrin (shemnon)
+ * @see BindableASTTransformation
  */
 @java.lang.annotation.Documented
 @Retention(RetentionPolicy.SOURCE)

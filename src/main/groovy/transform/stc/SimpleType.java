@@ -30,4 +30,4 @@ public class SimpleType extends SingleSignatureClosureHint {
         }
         return result;
     }
- }
+}

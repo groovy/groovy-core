@@ -25,7 +25,6 @@ import java.util.Map;
  */
 public interface Factory {
     /**
-     *
      * @return true if no child closures should be processed
      */
     boolean isLeaf();
@@ -34,54 +33,56 @@ public interface Factory {
      * Does this factory "Own" it's child closure.
      *
      * @return true  if the factory should have onContentClosure() called,
-     *         false if the builder should handle it
+     * false if the builder should handle it
      */
     boolean isHandlesNodeChildren();
 
     /**
      * Called when a factory is registered to a builder
-     * @param builder the build the factory has been registered to
+     *
+     * @param builder        the build the factory has been registered to
      * @param registeredName the name the factory has been registered under
      */
     void onFactoryRegistration(FactoryBuilderSupport builder, String registeredName, String registeredGroupName);
 
     /**
-     * @param builder the FactoryBuilder
-     * @param name the name of the node being built
-     * @param value the 'value' argument in the build node
+     * @param builder    the FactoryBuilder
+     * @param name       the name of the node being built
+     * @param value      the 'value' argument in the build node
      * @param attributes the attributes of the build arg
      * @return the object created for the builder
      * @throws InstantiationException if attempting to instantiate an interface or abstract class
      * @throws IllegalAccessException if the instance can't be created due to a security violation
      */
-    Object newInstance( FactoryBuilderSupport builder, Object name, Object value, Map attributes )
+    Object newInstance(FactoryBuilderSupport builder, Object name, Object value, Map attributes)
             throws InstantiationException, IllegalAccessException;
 
     /**
-     * @param builder the FactoryBuilder
-     * @param node the node (returned from newInstance) to consider the attributes for
+     * @param builder    the FactoryBuilder
+     * @param node       the node (returned from newInstance) to consider the attributes for
      * @param attributes the attributes, a mutable set
      * @return true if the factory builder should use standard bean property matching for the remaining attributes
      */
-    boolean onHandleNodeAttributes( FactoryBuilderSupport builder, Object node, Map attributes );
+    boolean onHandleNodeAttributes(FactoryBuilderSupport builder, Object node, Map attributes);
 
     /**
      * Only called if it isLeaf is false and isHandlesNodeChildren is true
-     * @param builder the FactoryBuilder
-     * @param node the node (returned from newInstance) to consider the attributes for
+     *
+     * @param builder      the FactoryBuilder
+     * @param node         the node (returned from newInstance) to consider the attributes for
      * @param childContent the child content closure of the builder
      * @return true if the factory builder should apply default node processing to the content child
      */
-    boolean onNodeChildren( FactoryBuilderSupport builder, Object node, Closure childContent);
+    boolean onNodeChildren(FactoryBuilderSupport builder, Object node, Closure childContent);
 
     /**
      * @param builder the FactoryBuilder
-     * @param parent the parent node (null if 'root')
-     * @param node the node just completed
+     * @param parent  the parent node (null if 'root')
+     * @param node    the node just completed
      */
-    void onNodeCompleted( FactoryBuilderSupport builder, Object parent, Object node );
+    void onNodeCompleted(FactoryBuilderSupport builder, Object parent, Object node);
 
-    void setParent( FactoryBuilderSupport builder, Object parent, Object child );
+    void setParent(FactoryBuilderSupport builder, Object parent, Object child);
 
-    void setChild( FactoryBuilderSupport builder, Object parent, Object child );
+    void setChild(FactoryBuilderSupport builder, Object parent, Object child);
 }

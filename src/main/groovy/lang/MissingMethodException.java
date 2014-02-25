@@ -20,7 +20,7 @@ import org.codehaus.groovy.runtime.MethodRankHelper;
 
 /**
  * An exception occurred if a dynamic method dispatch fails with an unknown method.
- * <p>
+ * <p/>
  * Note that the Missing*Exception classes were named for consistency and
  * to avoid conflicts with JDK exceptions of the same name.
  *
@@ -79,7 +79,7 @@ public class MissingMethodException extends GroovyRuntimeException {
 
     /**
      * @return Whether the method was called in a static way,
-     *         i.e. on a class rather than an object.
+     * i.e. on a class rather than an object.
      */
     public boolean isStatic() {
         return isStatic;

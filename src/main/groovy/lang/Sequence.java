@@ -59,7 +59,7 @@ public class Sequence extends ArrayList implements GroovyObject {
         clear();
         addAll(collection);
     }
-    
+
     public boolean equals(Object that) {
         return that instanceof Sequence && equals((Sequence) that);
     }
@@ -101,7 +101,7 @@ public class Sequence extends ArrayList implements GroovyObject {
     public Class type() {
         return type;
     }
-    
+
     public void add(int index, Object element) {
         checkType(element);
         hashCode = 0;
@@ -150,9 +150,8 @@ public class Sequence extends ArrayList implements GroovyObject {
     //-------------------------------------------------------------------------
     public Object invokeMethod(String name, Object args) {
         try {
-        return getMetaClass().invokeMethod(this, name, args);
-        }
-        catch (MissingMethodException e) {
+            return getMetaClass().invokeMethod(this, name, args);
+        } catch (MissingMethodException e) {
             // lets apply the method to each item in the collection
             List<Object> answer = new ArrayList<Object>(size());
             for (Object element : this) {
@@ -181,7 +180,7 @@ public class Sequence extends ArrayList implements GroovyObject {
 
     // Implementation methods
     //-------------------------------------------------------------------------
-    
+
     /**
      * Checks that each member of the given collection are of the correct
      * type
@@ -195,7 +194,7 @@ public class Sequence extends ArrayList implements GroovyObject {
     }
 
 
-    /** 
+    /**
      * Checks that the given object instance is of the correct type
      * otherwise a runtime exception is thrown
      */
@@ -206,10 +205,11 @@ public class Sequence extends ArrayList implements GroovyObject {
         if (type != null) {
             if (!type.isInstance(object)) {
                 throw new IllegalArgumentException(
-                    "Invalid type of argument for sequence of type: "
-                        + type.getName()
-                        + " cannot add object: "
-                        + object);
+                        "Invalid type of argument for sequence of type: "
+                                + type.getName()
+                                + " cannot add object: "
+                                + object
+                );
             }
         }
     }

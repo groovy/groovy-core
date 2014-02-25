@@ -49,7 +49,7 @@ public class MetaClassRegistryChangeEvent extends EventObject {
     }
 
     public boolean isPerInstanceMetaClassChange() {
-        return instance!=null;
+        return instance != null;
     }
 
     public Object getInstance() {

@@ -25,9 +25,9 @@ import java.lang.annotation.Target;
 
 /**
  * Class annotation to make constructors from a super class available in a sub class.
- * <p>
+ * <p/>
  * {@code @InheritConstructors} saves you typing some boilerplate code.
- * <p>
+ * <p/>
  * <em>Example usage:</em>
  * <pre>
  * class Person {
@@ -61,7 +61,7 @@ import java.lang.annotation.Target;
  * You may add additional constructors in addition to inherited ones.
  * If the argument types of a supplied constructor exactly match those
  * of a parent constructor, then that constructor won't be inherited.
- * <p>
+ * <p/>
  * <em>Style note:</em> Don't go overboard using this annotation.
  * Typical Groovy style is to use named-arg constructors when possible.
  * This is easy to do for Groovy objects or any objects following JavaBean
@@ -72,7 +72,7 @@ import java.lang.annotation.Target;
  * better style to define an explicit constructor for <code>PersonAge</code>
  * that also set the <code>age</code> property. Sometimes, consistent
  * style is much more important than saving a few keystrokes.
- * <p>
+ * <p/>
  * As another example, this:
  * <pre>
  * {@code @InheritConstructors} class CustomException extends RuntimeException { }
@@ -94,7 +94,7 @@ import java.lang.annotation.Target;
  *     }
  * }
  * </pre>
- *
+ * <p/>
  * <em>Advanced note:</em>If you create Groovy constructors with optional
  * arguments this leads to multiple constructors created in the byte code.
  * The expansion to multiple constructors occurs in a later phase to

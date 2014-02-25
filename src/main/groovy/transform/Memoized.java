@@ -26,30 +26,30 @@ import java.lang.annotation.Target;
  * Method annotation that creates a cache for the results of the execution of the annotated method. Whenever the method
  * is called, the mapping between the parameters and the return value is preserved in a cache making subsequent calls with
  * the same arguments fast.
- * 
- * <p>
+ * <p/>
+ * <p/>
  * Example usage:
- * 
+ * <p/>
  * <pre>
  * class MemoizedExample {
- * 
+ *
  *     {@code @Memoized}
  *     int sum(int n1, int n2) {
- *         println "$n1 + $n2 = ${n1 + n2}" 
+ *         println "$n1 + $n2 = ${n1 + n2}"
  *         n1 + n2
  *     }
  * }
  * </pre>
- * 
+ * <p/>
  * which becomes (approximately):
- * 
+ * <p/>
  * <pre>
  * class MemoizedExample {
- * 
+ *
  *     private final Closure memoizedSum = { int n1, int n2 ->
  *         private$method$memoizedSum(n1,n2)
  *     }.memoize()
- * 
+ *
  *     int sum(int n1, int n2) {
  *         memoizedSum(n1, n2)
  *     }
@@ -60,10 +60,10 @@ import java.lang.annotation.Target;
  *     }
  * }
  * </pre>
- * 
- * <p>
+ * <p/>
+ * <p/>
  * Upon execution of this code:
- * 
+ * <p/>
  * <pre>
  * def instance = new MemoizedExample()
  * println instance.sum(1, 2)
@@ -71,9 +71,9 @@ import java.lang.annotation.Target;
  * println instance.sum(2, 3)
  * println instance.sum(2, 3)
  * </pre>
- * 
+ * <p/>
  * The following will be output:
- * 
+ * <p/>
  * <pre>
  * 1 + 2 = 3
  * 3
@@ -82,20 +82,20 @@ import java.lang.annotation.Target;
  * 5
  * 5
  * </pre>
- * 
+ *
  * @author Andrey Bloschetsov
  */
 @java.lang.annotation.Documented
 @Retention(RetentionPolicy.SOURCE)
-@Target({ ElementType.METHOD })
+@Target({ElementType.METHOD})
 @GroovyASTTransformationClass("org.codehaus.groovy.transform.MemoizedASTTransformation")
 public @interface Memoized {
-    
+
     /**
      * Number of cached return values to protect from garbage collection.
      */
     int protectedCacheSize() default 0;
-    
+
     /**
      * The maximum size the cache can grow to.
      */

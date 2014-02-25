@@ -142,7 +142,7 @@ public class ConfigObject extends GroovyObjectSupport implements Writable, Map, 
     public Properties toProperties() {
         Properties props = new Properties();
         flatten(props);
-        
+
         props = convertValuesToString(props);
 
         return props;
@@ -176,7 +176,7 @@ public class ConfigObject extends GroovyObjectSupport implements Writable, Map, 
 
                 continue;
             } else {
-                if (configEntry instanceof Map && ((Map)configEntry).size() > 0 && value instanceof Map) {
+                if (configEntry instanceof Map && ((Map) configEntry).size() > 0 && value instanceof Map) {
                     // recur
                     doMerge((Map) configEntry, (Map) value);
                 } else {
@@ -351,6 +351,7 @@ public class ConfigObject extends GroovyObjectSupport implements Writable, Map, 
 
     /**
      * Returns a shallow copy of this ConfigObject, keys and configuration entries are not cloned.
+     *
      * @return a shallow copy of this ConfigObject
      */
     public ConfigObject clone() {
@@ -363,7 +364,7 @@ public class ConfigObject extends GroovyObjectSupport implements Writable, Map, 
             throw new AssertionError();
         }
     }
-    
+
     /**
      * Checks if a config option is set. Example usage:
      * <pre>
@@ -371,7 +372,7 @@ public class ConfigObject extends GroovyObjectSupport implements Writable, Map, 
      * assert config.foo.isSet('password')
      * assert config.foo.isSet('username') == false
      * </pre>
-     * 
+     * <p/>
      * The check works <b>only</v> for options <b>one</b> block below the current block.
      * E.g. <code>config.isSet('foo.password')</code> will always return false.
      *
@@ -383,9 +384,9 @@ public class ConfigObject extends GroovyObjectSupport implements Writable, Map, 
         if (delegateMap.containsKey(option)) {
             Object entry = delegateMap.get(option);
             if (!(entry instanceof ConfigObject) || !((ConfigObject) entry).isEmpty()) {
-                return Boolean.TRUE; 
-            } 
+                return Boolean.TRUE;
+            }
         }
-        return Boolean.FALSE; 
+        return Boolean.FALSE;
     }
 }

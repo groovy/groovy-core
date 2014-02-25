@@ -28,15 +28,11 @@ import java.lang.annotation.Target
  * <p/>
  * It allows you to write a method like this:
  * <pre>
- * class Target {
- *      {@code @TailRecursive}
- *      long sumUp(long number, long sum = 0) {
- *          if (number == 0)
+ * class Target {* {@code @TailRecursive}
+ *      long sumUp(long number, long sum = 0) {*          if (number == 0)
  *              return sum;
  *          sumUp(number - 1, sum + number)
- *      }
- * }
- * def target = new Target()
+ *}*}* def target = new Target()
  * assert target.sumUp(100) == 5050
  * assert target.sumUp(1000000) == 500000500000 //will blow the stack on most machines when used without {@code @TailRecursive}
  * </pre>

@@ -53,22 +53,22 @@ public class TracingInterceptor implements Interceptor {
     private int indent = 0;
 
     /**
-    * Returns the writer associated with this interceptor. 
-    */ 
+     * Returns the writer associated with this interceptor.
+     */
     public Writer getWriter() {
         return writer;
     }
 
     /**
-    * Changes the writer associated with this interceptor. 
-    */ 
+     * Changes the writer associated with this interceptor.
+     */
     public void setWriter(Writer writer) {
         this.writer = writer;
     }
 
     public Object beforeInvoke(Object object, String methodName, Object[] arguments) {
         write(object, methodName, arguments, "before");
-        indent++ ;
+        indent++;
         return null;
     }
 
@@ -81,9 +81,10 @@ public class TracingInterceptor implements Interceptor {
     public boolean doInvoke() {
         return true;
     }
-    private String indent(){
+
+    private String indent() {
         StringBuilder result = new StringBuilder();
-        for (int i=0; i<indent;i++){
+        for (int i = 0; i < indent; i++) {
             result.append("  ");
         }
         return result.toString();
@@ -94,7 +95,7 @@ public class TracingInterceptor implements Interceptor {
             writer.write(indent());
             writer.write(origin);
             writer.write(" ");
-            Class theClass = object instanceof Class ? (Class) object: object.getClass();
+            Class theClass = object instanceof Class ? (Class) object : object.getClass();
             writeInfo(theClass, methodName, arguments);
             writer.write("\n");
             writer.flush();

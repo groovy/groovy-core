@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
 /**
  * Variable annotation used for changing the scope of a variable within a script from
  * being within the run method of the script to being at the class level for the script.
- * <p>
+ * <p/>
  * The annotated variable will become a private field of the script class.
  * The type of the field will be the same as the type of the variable. Example usage:
  * <pre>

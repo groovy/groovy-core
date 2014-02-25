@@ -21,12 +21,20 @@ package groovy.io;
  * and related methods to control subsequent traversal behavior.
  */
 public enum FileVisitResult {
-    /** Continue processing; the default */
+    /**
+     * Continue processing; the default
+     */
     CONTINUE,
-    /** Skip processing sibling files/directories within the current directory being processed */
+    /**
+     * Skip processing sibling files/directories within the current directory being processed
+     */
     SKIP_SIBLINGS,
-    /** Do not process the child files/subdirectories within the current directory being processed */
+    /**
+     * Do not process the child files/subdirectories within the current directory being processed
+     */
     SKIP_SUBTREE,
-    /** Do not process any more files */
+    /**
+     * Do not process any more files
+     */
     TERMINATE
 }

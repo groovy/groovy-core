@@ -25,7 +25,7 @@ import java.lang.annotation.Target;
 
 /**
  * Class annotation to make a singleton class. The singleton is obtained through normal property access using the singleton property (defaults to "instance").
- *
+ * <p/>
  * Such classes can be initialized during normal static initialization of the class or lazily (on first access).
  * To make the singleton lazy use {@code @Singleton(lazy=true)}.
  * Lazy singletons are implemented with double-checked locking and a volatile backing field.

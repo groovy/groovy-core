@@ -24,12 +24,13 @@ import java.lang.annotation.Target;
 
 /**
  * This will let the Groovy compiler use compile time checks in the style of Java.
+ *
  * @author <a href="mailto:blackdrag@gmx.org">Jochen "blackdrag" Theodorou</a>
  */
 @java.lang.annotation.Documented
 @Retention(RetentionPolicy.SOURCE)
-@Target({   ElementType.METHOD,         ElementType.TYPE,
-            ElementType.CONSTRUCTOR
+@Target({ElementType.METHOD, ElementType.TYPE,
+        ElementType.CONSTRUCTOR
 })
 @GroovyASTTransformationClass("org.codehaus.groovy.transform.StaticTypesTransformation")
 public @interface TypeChecked {
@@ -38,6 +39,7 @@ public @interface TypeChecked {
     /**
      * The list of (classpath resources) paths to type checking DSL scripts, also known
      * as type checking extensions.
+     *
      * @return an array of paths to groovy scripts that must be on compile classpath
      */
     String[] extensions() default {};
@@ -54,12 +56,14 @@ public @interface TypeChecked {
         /**
          * Returns the type checker information protocol number. This is used if the format of the
          * string used in {@link #inferredType()} changes.
+         *
          * @return the protocol version
          */
         int version() default 0;
 
         /**
          * An encoded type information.
+         *
          * @return the inferred type
          */
         String inferredType();

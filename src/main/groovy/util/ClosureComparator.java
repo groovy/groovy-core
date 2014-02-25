@@ -22,7 +22,7 @@ import java.util.Comparator;
 
 /**
  * A Comparator which uses a closure to compare 2 values being equal
- * 
+ *
  * @author <a href="mailto:james@coredevelopers.net">James Strachan</a>
  * @version $Revision$
  */
@@ -35,7 +35,7 @@ public class ClosureComparator<T> implements Comparator<T> {
     }
 
     public int compare(T object1, T object2) {
-        Object value = closure.call(new Object[] {object1, object2});
+        Object value = closure.call(new Object[]{object1, object2});
         return DefaultTypeTransformation.intUnbox(value);
     }
 }

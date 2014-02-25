@@ -85,7 +85,7 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
      * Returns the current name of the 'bean' node.
      */
     public String getBeanFactoryName() {
-        return beanFactoryName; 
+        return beanFactoryName;
     }
 
     /**
@@ -596,7 +596,8 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
             // set child first
             childPropertySetter.setChild(ref.parent, child, ref.parentName,
                     relationNameResolver.resolveChildRelationName(ref.parentName,
-                            ref.parent, ref.childName, child));
+                            ref.parent, ref.childName, child)
+            );
 
             // set parent afterwards
             String propertyName = relationNameResolver.resolveParentRelationName(ref.parentName,
@@ -626,7 +627,7 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
         }
 
         protected Class resolveClass(FactoryBuilderSupport builder, String classname, Object name, Object value,
-                                  Map properties) throws InstantiationException, IllegalAccessException {
+                                     Map properties) throws InstantiationException, IllegalAccessException {
             ObjectGraphBuilder ogbuilder = (ObjectGraphBuilder) builder;
             Class klass = ogbuilder.resolvedClasses.get(classname);
             if (klass == null) {
@@ -654,7 +655,7 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
         }
 
         protected Object resolveInstance(FactoryBuilderSupport builder, Object name, Object value, Class klass,
-                                  Map properties) throws InstantiationException, IllegalAccessException {
+                                         Map properties) throws InstantiationException, IllegalAccessException {
             ObjectGraphBuilder ogbuilder = (ObjectGraphBuilder) builder;
             if (value != null && klass.isAssignableFrom(value.getClass())) {
                 return value;
@@ -703,7 +704,8 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
 
                 ogbuilder.childPropertySetter.setChild(parent, child, parentName,
                         ogbuilder.relationNameResolver.resolveChildRelationName(parentName,
-                                parent, childName, child));
+                                parent, childName, child)
+                );
             }
         }
 
@@ -722,19 +724,19 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
     private static class ObjectBeanFactory extends ObjectFactory {
         public Object newInstance(FactoryBuilderSupport builder, Object name, Object value,
                                   Map properties) throws InstantiationException, IllegalAccessException {
-            if(value == null) return super.newInstance(builder, name, value, properties);
+            if (value == null) return super.newInstance(builder, name, value, properties);
 
             Object bean = null;
             Class klass = null;
             Map context = builder.getContext();
-            if(value instanceof String || value instanceof GString) {
+            if (value instanceof String || value instanceof GString) {
                 /*
                 String classname = value.toString();
                 klass = resolveClass(builder, classname, name, value, properties);
                 bean = resolveInstance(builder, name, value, klass, properties);
                 */
-                throw new IllegalArgumentException("ObjectGraphBuilder."+((ObjectGraphBuilder)builder).getBeanFactoryName()+"() does not accept String nor GString as value.");
-            } else if(value instanceof Class) {
+                throw new IllegalArgumentException("ObjectGraphBuilder." + ((ObjectGraphBuilder) builder).getBeanFactoryName() + "() does not accept String nor GString as value.");
+            } else if (value instanceof Class) {
                 klass = (Class) value;
                 bean = resolveInstance(builder, name, value, klass, properties);
             } else {
@@ -743,7 +745,7 @@ public class ObjectGraphBuilder extends FactoryBuilderSupport {
             }
 
             String nodename = klass.getSimpleName();
-            if(nodename.length() > 1) {
+            if (nodename.length() > 1) {
                 nodename = nodename.substring(0, 1).toLowerCase() + nodename.substring(1);
             } else {
                 nodename = nodename.toLowerCase();

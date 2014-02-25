@@ -79,7 +79,7 @@ public class GroovyShell extends GroovyObjectSupport {
     public GroovyShell(ClassLoader parent) {
         this(parent, new Binding(), CompilerConfiguration.DEFAULT);
     }
-    
+
     public GroovyShell(ClassLoader parent, Binding binding, final CompilerConfiguration config) {
         if (binding == null) {
             throw new IllegalArgumentException("Binding must not be null.");
@@ -87,16 +87,16 @@ public class GroovyShell extends GroovyObjectSupport {
         if (config == null) {
             throw new IllegalArgumentException("Compiler configuration must not be null.");
         }
-        final ClassLoader parentLoader = (parent!=null)?parent:GroovyShell.class.getClassLoader();
+        final ClassLoader parentLoader = (parent != null) ? parent : GroovyShell.class.getClassLoader();
         this.loader = AccessController.doPrivileged(new PrivilegedAction<GroovyClassLoader>() {
             public GroovyClassLoader run() {
-                return new GroovyClassLoader(parentLoader,config);
+                return new GroovyClassLoader(parentLoader, config);
             }
         });
-        this.context = binding;        
+        this.context = binding;
         this.config = config;
     }
-    
+
     public void resetLoadedClasses() {
         loader.clearCache();
     }
@@ -244,13 +244,13 @@ public class GroovyShell extends GroovyObjectSupport {
         }
         if (Script.class.isAssignableFrom(scriptClass)) {
             // treat it just like a script if it is one
-            Script script  = null;
+            Script script = null;
             try {
                 script = (Script) scriptClass.newInstance();
             } catch (InstantiationException e) {
                 // ignore instantiation errors,, try to do main
             } catch (IllegalAccessException e) {
-               // ignore instantiation errors, try to do main
+                // ignore instantiation errors, try to do main
             }
             if (script != null) {
                 script.setBinding(context);
@@ -409,7 +409,7 @@ public class GroovyShell extends GroovyObjectSupport {
         return isUnitTestCase;
     }
 
-     /**
+    /**
      * Utility method to check through reflection if the class appears to be a
      * JUnit 3.8.x test suite, i.e.&nsbp;checks if it extends JUnit 3.8.x's TestSuite.
      *
@@ -491,9 +491,9 @@ public class GroovyShell extends GroovyObjectSupport {
      */
     public Object run(final Reader in, final String fileName, String[] args) throws CompilationFailedException {
         GroovyCodeSource gcs = AccessController.doPrivileged(new PrivilegedAction<GroovyCodeSource>() {
-                    public GroovyCodeSource run() {
-                        return new GroovyCodeSource(in, fileName, DEFAULT_CODE_BASE);
-                    }
+            public GroovyCodeSource run() {
+                return new GroovyCodeSource(in, fileName, DEFAULT_CODE_BASE);
+            }
         });
         Class scriptClass = parseClass(gcs);
         return runScriptOrMainOrTestOrRunnable(scriptClass, args);
@@ -598,8 +598,8 @@ public class GroovyShell extends GroovyObjectSupport {
     /**
      * Parses the given script and returns it ready to be run
      *
-     * @param reader    the stream reading the script
-     * @param fileName  is the logical file name of the script (which is used to create the class name of the script)
+     * @param reader   the stream reading the script
+     * @param fileName is the logical file name of the script (which is used to create the class name of the script)
      * @return the parsed script which is ready to be run via {@link Script#run()}
      */
     public Script parse(final Reader reader, final String fileName) throws CompilationFailedException {

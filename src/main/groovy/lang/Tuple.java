@@ -22,7 +22,7 @@ import java.util.List;
 
 /**
  * Represents a list of Objects.
- * 
+ *
  * @author <a href="mailto:james@coredevelopers.net">James Strachan</a>
  * @version $Revision$
  */
@@ -50,7 +50,7 @@ public class Tuple extends AbstractList {
     public boolean equals(Tuple that) {
         if (contents.length == that.contents.length) {
             for (int i = 0; i < contents.length; i++) {
-                if (! DefaultTypeTransformation.compareEqual(this.contents[i], that.contents[i])) {
+                if (!DefaultTypeTransformation.compareEqual(this.contents[i], that.contents[i])) {
                     return false;
                 }
             }

@@ -40,9 +40,9 @@ import java.lang.annotation.Target;
  * method.</p>
  * <p>For those reasons, the {@link ClosureParams} annotation only takes two arguments:
  * <ul>
- *     <li>{@link ClosureParams#value()} defines a {@link groovy.transform.stc.ClosureSignatureHint} hint class
- *     that the compiler will use to infer the parameter types</li>
- *     <li>{@link ClosureParams#options()}, a set of options that are passed to the hint when the type is inferred</li>
+ * <li>{@link ClosureParams#value()} defines a {@link groovy.transform.stc.ClosureSignatureHint} hint class
+ * that the compiler will use to infer the parameter types</li>
+ * <li>{@link ClosureParams#options()}, a set of options that are passed to the hint when the type is inferred</li>
  * </ul>
  * </p>
  * <p>As a result, the previous signature can be written like this:</p>
@@ -56,5 +56,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ClosureParams {
     Class<? extends ClosureSignatureHint> value();
+
     String[] options() default {};
 }

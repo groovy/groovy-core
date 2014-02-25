@@ -81,7 +81,7 @@ public class GroovyCodeSource {
      * The supplied codeBase will be used to construct a File URL that should match up
      * with a java Policy entry that determines the grants to be associated with the
      * class that will be built from the InputStream.
-     * <p>
+     * <p/>
      * The permission groovy.security.GroovyCodeSourcePermission will be used to determine if the given codeBase
      * may be specified.  That is, the current Policy set must have a GroovyCodeSourcePermission that implies
      * the codeBase, or an exception will be thrown.  This is to prevent callers from hijacking
@@ -201,8 +201,7 @@ public class GroovyCodeSource {
         }
         try {
             return new CodeSource(new URL("file", "", codeBase), (java.security.cert.Certificate[]) null);
-        }
-        catch (MalformedURLException e) {
+        } catch (MalformedURLException e) {
             throw new RuntimeException("A CodeSource file URL cannot be constructed from the supplied codeBase: " + codeBase);
         }
     }

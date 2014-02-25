@@ -28,9 +28,9 @@ import java.lang.annotation.*;
  */
 @Documented
 @Retention(RetentionPolicy.SOURCE)
-@Target({   ElementType.METHOD,         ElementType.TYPE,
-            ElementType.CONSTRUCTOR,    ElementType.FIELD,
-            ElementType.LOCAL_VARIABLE, ElementType.PACKAGE
+@Target({ElementType.METHOD, ElementType.TYPE,
+        ElementType.CONSTRUCTOR, ElementType.FIELD,
+        ElementType.LOCAL_VARIABLE, ElementType.PACKAGE
 })
 @GroovyASTTransformationClass("org.codehaus.groovy.transform.sc.StaticCompileTransformation")
 public @interface CompileStatic {
@@ -39,6 +39,7 @@ public @interface CompileStatic {
     /**
      * The list of (classpath resources) paths to type checking DSL scripts, also known
      * as type checking extensions.
+     *
      * @return an array of paths to groovy scripts that must be on compile classpath
      */
     String[] extensions() default {};

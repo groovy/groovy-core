@@ -1,16 +1,17 @@
 <html>
-  <head>
+<head>
     <title>package groovy.time.*</title>
-  </head>
-  <body>
-    <p>
-      Classes for easily manipulating Dates and times.  While 
-      <code>java.util.Date</code> has GDK methods for adding or subtracting days,
-      this is not so useful for different durations of time.  
-      {@link groovy.time.TimeCategory TimeCategory} creates a simple internal DSL
-      for manipulating dates and times in a clean and precise fashion.  
-    </p>
-    <h3>Examples</h3>
+</head>
+<body>
+<p>
+    Classes for easily manipulating Dates and times. While
+    <code>java.util.Date</code> has GDK methods for adding or subtracting days,
+    this is not so useful for different durations of time.
+    {@link groovy.time.TimeCategory TimeCategory} creates a simple internal DSL
+    for manipulating dates and times in a clean and precise fashion.
+</p>
+
+<h3>Examples</h3>
     <pre>
   use ( TimeCategory ) {
   	// application on numbers:
@@ -21,7 +22,7 @@
   	def someDate = new Date()
   	println someDate - 3.months 
   }</pre>
-     
-    @see groovy.time.TimeCategory
-  </body>
+
+@see groovy.time.TimeCategory
+</body>
 </html>

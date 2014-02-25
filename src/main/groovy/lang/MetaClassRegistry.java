@@ -26,12 +26,10 @@ import java.util.Iterator;
  * java.lang.Class instance has an associated MetaClass and client code can query this interface for the MetaClass for
  * a given associated java.lang.Class
  *
- * @see groovy.lang.MetaClass
- *
  * @author John Wilson
  * @author Graeme Rocher
  * @author <a href="mailto:blackdrag@gmx.org">Jochen Theodorou</a>
- *
+ * @see groovy.lang.MetaClass
  */
 public interface MetaClassRegistry {
     /*
@@ -40,7 +38,7 @@ public interface MetaClassRegistry {
      * otherwise create one, put it in the registry and return it
      */
     MetaClass getMetaClass(Class theClass);
-    
+
     /*
      * Do we really want these two?
      */
@@ -48,6 +46,7 @@ public interface MetaClassRegistry {
 
     /**
      * Removes a cached MetaClass from the registry
+     *
      * @param theClass The Java class of the MetaClass to remove
      */
     void removeMetaClass(Class theClass);
@@ -72,9 +71,9 @@ public interface MetaClassRegistry {
      * @param listener - the update listener
      */
     void addMetaClassRegistryChangeEventListener(MetaClassRegistryChangeEventListener listener);
-    
+
     /**
-     * adds a meta class change listener for constant meta classes. 
+     * adds a meta class change listener for constant meta classes.
      * This listener cannot be removed!
      *
      * @param listener - the update listener
@@ -103,13 +102,13 @@ public interface MetaClassRegistry {
      * If a MetaClass is added while using this Iterator, then it will be part of the Iteration.
      * If a MetaClass replaces another constant meta class, then the Iteration might show two
      * meta classes for the same class.
-     * <p>
+     * <p/>
      * Note: This Iterator may not used with multiple threads.
      *
      * @return Iterator for the constant meta classes
      */
-    Iterator iterator();    
-    
+    Iterator iterator();
+
     /**
      * Class used as base for the creation of MetaClass implementations.
      * The Class defaults to MetaClassImpl, if the class loading fails to
@@ -117,16 +116,17 @@ public interface MetaClassRegistry {
      * the class name it is created for with the prefix
      * "groovy.runtime.metaclass." By replacing the handle in the registry
      * you can have any control over the creation of what MetaClass is used
-     * for a class that you want to have. 
+     * for a class that you want to have.
      * WARNING: experimental code, likely to change soon
+     *
      * @author Jochen Theodorou
      */
     class MetaClassCreationHandle {
         private boolean disableCustomMetaClassLookup;
 
         public final MetaClass create(Class theClass, MetaClassRegistry registry) {
-           if (disableCustomMetaClassLookup)
-               return createNormalMetaClass(theClass, registry);
+            if (disableCustomMetaClassLookup)
+                return createNormalMetaClass(theClass, registry);
 
             return createWithCustomLookup(theClass, registry);
         }
@@ -137,23 +137,21 @@ public interface MetaClassRegistry {
                 if (DelegatingMetaClass.class.isAssignableFrom(customMetaClass)) {
                     final Constructor customMetaClassConstructor = customMetaClass.getConstructor(MetaClass.class);
                     MetaClass normalMetaClass = createNormalMetaClass(theClass, registry);
-                    return (MetaClass)customMetaClassConstructor.newInstance(normalMetaClass);
-                }
-                else {
+                    return (MetaClass) customMetaClassConstructor.newInstance(normalMetaClass);
+                } else {
                     final Constructor customMetaClassConstructor = customMetaClass.getConstructor(MetaClassRegistry.class, Class.class);
-                    return (MetaClass)customMetaClassConstructor.newInstance(registry, theClass);
+                    return (MetaClass) customMetaClassConstructor.newInstance(registry, theClass);
                 }
-            }
-            catch (final ClassNotFoundException e) {
+            } catch (final ClassNotFoundException e) {
                 return createNormalMetaClass(theClass, registry);
             } catch (final Exception e) {
                 throw new GroovyRuntimeException("Could not instantiate custom Metaclass for class: " + theClass.getName() + ". Reason: " + e, e);
             }
         }
 
-        protected MetaClass createNormalMetaClass(Class theClass,MetaClassRegistry registry) {
+        protected MetaClass createNormalMetaClass(Class theClass, MetaClassRegistry registry) {
             if (GeneratedClosure.class.isAssignableFrom(theClass)) {
-                return new ClosureMetaClass(registry,theClass);
+                return new ClosureMetaClass(registry, theClass);
             } else {
                 return new MetaClassImpl(registry, theClass);
             }
@@ -167,10 +165,11 @@ public interface MetaClassRegistry {
          * Set flag saying to disable lookup of custom meta classes
          * It's enough to call this method only once in your application for handle which was set in to registry
          * as every new handle will inherit this property
+         *
          * @param disableCustomMetaClassLookup flag saying to disable lookup of custom meta classes
          */
         public void setDisableCustomMetaClassLookup(boolean disableCustomMetaClassLookup) {
             this.disableCustomMetaClassLookup = disableCustomMetaClassLookup;
         }
     }
- }
+}

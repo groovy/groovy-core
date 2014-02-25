@@ -38,7 +38,7 @@ public class Proxy extends GroovyObjectSupport {
      * It allows to get around the need for defining dump ctors in subclasses.
      * See unit tests for details.
      */
-    public Proxy wrap(Object adaptee){
+    public Proxy wrap(Object adaptee) {
         setAdaptee(adaptee);
         return this;
     }
@@ -54,12 +54,11 @@ public class Proxy extends GroovyObjectSupport {
     public Object invokeMethod(String name, Object args) {
         try {
             return super.invokeMethod(name, args);
-        }
-        catch (MissingMethodException e) {
+        } catch (MissingMethodException e) {
             return InvokerHelper.invokeMethod(adaptee, name, args);
         }
     }
-    
+
     public Iterator iterator() {
         return InvokerHelper.asIterator(adaptee);
     }

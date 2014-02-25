@@ -36,7 +36,7 @@ public class GroovyCollections {
      * @see #combinations(Collection)
      */
     public static List<List<Object>> combinations(Object[] collections) {
-        return combinations((Iterable)Arrays.asList(collections));
+        return combinations((Iterable) Arrays.asList(collections));
     }
 
     /**
@@ -165,7 +165,7 @@ public class GroovyCollections {
      * @return the minimum value
      */
     public static <T> T min(T[] items) {
-        return min((Iterable<T>)Arrays.asList(items));
+        return min((Iterable<T>) Arrays.asList(items));
     }
 
     /**
@@ -173,7 +173,7 @@ public class GroovyCollections {
      */
     @Deprecated
     public static <T> T min(Collection<T> items) {
-        return min((Iterable<T>)items);
+        return min((Iterable<T>) items);
     }
 
     /**
@@ -203,7 +203,7 @@ public class GroovyCollections {
      * @return the maximum value
      */
     public static <T> T max(T[] items) {
-        return max((Iterable<T>)Arrays.asList(items));
+        return max((Iterable<T>) Arrays.asList(items));
     }
 
     /**
@@ -211,7 +211,7 @@ public class GroovyCollections {
      */
     @Deprecated
     public static <T> T max(Collection<T> items) {
-        return max((Iterable<T>)items);
+        return max((Iterable<T>) items);
     }
 
     /**
@@ -240,7 +240,7 @@ public class GroovyCollections {
      * @return the sum of the items
      */
     public static Object sum(Object[] items) {
-        return sum((Iterable)Arrays.asList(items));
+        return sum((Iterable) Arrays.asList(items));
     }
 
     /**

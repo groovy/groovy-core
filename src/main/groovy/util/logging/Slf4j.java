@@ -57,7 +57,9 @@ import java.util.Locale;
 @GroovyASTTransformationClass("org.codehaus.groovy.transform.LogASTTransformation")
 public @interface Slf4j {
     String value() default "log";
+
     String category() default LogASTTransformation.DEFAULT_CATEGORY_NAME;
+
     Class<? extends LogASTTransformation.LoggingStrategy> loggingStrategy() default Slf4jLoggingStrategy.class;
 
     public static class Slf4jLoggingStrategy extends LogASTTransformation.AbstractLoggingStrategy {
@@ -75,7 +77,8 @@ public @interface Slf4j {
                     new MethodCallExpression(
                             new ClassExpression(classNode(FACTORY_NAME)),
                             "getLogger",
-                            new ConstantExpression(getCategoryName(classNode, categoryName))));
+                            new ConstantExpression(getCategoryName(classNode, categoryName)))
+            );
         }
 
         public boolean isLoggingMethod(String methodName) {

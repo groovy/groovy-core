@@ -21,46 +21,46 @@ import java.util.Date;
 /**
  * TimeDatumDuration represents a time period which results from an
  * arithmetic operation between a TimeDuration object and a DatumDuration object
- * 
+ *
  * @author John Wilson tug@wilson.co.uk
  */
 public class TimeDatumDependentDuration extends DatumDependentDuration {
     public TimeDatumDependentDuration(int years, int months, int days, int hours, int minutes, int seconds, int millis) {
         super(years, months, days, hours, minutes, seconds, millis);
     }
-    
+
     public DatumDependentDuration plus(final Duration rhs) {
         return new TimeDatumDependentDuration(this.getYears(), this.getMonths(),
-                                              this.getDays() + rhs.getDays(), this.getHours() + rhs.getHours(),
-                                              this.getMinutes() + rhs.getMinutes(), this.getSeconds() + rhs.getSeconds(),
-                                              this.getMillis() + rhs.getMillis());
+                this.getDays() + rhs.getDays(), this.getHours() + rhs.getHours(),
+                this.getMinutes() + rhs.getMinutes(), this.getSeconds() + rhs.getSeconds(),
+                this.getMillis() + rhs.getMillis());
     }
-    
+
     public DatumDependentDuration plus(final DatumDependentDuration rhs) {
         return new TimeDatumDependentDuration(this.getYears() + rhs.getYears(), this.getMonths() + rhs.getMonths(),
-                                              this.getDays() + rhs.getDays(), this.getHours() + rhs.getHours(),
-                                              this.getMinutes() + rhs.getMinutes(), this.getSeconds() + rhs.getSeconds(),
-                                              this.getMillis() + rhs.getMillis());
+                this.getDays() + rhs.getDays(), this.getHours() + rhs.getHours(),
+                this.getMinutes() + rhs.getMinutes(), this.getSeconds() + rhs.getSeconds(),
+                this.getMillis() + rhs.getMillis());
     }
-    
+
     public DatumDependentDuration minus(final Duration rhs) {
         return new TimeDatumDependentDuration(this.getYears(), this.getMonths(),
-                                              this.getDays() - rhs.getDays(), this.getHours() - rhs.getHours(),
-                                              this.getMinutes() - rhs.getMinutes(), this.getSeconds() - rhs.getSeconds(),
-                                              this.getMillis() - rhs.getMillis());
+                this.getDays() - rhs.getDays(), this.getHours() - rhs.getHours(),
+                this.getMinutes() - rhs.getMinutes(), this.getSeconds() - rhs.getSeconds(),
+                this.getMillis() - rhs.getMillis());
     }
-    
+
     public DatumDependentDuration minus(final DatumDependentDuration rhs) {
         return new TimeDatumDependentDuration(this.getYears() - rhs.getYears(), this.getMonths() - rhs.getMonths(),
-                                              this.getDays() - rhs.getDays(), this.getHours() - rhs.getHours(),
-                                              this.getMinutes() - rhs.getMinutes(), this.getSeconds() - rhs.getSeconds(),
-                                              this.getMillis() - rhs.getMillis());
+                this.getDays() - rhs.getDays(), this.getHours() - rhs.getHours(),
+                this.getMinutes() - rhs.getMinutes(), this.getSeconds() - rhs.getSeconds(),
+                this.getMillis() - rhs.getMillis());
     }
-    
+
     public From getFrom() {
         return new From() {
             public Date getNow() {
-            final Calendar cal = Calendar.getInstance();
+                final Calendar cal = Calendar.getInstance();
 
                 cal.add(Calendar.YEAR, TimeDatumDependentDuration.this.getYears());
                 cal.add(Calendar.MONTH, TimeDatumDependentDuration.this.getMonths());
@@ -69,7 +69,7 @@ public class TimeDatumDependentDuration extends DatumDependentDuration {
                 cal.add(Calendar.MINUTE, TimeDatumDependentDuration.this.getMinutes());
                 cal.add(Calendar.SECOND, TimeDatumDependentDuration.this.getSeconds());
                 cal.add(Calendar.MILLISECOND, TimeDatumDependentDuration.this.getMillis());
-                
+
                 return cal.getTime();
             }
         };

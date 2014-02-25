@@ -33,7 +33,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * ExpandoMetaClass is a MetaClass that behaves like an Expando, allowing the addition or replacement
  * of methods, properties and constructors on the fly.
- * <p>
+ * <p/>
  * Some examples of usage:
  * <pre>
  * // defines or replaces instance method:
@@ -60,7 +60,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * // defines a new property with an initial value of "blah"
  * metaClass.myProperty = "blah"
  * </pre>
- * <p>
+ * <p/>
  * ExpandoMetaClass also supports a DSL/builder like notation to combine multiple definitions together. So instead of this:
  * <pre>
  * Number.metaClass.multiply = { Amount amount -> amount.times(delegate) }
@@ -73,7 +73,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *     div      { Amount amount -> amount.inverse().times(delegate) }
  * }
  * </pre>
- * <p>
+ * <p/>
  * ExpandoMetaClass also supports runtime mixins. While {@code @Mixin} allows you to mix in new behavior
  * to classes you own and are designing, you can not easily mixin anything to types you didn't own, e.g.
  * from third party libraries or from JDK library classes.
@@ -144,7 +144,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * be used, e.g. when calling <code>schedule</code>, it will be the schedule property (getSchedule method)
  * from Worker that is used. The schedule property from Student will be shadowed but the <code>mixedIn</code>
  * notation allows us to get to that too if we need as the last two lines show.
- * <p>
+ * <p/>
  * We can also be a little more dynamic and not require the CollegeStudent class to
  * be defined at all, e.g.:
  * <pre>
@@ -209,21 +209,21 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * println items                // => [a, cc, bbb]
  * closeQuietly(o as Closeable) // => Lights out - I am closing
  * </pre>
- * <p>
+ * <p/>
  * <b>Further details</b>
- * <p>
+ * <p/>
  * When using the default implementations of MetaClass, methods are only allowed to be added before initialize() is called.
  * In other words you create a new MetaClass, add some methods and then call initialize(). If you attempt to add new methods
  * after initialize() has been called, an error will be thrown. This is to ensure that the MetaClass can operate appropriately
  * in multi-threaded environments as it forces you to do all method additions at the beginning, before using the MetaClass.
- * <p>
+ * <p/>
  * ExpandoMetaClass differs here from the default in that it allows you to add methods after initialize has been called.
  * This is done by setting the initialize flag internally to false and then add the methods. Since this is not thread
  * safe it has to be done in a synchronized block. The methods to check for modification and initialization are
  * therefore synchronized as well. Any method call done through this meta class will first check if the it is
  * synchronized. Should this happen during a modification, then the method cannot be selected or called unless the
  * modification is completed.
- * <p>
+ * <p/>
  *
  * @author Graeme Rocher
  * @since 1.5
@@ -252,10 +252,10 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
     private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
     private final Lock readLock = rwl.readLock();
     private final Lock writeLock = rwl.writeLock();
-    
+
     final private boolean allowChangesAfterInit;
     public boolean inRegistry;
-    
+
     private final Set<MetaMethod> inheritedMetaMethods = new HashSet<MetaMethod>();
     private final Map<String, MetaProperty> beanPropertyCache = new ConcurrentHashMap<String, MetaProperty>();
     private final Map<String, MetaProperty> staticBeanPropertyCache = new ConcurrentHashMap<String, MetaProperty>();
@@ -273,25 +273,25 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
     public ExpandoMetaClass(Class theClass, boolean register, boolean allowChangesAfterInit, MetaMethod[] add) {
         this(GroovySystem.getMetaClassRegistry(), theClass, register, allowChangesAfterInit, add);
     }
-    
+
     public ExpandoMetaClass(MetaClassRegistry registry, Class theClass, boolean register, boolean allowChangesAfterInit, MetaMethod[] add) {
         super(registry, theClass, add);
         this.myMetaClass = InvokerHelper.getMetaClass(getClass());
         this.inRegistry = register;
         this.allowChangesAfterInit = allowChangesAfterInit;
     }
-    
+
     /**
      * Constructs a new ExpandoMetaClass instance for the given class
      *
      * @param theClass The class that the MetaClass applies to
      */
     public ExpandoMetaClass(Class theClass) {
-        this(theClass,false,false,null);
+        this(theClass, false, false, null);
     }
 
-    public ExpandoMetaClass(Class theClass, MetaMethod [] add) {
-        this(theClass,false,false,add);
+    public ExpandoMetaClass(Class theClass, MetaMethod[] add) {
+        this(theClass, false, false, add);
     }
 
     /**
@@ -302,10 +302,10 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
      * @param register True if the MetaClass should be registered inside the MetaClassRegistry. This defaults to true and ExpandoMetaClass will effect all instances if changed
      */
     public ExpandoMetaClass(Class theClass, boolean register) {
-        this(theClass,register,false,null);
+        this(theClass, register, false, null);
     }
 
-    public ExpandoMetaClass(Class theClass, boolean register, MetaMethod [] add) {
+    public ExpandoMetaClass(Class theClass, boolean register, MetaMethod[] add) {
         this(theClass, register, false, add);
     }
 
@@ -313,8 +313,8 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
      * Constructs a new ExpandoMetaClass instance for the given class optionally placing the MetaClass
      * in the MetaClassRegistry automatically
      *
-     * @param theClass The class that the MetaClass applies to
-     * @param register True if the MetaClass should be registered inside the MetaClassRegistry. This defaults to true and ExpandoMetaClass will effect all instances if changed
+     * @param theClass              The class that the MetaClass applies to
+     * @param register              True if the MetaClass should be registered inside the MetaClassRegistry. This defaults to true and ExpandoMetaClass will effect all instances if changed
      * @param allowChangesAfterInit Should the meta class be modifiable after initialization. Default is false.
      */
     public ExpandoMetaClass(Class theClass, boolean register, boolean allowChangesAfterInit) {
@@ -471,6 +471,7 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 
     /**
      * Checks if the meta class is initialized.
+     *
      * @see groovy.lang.MetaClassImpl#isInitialized()
      */
     protected boolean isInitialized() {
@@ -493,7 +494,7 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
                 MetaMethod existing = null;
                 try {
                     existing = pickMethod(metaMethodFromSuper.getName(), metaMethodFromSuper.getNativeParameterTypes());
-                } catch ( GroovyRuntimeException e) {
+                } catch (GroovyRuntimeException e) {
                     // ignore, this happens with overlapping method definitions
                 }
 
@@ -514,7 +515,7 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
             private void addMethodWithKey(final MetaMethod metaMethodFromSuper) {
                 inheritedMetaMethods.add(metaMethodFromSuper);
                 if (metaMethodFromSuper instanceof ClosureMetaMethod) {
-                    ClosureMetaMethod closureMethod = (ClosureMetaMethod)metaMethodFromSuper;
+                    ClosureMetaMethod closureMethod = (ClosureMetaMethod) metaMethodFromSuper;
                     String name = metaMethodFromSuper.getName();
                     final Class declaringClass = metaMethodFromSuper.getDeclaringClass().getTheClass();
                     ClosureMetaMethod localMethod = ClosureMetaMethod.copy(closureMethod);
@@ -532,11 +533,11 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
 
     /**
      * Instances of this class are returned when using the << left shift operator.
-     * <p>
+     * <p/>
      * Example:
-     * <p>
+     * <p/>
      * metaClass.myMethod << { String args -> }
-     * <p>
+     * <p/>
      * This allows callbacks to the ExpandoMetaClass for registering appending methods
      *
      * @author Graeme Rocher
@@ -774,7 +775,7 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
         Object delegate = closure.getDelegate();
         closure.setDelegate(definer);
         closure.setResolveStrategy(Closure.DELEGATE_ONLY);
-        closure.call((Object)null);
+        closure.call((Object) null);
         closure.setDelegate(delegate);
         closure.setResolveStrategy(Closure.DELEGATE_FIRST);
         definer.definition = false;
@@ -788,8 +789,7 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
                 setInitialized(false);
             }
             c.call();
-        }
-        finally {
+        } finally {
             if (initCalled) {
                 setInitialized(true);
             }
@@ -799,7 +799,7 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
             readLock.unlock();
         }
     }
-    
+
     protected void checkInitalised() {
         try {
             readLock.lock();
@@ -1028,7 +1028,7 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
      * @param modifiedSuperExpandos A list of modified super ExpandoMetaClass
      */
     public void refreshInheritedMethods(Set<ExpandoMetaClass> modifiedSuperExpandos) {
-        for (Iterator<ExpandoMetaClass> i = modifiedSuperExpandos.iterator(); i.hasNext();) {
+        for (Iterator<ExpandoMetaClass> i = modifiedSuperExpandos.iterator(); i.hasNext(); ) {
             ExpandoMetaClass superExpando = i.next();
             if (superExpando != this) {
                 refreshInheritedMethods(superExpando);
@@ -1288,12 +1288,12 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
             return new PogoMetaClassSite(site, this);
         return super.createPogoCallCurrentSite(site, sender, args);
     }
-    
+
     @Override
     public MetaMethod retrieveConstructor(Object[] args) {
         Class[] params = MetaClassHelper.convertToTypeArray(args);
         MetaMethod method = pickMethod(GROOVY_CONSTRUCTOR, params);
-        if (method!=null) return method;
+        if (method != null) return method;
         return super.retrieveConstructor(args);
     }
 
@@ -1348,21 +1348,20 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
             final SubClassDefiningClosure definer = new SubClassDefiningClosure(subClass);
             closure.setDelegate(definer);
             closure.setResolveStrategy(Closure.DELEGATE_FIRST);
-            closure.call((Object)null);
+            closure.call((Object) null);
         }
 
         public Object invokeMethod(String name, Object obj) {
             try {
                 return getMetaClass().invokeMethod(this, name, obj);
-            }
-            catch (MissingMethodException mme) {
+            } catch (MissingMethodException mme) {
                 if (obj instanceof Object[]) {
                     if (STATIC_QUALIFIER.equals(name)) {
                         final StaticDefiningClosure staticDef = new StaticDefiningClosure();
                         Closure c = (Closure) ((Object[]) obj)[0];
                         c.setDelegate(staticDef);
                         c.setResolveStrategy(Closure.DELEGATE_ONLY);
-                        c.call((Object)null);
+                        c.call((Object) null);
                         return null;
                     }
                     Object args[] = (Object[]) obj;

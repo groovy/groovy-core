@@ -44,7 +44,7 @@ import java.util.*;
  * <li>ObservableMap.PropertyClearedEvent - all properties have been removed from the map</li>
  * <li>ObservableMap.MultiPropertyEvent - triggered by calling map.putAll(), contains Added|Updated events</li>
  * </ul>
- * <p>
+ * <p/>
  * <strong>Bound properties</strong>
  * <ul>
  * <li><tt>content</tt> - read-only.</li>

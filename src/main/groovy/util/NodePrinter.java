@@ -25,7 +25,7 @@ import java.util.Map;
 
 /**
  * A helper class for creating nested trees of data
- * 
+ *
  * @author <a href="mailto:james@coredevelopers.net">James Strachan</a>
  * @author Christian Stein
  * @version $Revision$
@@ -63,14 +63,12 @@ public class NodePrinter {
                 out.print("()");
             }
             printList((List) value);
-        }
-        else {
+        } else {
             if (value instanceof String) {
                 out.print("('");
                 out.print((String) value);
                 out.println("')");
-            }
-            else {
+            } else {
                 out.println("()");
             }
         }
@@ -81,8 +79,7 @@ public class NodePrinter {
         Object name = node.name();
         if (name != null) {
             out.print(name.toString());
-        }
-        else {
+        } else {
             out.print("null");
         }
     }
@@ -90,8 +87,7 @@ public class NodePrinter {
     protected void printList(List list) {
         if (list.isEmpty()) {
             out.println("");
-        }
-        else {
+        } else {
             out.println(" {");
             out.incrementIndent();
             for (Object value : list) {

@@ -48,8 +48,8 @@ import java.util.*;
  * <li>ObservableSet.MultiElementRemovedEvent - triggered by calling
  * set.removeAll()/set.retainAll()</li>
  * </ul>
- *
- * <p>
+ * <p/>
+ * <p/>
  * <strong>Bound properties</strong>
  * <ul>
  * <li><tt>content</tt> - read-only.</li>

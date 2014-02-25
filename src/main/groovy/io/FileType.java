@@ -19,10 +19,16 @@ package groovy.io;
  * Represents particular files of interest.
  */
 public enum FileType {
-    /** Represents normal files */
+    /**
+     * Represents normal files
+     */
     FILES,
-    /** Represents directories */
+    /**
+     * Represents directories
+     */
     DIRECTORIES,
-    /** Represents both normal files and directories */
+    /**
+     * Represents both normal files and directories
+     */
     ANY
 }

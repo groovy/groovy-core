@@ -44,9 +44,9 @@ import java.lang.annotation.Target;
  * assert theMeaningOfLife == 42
  * assert theMeaningOfLife == baseScript.theMeaningOfLife
  * </pre>
- * In this example, the base script of the current script will be changed to 
+ * In this example, the base script of the current script will be changed to
  * <code>CustomScript</code> allowing usage of <code>getTheMeaningOfLife()</code>
- * method. <code>baseScript</code> variable will become typed shortcut for 
+ * method. <code>baseScript</code> variable will become typed shortcut for
  * <code>this</code> object which enables better IDE support.
  * </p><p>
  * The custom base script may implement the run() method and specify a different
@@ -78,10 +78,11 @@ import java.lang.annotation.Target;
  * Script body run
  * postRunning
  * </pre>
- *
+ * <p/>
  * Note that while you can declare arguments for the script body's method, as
  * the AST is currently implemented they are not accessible in the script body code.
  * </p>
+ *
  * @author Paul King
  * @author Vladimir Orany
  * @author Jim White

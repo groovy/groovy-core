@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
  * Annotation that supports writing constructor call expressions without the 'new'
  * keyword. Instead they can be written "Ruby-style" as a method call to a 'new'
  * method or "Python-style" by just omitting the keyword missing.
- * <p>
+ * <p/>
  * It allows you to write code snippets like this ("Python-style"):
  * <pre>
  * {@code @Newify([Tree,Leaf])} class MyTreeProcessor {
@@ -42,7 +42,7 @@ import java.lang.annotation.Target;
  *     def process() { ... }
  * }
  * </pre>
- *
+ * <p/>
  * After the AST transformation, the following code is passed on for further compilation:
  * <pre>
  * class MyTreeProcessor {
@@ -52,17 +52,17 @@ import java.lang.annotation.Target;
  * </pre>
  * The annotation can be used on a whole class as shown above or selectively on a particular
  * method, constructor or field.
- * <p>
+ * <p/>
  * The "Ruby-style" new conversions occur automatically unless the 'auto=false'
  * flag is given when using the annotation. You might do this if you create a new method
  * using meta programming.
- * <p>
+ * <p/>
  * The "Python-style" conversions require you to specify each class on which you want them
  * to apply. The transformation then works by matching the basename of the provided classes to any
  * similarly named instance method calls not specifically bound to an object, i.e. associated
  * with the 'this' object. In other words <code>Leaf("A")</code> would be transformed to
  * <code>new Leaf("A")</code> but <code>x.Leaf("A")</code> would not be touched.
- * <p>
+ * <p/>
  * An example showing how to use the annotation at different levels:
  * <pre>
  * {@code @Newify(auto=false, value=Foo)}
@@ -83,7 +83,7 @@ import java.lang.annotation.Target;
  *     }
  * }
  * </pre>
- *
+ * <p/>
  * The annotation is intended to be used sparingly; perhaps in DSL scenarios or when
  * using deeply nested structural types. In particular, there is no support for using
  * the facility with two similarly named classes from different packages at the same time.

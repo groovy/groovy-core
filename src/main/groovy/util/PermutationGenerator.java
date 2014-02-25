@@ -23,7 +23,7 @@ import java.util.List;
 
 /**
  * Systematically generate permutations.
- *
+ * <p/>
  * Adapted from Java Code by Michael Gilleland (released with no restrictions) using an algorithm described here:
  * Kenneth H. Rosen, Discrete Mathematics and Its Applications, 2nd edition (NY: McGraw-Hill, 1991), pp. 282-284
  */

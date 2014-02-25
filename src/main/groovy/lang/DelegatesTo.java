@@ -21,11 +21,11 @@ import java.lang.annotation.*;
  * This annotation can be used by API or DSL writers to document parameters which accept a closure.
  * In that case, using this annotation, you can specify what the delegate type of the closure will
  * be. This is important for IDE support.
- * <p>
+ * <p/>
  * This annotation can also be used to help the type checker ({@link groovy.transform.TypeChecked})
  * which would not report errors then if the delegate is of the documented type. Of course, it is
  * also compatible with {@link groovy.transform.CompileStatic}.
- * <p>
+ * <p/>
  * Example:
  * <pre>
  * // Document the fact that the delegate of the closure will be an ExecSpec
@@ -41,7 +41,9 @@ import java.lang.annotation.*;
 @Target({ElementType.PARAMETER})
 public @interface DelegatesTo {
     Class value() default Target.class;
+
     int strategy() default Closure.OWNER_FIRST;
+
     int genericTypeIndex() default -1;
 
     String target() default "";

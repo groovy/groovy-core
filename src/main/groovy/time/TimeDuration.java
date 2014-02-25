@@ -21,13 +21,13 @@ import java.util.Date;
 /**
  * TimeDuration represents time periods expressed in units of hours, minutes,
  * seconds and milliseconds.
- * <p>
+ * <p/>
  * Whilst we can't say how long a month is without knowing the year and the name of the month,
  * we know how long a second is independent of the date.
- * <p>
+ * <p/>
  * This is not 100% true for minutes.
  * Minutes can be 59, 60 or 61 seconds long (due to leap seconds.)
- * <p>
+ * <p/>
  * If you ask Duration to convert itself to milliseconds then it will work on the basis of 60 seconds in a minute.
  * If you add or subtract it from a date it will take leap seconds into account.
  *
@@ -37,38 +37,38 @@ import java.util.Date;
 public class TimeDuration extends Duration {
     public TimeDuration(final int hours, final int minutes, final int seconds, final int millis) {
         super(0, hours, minutes, seconds, millis);
-     }
-    
+    }
+
     public TimeDuration(final int days, final int hours, final int minutes, final int seconds, final int millis) {
         super(days, hours, minutes, seconds, millis);
-     }
-    
+    }
+
     public Duration plus(final Duration rhs) {
         return new TimeDuration(this.getDays() + rhs.getDays(), this.getHours() + rhs.getHours(),
-                                this.getMinutes() + rhs.getMinutes(), this.getSeconds() + rhs.getSeconds(),
-                                this.getMillis() + rhs.getMillis());
+                this.getMinutes() + rhs.getMinutes(), this.getSeconds() + rhs.getSeconds(),
+                this.getMillis() + rhs.getMillis());
     }
-    
+
     public DatumDependentDuration plus(final DatumDependentDuration rhs) {
         return new TimeDatumDependentDuration(rhs.getYears(), rhs.getMonths(),
-                                              this.getDays() + rhs.getDays(), this.getHours() + rhs.getHours(),
-                                              this.getMinutes() + rhs.getMinutes(), this.getSeconds() + rhs.getSeconds(),
-                                              this.getMillis() + rhs.getMillis());
+                this.getDays() + rhs.getDays(), this.getHours() + rhs.getHours(),
+                this.getMinutes() + rhs.getMinutes(), this.getSeconds() + rhs.getSeconds(),
+                this.getMillis() + rhs.getMillis());
     }
-    
+
     public Duration minus(final Duration rhs) {
         return new TimeDuration(this.getDays() - rhs.getDays(), this.getHours() - rhs.getHours(),
-                                this.getMinutes() - rhs.getMinutes(), this.getSeconds() - rhs.getSeconds(),
-                                this.getMillis() - rhs.getMillis());
+                this.getMinutes() - rhs.getMinutes(), this.getSeconds() - rhs.getSeconds(),
+                this.getMillis() - rhs.getMillis());
     }
-    
+
     public DatumDependentDuration minus(final DatumDependentDuration rhs) {
         return new TimeDatumDependentDuration(-rhs.getYears(), -rhs.getMonths(),
-                                              this.getDays() - rhs.getDays(), this.getHours() - rhs.getHours(),
-                                              this.getMinutes() - rhs.getMinutes(), this.getSeconds() - rhs.getSeconds(),
-                                              this.getMillis() - rhs.getMillis());
+                this.getDays() - rhs.getDays(), this.getHours() - rhs.getHours(),
+                this.getMinutes() - rhs.getMinutes(), this.getSeconds() - rhs.getSeconds(),
+                this.getMillis() - rhs.getMillis());
     }
-    
+
     public Date getAgo() {
         final Calendar cal = Calendar.getInstance();
 
@@ -77,9 +77,9 @@ public class TimeDuration extends Duration {
         cal.add(Calendar.MINUTE, -this.getMinutes());
         cal.add(Calendar.SECOND, -this.getSeconds());
         cal.add(Calendar.MILLISECOND, -this.getMillis());
-        
+
         return cal.getTime();
-    }        
+    }
 
     public From getFrom() {
         return new From() {
@@ -91,7 +91,7 @@ public class TimeDuration extends Duration {
                 cal.add(Calendar.MINUTE, TimeDuration.this.getMinutes());
                 cal.add(Calendar.SECOND, TimeDuration.this.getSeconds());
                 cal.add(Calendar.MILLISECOND, TimeDuration.this.getMillis());
-                
+
                 return cal.getTime();
             }
         };

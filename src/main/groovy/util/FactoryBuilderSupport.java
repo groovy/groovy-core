@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 
 /**
  * Mix of BuilderSupport and SwingBuilder's factory support.
- *
+ * <p/>
  * Warning: this implementation is not thread safe and should not be used
  * across threads in a multi-threaded environment.  A locking mechanism
  * should be implemented by the subclass if use is expected across
@@ -82,7 +82,7 @@ public abstract class FactoryBuilderSupport extends Binding {
      * @param name  the node's name
      * @param type  a Class that may be assignable to the value's class
      * @return true if type is assignable to the value's class, false if value
-     *         is null.
+     * is null.
      */
     public static boolean checkValueIsType(Object value, Object name, Class type) {
         if (value != null) {
@@ -104,7 +104,7 @@ public abstract class FactoryBuilderSupport extends Binding {
      * @param name  the node's name
      * @param type  a Class that may be assignable to the value's class
      * @return Returns true if type is assignable to the value's class, false if value is
-     *         null or a String.
+     * null or a String.
      */
     public static boolean checkValueIsTypeNotString(Object value, Object name, Class type) {
         if (value != null) {
@@ -155,7 +155,7 @@ public abstract class FactoryBuilderSupport extends Binding {
 
     private Set<String> getRegistrationGroup(String name) {
         Set<String> group = registrationGroup.get(name);
-        if (group == null ) {
+        if (group == null) {
             group = new TreeSet<String>();
             registrationGroup.put(name, group);
         }
@@ -216,8 +216,8 @@ public abstract class FactoryBuilderSupport extends Binding {
     public Object getVariable(String name) {
         try {
             return getProxyBuilder().doGetVariable(name);
-        } catch(MissingPropertyException mpe) {
-            if(mpe.getProperty().equals(name) && propertyMissingDelegate != null) {
+        } catch (MissingPropertyException mpe) {
+            if (mpe.getProperty().equals(name) && propertyMissingDelegate != null) {
                 return propertyMissingDelegate.call(new Object[]{name});
             }
             throw mpe;
@@ -262,8 +262,8 @@ public abstract class FactoryBuilderSupport extends Binding {
             } else {
                 try {
                     return getMetaClass().getProperty(this, property);
-                } catch(MissingPropertyException mpe2) {
-                    if(mpe2.getProperty().equals(property) && propertyMissingDelegate != null) {
+                } catch (MissingPropertyException mpe2) {
+                    if (mpe2.getProperty().equals(property) && propertyMissingDelegate != null) {
                         return propertyMissingDelegate.call(new Object[]{property});
                     }
                     throw mpe2;
@@ -769,8 +769,8 @@ public abstract class FactoryBuilderSupport extends Binding {
         } else {
             try {
                 return dispatchNodeCall(name, args);
-            } catch(MissingMethodException mme) {
-                if(mme.getMethod().equals(methodName) && methodMissingDelegate != null) {
+            } catch (MissingMethodException mme) {
+                if (mme.getMethod().equals(methodName) && methodMissingDelegate != null) {
                     return methodMissingDelegate.call(methodName, args);
                 }
                 throw mme;
@@ -1116,6 +1116,7 @@ public abstract class FactoryBuilderSupport extends Binding {
 
     /**
      * Stores the thread local states in a Map that can be passed across threads
+     *
      * @return the map
      */
     protected Map<String, Object> getContinuationData() {
@@ -1127,8 +1128,9 @@ public abstract class FactoryBuilderSupport extends Binding {
 
     /**
      * Restores the state of the current builder to the same state as an older build.
-     * 
+     * <p/>
      * Caution, this will destroy rather than merge the current build context if there is any,
+     *
      * @param data the data retrieved from a compatible getContinuationData call
      */
     protected void restoreFromContinuationData(Map<String, Object> data) {
@@ -1160,7 +1162,7 @@ public abstract class FactoryBuilderSupport extends Binding {
             getProxyBuilder().setVariable(SCRIPT_CLASS_NAME, script.getClass().getName());
             return script.run();
         } finally {
-            if(oldScriptName != null) {
+            if (oldScriptName != null) {
                 getProxyBuilder().setVariable(SCRIPT_CLASS_NAME, oldScriptName);
             } else {
                 getProxyBuilder().getVariables().remove(SCRIPT_CLASS_NAME);
@@ -1197,8 +1199,7 @@ public abstract class FactoryBuilderSupport extends Binding {
             localProxyBuilder.set(builder);
             closure.setDelegate(builder);
             result = closure.call();
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
             // remove contexts created after we started
             localProxyBuilder.set(previousProxyBuilder);
             if (getProxyBuilder().getContexts().contains(previousContext)) {
@@ -1209,8 +1210,7 @@ public abstract class FactoryBuilderSupport extends Binding {
                 }
             }
             throw e;
-        }
-        finally {
+        } finally {
             localProxyBuilder.set(previousProxyBuilder);
         }
 
@@ -1229,7 +1229,7 @@ public abstract class FactoryBuilderSupport extends Binding {
      * @param name    the node to build on the 'parent' builder.
      * @param closure the closure to be executed under the temporary builder.
      * @return a node that responds to value of name with the closure's result as its
-     *         value.
+     * value.
      * @throws RuntimeException - any exception the closure might have thrown during
      *                          execution.
      */
@@ -1255,7 +1255,7 @@ public abstract class FactoryBuilderSupport extends Binding {
      * @param name       the node to build on the 'parent' builder.
      * @param closure    the closure to be executed under the temporary builder.
      * @return a node that responds to value of name with the closure's result as its
-     *         value.
+     * value.
      * @throws RuntimeException - any exception the closure might have thrown during
      *                          execution.
      */

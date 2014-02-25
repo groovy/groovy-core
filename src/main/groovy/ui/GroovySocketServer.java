@@ -29,14 +29,14 @@ import java.net.URL;
 
 /**
  * Simple server that executes supplied script against a socket.
- * <p>
- * Typically this is used from the groovy command line agent but it can be 
+ * <p/>
+ * Typically this is used from the groovy command line agent but it can be
  * invoked programatically. To run this program from the command line please
  * refer to the command line documentation at <a href="http://groovy.codehaus.org/Groovy+CLI">
  * Groovy CLI</a>.
- * <p>
- * Here is an example of how to use this class to open a listening socket on the server, 
- * listen for incoming data, and then echo the data back to the client in reverse order: 
+ * <p/>
+ * Here is an example of how to use this class to open a listening socket on the server,
+ * listen for incoming data, and then echo the data back to the client in reverse order:
  * <pre>
  * new GroovySocketServer(
  *         new GroovyShell(),      // evaluator
@@ -47,11 +47,11 @@ import java.net.URL;
  * </pre>
  * There are several variables in the script binding:
  * <ul>
- * <li>line - The data from the socket</li> 
- * <li>out - The output PrintWriter, should you need it for some reason.</li> 
- * <li>socket - The socket, should you need it for some reason.</li> 
+ * <li>line - The data from the socket</li>
+ * <li>out - The output PrintWriter, should you need it for some reason.</li>
+ * <li>socket - The socket, should you need it for some reason.</li>
  * </ul>
- * 
+ *
  * @author Jeremy Rayner
  */
 public class GroovySocketServer implements Runnable {
@@ -60,23 +60,18 @@ public class GroovySocketServer implements Runnable {
     private boolean isScriptFile;
     private String scriptFilenameOrText;
     private boolean autoOutput;
-    
+
     /**
-    * This creates and starts the socket server on a new Thread. There is no need to call run or spawn
-    * a new thread yourself. 
-    * @param groovy
-    *       The GroovyShell object that evaluates the incoming text. If you need additional classes in the 
-    *       classloader then configure that through this object. 
-    * @param isScriptFile
-    *       Whether the incoming socket data String will be a script or a file path.
-    * @param scriptFilenameOrText
-    *       This will be a groovy script or a file location depending on the argument isScriptFile. 
-    * @param autoOutput
-    *       whether output should be automatically echoed back to the client
-    * @param port
-    *       the port to listen on
-    * 
-    */ 
+     * This creates and starts the socket server on a new Thread. There is no need to call run or spawn
+     * a new thread yourself.
+     *
+     * @param groovy               The GroovyShell object that evaluates the incoming text. If you need additional classes in the
+     *                             classloader then configure that through this object.
+     * @param isScriptFile         Whether the incoming socket data String will be a script or a file path.
+     * @param scriptFilenameOrText This will be a groovy script or a file location depending on the argument isScriptFile.
+     * @param autoOutput           whether output should be automatically echoed back to the client
+     * @param port                 the port to listen on
+     */
     public GroovySocketServer(GroovyShell groovy, boolean isScriptFile, String scriptFilenameOrText, boolean autoOutput, int port) {
         this.groovy = groovy;
         this.isScriptFile = isScriptFile;
@@ -85,16 +80,16 @@ public class GroovySocketServer implements Runnable {
         try {
             url = new URL("http", InetAddress.getLocalHost().getHostAddress(), port, "/");
             System.out.println("groovy is listening on port " + port);
-        } catch (IOException e) { 
+        } catch (IOException e) {
             e.printStackTrace();
         }
         new Thread(this).start();
     }
 
     /**
-    * Runs this server. There is typically no need to call this method, as the object's constructor
-    * creates a new thread and runs this object automatically. 
-    */ 
+     * Runs this server. There is typically no need to call this method, as the object's constructor
+     * creates a new thread and runs this object automatically.
+     */
     public void run() {
         try {
             ServerSocket serverSocket = new ServerSocket(url.getPort());
@@ -116,15 +111,15 @@ public class GroovySocketServer implements Runnable {
             e.printStackTrace();
         }
     }
-    
+
     class GroovyClientConnection implements Runnable {
         private Script script;
         private Socket socket;
         private BufferedReader reader;
         private PrintWriter writer;
         private boolean autoOutputFlag;
-    
-        GroovyClientConnection(Script script, boolean autoOutput,Socket socket) throws IOException {
+
+        GroovyClientConnection(Script script, boolean autoOutput, Socket socket) throws IOException {
             this.script = script;
             this.autoOutputFlag = autoOutput;
             this.socket = socket;
@@ -132,6 +127,7 @@ public class GroovySocketServer implements Runnable {
             writer = new PrintWriter(socket.getOutputStream());
             new Thread(this, "Groovy client connection - " + socket.getInetAddress().getHostAddress()).start();
         }
+
         public void run() {
             try {
                 String line;

@@ -57,7 +57,7 @@ public final class MapWithDefault<K, V> implements Map<K, V> {
 
     public V get(Object key) {
         if (!delegate.containsKey(key)) {
-            delegate.put((K)key, (V)initClosure.call(new Object[]{key}));
+            delegate.put((K) key, (V) initClosure.call(new Object[]{key}));
         }
         return delegate.get(key);
     }

@@ -24,7 +24,7 @@ import java.util.Map;
 
 /**
  * Helper to turn a list with an even number of elements into a Map.
- * 
+ *
  * @author Pilho Kim
  * @author Tim Tiemens
  */
@@ -43,8 +43,8 @@ public class SpreadMap extends HashMap {
     }
 
     /**
-     * @since 1.8.0
      * @param list the list to make spreadable
+     * @since 1.8.0
      */
     public SpreadMap(List list) {
         this(list.toArray());
@@ -52,17 +52,17 @@ public class SpreadMap extends HashMap {
 
     public Object put(Object key, Object value) {
         throw new RuntimeException("SpreadMap: " + this + " is an immutable map, and so ("
-                                   + key + ": " + value + ") cannot be added.");
+                + key + ": " + value + ") cannot be added.");
     }
 
     public Object remove(Object key) {
         throw new RuntimeException("SpreadMap: " + this + " is an immutable map, and so the key ("
-                                   + key + ") cannot be deleted.");
+                + key + ") cannot be deleted.");
     }
 
     public void putAll(Map t) {
         throw new RuntimeException("SpreadMap: " + this + " is an immutable map, and so the map ("
-                                   + t + ") cannot be put in this spreadMap.");
+                + t + ") cannot be put in this spreadMap.");
     }
 
     public boolean equals(Object that) {
@@ -70,7 +70,7 @@ public class SpreadMap extends HashMap {
     }
 
     public boolean equals(SpreadMap that) {
-        if (that == null) return false;        
+        if (that == null) return false;
 
         if (size() == that.size()) {
             for (Object key : keySet()) {

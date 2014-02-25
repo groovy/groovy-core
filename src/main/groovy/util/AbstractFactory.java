@@ -37,24 +37,24 @@ public abstract class AbstractFactory implements Factory {
         // do nothing
     }
 
-    public boolean onHandleNodeAttributes( FactoryBuilderSupport builder, Object node,
-            Map attributes ) {
+    public boolean onHandleNodeAttributes(FactoryBuilderSupport builder, Object node,
+                                          Map attributes) {
         return true;
     }
 
-    public boolean onNodeChildren( FactoryBuilderSupport builder, Object node, Closure childContent) {
+    public boolean onNodeChildren(FactoryBuilderSupport builder, Object node, Closure childContent) {
         return true;
     }
 
-    public void onNodeCompleted( FactoryBuilderSupport builder, Object parent, Object node ) {
+    public void onNodeCompleted(FactoryBuilderSupport builder, Object parent, Object node) {
         // do nothing
     }
 
-    public void setParent( FactoryBuilderSupport builder, Object parent, Object child ) {
+    public void setParent(FactoryBuilderSupport builder, Object parent, Object child) {
         // do nothing
     }
 
-    public void setChild( FactoryBuilderSupport builder, Object parent, Object child ) {
+    public void setChild(FactoryBuilderSupport builder, Object parent, Object child) {
         // do nothing
     }
 

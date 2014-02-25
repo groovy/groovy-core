@@ -30,7 +30,7 @@ import java.io.Writer;
 
 /**
  * Represents any closure object in Groovy.
- * <p>
+ * <p/>
  * Groovy allows instances of Closures to be called in a
  * short form. For example:
  * <pre>
@@ -62,7 +62,7 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
     /**
      * With this resolveStrategy set the closure will attempt to resolve property references and methods to the
      * owner first, then the delegate (<b>this is the default strategy</b>).
-     *
+     * <p/>
      * For example the following code :
      * <pre>
      * class Test {
@@ -96,7 +96,7 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
     /**
      * With this resolveStrategy set the closure will attempt to resolve property references and methods to the
      * delegate first then the owner.
-     *
+     * <p/>
      * For example the following code :
      * <pre>
      * class Test {
@@ -131,7 +131,7 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
     /**
      * With this resolveStrategy set the closure will resolve property references and methods to the owner only
      * and not call the delegate at all. For example the following code :
-     *
+     * <p/>
      * <pre>
      * class Test {
      *     def x = 30
@@ -151,7 +151,7 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
      *
      * new Test().run()
      * </pre>
-     *
+     * <p/>
      * will throw "No such property: z" error because even if the z variable is declared in the delegate, no
      * lookup is made.<p>
      * <i>Note that local variables are always looked up first, independently of the resolution strategy.</i>
@@ -161,7 +161,7 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
     /**
      * With this resolveStrategy set the closure will resolve property references and methods to the delegate
      * only and entirely bypass the owner. For example the following code :
-     *
+     * <p/>
      * <pre>
      * class Test {
      *     def x = 30
@@ -182,7 +182,7 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
      *
      * new Test().run()
      * </pre>
-     *
+     * <p/>
      * will throw an error because even if the owner declares a "z" field, the resolution strategy will bypass
      * lookup in the owner.<p>
      * <i>Note that local variables are always looked up first, independently of the resolution strategy.</i>
@@ -241,7 +241,6 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
      * The default is Closure.OWNER_FIRST
      *
      * @param resolveStrategy The resolve strategy to set
-     *
      * @see groovy.lang.Closure#DELEGATE_FIRST
      * @see groovy.lang.Closure#DELEGATE_ONLY
      * @see groovy.lang.Closure#OWNER_FIRST
@@ -256,7 +255,6 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
      * Gets the strategy which the closure users to resolve methods and properties
      *
      * @return The resolve strategy
-     *
      * @see groovy.lang.Closure#DELEGATE_FIRST
      * @see groovy.lang.Closure#DELEGATE_ONLY
      * @see groovy.lang.Closure#OWNER_FIRST
@@ -267,7 +265,7 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
         return resolveStrategy;
     }
 
-    public Object getThisObject(){
+    public Object getThisObject() {
         return thisObject;
     }
 
@@ -291,7 +289,7 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
         } else if ("thisObject".equals(property)) {
             return getThisObject();
         } else {
-            switch(resolveStrategy) {
+            switch (resolveStrategy) {
                 case DELEGATE_FIRST:
                     return getPropertyDelegateFirst(property);
                 case DELEGATE_ONLY:
@@ -331,7 +329,7 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
             }
             throw e1;
 
-        } catch (MissingFieldException e2)  { // see GROOVY-5875
+        } catch (MissingFieldException e2) { // see GROOVY-5875
             if (secondTry != null && firstTry != this && firstTry != secondTry) {
                 try {
                     // let's try getting the property on the second object
@@ -354,19 +352,19 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
         } else if ("directive".equals(property)) {
             setDirective(((Number) newValue).intValue());
         } else {
-            switch(resolveStrategy) {
+            switch (resolveStrategy) {
                 case DELEGATE_FIRST:
                     setPropertyDelegateFirst(property, newValue);
-                break;
+                    break;
                 case DELEGATE_ONLY:
                     InvokerHelper.setProperty(this.delegate, property, newValue);
-                break;
+                    break;
                 case OWNER_ONLY:
                     InvokerHelper.setProperty(this.owner, property, newValue);
-                break;
+                    break;
                 case TO_SELF:
                     super.setProperty(property, newValue);
-                break;
+                    break;
                 default:
                     setPropertyOwnerFirst(property, newValue);
             }
@@ -400,8 +398,8 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
         }
     }
 
-    public boolean isCase(Object candidate){
-        if (bcw==null) {
+    public boolean isCase(Object candidate) {
+        if (bcw == null) {
             bcw = new BooleanClosureWrapper(this);
         }
         return bcw.call(candidate);
@@ -420,11 +418,11 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
     @SuppressWarnings("unchecked")
     public V call(Object... args) {
         try {
-            return (V) getMetaClass().invokeMethod(this,"doCall",args);
+            return (V) getMetaClass().invokeMethod(this, "doCall", args);
         } catch (InvokerInvocationException e) {
             ExceptionUtils.sneakyThrow(e.getCause());
             return null; // unreachable statement
-        }  catch (Exception e) {
+        } catch (Exception e) {
             return (V) throwRuntimeException(e);
         }
     }
@@ -449,7 +447,7 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
 
     /**
      * @return the owner Object to which method calls will go which is
-     *         typically the outer class when the closure is constructed
+     * typically the outer class when the closure is constructed
      */
     public Object getOwner() {
         return this.owner;
@@ -457,7 +455,7 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
 
     /**
      * @return the delegate Object to which method calls will go which is
-     *         typically the outer class when the closure is constructed
+     * typically the outer class when the closure is constructed
      */
     public Object getDelegate() {
         return this.delegate;
@@ -506,7 +504,7 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
 
     /**
      * Support for Closure currying.
-     * <p>
+     * <p/>
      * Typical usage:
      * <pre class="groovyTestCase">
      * def multiply = { a, b -> a * b }
@@ -534,7 +532,6 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
      * assert e() == 10
      * assert e(5) == 15
      * </pre>
-     *
      *
      * @param arguments the arguments to bind
      * @return the new closure with its arguments bound
@@ -608,7 +605,7 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
      * // [BEE, Cat, ant, dog]  Not found but would belong in position 3
      * </pre>
      *
-     * @param n the index from which to bind parameters (may be -ve in which case it will be normalized)
+     * @param n         the index from which to bind parameters (may be -ve in which case it will be normalized)
      * @param arguments the arguments to bind
      * @return the new closure with its arguments bound
      * @see #curry(Object...)
@@ -630,7 +627,7 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
 
     /**
      * Support for Closure forward composition.
-     * <p>
+     * <p/>
      * Typical usage:
      * <pre>
      * def twice = { a -> a * 2 }
@@ -649,7 +646,7 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
 
     /**
      * Support for Closure reverse composition.
-     * <p>
+     * <p/>
      * Typical usage:
      * <pre>
      * def twice = { a -> a * 2 }
@@ -692,7 +689,7 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
      * values high average-scenario performance and so concurrent calls on the memoized function with identical argument values
      * may not necessarily be able to benefit from each other's cached return value. With this having been mentioned,
      * the performance trade-off still makes concurrent use of memoized functions safe and highly recommended.
-     *
+     * <p/>
      * The cache gets garbage-collected together with the memoized closure.
      *
      * @return A new closure forwarding to the original one while caching the results
@@ -711,14 +708,15 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
      * values high average-scenario performance and so concurrent calls on the memoized function with identical argument values
      * may not necessarily be able to benefit from each other's cached return value. With this having been mentioned,
      * the performance trade-off still makes concurrent use of memoized functions safe and highly recommended.
-     *
+     * <p/>
      * The cache gets garbage-collected together with the memoized closure.
      *
      * @param maxCacheSize The maximum size the cache can grow to
      * @return A new function forwarding to the original one while caching the results
      */
     public Closure<V> memoizeAtMost(final int maxCacheSize) {
-        if (maxCacheSize < 0) throw new IllegalArgumentException("A non-negative number is required as the maxCacheSize parameter for memoizeAtMost.");
+        if (maxCacheSize < 0)
+            throw new IllegalArgumentException("A non-negative number is required as the maxCacheSize parameter for memoizeAtMost.");
 
         return Memoize.buildMemoizeFunction(new LRUCache(maxCacheSize), this);
     }
@@ -739,13 +737,15 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
      * may not necessarily be able to benefit from each other's cached return value. Also the protectedCacheSize parameter
      * might not be respected accurately in such scenarios for some periods of time. With this having been mentioned,
      * the performance trade-off still makes concurrent use of memoized functions safe and highly recommended.
-     *
+     * <p/>
      * The cache gets garbage-collected together with the memoized closure.
+     *
      * @param protectedCacheSize Number of cached return values to protect from garbage collection
      * @return A new function forwarding to the original one while caching the results
      */
     public Closure<V> memoizeAtLeast(final int protectedCacheSize) {
-        if (protectedCacheSize < 0) throw new IllegalArgumentException("A non-negative number is required as the protectedCacheSize parameter for memoizeAtLeast.");
+        if (protectedCacheSize < 0)
+            throw new IllegalArgumentException("A non-negative number is required as the protectedCacheSize parameter for memoizeAtLeast.");
 
         return Memoize.buildSoftReferenceMemoizeFunction(protectedCacheSize, new UnlimitedConcurrentCache(), this);
     }
@@ -768,16 +768,20 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
      * may not necessarily be able to benefit from each other's cached return value. Also the protectedCacheSize parameter
      * might not be respected accurately in such scenarios for some periods of time. With this having been mentioned,
      * the performance trade-off still makes concurrent use of memoized functions safe and highly recommended.
-     *
+     * <p/>
      * The cache gets garbage-collected together with the memoized closure.
+     *
      * @param protectedCacheSize Number of cached return values to protect from garbage collection
-     * @param maxCacheSize The maximum size the cache can grow to
+     * @param maxCacheSize       The maximum size the cache can grow to
      * @return A new function forwarding to the original one while caching the results
      */
     public Closure<V> memoizeBetween(final int protectedCacheSize, final int maxCacheSize) {
-        if (protectedCacheSize < 0) throw new IllegalArgumentException("A non-negative number is required as the protectedCacheSize parameter for memoizeBetween.");
-        if (maxCacheSize < 0) throw new IllegalArgumentException("A non-negative number is required as the maxCacheSize parameter for memoizeBetween.");
-        if (protectedCacheSize > maxCacheSize) throw new IllegalArgumentException("The maxCacheSize parameter to memoizeBetween is required to be greater or equal to the protectedCacheSize parameter.");
+        if (protectedCacheSize < 0)
+            throw new IllegalArgumentException("A non-negative number is required as the protectedCacheSize parameter for memoizeBetween.");
+        if (maxCacheSize < 0)
+            throw new IllegalArgumentException("A non-negative number is required as the maxCacheSize parameter for memoizeBetween.");
+        if (protectedCacheSize > maxCacheSize)
+            throw new IllegalArgumentException("The maxCacheSize parameter to memoizeBetween is required to be greater or equal to the protectedCacheSize parameter.");
 
         return Memoize.buildSoftReferenceMemoizeFunction(protectedCacheSize, new LRUCache(maxCacheSize), this);
     }
@@ -813,6 +817,7 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
      * the calculation and, instead of a recursive call to itself or another function, it return back a new closure,
      * which will be executed by the trampoline as the next step.
      * Once a non-closure value is returned, the trampoline stops and returns the value as the final result.
+     *
      * @return A closure, which will execute the original closure on a trampoline.
      * @see #trampoline(Object...)
      */
@@ -1016,7 +1021,6 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
      * fields are null, allowing proper serialization when one of them is not serializable.
      *
      * @return a serializable closure.
-     *
      * @since 1.8.5
      */
     @SuppressWarnings("unchecked")
@@ -1033,11 +1037,11 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
      * replaced with the supplied parameters. Use this when you want to rehydrate a
      * closure which has been made serializable thanks to the {@link #dehydrate()}
      * method.
-     * @param delegate the closure delegate
-     * @param owner the closure owner
+     *
+     * @param delegate   the closure delegate
+     * @param owner      the closure owner
      * @param thisObject the closure "this" object
      * @return a copy of this closure where owner, delegate and thisObject are replaced
-     *
      * @since 1.8.5
      */
     @SuppressWarnings("unchecked")

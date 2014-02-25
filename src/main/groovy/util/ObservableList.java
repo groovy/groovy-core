@@ -48,7 +48,7 @@ import java.util.*;
  * <li>ObservableList.MultiElementRemovedEvent - triggered by calling
  * list.removeAll()/list.retainAll()</li>
  * </ul>
- * <p>
+ * <p/>
  * <strong>Bound properties</strong>
  * <ul>
  * <li><tt>content</tt> - read-only.</li>
@@ -365,7 +365,7 @@ public class ObservableList implements List {
 
     protected class ObservableIterator implements Iterator {
         private Iterator iterDelegate;
-        protected int cursor = -1 ;
+        protected int cursor = -1;
 
         public ObservableIterator(Iterator iterDelegate) {
             this.iterDelegate = iterDelegate;

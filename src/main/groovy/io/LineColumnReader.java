@@ -64,10 +64,10 @@ public class LineColumnReader extends BufferedReader {
     /**
      * Marks the present position in the stream. Subsequent calls to reset() will attempt to reposition the stream to this point.
      *
-     * @param readAheadLimit  Limit on the number of characters that may be read while still preserving the mark.
-     *      An attempt to reset the stream after reading characters up to this limit or beyond may fail.
-     *      A limit value larger than the size of the input buffer will cause a new buffer to be allocated whose size is no smaller than limit.
-     *      Therefore large values should be used with care.
+     * @param readAheadLimit Limit on the number of characters that may be read while still preserving the mark.
+     *                       An attempt to reset the stream after reading characters up to this limit or beyond may fail.
+     *                       A limit value larger than the size of the input buffer will cause a new buffer to be allocated whose size is no smaller than limit.
+     *                       Therefore large values should be used with care.
      */
     @Override
     public void mark(int readAheadLimit) throws IOException {
@@ -90,7 +90,7 @@ public class LineColumnReader extends BufferedReader {
      * Reads a single character.
      *
      * @return The character read, as an integer in the range 0 to 65535 (0x00-0xffff),
-     *      or -1 if the end of the stream has been reached
+     * or -1 if the end of the stream has been reached
      */
     @Override
     public int read() throws IOException {
@@ -102,14 +102,14 @@ public class LineColumnReader extends BufferedReader {
 
         int charRead = super.read();
         if (charRead > -1) {
-            char c = (char)charRead;
+            char c = (char) charRead;
             // found a \r or \n, like on Mac or Unix
             // could also be Windows' \r\n
             if (c == '\r' || c == '\n') {
                 newLineWasRead = true;
                 if (c == '\r') {
                     mark(1);
-                    c = (char)super.read();
+                    c = (char) super.read();
                     // check if we have \r\n like on Windows
                     // if it's not \r\n we reset, otherwise, the \n is just consummed
                     if (c != '\n') {
@@ -127,9 +127,9 @@ public class LineColumnReader extends BufferedReader {
     /**
      * Reads characters into a portion of an array.
      *
-     * @param chars Destination array of char
+     * @param chars       Destination array of char
      * @param startOffset Offset at which to start storing characters
-     * @param length Maximum number of characters to read
+     * @param length      Maximum number of characters to read
      * @return an exception if an error occurs
      */
     @Override
@@ -137,7 +137,7 @@ public class LineColumnReader extends BufferedReader {
         for (int i = startOffset; i <= startOffset + length; i++) {
             int readInt = read();
             if (readInt == -1) return i - startOffset;
-            chars[i] = (char)readInt;
+            chars[i] = (char) readInt;
         }
         return length;
     }
@@ -147,18 +147,18 @@ public class LineColumnReader extends BufferedReader {
      * a carriage return ('\r'), or a carriage return followed immediately by a linefeed.
      *
      * @return A String containing the contents of the line, not including any line-termination characters,
-     *      or null if the end of the stream has been reached
+     * or null if the end of the stream has been reached
      */
     @Override
     public String readLine() throws IOException {
         StringBuilder result = new StringBuilder();
-        for (;;) {
+        for (; ; ) {
             int intRead = read();
             if (intRead == -1) {
                 return result.length() == 0 ? null : result.toString();
             }
 
-            char c = (char)intRead;
+            char c = (char) intRead;
             if (c == '\n' || c == '\r') break;
             result.append(c);
         }
@@ -183,7 +183,7 @@ public class LineColumnReader extends BufferedReader {
     /**
      * Reads characters into an array.
      * This method will block until some input is available, an I/O error occurs,
-     *  or the end of the stream is reached.
+     * or the end of the stream is reached.
      *
      * @param chars Destination buffer
      * @return The number of characters read, or -1 if the end of the stream has been reached
