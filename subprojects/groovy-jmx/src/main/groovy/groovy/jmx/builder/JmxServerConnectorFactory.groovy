@@ -123,7 +123,7 @@ class JmxServerConnectorFactory extends AbstractFactory {
             }
         }
 
-        props.each {key, value ->
+        props.each { key, value ->
             env.put(key, value)
         }
 

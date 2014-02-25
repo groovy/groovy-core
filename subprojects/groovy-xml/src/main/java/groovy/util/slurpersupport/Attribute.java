@@ -18,13 +18,12 @@ package groovy.util.slurpersupport;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovyRuntimeException;
+import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Iterator;
 import java.util.Map;
-
-import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 
 /**
  * Lazy evaluated representation of a node attribute.
@@ -53,6 +52,7 @@ public class Attribute extends GPathResult {
 
     /**
      * Returns the size of this Attribute, which is always <code>1</code>.
+     *
      * @return <code>1</code>
      */
     public int size() {
@@ -61,6 +61,7 @@ public class Attribute extends GPathResult {
 
     /**
      * Returns the value of this Attribute.
+     *
      * @return the value of this Attribute
      */
     public String text() {
@@ -69,6 +70,7 @@ public class Attribute extends GPathResult {
 
     /**
      * Returns the URI of the namespace of this Attribute.
+     *
      * @return the namespace of this Attribute
      */
     public String namespaceURI() {

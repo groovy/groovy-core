@@ -15,10 +15,6 @@
  */
 package groovy.ui.view
 
-import java.awt.MenuItem;
-
-import groovy.swing.factory.SeparatorFactory;
-
 menuBar {
     menu(text: 'File', mnemonic: 'F') {
         menuItem(newFileAction)
@@ -47,8 +43,8 @@ menuBar {
         menuItem(replaceAction)
         separator()
         menuItem(selectAllAction)
-	separator()
-	menuItem(commentAction)
+        separator()
+        menuItem(commentAction)
     }
 
     menu(text: 'View', mnemonic: 'V') {

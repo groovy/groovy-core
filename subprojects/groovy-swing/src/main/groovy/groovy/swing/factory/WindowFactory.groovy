@@ -16,10 +16,10 @@
 
 package groovy.swing.factory
 
-import javax.swing.JWindow
+import javax.swing.*
 
 public class WindowFactory extends RootPaneContainerFactory {
-    
+
     public Object newInstance(FactoryBuilderSupport builder, Object name, Object value, Map attributes) throws InstantiationException, IllegalAccessException {
         JWindow window;
         if (FactoryBuilderSupport.checkValueIsType(value, name, JWindow)) {

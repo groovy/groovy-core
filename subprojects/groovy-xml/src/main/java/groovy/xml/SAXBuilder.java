@@ -16,18 +16,17 @@
 package groovy.xml;
 
 import groovy.util.BuilderSupport;
-
-import java.util.Iterator;
-import java.util.Map;
-
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import java.util.Iterator;
+import java.util.Map;
+
 /**
  * A builder for generating W3C SAX events.  Use similar to MarkupBuilder.
- * 
+ *
  * @author <a href="mailto:james@coredevelopers.net">James Strachan</a>
  * @version $Revision$
  */
@@ -61,15 +60,14 @@ public class SAXBuilder extends BuilderSupport {
         try {
             char[] text = value.toString().toCharArray();
             handler.characters(text, 0, text.length);
-        }
-        catch (SAXException e) {
+        } catch (SAXException e) {
             handleException(e);
         }
     }
 
     protected Object createNode(Object name, Map attributeMap, Object text) {
         AttributesImpl attributes = new AttributesImpl();
-        for (Iterator iter = attributeMap.entrySet().iterator(); iter.hasNext();) {
+        for (Iterator iter = attributeMap.entrySet().iterator(); iter.hasNext(); ) {
             Map.Entry entry = (Map.Entry) iter.next();
             Object key = entry.getKey();
             Object value = entry.getValue();
@@ -82,8 +80,7 @@ public class SAXBuilder extends BuilderSupport {
                 uri = qname.getNamespaceURI();
                 localName = qname.getLocalPart();
                 qualifiedName = qname.getQualifiedName();
-            }
-            else {
+            } else {
                 localName = key.toString();
                 qualifiedName = localName;
             }
@@ -106,15 +103,13 @@ public class SAXBuilder extends BuilderSupport {
             uri = qname.getNamespaceURI();
             localName = qname.getLocalPart();
             qualifiedName = qname.getQualifiedName();
-        }
-        else {
+        } else {
             localName = name.toString();
             qualifiedName = localName;
         }
         try {
             handler.startElement(uri, localName, qualifiedName, attributes);
-        }
-        catch (SAXException e) {
+        } catch (SAXException e) {
             handleException(e);
         }
     }
@@ -128,15 +123,13 @@ public class SAXBuilder extends BuilderSupport {
             uri = qname.getNamespaceURI();
             localName = qname.getLocalPart();
             qualifiedName = qname.getQualifiedName();
-        }
-        else {
+        } else {
             localName = name.toString();
             qualifiedName = localName;
         }
         try {
             handler.endElement(uri, localName, qualifiedName);
-        }
-        catch (SAXException e) {
+        } catch (SAXException e) {
             handleException(e);
         }
     }

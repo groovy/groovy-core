@@ -237,8 +237,7 @@ public final class FindReplaceUtility {
             try {
                 Document doc = textComponent.getDocument();
                 doc.getText(0, doc.getLength(), SEGMENT);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 // should NEVER reach here
                 e.printStackTrace();
             }
@@ -453,8 +452,7 @@ public final class FindReplaceUtility {
                     } else {
                         textComponent.setCaretPosition(last + replace.length());
                     }
-                }
-                catch (BadLocationException ble) {
+                } catch (BadLocationException ble) {
                     ble.printStackTrace();
                 }
 
@@ -495,8 +493,7 @@ public final class FindReplaceUtility {
 
                     last = pos;
                     pos = findNext(false, pos);
-                }
-                catch (BadLocationException ble) {
+                } catch (BadLocationException ble) {
                     ble.printStackTrace();
                 }
 

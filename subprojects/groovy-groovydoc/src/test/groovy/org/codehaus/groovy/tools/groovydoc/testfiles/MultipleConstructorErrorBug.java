@@ -18,8 +18,13 @@ package org.codehaus.groovy.tools.groovydoc.testfiles;
 
 public class MultipleConstructorErrorBug {
 
-    public static String VARBINARY(Object value) { return ""; }
-    public static String VARCHAR(Object value) { return ""; }
+    public static String VARBINARY(Object value) {
+        return "";
+    }
+
+    public static String VARCHAR(Object value) {
+        return "";
+    }
 
     public MultipleConstructorErrorBug(String dataSource) {
     }

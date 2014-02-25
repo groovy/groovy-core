@@ -17,23 +17,21 @@
 package groovy.xml;
 
 import groovy.util.BuilderSupport;
-
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import java.util.Iterator;
-import java.util.Map;
-
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * A helper class for creating a W3C DOM tree
@@ -76,7 +74,7 @@ public class DOMBuilder extends BuilderSupport {
 
     /**
      * Creates a DocumentBuilder and uses it to parse the XML text read from the given reader, allowing
-     * parser validation and namespace awareness to be controlled. Documents are not allowed to contain 
+     * parser validation and namespace awareness to be controlled. Documents are not allowed to contain
      * DOCYTYPE declarations.
      *
      * @param reader         the reader to read the XML text from
@@ -93,7 +91,7 @@ public class DOMBuilder extends BuilderSupport {
             throws SAXException, IOException, ParserConfigurationException {
         return parse(reader, validating, namespaceAware, false);
     }
-    
+
     /**
      * Creates a DocumentBuilder and uses it to parse the XML text read from the given reader, allowing
      * parser validation, namespace awareness and permission of DOCTYPE declarations to be controlled.
@@ -119,12 +117,12 @@ public class DOMBuilder extends BuilderSupport {
         DocumentBuilder documentBuilder = factory.newDocumentBuilder();
         return documentBuilder.parse(new InputSource(reader));
     }
-    
+
     private static void setQuietly(DocumentBuilderFactory factory, String feature, boolean value) {
         try {
             factory.setFeature(feature, value);
+        } catch (ParserConfigurationException ignored) {
         }
-        catch (ParserConfigurationException ignored) { }
     }
 
     /**
@@ -192,7 +190,7 @@ public class DOMBuilder extends BuilderSupport {
 
     protected Object createNode(Object name, Map attributes) {
         Element element = (Element) createNode(name);
-        for (Iterator iter = attributes.entrySet().iterator(); iter.hasNext();) {
+        for (Iterator iter = attributes.entrySet().iterator(); iter.hasNext(); ) {
             Map.Entry entry = (Map.Entry) iter.next();
             String attrName = entry.getKey().toString();
             Object value = entry.getValue();

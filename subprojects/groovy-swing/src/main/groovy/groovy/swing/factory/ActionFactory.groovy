@@ -17,10 +17,9 @@
 package groovy.swing.factory
 
 import groovy.swing.impl.DefaultAction
-import javax.swing.Action
-import javax.swing.JComponent
-import javax.swing.KeyStroke
 import org.codehaus.groovy.runtime.InvokerHelper
+
+import javax.swing.*
 
 /**
  *
@@ -44,12 +43,11 @@ public class ActionFactory extends AbstractFactory {
         return action
     }
 
-    public boolean onHandleNodeAttributes( FactoryBuilderSupport builder, Object action,
-            Map attributes)
-    {
-        if ((attributes.get("closure") instanceof Closure) && (action instanceof DefaultAction)){
+    public boolean onHandleNodeAttributes(FactoryBuilderSupport builder, Object action,
+                                          Map attributes) {
+        if ((attributes.get("closure") instanceof Closure) && (action instanceof DefaultAction)) {
             Closure closure = (Closure) attributes.remove("closure")
-            ((DefaultAction)action).setClosure(closure)
+            ((DefaultAction) action).setClosure(closure)
         }
 
         Object accel = attributes.remove("accelerator")
@@ -70,7 +68,7 @@ public class ActionFactory extends AbstractFactory {
             }
             action.putValue(Action.MNEMONIC_KEY, mnemonic as Integer)
         }
-        
+
         for (entry in attributes.entrySet()) {
             String propertyName = (String) entry.getKey()
             // first attempt to set as a straight property

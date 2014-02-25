@@ -84,8 +84,8 @@ class GroovyshTest extends GroovyTestCase {
         })
         assert "" == mockOut.toString()
         assert mockErr.toString().contains("foo")
-        assert ! mockErr.toString().contains(Interpreter.SCRIPT_FILENAME)
-        assert ! mockErr.toString().contains("...")
+        assert !mockErr.toString().contains(Interpreter.SCRIPT_FILENAME)
+        assert !mockErr.toString().contains("...")
     }
 
     void testDefaultResultHookStringArray() {
@@ -197,7 +197,7 @@ class GroovyshTest extends GroovyTestCase {
     void testExecuteCommandFoo() {
         Groovysh groovysh = new Groovysh(testio)
         assertNull(groovysh.findCommand(" foo import "))
-        assert ! groovysh.isExecutable(" foo import ")
+        assert !groovysh.isExecutable(" foo import ")
         CommandSupport command2 = new CommandSupport(groovysh, "foo", "/foo") {
             @Override
             Object execute(List args) {
@@ -258,14 +258,14 @@ class GroovyshCompletorTest extends GroovyTestCase {
 int compareTo(Object) {0}; int priv; static int priv2; public int foo; public static int bar; int foom(){1}; static int barm(){2}}""", "ReflectionCompletor.getPublicFieldsAndMethods(Foo, \"\")"])
         assert result
         assert result.size() > 0
-        assert [] == result.findAll({it.startsWith("_")})
-        assert [] == result.findAll({it.startsWith("super\$")})
-        assert [] == result.findAll({it.startsWith("this\$")})
-        assert ! ('foo' in result)
-        assert ! ('priv' in result)
-        assert ! ('priv2' in result)
+        assert [] == result.findAll({ it.startsWith("_") })
+        assert [] == result.findAll({ it.startsWith("super\$") })
+        assert [] == result.findAll({ it.startsWith("this\$") })
+        assert !('foo' in result)
+        assert !('priv' in result)
+        assert !('priv2' in result)
         assert 'barm()' in result
-        assert ! ('foom()' in result)
+        assert !('foom()' in result)
 
     }
 
@@ -281,15 +281,15 @@ int compareTo(Object) {0}; int priv; static int priv2; public int foo; public st
         Groovysh groovysh = new Groovysh(testio)
         Object result = groovysh.interp.evaluate(["import " + ReflectionCompletor.getCanonicalName(), """class Foo extends HashSet implements Comparable {
 int compareTo(Object) {0}; int priv; static int priv2; public int foo; public static int bar; int foom(){1}; static int barm(){2}}""",
-                "ReflectionCompletor.getPublicFieldsAndMethods(new Foo(), \"\")"])
+                                                  "ReflectionCompletor.getPublicFieldsAndMethods(new Foo(), \"\")"])
         assertNotNull(result)
         assert result.size() > 0
-        assert [] == result.findAll({it.startsWith("_")})
-        assert [] == result.findAll({it.startsWith("super\$")})
-        assert [] == result.findAll({it.startsWith("this\$")})
+        assert [] == result.findAll({ it.startsWith("_") })
+        assert [] == result.findAll({ it.startsWith("super\$") })
+        assert [] == result.findAll({ it.startsWith("this\$") })
         assert 'bar' in result
-        assert ! ('priv' in result)
-        assert ! ('priv2' in result)
+        assert !('priv' in result)
+        assert !('priv2' in result)
         assert 'foom()' in result
         assert 'barm()' in result
     }

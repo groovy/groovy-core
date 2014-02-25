@@ -12,13 +12,13 @@ class SimpleTemplateTest extends GroovyTestCase {
     }
 
     void testExpressionAssign() {
-        assertEquals('1',   simpleCall('<%=1%>'))
-        assertEquals(' 1',  simpleCall(' <%=1%>'))
+        assertEquals('1', simpleCall('<%=1%>'))
+        assertEquals(' 1', simpleCall(' <%=1%>'))
         assertEquals(' 1 ', simpleCall(' <%=1%> '))
         assertEquals(' 1 ', simpleCall(' <%= 1%> '))
         assertEquals(' 1 ', simpleCall(' <%= 1 %> '))
         assertEquals(' 1 ', simpleCall(" <%=\n 1 \n%> "))
-        assertEquals(' 1', bindingCall([a:1],' <%=a%>'))
+        assertEquals(' 1', bindingCall([a: 1], ' <%=a%>'))
     }
 
     void testExpressionEval() {
@@ -26,40 +26,40 @@ class SimpleTemplateTest extends GroovyTestCase {
         assertEquals('01', simpleCall('<%for(i in 0..1){print(i)}%>'))
     }
 
-    void testWithMarkupBuilder(){
-    def text = '''<%
+    void testWithMarkupBuilder() {
+        def text = '''<%
         builder = new groovy.xml.MarkupBuilder(out)
         [1,2,3].each{ count ->
             out.print(1)
         }
     %>'''
-    assertEquals('111', simpleCall(text))
+        assertEquals('111', simpleCall(text))
     }
 
-    void testWithMarkupBuilderWithSemicolons(){
-    def text = '''<%
+    void testWithMarkupBuilderWithSemicolons() {
+        def text = '''<%
         builder = new groovy.xml.MarkupBuilder(out);
         [1,2,3].each{ count ->
             out.print(1);
         }
     %>'''
-    assertEquals('111', simpleCall(text))
+        assertEquals('111', simpleCall(text))
     }
 
-    void testWithQuotesInScriplet(){
-    def text = '''<%
+    void testWithQuotesInScriplet() {
+        def text = '''<%
         ['1',"2",/3/].each{ x ->
             out.print(x)
         }
     %>'''
-    assertEquals('123', simpleCall(text))
+        assertEquals('123', simpleCall(text))
     }
 
-    String simpleCall(input){
+    String simpleCall(input) {
         bindingCall([:], input)
     }
 
-    String bindingCall(binding, input){
+    String bindingCall(binding, input) {
         def template = new SimpleTemplateEngine(true).createTemplate(input)
         return template.make(binding).toString()
     }

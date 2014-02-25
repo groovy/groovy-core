@@ -27,28 +27,40 @@ import static groovy.json.JsonTokenType.*;
  * @since 1.8.0
  */
 public class JsonToken {
-    private static final BigInteger MAX_LONG    = BigInteger.valueOf(Long.MAX_VALUE);
-    private static final BigInteger MIN_LONG    = BigInteger.valueOf(Long.MIN_VALUE);
+    private static final BigInteger MAX_LONG = BigInteger.valueOf(Long.MAX_VALUE);
+    private static final BigInteger MIN_LONG = BigInteger.valueOf(Long.MIN_VALUE);
     private static final BigInteger MAX_INTEGER = BigInteger.valueOf(Integer.MAX_VALUE);
     private static final BigInteger MIN_INTEGER = BigInteger.valueOf(Integer.MIN_VALUE);
-    private static final BigDecimal MAX_DOUBLE  = new BigDecimal(String.valueOf(Double.MAX_VALUE));
-    private static final BigDecimal MIN_DOUBLE  = MAX_DOUBLE.negate();
-    private static final BigDecimal MAX_FLOAT   = new BigDecimal(String.valueOf(Float.MAX_VALUE));
-    private static final BigDecimal MIN_FLOAT   = MAX_FLOAT.negate();
+    private static final BigDecimal MAX_DOUBLE = new BigDecimal(String.valueOf(Double.MAX_VALUE));
+    private static final BigDecimal MIN_DOUBLE = MAX_DOUBLE.negate();
+    private static final BigDecimal MAX_FLOAT = new BigDecimal(String.valueOf(Float.MAX_VALUE));
+    private static final BigDecimal MIN_FLOAT = MAX_FLOAT.negate();
 
-    /** Start line position */
+    /**
+     * Start line position
+     */
     private long startLine;
-    /** End line position */
+    /**
+     * End line position
+     */
     private long endLine;
-    /** Start column position */
+    /**
+     * Start column position
+     */
     private long startColumn;
-    /** End column position */
+    /**
+     * End column position
+     */
     private long endColumn;
 
-    /** The type of the token */
+    /**
+     * The type of the token
+     */
     private JsonTokenType type;
 
-    /** The text of that token */
+    /**
+     * The text of that token
+     */
     private String text;
 
     /**
@@ -72,9 +84,9 @@ public class JsonToken {
             } else {
                 // an integer number
                 BigInteger v = new BigInteger(text);
-                if(v.compareTo(MAX_INTEGER) <= 0 && v.compareTo(MIN_INTEGER) >= 0 ) {
+                if (v.compareTo(MAX_INTEGER) <= 0 && v.compareTo(MIN_INTEGER) >= 0) {
                     return v.intValue();
-                } else if (v.compareTo(MAX_LONG) <= 0 && v.compareTo(MIN_LONG) >= 0 ) {
+                } else if (v.compareTo(MAX_LONG) <= 0 && v.compareTo(MIN_LONG) >= 0) {
                     return v.longValue();
                 } else {
                     return v;
@@ -89,7 +101,7 @@ public class JsonToken {
         } else {
             throw new JsonException(
                     "No appropriate value represented by '" + text +
-                    "' on line: " + startLine + ", column: " + startColumn
+                            "' on line: " + startLine + ", column: " + startColumn
             );
         }
     }

@@ -1,4 +1,7 @@
 package groovy.swing
+
+import groovy.ui.Console
+
 /*
  * Copyright 2003-2013 the original author or authors.
  *
@@ -14,16 +17,14 @@ package groovy.swing
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import groovy.ui.Console
 import groovy.ui.ConsoleActions
 import groovy.ui.view.BasicMenuBar
 import groovy.ui.view.MacOSXMenuBar
-import java.util.prefs.Preferences
 import org.junit.rules.TemporaryFolder
 
-import javax.swing.SwingUtilities
-import java.awt.Color
+import javax.swing.*
+import java.awt.*
+import java.util.prefs.Preferences
 
 class SwingBuilderConsoleTest extends GroovySwingTestCase {
 

@@ -16,10 +16,9 @@
 
 package groovy.swing.factory
 
-import java.awt.Component
-import java.awt.Window
-import javax.swing.JComponent
-import javax.swing.JButton
+import javax.swing.*
+import java.awt.*
+
 import static groovy.swing.factory.LayoutFactory.DEFAULT_DELEGATE_PROPERTY_CONSTRAINT
 
 abstract class RootPaneContainerFactory extends AbstractFactory {
@@ -51,22 +50,22 @@ abstract class RootPaneContainerFactory extends AbstractFactory {
         builder.context[DELEGATE_PROPERTY_DEFAULT_BUTTON] = attributes.remove("defaultButtonProperty") ?: DEFAULT_DELEGATE_PROPERTY_DEFAULT_BUTTON
 
         builder.context.defaultButtonDelegate =
-            builder.addAttributeDelegate {myBuilder, node, myAttributes ->
-                if ((node instanceof JButton) && (builder.containingWindows[-1] == container)) {
-                    // in Java 6 use descending iterator
-                    ListIterator li = builder.contexts.listIterator()
-                    Map context
-                    while (li.hasNext()) context = li.next()
-                    while (context && context[FactoryBuilderSupport.CURRENT_NODE] != container) {
-                        context = li.previous()
-                    }
-                    def defaultButtonProperty = context[DELEGATE_PROPERTY_DEFAULT_BUTTON] ?: DEFAULT_DELEGATE_PROPERTY_DEFAULT_BUTTON
-                    def defaultButton = myAttributes.remove(defaultButtonProperty)
-                    if (defaultButton) {
-                        container.rootPane.defaultButton = node
+                builder.addAttributeDelegate { myBuilder, node, myAttributes ->
+                    if ((node instanceof JButton) && (builder.containingWindows[-1] == container)) {
+                        // in Java 6 use descending iterator
+                        ListIterator li = builder.contexts.listIterator()
+                        Map context
+                        while (li.hasNext()) context = li.next()
+                        while (context && context[FactoryBuilderSupport.CURRENT_NODE] != container) {
+                            context = li.previous()
+                        }
+                        def defaultButtonProperty = context[DELEGATE_PROPERTY_DEFAULT_BUTTON] ?: DEFAULT_DELEGATE_PROPERTY_DEFAULT_BUTTON
+                        def defaultButton = myAttributes.remove(defaultButtonProperty)
+                        if (defaultButton) {
+                            container.rootPane.defaultButton = node
+                        }
                     }
                 }
-            }
 
         builder.containingWindows.add(container)
 

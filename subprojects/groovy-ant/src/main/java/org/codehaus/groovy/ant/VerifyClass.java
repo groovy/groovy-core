@@ -119,7 +119,7 @@ public class VerifyClass extends MatchingTask {
                     log("verifying of class " + clazz + " failed");
                 }
                 if (verbose) log(method.name + method.desc);
-                
+
                 TraceMethodVisitor mv = new TraceMethodVisitor(null); 
                 /*= new TraceMethodVisitor(null) {
                     public void visitMaxs(int maxStack, int maxLocals) {

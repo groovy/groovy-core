@@ -30,13 +30,14 @@ import java.util.Map;
  */
 public abstract class ReplacementNode implements Buildable, Writable {
     public abstract void build(GroovyObject builder, Map namespaceMap, Map<String, String> namespaceTagHints);
-    
+
     public void build(final GroovyObject builder) {
         build(builder, null, null);
     }
 
     /**
      * NOP
+     *
      * @return the Writer that was passed
      */
     public Writer writeTo(final Writer out) throws IOException {

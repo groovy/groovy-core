@@ -2,6 +2,7 @@ package org.codehaus.groovy.tools.shell.completion
 
 import org.codehaus.groovy.tools.shell.CompletorTestSupport
 import org.codehaus.groovy.tools.shell.Groovysh
+
 import static org.codehaus.groovy.tools.shell.completion.TokenUtilTest.tokenList
 
 class VariableCompletorTest extends CompletorTestSupport {

@@ -17,9 +17,9 @@
 package org.codehaus.groovy.tools.shell
 
 import groovy.mock.interceptor.MockFor
-import org.codehaus.groovy.tools.shell.util.PackageHelper
 import org.codehaus.groovy.tools.shell.completion.IdentifierCompletor
 import org.codehaus.groovy.tools.shell.completion.ReflectionCompletor
+import org.codehaus.groovy.tools.shell.util.PackageHelper
 
 /**
  * @author kruset
@@ -67,6 +67,6 @@ abstract class CompletorTestSupport extends GroovyTestCase {
             groovyshMocker.demand.getIo(0..1) { testio }
         }
         groovyshMocker.demand.getRegistry(0..1) { registry }
-        groovyshMocker.demand.getBuffers(0..2) {bufferManager}
+        groovyshMocker.demand.getBuffers(0..2) { bufferManager }
     }
 }

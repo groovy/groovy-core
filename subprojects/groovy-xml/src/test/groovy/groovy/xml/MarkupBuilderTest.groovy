@@ -20,9 +20,9 @@ package groovy.xml
  * to MarkupBuilder. Functionality in common with StreamingMarkupBuilder
  * is tested in the BuilderTestSupport parent class.
  *
- *   @author Scott Stirling
- *   @author Pilho Kim
- *   @author Paul King
+ * @author Scott Stirling
+ * @author Pilho Kim
+ * @author Paul King
  */
 class MarkupBuilderTest extends BuilderTestSupport {
     private StringWriter writer
@@ -105,9 +105,9 @@ class MarkupBuilderTest extends BuilderTestSupport {
     <initial-letters>A.J.</initial-letters>
   </first-name>
 </ns1:customer-description>'''
-        xml."ns1:customer-description"{
+        xml."ns1:customer-description" {
             "last-name"("Laforge")
-            "first-name"{
+            "first-name" {
                 first("Guillaume")
                 "initial-letters"("A.J.")
             }
@@ -150,12 +150,12 @@ class MarkupBuilderTest extends BuilderTestSupport {
             greaterthan(">")
             emptyElement()
             'null'(null)
-            nullAttribute(t1:null)
-            emptyWithAttributes(attr1:'set')
-            emptyAttribute(t1:'')
-            parent(key:'value'){
-                label(for:'usernameId', 'Username: ')
-                input(name:'test', id:1)
+            nullAttribute(t1: null)
+            emptyWithAttributes(attr1: 'set')
+            emptyAttribute(t1: '')
+            parent(key: 'value') {
+                label(for: 'usernameId', 'Username: ')
+                input(name: 'test', id: 1)
             }
         }
 
@@ -193,44 +193,44 @@ class MarkupBuilderTest extends BuilderTestSupport {
     }
 
     void testCallingMethod() {
-       // this test is to ensure compatibility only
-       xml.p {
-         def aValue = myMethod([:]).value
-         em(aValue)
-      }
+        // this test is to ensure compatibility only
+        xml.p {
+            def aValue = myMethod([:]).value
+            em(aValue)
+        }
 
-      assertExpectedXmlDefault '<p><em>call to outside</em></p>'
+        assertExpectedXmlDefault '<p><em>call to outside</em></p>'
     }
 
     void testOmitAttributeSettingsKeepBothDefaultCase() {
-        xml.element(att1:null, att2:'')
+        xml.element(att1: null, att2: '')
         assertExpectedXmlDefault "<element att1='' att2='' />"
     }
 
     void testOmitAttributeSettingsOmitNullKeepEmpty() {
         xml.omitNullAttributes = true
-        xml.element(att1:null, att2:'')
+        xml.element(att1: null, att2: '')
         assertExpectedXmlDefault "<element att2='' />"
     }
 
     void testOmitAttributeSettingsKeepNullOmitEmpty() {
         xml.omitEmptyAttributes = true
-        xml.element(att1:null, att2:'')
+        xml.element(att1: null, att2: '')
         assertExpectedXmlDefault "<element att1='' />"
     }
 
     void testOmitAttributeSettingsOmitBoth() {
         xml.omitEmptyAttributes = true
         xml.omitNullAttributes = true
-        xml.element(att1:null, att2:'')
+        xml.element(att1: null, att2: '')
         assertExpectedXmlDefault "<element />"
     }
 
     void testDelegateOnlyToSkipInternalClosureMethods() {
         def items = {
-          pizza(price: 8.5)
-          curry(price: 8)
-          burger(price: 7.5)
+            pizza(price: 8.5)
+            curry(price: 8)
+            burger(price: 7.5)
         }
         items.resolveStrategy = Closure.DELEGATE_ONLY
         xml.menu(items)
@@ -245,7 +245,7 @@ class MarkupBuilderTest extends BuilderTestSupport {
 
     void testWithIndentPrinter() {
         xml = new MarkupBuilder(new IndentPrinter(new PrintWriter(writer), "", false))
-        xml.element(att1:'attr') { subelement('foo') }
+        xml.element(att1: 'attr') { subelement('foo') }
         assert writer.toString() == "<element att1='attr'><subelement>foo</subelement></element>"
     }
 
@@ -265,8 +265,8 @@ class MarkupBuilderTest extends BuilderTestSupport {
     }
 
     private myMethod(x) {
-      x.value='call to outside'
-      return x
+        x.value = 'call to outside'
+        return x
     }
 
     protected assertExpectedXml(Closure markup, String expectedXml) {

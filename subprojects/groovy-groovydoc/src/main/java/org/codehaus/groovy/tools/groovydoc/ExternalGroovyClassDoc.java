@@ -76,7 +76,7 @@ public class ExternalGroovyClassDoc implements GroovyClassDoc {
         if (other == this) return true;
         if (other == null) return false;
         if (!(other instanceof ExternalGroovyClassDoc)) return false;
-        return qualifiedTypeName().equals(((ExternalGroovyClassDoc)other).qualifiedTypeName());
+        return qualifiedTypeName().equals(((ExternalGroovyClassDoc) other).qualifiedTypeName());
     }
 
     // TODO implement below if/when needed

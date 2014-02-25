@@ -17,28 +17,25 @@
 package org.codehaus.groovy.ant;
 
 import groovy.lang.GroovyClassLoader;
-
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.taskdefs.MatchingTask;
 import org.apache.tools.ant.types.Path;
 import org.apache.tools.ant.types.Reference;
-
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.tools.ErrorReporter;
 
 import java.io.File;
-import java.io.StringWriter;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 
 /**
  * Support for compilation related tasks.
  *
- * @version $Id$
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
+ * @version $Id$
  */
 public abstract class CompileTaskSupport
-    extends MatchingTask
-{
+        extends MatchingTask {
     protected final LoggingHelper log = new LoggingHelper(this);
 
     protected Path src;
@@ -71,8 +68,7 @@ public abstract class CompileTaskSupport
 
         if (src == null) {
             src = dir;
-        }
-        else {
+        } else {
             src.append(dir);
         }
     }
@@ -92,8 +88,7 @@ public abstract class CompileTaskSupport
 
         if (classpath == null) {
             classpath = path;
-        }
-        else {
+        } else {
             classpath.append(path);
         }
     }
@@ -112,14 +107,14 @@ public abstract class CompileTaskSupport
 
     public void setClasspathRef(final Reference r) {
         assert r != null;
-        
+
         createClasspath().setRefid(r);
     }
 
     public CompilerConfiguration createConfiguration() {
         return config;
     }
-    
+
     protected void validate() throws BuildException {
         if (src == null) {
             throw new BuildException("Missing attribute: srcdir (or one or more nested <src> elements).", getLocation());
@@ -152,15 +147,14 @@ public abstract class CompileTaskSupport
 
     protected void handleException(final Exception e) throws BuildException {
         assert e != null;
-        
+
         StringWriter writer = new StringWriter();
         new ErrorReporter(e, false).write(new PrintWriter(writer));
         String message = writer.toString();
 
         if (failOnError) {
             throw new BuildException(message, e, getLocation());
-        }
-        else {
+        } else {
             log.error(message);
         }
     }
@@ -170,8 +164,7 @@ public abstract class CompileTaskSupport
 
         try {
             compile();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             handleException(e);
         }
     }

@@ -36,7 +36,7 @@ import java.util.Map;
 /**
  * Servlet-specific binding extension to lazy load the writer or the output
  * stream from the response.
- * <p>
+ * <p/>
  * <h3>Eager variables</h3>
  * <ul>
  * <li><tt>"request"</tt> : the <code>HttpServletRequest</code> object</li>
@@ -47,7 +47,7 @@ import java.util.Map;
  * <li><tt>"params"</tt> : map of all form parameters - can be empty</li>
  * <li><tt>"headers"</tt> : map of all <tt>request</tt> header fields</li>
  * </ul>
- * <p>
+ * <p/>
  * <h3>Lazy variables</h3>
  * <ul>
  * <li><tt>"out"</tt> : <code>response.getWriter()</code></li>
@@ -66,19 +66,19 @@ import java.util.Map;
  * to write using 'sout' will cause an <code>IllegalStateException</code>. Similarly, if a write method
  * call on 'sout' has been done already, then any further write method call on 'out' or 'html' will cause an
  * <code>IllegalStateException</code>.
- * <p>
+ * <p/>
  * <h3>Reserved internal variable names (see "Methods" below)</h3>
  * <ul>
  * <li><tt>"forward"</tt></li>
  * <li><tt>"include"</tt></li>
  * <li><tt>"redirect"</tt></li>
  * </ul>
- *
+ * <p/>
  * If <code>response.getWriter()</code> is called directly (without using out), then a write method
  * call on 'sout' will not cause the <code>IllegalStateException</code>, but it will still be invalid.
  * It is the responsibility of the user of this class, to not to mix these different usage
  * styles. The same applies to calling <code>response.getOutputStream()</code> and using 'out' or 'html'.
- *
+ * <p/>
  * <h3>Methods</h3>
  * <ul>
  * <li><tt>"forward(String path)"</tt> : <code>request.getRequestDispatcher(path).forward(request, response)</code></li>
@@ -91,114 +91,135 @@ import java.util.Map;
  * @author Jochen Theodorou
  */
 public class ServletBinding extends Binding {
-    
+
     /**
      * A OutputStream dummy that will throw a GroovyBugError for any
-     * write method call to it. 
-     * 
+     * write method call to it.
+     *
      * @author Jochen Theodorou
      */
     private static class InvalidOutputStream extends OutputStream {
         /**
          * Will always throw a GroovyBugError
+         *
          * @see java.io.OutputStream#write(int)
          */
         public void write(int b) {
             throw new GroovyBugError("Any write calls to this stream are invalid!");
         }
     }
+
     /**
      * A class to manage the response output stream and writer.
      * If the stream have been 'used', then using the writer will cause
-     * a IllegalStateException. If the writer have been 'used', then 
+     * a IllegalStateException. If the writer have been 'used', then
      * using the stream will cause a IllegalStateException. 'used' means
      * any write method has been called. Simply requesting the objects will
-     * not cause an exception. 
-     * 
+     * not cause an exception.
+     *
      * @author Jochen Theodorou
      */
     private static class ServletOutput {
         private HttpServletResponse response;
         private ServletOutputStream outputStream;
         private PrintWriter writer;
-        
+
         public ServletOutput(HttpServletResponse response) {
             this.response = response;
         }
+
         private ServletOutputStream getResponseStream() throws IOException {
-            if (writer!=null) throw new IllegalStateException("The variable 'out' or 'html' have been used already. Use either out/html or sout, not both.");
-            if (outputStream==null) outputStream = response.getOutputStream();
+            if (writer != null)
+                throw new IllegalStateException("The variable 'out' or 'html' have been used already. Use either out/html or sout, not both.");
+            if (outputStream == null) outputStream = response.getOutputStream();
             return outputStream;
         }
+
         public ServletOutputStream getOutputStream() {
             return new ServletOutputStream() {
                 public void write(int b) throws IOException {
-                    getResponseStream().write(b);                    
+                    getResponseStream().write(b);
                 }
+
                 public void close() throws IOException {
                     getResponseStream().close();
                 }
+
                 public void flush() throws IOException {
                     getResponseStream().flush();
                 }
+
                 public void write(byte[] b) throws IOException {
                     getResponseStream().write(b);
                 }
+
                 public void write(byte[] b, int off, int len) throws IOException {
                     getResponseStream().write(b, off, len);
                 }
             };
         }
+
         private PrintWriter getResponseWriter() {
-            if (outputStream!=null) throw new IllegalStateException("The variable 'sout' have been used already. Use either out/html or sout, not both.");
-            if (writer==null) {
+            if (outputStream != null)
+                throw new IllegalStateException("The variable 'sout' have been used already. Use either out/html or sout, not both.");
+            if (writer == null) {
                 try {
                     writer = response.getWriter();
                 } catch (IOException ioe) {
                     writer = new PrintWriter(new ByteArrayOutputStream());
-                    throw new IllegalStateException("unable to get response writer",ioe);
+                    throw new IllegalStateException("unable to get response writer", ioe);
                 }
             }
             return writer;
         }
+
         public PrintWriter getWriter() {
             return new PrintWriter(new InvalidOutputStream()) {
                 public boolean checkError() {
                     return getResponseWriter().checkError();
                 }
+
                 public void close() {
                     getResponseWriter().close();
                 }
+
                 public void flush() {
                     getResponseWriter().flush();
                 }
+
                 public void write(char[] buf) {
                     getResponseWriter().write(buf);
                 }
+
                 public void write(char[] buf, int off, int len) {
                     getResponseWriter().write(buf, off, len);
                 }
+
                 public void write(int c) {
                     getResponseWriter().write(c);
                 }
+
                 public void write(String s, int off, int len) {
                     getResponseWriter().write(s, off, len);
                 }
+
                 public void println() {
                     getResponseWriter().println();
                 }
+
                 public PrintWriter format(String format, Object... args) {
                     getResponseWriter().format(format, args);
                     return this;
                 }
-                public PrintWriter format(Locale l, String format,  Object... args) {
+
+                public PrintWriter format(Locale l, String format, Object... args) {
                     getResponseWriter().format(l, format, args);
                     return this;
                 }
             };
-        }        
-    }    
-    
+        }
+    }
+
     private boolean initialized;
 
     /**
@@ -235,7 +256,7 @@ public class ServletBinding extends Binding {
          * Bind request header key-value hash map.
          */
         Map<String, String> headers = new LinkedHashMap<String, String>();
-        for (Enumeration names = request.getHeaderNames(); names.hasMoreElements();) {
+        for (Enumeration names = request.getHeaderNames(); names.hasMoreElements(); ) {
             String headerName = (String) names.nextElement();
             String headerValue = request.getHeader(headerName);
             headers.put(headerName, headerValue);
@@ -246,7 +267,7 @@ public class ServletBinding extends Binding {
     @SuppressWarnings("unchecked")
     private Map<String, Serializable> collectParams(HttpServletRequest request) {
         Map<String, Serializable> params = new LinkedHashMap<String, Serializable>();
-        for (Enumeration names = request.getParameterNames(); names.hasMoreElements();) {
+        for (Enumeration names = request.getParameterNames(); names.hasMoreElements(); ) {
             String name = (String) names.nextElement();
             if (!super.getVariables().containsKey(name)) {
                 String[] values = request.getParameterValues(name);
@@ -267,7 +288,7 @@ public class ServletBinding extends Binding {
         excludeReservedName(name, "out");
         excludeReservedName(name, "sout");
         excludeReservedName(name, "html");
-		excludeReservedName(name, "json");
+        excludeReservedName(name, "json");
         excludeReservedName(name, "forward");
         excludeReservedName(name, "include");
         excludeReservedName(name, "redirect");
@@ -314,11 +335,11 @@ public class ServletBinding extends Binding {
         // bind forward method
         MethodClosure c = new MethodClosure(this, "forward");
         super.setVariable("forward", c);
-        
+
         // bind include method
         c = new MethodClosure(this, "include");
         super.setVariable("include", c);
-        
+
         // bind redirect method
         c = new MethodClosure(this, "redirect");
         super.setVariable("redirect", c);
@@ -338,14 +359,14 @@ public class ServletBinding extends Binding {
             throw new IllegalArgumentException("Can't bind variable to key named '" + name + "'.");
         }
     }
-    
+
     public void forward(String path) throws ServletException, IOException {
         HttpServletRequest request = (HttpServletRequest) super.getVariable("request");
         HttpServletResponse response = (HttpServletResponse) super.getVariable("response");
         RequestDispatcher dispatcher = request.getRequestDispatcher(path);
         dispatcher.forward(request, response);
-    } 
-    
+    }
+
     public void include(String path) throws ServletException, IOException {
         HttpServletRequest request = (HttpServletRequest) super.getVariable("request");
         HttpServletResponse response = (HttpServletResponse) super.getVariable("response");
@@ -356,6 +377,6 @@ public class ServletBinding extends Binding {
     public void redirect(String location) throws IOException {
         HttpServletResponse response = (HttpServletResponse) super.getVariable("response");
         response.sendRedirect(location);
-    }    
+    }
 }
 

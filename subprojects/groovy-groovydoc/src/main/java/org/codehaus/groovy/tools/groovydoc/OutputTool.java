@@ -17,5 +17,6 @@ package org.codehaus.groovy.tools.groovydoc;
 
 public interface OutputTool {
     void makeOutputArea(String filename);
+
     void writeToOutput(String fileName, String text, String charset) throws Exception;
 }

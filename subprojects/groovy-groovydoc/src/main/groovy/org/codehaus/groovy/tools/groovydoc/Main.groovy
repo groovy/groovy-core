@@ -15,11 +15,11 @@
  */
 package org.codehaus.groovy.tools.groovydoc
 
+import groovy.io.FileType
+import org.codehaus.groovy.tools.groovydoc.gstringTemplates.GroovyDocTemplateInfo
+import org.codehaus.groovy.tools.shell.IO
 import org.codehaus.groovy.tools.shell.util.Logger
 import org.codehaus.groovy.tools.shell.util.MessageSource
-import org.codehaus.groovy.tools.shell.IO
-import org.codehaus.groovy.tools.groovydoc.gstringTemplates.GroovyDocTemplateInfo
-import groovy.io.FileType
 
 /**
  * Main CLI entry-point for <tt>groovydoc</tt>.
@@ -54,7 +54,7 @@ class Main {
         IO io = new IO()
         Logger.io = io
 
-        def cli = new CliBuilder(usage : 'groovydoc [options] [packagenames] [sourcefiles]', writer: io.out, posix:false)
+        def cli = new CliBuilder(usage: 'groovydoc [options] [packagenames] [sourcefiles]', writer: io.out, posix: false)
 
         cli.help(longOpt: 'help', messages['cli.option.help.description'])
         cli._(longOpt: 'version', messages['cli.option.version.description'])
@@ -64,24 +64,24 @@ class Main {
         cli._(longOpt: 'debug', messages['cli.option.debug.description'])
         cli.classpath(messages['cli.option.classpath.description'])
         cli.cp(longOpt: 'classpath', messages['cli.option.cp.description'])
-        cli.d(longOpt: 'destdir', args:1, argName: 'dir', messages['cli.option.destdir.description'])
+        cli.d(longOpt: 'destdir', args: 1, argName: 'dir', messages['cli.option.destdir.description'])
         cli.author(messages['cli.option.author.description'])
         cli.noscripts(messages['cli.option.noscripts.description'])
         cli.nomainforscripts(messages['cli.option.nomainforscripts.description'])
-        cli.overview(args:1, argName: 'file', messages['cli.option.overview.description'])
+        cli.overview(args: 1, argName: 'file', messages['cli.option.overview.description'])
         cli.public(messages['cli.option.public.description'])
         cli.protected(messages['cli.option.protected.description'])
         cli.package(messages['cli.option.package.description'])
         cli.private(messages['cli.option.private.description'])
-        cli.charset(args:1, argName: 'charset', messages['cli.option.charset.description'])
-        cli.fileEncoding(args:1, argName: 'charset', messages['cli.option.fileEncoding.description'])
-        cli.windowtitle(args:1, argName: 'text', messages['cli.option.windowtitle.description'])
-        cli.doctitle(args:1, argName: 'html', messages['cli.option.doctitle.description'])
-        cli.header(args:1, argName: 'html', messages['cli.option.header.description'])
-        cli.footer(args:1, argName: 'html', messages['cli.option.footer.description'])
-        cli.exclude(args:1, argName: 'pkglist', messages['cli.option.exclude.description'])
-        cli.stylesheetfile(args:1, argName: 'path', messages['cli.option.stylesheetfile.description'])
-        cli.sourcepath(args:1, argName: 'pathlist', messages['cli.option.sourcepath.description'])
+        cli.charset(args: 1, argName: 'charset', messages['cli.option.charset.description'])
+        cli.fileEncoding(args: 1, argName: 'charset', messages['cli.option.fileEncoding.description'])
+        cli.windowtitle(args: 1, argName: 'text', messages['cli.option.windowtitle.description'])
+        cli.doctitle(args: 1, argName: 'html', messages['cli.option.doctitle.description'])
+        cli.header(args: 1, argName: 'html', messages['cli.option.header.description'])
+        cli.footer(args: 1, argName: 'html', messages['cli.option.footer.description'])
+        cli.exclude(args: 1, argName: 'pkglist', messages['cli.option.exclude.description'])
+        cli.stylesheetfile(args: 1, argName: 'path', messages['cli.option.stylesheetfile.description'])
+        cli.sourcepath(args: 1, argName: 'pathlist', messages['cli.option.sourcepath.description'])
 
         def options = cli.parse(args)
 

@@ -15,10 +15,10 @@
  */
 package groovy.util
 
-import groovy.xml.TraversalTestSupport
 import groovy.xml.GpathSyntaxTestSupport
 import groovy.xml.MixedMarkupTestSupport
 import groovy.xml.StreamingMarkupBuilder
+import groovy.xml.TraversalTestSupport
 
 class XmlSlurperTest extends GroovyTestCase {
 
@@ -42,14 +42,14 @@ class XmlSlurperTest extends GroovyTestCase {
             </definitions>                                                                            
             '''
         def xml = new XmlSlurper().parseText(wsdl)
-        assert xml.message.part.@element.findAll {it =~ /.Req$/}.size() == 1
+        assert xml.message.part.@element.findAll { it =~ /.Req$/ }.size() == 1
         assert xml.message.part.findAll { true }.size() == 2
         assert xml.message.part.find { it.name() == 'part' }.name() == 'part'
         assert xml.message.findAll { true }.size() == 2
         assert xml.message.part.lookupNamespace("ns1") == "http://www.example.org/NS1"
         assert xml.message.part.lookupNamespace("") == "http://schemas.xmlsoap.org/wsdl/"
         assert xml.message.part.lookupNamespace("undefinedPrefix") == null
-        xml.message.findAll { true }.each { assert it.name() == "message"}
+        xml.message.findAll { true }.each { assert it.name() == "message" }
     }
 
     void testElement() {
@@ -132,7 +132,7 @@ class XmlSlurperTest extends GroovyTestCase {
         <RootElement xmlns="http://www.ivan.com/ns1" xmlns:two="http://www.ivan.com/ns2">
             <ChildElement ItemId="FirstItemId" two:ItemId="SecondItemId">Child element data</ChildElement>
         </RootElement>"""
-        def root = new XmlSlurper().parseText(xml).declareNamespace(one:"http://www.ivan.com/ns1", two: "http://www.ivan.com/ns2")
+        def root = new XmlSlurper().parseText(xml).declareNamespace(one: "http://www.ivan.com/ns1", two: "http://www.ivan.com/ns2")
         assert root.ChildElement.@ItemId == 'FirstItemId'
         assert root.ChildElement.@ItemId[0].namespaceURI() == 'http://www.ivan.com/ns1'
         assert root.ChildElement.@'one:ItemId' == 'FirstItemId'

@@ -26,26 +26,25 @@ import jline.console.completer.Completer
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class CommandAlias
-    extends CommandSupport
-{
+        extends CommandSupport {
     final String targetName
-    
+
     CommandAlias(final Groovysh shell, final String name, final String shortcut, final String target) {
         super(shell, name, shortcut)
-        
+
         assert target
 
         this.targetName = target
     }
-    
+
     Command getTarget() {
         Command command = registry.find(targetName)
-        
+
         assert command != null
-        
+
         return command
     }
-    
+
     protected List<Completer> createCompleters() {
         try {
             // TODO: Use interface with createCompleters()
@@ -58,7 +57,7 @@ class CommandAlias
             log.warn("Aliased Command without createCompleters Method")
         }
     }
-    
+
     String getDescription() {
         return messages.format('info.alias_to', targetName)
     }
@@ -66,15 +65,15 @@ class CommandAlias
     String getUsage() {
         return target.usage
     }
-    
+
     String getHelp() {
         return target.help
     }
-    
+
     boolean getHidden() {
         return target.hidden
     }
-    
+
     Object execute(final List<String> args) {
         target.execute(args)
     }

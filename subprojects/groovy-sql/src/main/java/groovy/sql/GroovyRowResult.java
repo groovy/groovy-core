@@ -28,8 +28,8 @@ import java.util.Set;
  * It's used in the oneRow method to be able to access the result
  * of a SQL query by the name of the column, or by the column number.
  *
- * @version $Revision$
  * @author Jean-Louis Berliet
+ * @version $Revision$
  */
 public class GroovyRowResult extends GroovyObjectSupport implements Map {
 
@@ -52,8 +52,7 @@ public class GroovyRowResult extends GroovyObjectSupport implements Map {
                 return result.get(key);
             }
             throw new MissingPropertyException(property, GroovyRowResult.class);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new MissingPropertyException(property, GroovyRowResult.class, e);
         }
     }
@@ -68,7 +67,7 @@ public class GroovyRowResult extends GroovyObjectSupport implements Map {
         for (Object next : result.keySet()) {
             if (!(next instanceof String))
                 continue;
-            if (keyStr.equalsIgnoreCase((String)next))
+            if (keyStr.equalsIgnoreCase((String) next))
                 return next;
         }
         return null;
@@ -97,8 +96,7 @@ public class GroovyRowResult extends GroovyObjectSupport implements Map {
                 i++;
             }
             return obj;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new MissingPropertyException(Integer.toString(index), GroovyRowResult.class, e);
         }
     }
@@ -111,7 +109,7 @@ public class GroovyRowResult extends GroovyObjectSupport implements Map {
      * The following methods are needed for implementing the Map interface.
      * They are mostly delegating the request to the provided Map.
      */
-     
+
     public void clear() {
         result.clear();
     }
@@ -134,7 +132,7 @@ public class GroovyRowResult extends GroovyObjectSupport implements Map {
 
     public Object get(Object property) {
         if (property instanceof String)
-            return getProperty((String)property);
+            return getProperty((String) property);
         return null;
     }
 

@@ -50,7 +50,7 @@ class MockInterceptor implements PropertyAccessInterceptor {
             result = null
         }
         // object is never used so cheat and use it for return value
-        if (object instanceof Object[]) ((Object[])object)[0] = result
+        if (object instanceof Object[]) ((Object[]) object)[0] = result
     }
 
     def afterInvoke(Object object, String methodName, Object[] arguments, Object result) {

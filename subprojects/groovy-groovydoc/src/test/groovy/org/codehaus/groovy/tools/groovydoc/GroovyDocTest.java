@@ -33,16 +33,14 @@ public class GroovyDocTest extends BuildFileTest {
 
     private File tmpDir;
 
-    static{
+    static {
         String groovyDocResourcesPathInSubproject = "src/test/resources/groovydoc/";
         String groovyDocResourcesPathFromMainProject = "subprojects/groovy-groovydoc/" + groovyDocResourcesPathInSubproject;
-        if (new File(groovyDocResourcesPathInSubproject).exists()){
+        if (new File(groovyDocResourcesPathInSubproject).exists()) {
             SRC_TESTFILES = groovyDocResourcesPathInSubproject;
-        }
-        else if (new File(groovyDocResourcesPathFromMainProject).exists()){
+        } else if (new File(groovyDocResourcesPathFromMainProject).exists()) {
             SRC_TESTFILES = groovyDocResourcesPathFromMainProject;
-        }
-        else {
+        } else {
             fail("Could not identify path to resources dir.");
             SRC_TESTFILES = "";
         }

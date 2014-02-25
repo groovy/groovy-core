@@ -328,7 +328,7 @@ public class XmlUtil {
      *
      * @param orig the original String
      * @return A new string in which all characters that require escaping
-     *         have been replaced with the corresponding XML entities.
+     * have been replaced with the corresponding XML entities.
      * @see #escapeControlCharacters(String)
      */
     public static String escapeXml(String orig) {
@@ -362,14 +362,14 @@ public class XmlUtil {
      *
      * @param orig the original String
      * @return A new string in which all characters that require escaping
-     *         have been replaced with the corresponding XML entities.
+     * have been replaced with the corresponding XML entities.
      * @see #escapeXml(String)
      */
     public static String escapeControlCharacters(String orig) {
         return StringGroovyMethods.collectReplacements(orig, new Closure<String>(null) {
             public String doCall(Character arg) {
                 if (arg < 31) {
-                        return "&#" + (int) arg + ";";
+                    return "&#" + (int) arg + ";";
                 }
                 return null;
             }
@@ -427,8 +427,7 @@ public class XmlUtil {
     private static void serialize(Source source, OutputStream os) {
         try {
             serialize(source, new StreamResult(new OutputStreamWriter(os, "UTF-8")));
-        }
-        catch (UnsupportedEncodingException e) {
+        } catch (UnsupportedEncodingException e) {
             // ignore
         }
     }
@@ -446,8 +445,7 @@ public class XmlUtil {
             transformer.setOutputProperty(OutputKeys.METHOD, "xml");
             transformer.setOutputProperty(OutputKeys.MEDIA_TYPE, "text/xml");
             transformer.transform(source, target);
-        }
-        catch (TransformerException e) {
+        } catch (TransformerException e) {
             throw new GroovyRuntimeException(e.getMessage());
         }
     }

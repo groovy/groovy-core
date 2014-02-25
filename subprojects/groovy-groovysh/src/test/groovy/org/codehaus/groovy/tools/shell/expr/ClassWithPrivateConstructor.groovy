@@ -22,11 +22,11 @@ package org.codehaus.groovy.tools.shell.expr
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class ClassWithPrivateConstructor
-    extends ExprTestSupport
-{
+        extends ExprTestSupport {
     void testClass() {
         shell.execute('class K { private K(){} }')
     }
+
     void testEnum() {
         shell.execute('enum E {A,B,C}')
     }

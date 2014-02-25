@@ -18,15 +18,14 @@ package groovy.sql;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObjectSupport;
 import groovy.lang.MissingPropertyException;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.ResultSetMetaData;
-import java.util.Iterator;
-import java.util.Map;
-
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.InvokerInvocationException;
+
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * GroovyResultSetExtension implements additional logic for ResultSet. Due to
@@ -34,7 +33,7 @@ import org.codehaus.groovy.runtime.InvokerInvocationException;
  * here from the original GroovyResultSet class. The methods in this class are
  * used by the proxy GroovyResultSetProxy, which will try to invoke methods
  * on this class before invoking it on ResultSet.
- * <p>
+ * <p/>
  * <b>This class is not intended to be used directly. Should be used through
  * GroovyResultSetProxy only!</b>
  *
@@ -76,7 +75,7 @@ public class GroovyResultSetExtension extends GroovyObjectSupport {
                 sb.append(metaData.getColumnName(i));
                 sb.append(":");
                 Object object = resultSet.getObject(i);
-                if (object!=null) {
+                if (object != null) {
                     sb.append(object.toString());
                 } else {
                     sb.append("[null]");
@@ -114,8 +113,7 @@ public class GroovyResultSetExtension extends GroovyObjectSupport {
     public Object getProperty(String columnName) {
         try {
             return getResultSet().getObject(columnName);
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new MissingPropertyException(columnName, GroovyResultSetProxy.class, e);
         }
     }
@@ -133,8 +131,7 @@ public class GroovyResultSetExtension extends GroovyObjectSupport {
         try {
             getResultSet().updateObject(columnName, newValue);
             updated = true;
-        }
-        catch (SQLException e) {
+        } catch (SQLException e) {
             throw new MissingPropertyException(columnName, GroovyResultSetProxy.class, e);
         }
     }
@@ -178,7 +175,7 @@ public class GroovyResultSetExtension extends GroovyObjectSupport {
      */
     public void add(Map values) throws SQLException {
         getResultSet().moveToInsertRow();
-        for (Iterator iter = values.entrySet().iterator(); iter.hasNext();) {
+        for (Iterator iter = values.entrySet().iterator(); iter.hasNext(); ) {
             Map.Entry entry = (Map.Entry) iter.next();
             getResultSet().updateObject(entry.getKey().toString(), entry.getValue());
         }
@@ -224,14 +221,14 @@ public class GroovyResultSetExtension extends GroovyObjectSupport {
      * before the first row; the first call to the method
      * <code>next</code> makes the first row the current row; the
      * second call makes the second row the current row, and so on.
-     * <p>
+     * <p/>
      * <P>If an input stream is open for the current row, a call
      * to the method <code>next</code> will
      * implicitly close it. A <code>getResultSet()</code> object's
      * warning chain is cleared when a new row is read.
      *
      * @return <code>true</code> if the new current row is valid;
-     *         <code>false</code> if there are no more rows
+     * <code>false</code> if there are no more rows
      * @throws SQLException if a database access error occurs
      */
     public boolean next() throws SQLException {
@@ -247,7 +244,7 @@ public class GroovyResultSetExtension extends GroovyObjectSupport {
      * <code>getResultSet()</code> object.
      *
      * @return <code>true</code> if the cursor is on a valid row;
-     *         <code>false</code> if it is off the result set
+     * <code>false</code> if it is off the result set
      * @throws SQLException if a database access error
      *                      occurs or the result set type is <code>TYPE_FORWARD_ONLY</code>
      * @since 1.2

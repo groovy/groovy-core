@@ -15,21 +15,20 @@
  */
 package groovy.json
 
-
-import groovy.util.GroovyTestCase
-import static groovy.json.JsonOutput.toJson
 import groovy.transform.Canonical
 
+import static groovy.json.JsonOutput.toJson
+
 /**
- * 
+ *
  * @author Guillaume Laforge
  */
 class JsonOutputTest extends GroovyTestCase {
-    
+
     // Check for GROOVY-5918
     void testExpando() {
-        assert toJson( new Expando( a:42 ) ) == '{"a":42}'
-        assert new JsonBuilder( new Expando( a:42 ) ).toString() == '{"a":42}'
+        assert toJson(new Expando(a: 42)) == '{"a":42}'
+        assert new JsonBuilder(new Expando(a: 42)).toString() == '{"a":42}'
     }
 
     void testBooleanValues() {
@@ -50,8 +49,8 @@ class JsonOutputTest extends GroovyTestCase {
         assert toJson(100) == "100"
         assert toJson(100) == "100"
 
-        assert toJson((short)100) == "100"
-        assert toJson((byte)100) == "100"
+        assert toJson((short) 100) == "100"
+        assert toJson((byte) 100) == "100"
 
         // Long
         assert toJson(1000000000000000000) == "1000000000000000000"
@@ -121,7 +120,7 @@ class JsonOutputTest extends GroovyTestCase {
 //        assert toJson("/") == '"\\/"'
         assert toJson("\\") == '"\\\\"'
 
-        assert toJson("\u0001") == '"\\u0001"' 
+        assert toJson("\u0001") == '"\\u0001"'
         assert toJson("\u0002") == '"\\u0002"'
         assert toJson("\u0003") == '"\\u0003"'
         assert toJson("\u0004") == '"\\u0004"'
@@ -154,7 +153,8 @@ class JsonOutputTest extends GroovyTestCase {
 
     void testURL() {
         assert toJson(new URL("http://glaforge.appspot.com")) == '"http://glaforge.appspot.com"'
-        assert JsonOutput.toJson(new URL('file', '', 'C:\\this\\is\\windows\\path')) == '"file:C:\\\\this\\\\is\\\\windows\\\\path"' // GROOVY-6560
+        assert JsonOutput.toJson(new URL('file', '', 'C:\\this\\is\\windows\\path')) == '"file:C:\\\\this\\\\is\\\\windows\\\\path"'
+        // GROOVY-6560
     }
 
     void testCalendar() {
@@ -169,7 +169,7 @@ class JsonOutputTest extends GroovyTestCase {
         assert toJson([name: 'Guillaume', age: 33, address: [line1: "1 main street", line2: "", zip: 1234], pets: ['dog', 'cat']]) ==
                 '{"name":"Guillaume","age":33,"address":{"line1":"1 main street","line2":"","zip":1234},"pets":["dog","cat"]}'
 
-        assert toJson([[:],[:]]) == '[{},{}]'
+        assert toJson([[:], [:]]) == '[{},{}]'
     }
 
     void testClosure() {
@@ -195,21 +195,21 @@ class JsonOutputTest extends GroovyTestCase {
         def json = new JsonBuilder()
 
         json.trends {
-            "2010-06-22 17:20" ([
-                    name: "Groovy rules",
+            "2010-06-22 17:20"([
+                    name : "Groovy rules",
                     query: "Groovy rules"
             ], {
                 name "#worldcup"
                 query "#worldcup"
             }, [
-                    name: "Uruguai",
+                    name : "Uruguai",
                     query: "Uruguai"
             ])
-            "2010-06-22 06:20" ({
+            "2010-06-22 06:20"({
                 name "#groovy"
                 query "#groovy"
             }, [
-                    name: "#java",
+                    name : "#java",
                     query: "#java"
             ])
         }
@@ -245,14 +245,15 @@ class JsonOutputTest extends GroovyTestCase {
             }""".stripIndent()
     }
 
-    private stripWhiteSpace( String str ) {
-      return str.replaceAll( ~/\s/, '' )
+    private stripWhiteSpace(String str) {
+        return str.replaceAll(~/\s/, '')
     }
+
     void testPrettyPrintStringZeroLen() {
-      def tree = [ myStrings: [ str3:'abc', str0:'' ] ]
-      def result   = stripWhiteSpace( new JsonBuilder( tree ).toPrettyString() )
-      def expected = stripWhiteSpace( '{ "myStrings":{ "str3":"abc","str0":"" } }' )
-      assert result == expected
+        def tree = [myStrings: [str3: 'abc', str0: '']]
+        def result = stripWhiteSpace(new JsonBuilder(tree).toPrettyString())
+        def expected = stripWhiteSpace('{ "myStrings":{ "str3":"abc","str0":"" } }')
+        assert result == expected
     }
 
     void testPrettyPrintDoubleQuoteEscape() {
@@ -270,10 +271,10 @@ class JsonOutputTest extends GroovyTestCase {
         def city = new JsonCity("Paris", [
                 new JsonDistrict(1, [
                         new JsonStreet("Saint-Honore", JsonStreetKind.street),
-                        new JsonStreet("de l'Opera",   JsonStreetKind.avenue)
+                        new JsonStreet("de l'Opera", JsonStreetKind.avenue)
                 ] as JsonStreet[]),
                 new JsonDistrict(2, [
-                        new JsonStreet("des Italiens",   JsonStreetKind.boulevard),
+                        new JsonStreet("des Italiens", JsonStreetKind.boulevard),
                         new JsonStreet("Bonne Nouvelle", JsonStreetKind.boulevard)
                 ] as JsonStreet[])
         ])
@@ -324,16 +325,16 @@ class JsonOutputTest extends GroovyTestCase {
         assert toJson(m) == '{"a":1}'
     }
 
-	void testObjectWithDeclaredPropertiesField() {
-		def person = new JsonObject(name: "pillow", properties: [state: "fluffy", color: "white"])
-		def json = toJson(person)
-		assert json == '{"properties":{"state":"fluffy","color":"white"},"name":"pillow"}'
-	}
-	
-	void testGROOVY5494() {
-		def json = toJson(new JsonFoo(name: "foo"))
-		assert json == '{"properties":0,"name":"foo"}'
-	}
+    void testObjectWithDeclaredPropertiesField() {
+        def person = new JsonObject(name: "pillow", properties: [state: "fluffy", color: "white"])
+        def json = toJson(person)
+        assert json == '{"properties":{"state":"fluffy","color":"white"},"name":"pillow"}'
+    }
+
+    void testGROOVY5494() {
+        def json = toJson(new JsonFoo(name: "foo"))
+        assert json == '{"properties":0,"name":"foo"}'
+    }
 
     void testCharacter() {
         assert toJson('a' as char) == '"a"'
@@ -368,13 +369,14 @@ class JsonStreet {
 }
 
 class JsonObject {
-	String name
-	Map properties
+    String name
+    Map properties
 }
 
 class JsonFoo {
-	String name
-	int getProperties() { return 0 }
+    String name
+
+    int getProperties() { return 0 }
 }
 
 enum JsonStreetKind {

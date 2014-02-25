@@ -8,8 +8,9 @@ class JavascriptTest extends GroovyTestCase {
         binding.x = 10
         binding.y = 5
         def js = ScriptEngineManager.javascript
-        if (!js) System.err.println("Warning: JavaScript not available on this JVM - test ignored")
-        else {
+        if (!js) {
+            System.err.println("Warning: JavaScript not available on this JVM - test ignored")
+        } else {
             def eval = js.&eval.rcurry(binding)
             assert eval('2 * x + y') == 25
             eval 'z = x + y'

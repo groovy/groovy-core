@@ -15,8 +15,7 @@
  */
 package groovy.bugs
 
-import javax.swing.JButton
-import javax.swing.JPanel
+import javax.swing.*
 
 /**
  * @version $Revision$

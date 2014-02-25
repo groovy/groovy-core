@@ -16,12 +16,11 @@
 
 package groovy.swing.factory
 
-import java.awt.Component
-import java.awt.Window
-import javax.swing.JSplitPane
+import javax.swing.*
+import java.awt.*
 
 public class SplitPaneFactory extends AbstractFactory {
-    
+
     public Object newInstance(FactoryBuilderSupport builder, Object name, Object value, Map attributes) throws InstantiationException, IllegalAccessException {
         if (FactoryBuilderSupport.checkValueIsType(value, name, JSplitPane)) {
             return value;

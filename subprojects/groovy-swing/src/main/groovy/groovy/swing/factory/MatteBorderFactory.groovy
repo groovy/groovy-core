@@ -15,7 +15,7 @@
  */
 package groovy.swing.factory
 
-import javax.swing.BorderFactory
+import javax.swing.*
 
 /**
  * matteBorder requires essentially two parameter, a mat definition and a
@@ -29,10 +29,10 @@ class MatteBorderFactory extends SwingBorderFactory {
 
     public Object newInstance(FactoryBuilderSupport builder, Object name, Object value, Map attributes) {
         builder.context.applyBorderToParent = attributes.remove('parent')
-        
+
         def matte
         def border
-        if (attributes.containsKey('icon'))  {
+        if (attributes.containsKey('icon')) {
             matte = attributes.remove('icon')
         } else if (attributes.containsKey('color')) {
             matte = attributes.remove('color')

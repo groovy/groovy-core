@@ -26,7 +26,7 @@ class PackageHelper implements PreferenceChangeListener {
 
     PackageHelper(ClassLoader groovyClassLoader) {
         this.groovyClassLoader = groovyClassLoader
-        if (! Boolean.valueOf(Preferences.get(IMPORT_COMPLETION_PREFERENCE_KEY))) {
+        if (!Boolean.valueOf(Preferences.get(IMPORT_COMPLETION_PREFERENCE_KEY))) {
             rootPackages = initializePackages(groovyClassLoader)
         }
         Preferences.addChangeListener(this)
@@ -54,7 +54,7 @@ class PackageHelper implements PreferenceChangeListener {
                 continue
             }
 
-            urls.addAll(((URLClassLoader)loader).URLs)
+            urls.addAll(((URLClassLoader) loader).URLs)
         }
 
         // System classes
@@ -104,7 +104,7 @@ class PackageHelper implements PreferenceChangeListener {
                 rootPackages.put(rootname, cp)
             }
 
-            while(tokenizer.hasMoreTokens()) {
+            while (tokenizer.hasMoreTokens()) {
                 String packbasename = tokenizer.nextToken()
                 if (cp.childPackages == null) {
                     // small initial size, to save memory
@@ -139,11 +139,11 @@ class PackageHelper implements PreferenceChangeListener {
             collectPackageNamesFromFolderRecursive(urlfile, "", packnames)
             return packnames
         } else {
-            if(urlfile.path.endsWith('.jar')) {
+            if (urlfile.path.endsWith('.jar')) {
                 try {
                     JarFile jf = new JarFile(urlfile)
                     return getPackageNamesFromJar(jf)
-                } catch(ZipException ze) {
+                } catch (ZipException ze) {
                     if (log.debugEnabled) {
                         ze.printStackTrace();
                     }
@@ -175,7 +175,7 @@ class PackageHelper implements PreferenceChangeListener {
                 }
                 String optionalDot = prefix ? '.' : ''
                 collectPackageNamesFromFolderRecursive(files[i], prefix + optionalDot + files[i].getName(), packnames);
-            } else if (! packageAdded) {
+            } else if (!packageAdded) {
                 if (files[i].getName().endsWith(CLASS_SUFFIX)) {
                     packageAdded = true
                     if (prefix) {
@@ -228,10 +228,10 @@ class PackageHelper implements PreferenceChangeListener {
      * @return
      */
     Set<String> getContents(String packagename) {
-        if (! rootPackages) {
+        if (!rootPackages) {
             return null
         }
-        if (! packagename) {
+        if (!packagename) {
             return rootPackages.collect { String key, CachedPackage v -> key } as Set
         }
         if (packagename.endsWith(".*")) {
@@ -288,7 +288,7 @@ class PackageHelper implements PreferenceChangeListener {
             }
             if (file.isDirectory()) {
                 File packFolder = new File(file, pathname)
-                if (! packFolder.isDirectory()) {
+                if (!packFolder.isDirectory()) {
                     continue
                 }
                 File[] files = packFolder.listFiles();
@@ -308,7 +308,7 @@ class PackageHelper implements PreferenceChangeListener {
                 continue
             }
 
-            if (!file.toString().endsWith (".jar")) {
+            if (!file.toString().endsWith(".jar")) {
                 continue
             }
 
@@ -324,13 +324,12 @@ class PackageHelper implements PreferenceChangeListener {
                 String name = entry.getName();
 
                 // only use class files
-                if (!name.endsWith(CLASS_SUFFIX))
-                {
+                if (!name.endsWith(CLASS_SUFFIX)) {
                     continue
                 }
                 // normal slash inside jars even on windows
                 int lastslash = name.lastIndexOf('/')
-                if (lastslash  == -1 || name.substring(0, lastslash) != pathname) {
+                if (lastslash == -1 || name.substring(0, lastslash) != pathname) {
                     continue
                 }
                 name = name.substring(lastslash + 1, name.length() - CLASS_SUFFIX.length())

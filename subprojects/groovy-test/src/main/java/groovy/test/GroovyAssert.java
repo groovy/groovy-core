@@ -31,27 +31,25 @@ import java.util.logging.Logger;
  * extension of JUnit 4's {@link org.junit.Assert} class. In case JUnit 3 is the choice, the {@link groovy.util.GroovyTestCase}
  * is ment to be used for writing tests based on {@link junit.framework.TestCase}.
  * </p>
- *
+ * <p/>
  * <p>
  * {@code GroovyAssert} methods can either be used by fully qualifying the static method like
- *
+ * <p/>
  * <pre>
  *     groovy.test.GroovyAssert.shouldFail { ... }
  * </pre>
- *
+ * <p/>
  * or by importing the static methods with one ore more static imports
- *
+ * <p/>
  * <pre>
  *     import static groovy.test.GroovyAssert.shouldFail
  *     import static groovy.test.GroovyAssert.assertNotNull
  * </pre>
  * </p>
  *
- * @see groovy.util.GroovyTestCase
- *
  * @author Paul King
  * @author Andre Steingress
- *
+ * @see groovy.util.GroovyTestCase
  * @since 2.3
  */
 public class GroovyAssert extends org.junit.Assert {
@@ -134,7 +132,7 @@ public class GroovyAssert extends org.junit.Assert {
      * The expected exception class is compared recursively with any nested
      * exceptions using getCause() until either a match is found or no more
      * nested exceptions exist.
-     * <p>
+     * <p/>
      * If a match is found, the matching exception is returned
      * otherwise the method will fail.
      *
@@ -161,7 +159,7 @@ public class GroovyAssert extends org.junit.Assert {
 
         if (orig != null && cause == null) {
             fail("Closure " + code + " was expected to fail due to a nested cause of type " + expectedCause.getName() +
-            " but instead got a direct exception of type " + orig.getClass().getName() + " with no nested cause(s). Code under test has a bug or perhaps you meant shouldFail?");
+                    " but instead got a direct exception of type " + orig.getClass().getName() + " with no nested cause(s). Code under test has a bug or perhaps you meant shouldFail?");
         }
 
         while (cause != null && !expectedCause.isInstance(cause) && cause != cause.getCause() && level < MAX_NESTED_EXCEPTIONS) {
@@ -181,8 +179,8 @@ public class GroovyAssert extends org.junit.Assert {
      * Asserts that the given script fails when it is evaluated
      * and that a particular type of exception is thrown.
      *
-     * @param clazz the class of the expected exception
-     * @param script  the script that should fail
+     * @param clazz  the class of the expected exception
+     * @param script the script that should fail
      * @return the caught exception
      */
     public static Throwable shouldFail(Class clazz, String script) {
@@ -251,8 +249,7 @@ public class GroovyAssert extends org.junit.Assert {
                     if (isPublicTestMethod(m)) {
                         return m;
                     }
-                }
-                catch (final Exception e) {
+                } catch (final Exception e) {
                     // can't access, ignore it
                 }
             }
@@ -283,19 +280,19 @@ public class GroovyAssert extends org.junit.Assert {
      * This is helpful for tests that don't currently work but should work one day,
      * when the tested functionality has been implemented.<br>
      * </p>
-     *
+     * <p/>
      * <p>
      * The right way to use it for JUnit 3 is:
-     *
+     * <p/>
      * <pre>
      * public void testXXX() {
      *   if (GroovyTestCase.notYetImplemented(this)) return;
      *   ... the real (now failing) unit test
      * }
      * </pre>
-     *
+     * <p/>
      * or for JUnit 4
-     *
+     * <p/>
      * <pre>
      * &#64;Test
      * public void XXX() {
@@ -304,7 +301,7 @@ public class GroovyAssert extends org.junit.Assert {
      * }
      * </pre>
      * </p>
-     *
+     * <p/>
      * <p>
      * Idea copied from HtmlUnit (many thanks to Marc Guillemot).
      * Future versions maybe available in the JUnit distribution.
@@ -323,12 +320,10 @@ public class GroovyAssert extends org.junit.Assert {
             log.info("Running " + testMethod.getName() + " as not yet implemented");
             testMethod.invoke(caller, (Object[]) new Class[]{});
             fail(testMethod.getName() + " is marked as not yet implemented but passes unexpectedly");
-        }
-        catch (final Exception e) {
+        } catch (final Exception e) {
             log.info(testMethod.getName() + " fails which is expected as it is not yet implemented");
             // method execution failed, it is really "not yet implemented"
-        }
-        finally {
+        } finally {
             notYetImplementedFlag.set(null);
         }
         return true;

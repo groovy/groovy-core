@@ -38,7 +38,8 @@ public class JSliderProperties {
                     public FullBinding createBinding(SourceBinding source, TargetBinding target) {
                         return new JSliderValueBinding((PropertyBinding) source, target);
                     }
-                });
+                }
+        );
         return result;
     }
 }
@@ -53,7 +54,7 @@ class JSliderValueBinding extends AbstractSyntheticBinding implements PropertyCh
     }
 
     public synchronized void syntheticBind() {
-        boundSlider = (JSlider) ((PropertyBinding)sourceBinding).getBean();
+        boundSlider = (JSlider) ((PropertyBinding) sourceBinding).getBean();
         boundSlider.addPropertyChangeListener("model", this);
         boundSlider.getModel().addChangeListener(this);
     }

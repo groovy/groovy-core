@@ -15,13 +15,10 @@
  */
 package groovy.swing.impl;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import javax.swing.*;
+import java.awt.*;
 
-import javax.swing.JPanel;
-
-/** 
+/**
  * Represents a HTML style table layout
  *
  * @author <a href="mailto:james@coredevelopers.net">James Strachan</a>
@@ -35,7 +32,7 @@ public class TableLayout extends JPanel {
     public TableLayout() {
         setLayout(new GridBagLayout());
     }
-    
+
     public int getCellpadding() {
         return cellpadding;
     }
@@ -46,6 +43,7 @@ public class TableLayout extends JPanel {
 
     /**
      * Adds a new cell to the current grid
+     *
      * @param cell the td component
      */
     public void addCell(TableLayoutCell cell) {
@@ -55,7 +53,8 @@ public class TableLayout extends JPanel {
     }
 
     /**
-     * Creates a new row index for child <tr> tags 
+     * Creates a new row index for child <tr> tags
+     *
      * @return nextRowIndex the row number
      */
     public int nextRowIndex() {

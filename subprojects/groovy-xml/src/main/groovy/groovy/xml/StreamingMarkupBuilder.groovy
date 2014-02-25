@@ -16,22 +16,16 @@
 package groovy.xml
 
 import groovy.xml.streamingmarkupsupport.AbstractStreamingBuilder
-import groovy.xml.streamingmarkupsupport.StreamingMarkupWriter
 import groovy.xml.streamingmarkupsupport.BaseMarkupBuilder
+import groovy.xml.streamingmarkupsupport.StreamingMarkupWriter
 
 /**
  * A builder class for creating XML markup.  This implementation uses a
  * {@link StreamingMarkupWriter} to handle output.
  * <p>
  * Example:
- * <pre>System.out << new StreamingMarkupBuilder().bind {
- *   root {
- *     a( a1:'one' ) {
- *       b { mkp.yield( '3 < 5' ) }
- *       c( a2:'two', 'blah' )
- *     }
- *   }
- * }</pre>
+ * <pre>System.out << new StreamingMarkupBuilder().bind {*   root {*     a( a1:'one' ) {*       b { mkp.yield( '3 < 5' ) }*       c( a2:'two', 'blah' )
+ *}*}*}</pre>
  * Will output the following String, without newlines or indentation:  
  * <pre>&lt;root&gt;
  *   &lt;a a1='one'&gt;
@@ -52,13 +46,14 @@ import groovy.xml.streamingmarkupsupport.BaseMarkupBuilder
 class StreamingMarkupBuilder extends AbstractStreamingBuilder {
     boolean useDoubleQuotes = false
     boolean expandEmptyElements = false
+
     def getQt() { useDoubleQuotes ? '"' : "'" }
     def pendingStack = []
-    
+
     /**
      * Invoked by calling <code>mkp.comment</code>
      */
-    def commentClosure = {doc, pendingNamespaces, namespaces, namespaceSpecificTags, prefix, attrs, body, out ->
+    def commentClosure = { doc, pendingNamespaces, namespaces, namespaceSpecificTags, prefix, attrs, body, out ->
         out.unescaped() << "<!--"
         out.escaped() << body
         out.unescaped() << "-->"
@@ -67,12 +62,12 @@ class StreamingMarkupBuilder extends AbstractStreamingBuilder {
     /**
      * Invoked by calling <code>mkp.pi</code>
      */
-    def piClosure = {doc, pendingNamespaces, namespaces, namespaceSpecificTags, prefix, attrs, body, out ->
-        attrs.each {target, instruction ->
+    def piClosure = { doc, pendingNamespaces, namespaces, namespaceSpecificTags, prefix, attrs, body, out ->
+        attrs.each { target, instruction ->
             out.unescaped() << "<?"
             if (instruction instanceof Map) {
                 out.unescaped() << target
-                instruction.each {name, value ->
+                instruction.each { name, value ->
                     if (value.toString().contains('\'') || (useDoubleQuotes && !value.toString().contains('"'))) {
                         out.unescaped() << " $name=\"$value\""
                     } else {
@@ -89,7 +84,7 @@ class StreamingMarkupBuilder extends AbstractStreamingBuilder {
     /**
      * Invoked by calling <code>mkp.xmlDeclaration</code>
      */
-    def declarationClosure = {doc, pendingNamespaces, namespaces, namespaceSpecificTags, prefix, attrs, body, out ->
+    def declarationClosure = { doc, pendingNamespaces, namespaces, namespaceSpecificTags, prefix, attrs, body, out ->
         out.unescaped() << '<?xml version=' + qt + '1.0' + qt
         if (out.encodingKnown) out.escaped() << " encoding=" + qt + out.encoding + qt
         out.unescaped() << '?>\n'
@@ -100,7 +95,7 @@ class StreamingMarkupBuilder extends AbstractStreamingBuilder {
      * output stream.  Any XML reserved characters will be escaped to ensure
      * well-formedness.
      */
-    def noopClosure = {doc, pendingNamespaces, namespaces, namespaceSpecificTags, prefix, attrs, body, out ->
+    def noopClosure = { doc, pendingNamespaces, namespaces, namespaceSpecificTags, prefix, attrs, body, out ->
         body.each {
             if (it instanceof Closure) {
                 def body1 = it.clone()
@@ -113,17 +108,17 @@ class StreamingMarkupBuilder extends AbstractStreamingBuilder {
             }
         }
     }
-    
+
     /**
      * Invoked by calling <code>mkp.yieldUnescaped</code>.  Used to render 
      * literal text or markup to the output stream.  No escaping is done on the
      * output.
      */
-    def unescapedClosure = {doc, pendingNamespaces, namespaces, namespaceSpecificTags, prefix, attrs, body, out ->
+    def unescapedClosure = { doc, pendingNamespaces, namespaces, namespaceSpecificTags, prefix, attrs, body, out ->
         out.unescaped() << body
     }
-    
-    def tagClosure = {tag, doc, pendingNamespaces, namespaces, namespaceSpecificTags, prefix, attrs, body, out ->
+
+    def tagClosure = { tag, doc, pendingNamespaces, namespaces, namespaceSpecificTags, prefix, attrs, body, out ->
         boolean pendingIsDefaultNamespace = pendingNamespaces.containsKey(prefix) && !pendingNamespaces[prefix]
         if (prefix != "") {
             if (!(namespaces.containsKey(prefix) || pendingNamespaces.containsKey(prefix))) {
@@ -134,7 +129,7 @@ class StreamingMarkupBuilder extends AbstractStreamingBuilder {
 
         out = out.unescaped() << "<${tag}"
 
-        attrs.each {key, value ->
+        attrs.each { key, value ->
             if (key.contains('$')) {
                 def parts = key.tokenize('$')
                 String localpart = parts[1].contains("}") ? parts[1].tokenize("}")[1] : parts[1]
@@ -192,7 +187,7 @@ class StreamingMarkupBuilder extends AbstractStreamingBuilder {
             out << "</${tag}>"
         }
 
-        hiddenNamespaces.each {key, value ->
+        hiddenNamespaces.each { key, value ->
             if (value == null) {
                 namespaces.remove key
             } else {
@@ -205,15 +200,15 @@ class StreamingMarkupBuilder extends AbstractStreamingBuilder {
 
     StreamingMarkupBuilder() {
         specialTags.putAll(
-                ['yield': noopClosure,
-                'yieldUnescaped': unescapedClosure,
-                'xmlDeclaration': declarationClosure,
-                'comment': commentClosure,
-                'pi': piClosure])
+                ['yield'         : noopClosure,
+                 'yieldUnescaped': unescapedClosure,
+                 'xmlDeclaration': declarationClosure,
+                 'comment'       : commentClosure,
+                 'pi'            : piClosure])
 
-        def nsSpecificTags = [':': [tagClosure, tagClosure, [:]], // the default namespace
-        'http://www.w3.org/XML/1998/namespace': [tagClosure, tagClosure, [:]],
-        'http://www.codehaus.org/Groovy/markup/keywords': [badTagClosure, tagClosure, specialTags]]
+        def nsSpecificTags = [':'                                             : [tagClosure, tagClosure, [:]], // the default namespace
+                              'http://www.w3.org/XML/1998/namespace'          : [tagClosure, tagClosure, [:]],
+                              'http://www.codehaus.org/Groovy/markup/keywords': [badTagClosure, tagClosure, specialTags]]
 
         this.builder = new BaseMarkupBuilder(nsSpecificTags)
     }
@@ -227,10 +222,10 @@ class StreamingMarkupBuilder extends AbstractStreamingBuilder {
      * Examples:
      * <pre>
      * // get the markup as a string:
-     * new StreamingMarkupBuilder().bind { div { out << "hello world" } }.toString()
-     * 
+     * new StreamingMarkupBuilder().bind { div { out << "hello world" }}.toString()
+     *
      * // send the output directly to a file:
-     * new StreamingMarkupBuilder().bind { div { out << "hello world" } } \
+     * new StreamingMarkupBuilder().bind { div { out << "hello world" }} \
      *      .writeTo( new File('myFile.xml').newWriter() )
      * </pre>
      *
@@ -240,7 +235,7 @@ class StreamingMarkupBuilder extends AbstractStreamingBuilder {
         def boundClosure = this.builder.bind(closure);
         def enc = encoding; // take a snapshot of the encoding when the closure is bound to the builder
 
-        {out ->
+        { out ->
             out = new StreamingMarkupWriter(out, enc, useDoubleQuotes)
             boundClosure.trigger = out
             out.flush()

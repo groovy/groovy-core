@@ -144,7 +144,7 @@ public class XmlNodePrinter {
      * Whether empty elements are expanded from &lt;tagName/&gt; to &lt;tagName&gt;&lt;/tagName&gt;.
      *
      * @return <code>true</code>, if empty elements will be represented by an opening tag
-     *                            followed immediately by a closing tag.
+     * followed immediately by a closing tag.
      */
     public boolean isExpandEmptyElements() {
         return expandEmptyElements;

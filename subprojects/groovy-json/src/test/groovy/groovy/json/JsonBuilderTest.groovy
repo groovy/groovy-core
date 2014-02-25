@@ -71,7 +71,7 @@ class JsonBuilderTest extends GroovyTestCase {
 
         assert json.toString() == '{"a":1,"b":true,"c":null}'
     }
-    
+
     void testNestedObjects() {
         def json = new JsonBuilder()
         json {
@@ -138,7 +138,7 @@ class JsonBuilderTest extends GroovyTestCase {
     }
 
     void testCollectionAndClosure() {
-        def authors = [new Author (name: "Guillaume"), new Author (name: "Jochen"), new Author (name: "Paul")]
+        def authors = [new Author(name: "Guillaume"), new Author(name: "Jochen"), new Author(name: "Paul")]
 
         def json = new JsonBuilder()
         json authors, { Author author ->
@@ -149,7 +149,7 @@ class JsonBuilderTest extends GroovyTestCase {
     }
 
     void testMethodWithCollectionAndClosure() {
-        def authors = [new Author (name: "Guillaume"), new Author (name: "Jochen"), new Author (name: "Paul")]
+        def authors = [new Author(name: "Guillaume"), new Author(name: "Jochen"), new Author(name: "Paul")]
 
         def json = new JsonBuilder()
         json.authors authors, { Author author ->
@@ -160,7 +160,7 @@ class JsonBuilderTest extends GroovyTestCase {
     }
 
     void testNestedMethodWithCollectionAndClosure() {
-        def theAuthors = [new Author (name: "Guillaume"), new Author (name: "Jochen"), new Author (name: "Paul")]
+        def theAuthors = [new Author(name: "Guillaume"), new Author(name: "Jochen"), new Author(name: "Paul")]
 
         def json = new JsonBuilder()
         json {
@@ -184,23 +184,23 @@ class JsonBuilderTest extends GroovyTestCase {
             pages 242
             orderBy "newest"
             results([
-                id: "world/video/2011/jan/19/tunisia-demonstrators-democracy-video",
-                sectionId: "world",
-                sectionName: "World news",
-                webPublicationDate: "2011-01-19T15:12:46Z",
-                webTitle: "Tunisian demonstrators demand new democracy - video",
-                webUrl: "http://www.guardian.co.uk/world/video/2011/jan/19/tunisia-demonstrators-democracy-video",
-                apiUrl: "http://content.guardianapis.com/world/video/2011/jan/19/tunisia-demonstrators-democracy-video"
+                    id                : "world/video/2011/jan/19/tunisia-demonstrators-democracy-video",
+                    sectionId         : "world",
+                    sectionName       : "World news",
+                    webPublicationDate: "2011-01-19T15:12:46Z",
+                    webTitle          : "Tunisian demonstrators demand new democracy - video",
+                    webUrl            : "http://www.guardian.co.uk/world/video/2011/jan/19/tunisia-demonstrators-democracy-video",
+                    apiUrl            : "http://content.guardianapis.com/world/video/2011/jan/19/tunisia-demonstrators-democracy-video"
             ],
-            [
-                id: "world/gallery/2011/jan/19/tunisia-protests-pictures",
-                sectionId: "world",
-                sectionName: "World news",
-                webPublicationDate: "2011-01-19T15:01:09Z",
-                webTitle: "Tunisia protests continue in pictures ",
-                webUrl: "http://www.guardian.co.uk/world/gallery/2011/jan/19/tunisia-protests-pictures",
-                apiUrl: "http://content.guardianapis.com/world/gallery/2011/jan/19/tunisia-protests-pictures"
-            ])
+                    [
+                            id                : "world/gallery/2011/jan/19/tunisia-protests-pictures",
+                            sectionId         : "world",
+                            sectionName       : "World news",
+                            webPublicationDate: "2011-01-19T15:01:09Z",
+                            webTitle          : "Tunisia protests continue in pictures ",
+                            webUrl            : "http://www.guardian.co.uk/world/gallery/2011/jan/19/tunisia-protests-pictures",
+                            apiUrl            : "http://content.guardianapis.com/world/gallery/2011/jan/19/tunisia-protests-pictures"
+                    ])
         }
 
         assert json.toString() ==
@@ -210,7 +210,7 @@ class JsonBuilderTest extends GroovyTestCase {
     void testNestedListMap() {
         def json = new JsonBuilder()
         json.content {
-            list([:],[another:[a:[1,2,3]]])
+            list([:], [another: [a: [1, 2, 3]]])
         }
 
         assert json.toString() == '''{"content":{"list":[{},{"another":{"a":[1,2,3]}}]}}'''
@@ -225,22 +225,22 @@ class JsonBuilderTest extends GroovyTestCase {
     void testTrendsFromTwitter() {
         def json = new JsonBuilder()
         json.trends {
-            "2010-06-22 17:20" ([
-                    name: "Groovy rules",
+            "2010-06-22 17:20"([
+                    name : "Groovy rules",
                     query: "Groovy rules"
             ], {
-                    name "#worldcup"
-                    query "#worldcup"
+                name "#worldcup"
+                query "#worldcup"
             }, [
-                    name: "Uruguai",
+                    name : "Uruguai",
                     query: "Uruguai"
             ])
-            "2010-06-22 06:20" ({
+            "2010-06-22 06:20"({
                 name "#groovy"
                 query "#groovy"
             }, [
-                name: "#java",
-                query: "#java"
+                    name : "#java",
+                    query: "#java"
             ])
         }
         assert json.toString() == '''{"trends":{"2010-06-22 17:20":[{"name":"Groovy rules","query":"Groovy rules"},{"name":"#worldcup","query":"#worldcup"},{"name":"Uruguai","query":"Uruguai"}],"2010-06-22 06:20":[{"name":"#groovy","query":"#groovy"},{"name":"#java","query":"#java"}]}}'''
@@ -305,7 +305,7 @@ class JsonBuilderTest extends GroovyTestCase {
     void testStringEscape() {
         def original, serialized, deserialized
 
-        original = [elem:"\\n"]
+        original = [elem: "\\n"]
         serialized = (new JsonBuilder(original)).toString()
         deserialized = (new JsonSlurper()).parseText(serialized)
         assert original.elem == deserialized.elem

@@ -15,8 +15,8 @@
  */
 package groovy.sql
 
-import java.sql.Connection
 import javax.sql.DataSource
+import java.sql.Connection
 
 import static groovy.sql.SqlTestConstants.*
 
@@ -76,7 +76,9 @@ class SqlTest extends GroovyTestCase {
     void testSqlQueryWithIncorrectlyQuotedDynamicExpressions() {
         def foo = "cheese"
         def bar = "edam"
-        sql.eachRow("select * from FOOD where type='${foo}' and name != '${bar}'") { println("Found cheese ${it.name}") }
+        sql.eachRow("select * from FOOD where type='${foo}' and name != '${bar}'") {
+            println("Found cheese ${it.name}")
+        }
     }
 
     void testDataSet() {
@@ -130,8 +132,9 @@ class SqlTest extends GroovyTestCase {
             }
             assert data.isEmpty()
         } finally {
-            if (res)
+            if (res) {
                 res.close()
+            }
         }
         sub.rows('select * from PERSON') { metaData ->
             assert sub.savedConnection && !sub.savedConnection.isClosed()

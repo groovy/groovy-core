@@ -18,13 +18,13 @@ package groovy.sql;
 import groovy.lang.Closure;
 import groovy.lang.GroovyRuntimeException;
 import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.CodeVisitorSupport;
+import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.stmt.Statement;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -299,7 +299,8 @@ public class DataSet extends Sql {
             if (classNode == null) {
                 throw new GroovyRuntimeException(
                         "DataSet unable to evaluate expression. AST not available for closure: " + closure.getMetaClass().getTheClass().getName() +
-                                ". Is the source code on the classpath?");
+                                ". Is the source code on the classpath?"
+                );
             }
             List methods = classNode.getDeclaredMethods("doCall");
             if (!methods.isEmpty()) {
@@ -337,7 +338,7 @@ public class DataSet extends Sql {
      * is defined as starting at a 1-based offset, and containing a maximum number
      * of rows.
      *
-     * @param offset the 1-based offset for the first row to be processed
+     * @param offset  the 1-based offset for the first row to be processed
      * @param maxRows the maximum number of rows to be processed
      * @return a list of GroovyRowResult objects from the dataset
      * @throws SQLException if a database error occurs

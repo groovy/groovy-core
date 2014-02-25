@@ -30,10 +30,10 @@ class AbstractSyntheticMetaMethods {
         boolean init = false
         mcr.removeMetaClass klass //??
         //if (!(mc instanceof ExpandoMetaClass)) {
-            mc = new ExpandoMetaClass(klass)
-            init = true
+        mc = new ExpandoMetaClass(klass)
+        init = true
         //}
-        enhancedMethods.each {k, v ->
+        enhancedMethods.each { k, v ->
             if (mc.getMetaMethod(k) == null) {
                 mc.registerInstanceMethod(k, v)
             }

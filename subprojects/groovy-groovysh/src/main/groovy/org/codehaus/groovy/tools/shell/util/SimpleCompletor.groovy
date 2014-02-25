@@ -30,36 +30,36 @@ public class SimpleCompletor implements Completer {
     SortedSet candidates;
 
     /**
-    * A delimiter to use to qualify completions.
-    */
+     * A delimiter to use to qualify completions.
+     */
     String delimiter;
 
 
     public SimpleCompletor(final String[] candidates) {
         setCandidateStrings(candidates);
     }
-    
+
     public SimpleCompletor() {
         this(new String[0]);
     }
-    
+
     public SimpleCompletor(final Closure loader) {
         this();
-        
+
         assert loader != null;
-        
+
         Object obj = loader.call();
-        
+
         List list = null;
-        
+
         if (obj instanceof List) {
-            list = (List)obj;
+            list = (List) obj;
         }
-        
+
         //
         // TODO: Maybe handle arrays too?
         //
-        
+
         if (list == null) {
             throw new IllegalStateException("The loader closure did not return a list of candidates; found: " + obj);
         }
@@ -96,9 +96,9 @@ public class SimpleCompletor implements Completer {
             if (!(can.startsWith(start))) {
                 break;
             }
-            
+
             String delim = getDelimiter();
-            
+
             if (delim != null) {
                 int index = can.indexOf(delim, cursor);
 

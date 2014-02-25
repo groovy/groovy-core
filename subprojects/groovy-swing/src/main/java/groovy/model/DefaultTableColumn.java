@@ -17,7 +17,7 @@ package groovy.model;
 
 import javax.swing.table.TableColumn;
 
-/** 
+/**
  * Represents a column using a ValueModel to extract the value.
  *
  * @author <a href="mailto:jstrachan@apache.org">James Strachan</a>
@@ -25,8 +25,8 @@ import javax.swing.table.TableColumn;
  */
 public class DefaultTableColumn extends TableColumn {
 
-    private ValueModel valueModel;    
-    
+    private ValueModel valueModel;
+
     public DefaultTableColumn(ValueModel valueModel) {
         this.valueModel = valueModel;
     }
@@ -44,15 +44,15 @@ public class DefaultTableColumn extends TableColumn {
     public String toString() {
         return super.toString() + "[header:" + getHeaderValue() + " valueModel:" + valueModel + "]";
     }
-    
+
     /**
      * Evaluates the value of a cell
      *
-     * @return the value
-     * @param row the row of interest
-     * @param rowIndex the index of the row of interest
+     * @param row         the row of interest
+     * @param rowIndex    the index of the row of interest
      * @param columnIndex the column of interest
-     */    
+     * @return the value
+     */
     public Object getValue(Object row, int rowIndex, int columnIndex) {
         if (valueModel instanceof NestedValueModel) {
             NestedValueModel nestedModel = (NestedValueModel) valueModel;

@@ -29,8 +29,8 @@ import javax.swing.table.TableModel;
  * a TableMap which has not been subclassed into a chain of table filters
  * should have no effect.
  *
- * @version 1.11 01/23/03
  * @author Philip Milne
+ * @version 1.11 01/23/03
  */
 public class TableMap extends AbstractTableModel implements TableModelListener {
     protected TableModel model;

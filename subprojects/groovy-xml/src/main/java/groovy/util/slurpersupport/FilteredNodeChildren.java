@@ -15,12 +15,11 @@
  */
 package groovy.util.slurpersupport;
 
-import java.util.Iterator;
-import java.util.Map;
-
+import groovy.lang.Closure;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 
-import groovy.lang.Closure;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Lazy evaluated representation of child nodes filtered by a Closure.
@@ -31,8 +30,8 @@ public class FilteredNodeChildren extends NodeChildren {
     private final Closure closure;
 
     /**
-     * @param parent the GPathResult prior to the application of the expression creating this GPathResult
-     * @param closure the Closure to use to filter the nodes
+     * @param parent            the GPathResult prior to the application of the expression creating this GPathResult
+     * @param closure           the Closure to use to filter the nodes
      * @param namespaceTagHints the known tag to namespace mappings
      */
     public FilteredNodeChildren(final GPathResult parent, final Closure closure, final Map<String, String> namespaceTagHints) {

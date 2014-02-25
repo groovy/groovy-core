@@ -36,24 +36,15 @@ import java.util.regex.Pattern
  * <pre>
  * import groovy.mock.interceptor.MockFor
  *
- * class Person {
- *   String first, last
- * }
- *
- * class Family {
- *   Person father, mother
- *   def nameOfMother() { "$mother.first $mother.last" }
- * }
- *
+ * class Person {*   String first, last
+ *}*
+ * class Family {*   Person father, mother
+ *   def nameOfMother() { "$mother.first $mother.last" }*}*
  * def mock = new MockFor(Person)
- * mock.demand.getFirst{ 'dummy' }
- * mock.demand.getLast{ 'name' }
- * mock.use {
- *   def mary = new Person(first:'Mary', last:'Smith')
+ * mock.demand.getFirst{ 'dummy' }* mock.demand.getLast{ 'name' }* mock.use {*   def mary = new Person(first:'Mary', last:'Smith')
  *   def f = new Family(mother:mary)
  *   assert f.nameOfMother() == 'dummy name'
- * }
- * </pre>
+ *}* </pre>
  * Here, <code>Family</code> is our class under test and <code>Person</code> is the collaborator.
  * We are using normal Groovy property semantics here; hence the statement
  * <code>mother.last</code> causes a call to <code>mother.getLast()</code> to occur.
@@ -99,23 +90,15 @@ class MockFor {
      * using the class name as this example shows:
      * <pre>
      * import groovy.mock.interceptor.MockFor
-     * class Person {
-     *   String first, last
-     * }
-     * def interceptConstructorCalls = true
+     * class Person {*   String first, last
+     *}* def interceptConstructorCalls = true
      * def mock = new MockFor(Person, interceptConstructorCalls)
      * def dummy = new Person(first:'Tom', last:'Jones')
-     * mock.demand.with {
-     *   Person() { dummy } // expect constructor call, return dummy
-     *   getFirst() {'John'}
-     *   getLast() {'Doe'}
-     * }
-     * mock.use {
-     *   def p = new Person(first:'Mary', last:'Smith')
+     * mock.demand.with {*   Person() { dummy } // expect constructor call, return dummy
+     *   getFirst() {'John'}*   getLast() {'Doe'}*}* mock.use {*   def p = new Person(first:'Mary', last:'Smith')
      *   assert p.first == 'John'
      *   assert p.last == 'Doe'
-     * }
-     * </pre>
+     *}* </pre>
      */
     MockFor(Class clazz, boolean interceptConstruction = false) {
         if (interceptConstruction && !GroovyObject.isAssignableFrom(clazz)) {
@@ -124,7 +107,7 @@ class MockFor {
         this.clazz = clazz
         proxy = MockProxyMetaClass.make(clazz, interceptConstruction)
         demand = new Demand()
-        ignore = new Ignore(parent:this)
+        ignore = new Ignore(parent: this)
         expect = new StrictExpectation(demand)
         proxy.interceptor = new MockInterceptor(expectation: expect)
     }
@@ -159,28 +142,18 @@ class MockFor {
      * Here are some examples:
      * <pre>
      * import groovy.mock.interceptor.MockFor
-     * class Person {
-     *   String first, last
-     *   def name() { "$first $last" }
-     *   def ignoreMe() { 'baz' }
-     *   def ignoreMeToo() { ignoreMe() }
-     *   def ignoreMeThree() { ignoreMe() }
-     * }
-     * def mock = new MockFor(Person)
+     * class Person {*   String first, last
+     *   def name() { "$first $last" }*   def ignoreMe() { 'baz' }*   def ignoreMeToo() { ignoreMe() }*   def ignoreMeThree() { ignoreMe() }*}* def mock = new MockFor(Person)
      * mock.ignore(~'get.*')
-     * mock.ignore('ignoreMeToo') { 'boo' }
-     * mock.ignore(~'ignoreMe.*')
-     * mock.demand.name{ 'John' }
-     * mock.use {
-     *   def p = new Person(first:'Mary', last:'Smith')
+     * mock.ignore('ignoreMeToo') { 'boo' }* mock.ignore(~'ignoreMe.*')
+     * mock.demand.name{ 'John' }* mock.use {*   def p = new Person(first:'Mary', last:'Smith')
      *   assert p.first == 'Mary'
      *   assert p.last == 'Smith'
      *   assert p.name() == 'John'
      *   assert p.ignoreMe() == 'baz'
      *   assert p.ignoreMeToo() == 'boo'
      *   assert p.ignoreMeThree() == 'baz'
-     * }
-     * </pre>
+     *}* </pre>
      * There is also a convenience form of ignore that matches the same style as
      * demand. E.g. instead of <code>mock.ignore('hasNext')</code> you can use
      * <code>mock.ignore.hasNext()</code>. A Closure variation is also provided.
@@ -212,33 +185,21 @@ class MockFor {
      * <pre>
      * import groovy.mock.interceptor.MockFor
      *
-     * class Person {
-     *   String first, last
-     * }
-     *
-     * class Family {
-     *   Person mother, father
-     *   String nameOfMother() { fullName(mother) }
-     *   String nameOfFather() { fullName(father) }
-     *   private fullName(p) { "$p.first $p.last" }
-     * }
-     *
+     * class Person {*   String first, last
+     *}*
+     * class Family {*   Person mother, father
+     *   String nameOfMother() { fullName(mother) }*   String nameOfFather() { fullName(father) }*   private fullName(p) { "$p.first $p.last" }*}*
      * def mock = new MockFor(Person)
-     * mock.demand.with {
-     *   getFirst{ 'dummy' }
-     *   getLast{ 'name' }
-     * }
-     * Person john = mock.proxyInstance()
+     * mock.demand.with {*   getFirst{ 'dummy' }*   getLast{ 'name' }*}* Person john = mock.proxyInstance()
      * Person mary = mock.proxyInstance()
      * Family f = new Family(father:john, mother:mary)
      * assert f.nameOfFather() == 'dummy name'
      * assert f.nameOfMother() == 'dummy name'
-     * [john, mary].each{ mock.verify(it) }
-     * </pre>
+     * [john, mary].each{ mock.verify(it) }* </pre>
      * Normally for mocks, <code>verify()</code> is call automatically at the end of the "use" Closure,
      * but with this style, no "use" Closure is present, so <code>verify()</code> must be called manually.
      */
-    GroovyObject proxyInstance(args=null) {
+    GroovyObject proxyInstance(args = null) {
         makeProxyInstance(args, false)
     }
 
@@ -252,7 +213,7 @@ class MockFor {
      * will be instantiated for the class of the instance (i.e. may be on the
      * generated class not the original class).
      */
-    GroovyObject proxyDelegateInstance(args=null) {
+    GroovyObject proxyDelegateInstance(args = null) {
         makeProxyInstance(args, true)
     }
 

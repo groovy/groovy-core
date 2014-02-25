@@ -28,18 +28,17 @@ import org.codehaus.groovy.tools.shell.util.Preferences
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class ShadowCommand
-    extends ComplexCommandSupport
-{
+        extends ComplexCommandSupport {
     ShadowCommand(final Groovysh shell) {
-        super(shell, ':shadow', ':&', [ 'debug', 'verbose', 'info', 'this' ])
-        
+        super(shell, ':shadow', ':&', ['debug', 'verbose', 'info', 'this'])
+
         this.hidden = true
     }
-    
+
     def do_debug = {
         Preferences.verbosity = IO.Verbosity.DEBUG
     }
-    
+
     def do_verbose = {
         Preferences.verbosity = IO.Verbosity.VERBOSE
     }

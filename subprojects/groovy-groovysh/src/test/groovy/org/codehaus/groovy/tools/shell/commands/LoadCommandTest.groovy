@@ -22,8 +22,7 @@ package org.codehaus.groovy.tools.shell.commands
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class LoadCommandTest
-    extends CommandTestSupport
-{
+        extends CommandTestSupport {
     void testLoad() {
         shell << ':load'
     }

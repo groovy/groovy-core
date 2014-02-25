@@ -34,11 +34,12 @@ public class AbstractButtonProperties {
     public static Map<String, TriggerBinding> getSyntheticProperties() {
         Map<String, TriggerBinding> result = new HashMap<String, TriggerBinding>();
         result.put(AbstractButton.class.getName() + "#selected",
-            new TriggerBinding() {
-                public FullBinding createBinding(SourceBinding source, TargetBinding target) {
-                    return new AbstractButtonSelectedBinding((PropertyBinding) source, target);
+                new TriggerBinding() {
+                    public FullBinding createBinding(SourceBinding source, TargetBinding target) {
+                        return new AbstractButtonSelectedBinding((PropertyBinding) source, target);
+                    }
                 }
-            });
+        );
         return result;
     }
 }
@@ -52,21 +53,21 @@ class AbstractButtonSelectedBinding extends AbstractSyntheticBinding implements 
     }
 
     public synchronized void syntheticBind() {
-            boundButton = (AbstractButton) ((PropertyBinding) sourceBinding).getBean();
-                boundButton.addPropertyChangeListener("model", this);
-                boundButton.getModel().addItemListener(this);
+        boundButton = (AbstractButton) ((PropertyBinding) sourceBinding).getBean();
+        boundButton.addPropertyChangeListener("model", this);
+        boundButton.getModel().addItemListener(this);
     }
 
     public synchronized void syntheticUnbind() {
-            boundButton.removePropertyChangeListener("model", this);
-            boundButton.getModel().removeItemListener(this);
-            boundButton = null;
+        boundButton.removePropertyChangeListener("model", this);
+        boundButton.getModel().removeItemListener(this);
+        boundButton = null;
     }
 
     public void propertyChange(PropertyChangeEvent event) {
         update();
-        ((ButtonModel)event.getOldValue()).removeItemListener(this);
-        ((ButtonModel)event.getNewValue()).addItemListener(this);
+        ((ButtonModel) event.getOldValue()).removeItemListener(this);
+        ((ButtonModel) event.getNewValue()).addItemListener(this);
     }
 
     public void itemStateChanged(ItemEvent e) {

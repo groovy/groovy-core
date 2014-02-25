@@ -18,32 +18,27 @@ package groovy.inspect.swingui
 
 import groovy.swing.SwingBuilder
 import groovy.ui.ConsoleTextEditor
+import org.codehaus.groovy.ast.ClassNode
+import org.codehaus.groovy.control.CompilationUnit
+import org.codehaus.groovy.control.Phases
+import org.codehaus.groovy.control.SourceUnit
+import org.objectweb.asm.ClassReader
+import org.objectweb.asm.util.TraceClassVisitor
 
-import java.awt.Cursor
-import java.awt.Font
-import java.awt.event.KeyEvent
-import java.util.prefs.Preferences
-import javax.swing.JSplitPane
-import javax.swing.KeyStroke
-import javax.swing.UIManager
-import javax.swing.WindowConstants
+import javax.swing.*
 import javax.swing.event.TreeSelectionEvent
 import javax.swing.event.TreeSelectionListener
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeNode
 import javax.swing.tree.TreeSelectionModel
-import org.codehaus.groovy.control.Phases
-
+import java.awt.*
+import java.awt.event.KeyEvent
+import java.util.List
+import java.util.prefs.Preferences
 import java.util.regex.Pattern
 
 import static java.awt.GridBagConstraints.*
-import org.codehaus.groovy.ast.ClassNode
-import groovy.lang.GroovyClassLoader.ClassCollector
-import org.codehaus.groovy.control.CompilationUnit
-import org.codehaus.groovy.control.SourceUnit
-import org.objectweb.asm.ClassReader
-import org.objectweb.asm.util.TraceClassVisitor
 
 /**
  * This object is a GUI for looking at the AST that Groovy generates. 
@@ -82,7 +77,7 @@ class AstBrowser {
                 println "File $args[0] cannot be found."
             } else {
                 UIManager.setLookAndFeel(UIManager.systemLookAndFeelClassName)
-                new AstBrowser(null, null, new GroovyClassLoader()).run({file.text}, file.path)
+                new AstBrowser(null, null, new GroovyClassLoader()).run({ file.text }, file.path)
             }
         }
     }
@@ -128,8 +123,12 @@ class AstBrowser {
                     }
                 }
                 menu(text: 'View', mnemonic: 'V') {
-                    menuItem {action(name: 'Larger Font', closure: this.&largerFont, mnemonic: 'L', accelerator: shortcut('shift L'))}
-                    menuItem {action(name: 'Smaller Font', closure: this.&smallerFont, mnemonic: 'S', accelerator: shortcut('shift S'))}
+                    menuItem {
+                        action(name: 'Larger Font', closure: this.&largerFont, mnemonic: 'L', accelerator: shortcut('shift L'))
+                    }
+                    menuItem {
+                        action(name: 'Smaller Font', closure: this.&smallerFont, mnemonic: 'S', accelerator: shortcut('shift S'))
+                    }
                     menuItem {
                         action(name: 'Refresh', closure: {
                             decompile(phasePicker.selectedItem.phaseId, script())
@@ -138,7 +137,7 @@ class AstBrowser {
                     }
                 }
                 menu(text: 'Help', mnemonic: 'H') {
-                    menuItem {action(name: 'About', closure: this.&showAbout, mnemonic: 'A')}
+                    menuItem { action(name: 'About', closure: this.&showAbout, mnemonic: 'A') }
                 }
             }
             panel {
@@ -162,7 +161,7 @@ class AstBrowser {
                         },
                         constraints: gbc(gridx: 2, gridy: 0, gridwidth: 1, gridheight: 1, weightx: 0, weighty: 0, anchor: NORTHEAST, fill: NONE, insets: [2, 2, 2, 3]))
                 splitterPane = splitPane(
-                        visible: showTreeView, 
+                        visible: showTreeView,
                         leftComponent: scrollPane {
                             jTree = tree(
                                     name: 'AstTreeView',
@@ -177,15 +176,16 @@ class AstBrowser {
                                 }
                             }
                         }
-                ) { }
+                ) {}
                 mainSplitter = splitPane(
                         orientation: JSplitPane.VERTICAL_SPLIT,
                         topComponent: splitterPane,
                         bottomComponent: tabbedPane {
-                            widget(decompiledSource = new ConsoleTextEditor(editable: false, showLineNumbers: false), title:'Source')
-                            widget(bytecodeView = new ConsoleTextEditor(editable: false, showLineNumbers: false), title:'Bytecode')
+                            widget(decompiledSource = new ConsoleTextEditor(editable: false, showLineNumbers: false), title: 'Source')
+                            widget(bytecodeView = new ConsoleTextEditor(editable: false, showLineNumbers: false), title: 'Bytecode')
                         },
-                        constraints: gbc(gridx: 0, gridy: 2, gridwidth: 3, gridheight: 1, weightx: 1.0, weighty: 1.0, anchor: NORTHWEST, fill: BOTH, insets: [2, 2, 2, 2])) { }
+                        constraints: gbc(gridx: 0, gridy: 2, gridwidth: 3, gridheight: 1, weightx: 1.0, weighty: 1.0, anchor: NORTHWEST, fill: BOTH, insets: [2, 2, 2, 2])) {
+                }
 
             }
         }
@@ -208,7 +208,9 @@ class AstBrowser {
 
                 if (inputArea && rootElement) {
                     // get the line / column information to select the text represented by the current selected node
-                    def lineInfo = node.properties.findAll { it[0] in ['lineNumber', 'columnNumber', 'lastLineNumber', 'lastColumnNumber'] }
+                    def lineInfo = node.properties.findAll {
+                        it[0] in ['lineNumber', 'columnNumber', 'lastLineNumber', 'lastColumnNumber']
+                    }
                     def lineInfoMap = lineInfo.inject([:]) { map, info -> map[(info[0])] = Integer.valueOf(info[1]); return map }
 
                     // when there are valid line / column information (ie. != -1), create a selection in the input area
@@ -242,14 +244,14 @@ class AstBrowser {
                             swing.doLater {
                                 bytecodeView.textEditor.text = source
 
-                                if (showOnlyMethodCode)  {
+                                if (showOnlyMethodCode) {
                                     def methodName = node.getPropertyValue('name')
                                     def methodDescriptor = node.getPropertyValue('descriptor')
 
-                                    if (methodName && methodDescriptor)  {
+                                    if (methodName && methodDescriptor) {
                                         def pattern = Pattern.compile("^.*\\n.*${Pattern.quote(methodName + methodDescriptor)}[\\s\\S]*?\\n[}|\\n]", Pattern.MULTILINE)
                                         def matcher = pattern.matcher(source)
-                                        if (matcher.find())  {
+                                        if (matcher.find()) {
                                             bytecodeView.textEditor.text = source.substring(matcher.start(0), matcher.end(0))
                                         }
                                     }
@@ -329,7 +331,7 @@ class AstBrowser {
         showScriptClass = evt.source.selected
     }
 
-    void showClosureClasses(EventObject evt)  {
+    void showClosureClasses(EventObject evt) {
         showClosureClasses = evt.source.selected
     }
 
@@ -353,7 +355,7 @@ class AstBrowser {
 
                 String result = new AstNodeToScriptAdapter().compileToScript(source, phaseId, classLoader, showScriptFreeForm, showScriptClass)
                 swing.doLater {
-                    decompiledSource.textEditor.text = result 
+                    decompiledSource.textEditor.text = result
                     decompiledSource.textEditor.setCaretPosition(0)
                     decompiledSource.textEditor.setCursor(Cursor.defaultCursor)
                 }
@@ -503,7 +505,7 @@ class TreeNodeWithProperties extends DefaultMutableTreeNode {
         this.properties = properties
     }
 
-    String getPropertyValue(String name)  {
+    String getPropertyValue(String name) {
         def match = properties.find { n, v, t -> name == n }
         return match != null ? match[1] : null
     }
@@ -547,7 +549,7 @@ class BytecodeCollector extends ClassCollector {
 
     Map<String, byte[]> bytecode
 
-    BytecodeCollector(ClassCollector delegate, Map<String,byte[]> bytecode) {
+    BytecodeCollector(ClassCollector delegate, Map<String, byte[]> bytecode) {
         super(delegate.cl as GroovyClassLoader.InnerLoader, delegate.unit, delegate.su)
         this.bytecode = bytecode
     }

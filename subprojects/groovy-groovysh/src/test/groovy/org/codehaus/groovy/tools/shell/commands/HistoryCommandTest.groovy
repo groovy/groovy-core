@@ -25,8 +25,7 @@ import org.codehaus.groovy.tools.shell.Groovysh
  *
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
-class HistoryCommandTest extends CommandTestSupport
-{
+class HistoryCommandTest extends CommandTestSupport {
     void testHistory() {
         shell << ':history nocommandhere'
     }
@@ -36,8 +35,7 @@ class HistoryCommandTest extends CommandTestSupport
     }
 }
 
-class HistoryCommandIntegrationTest extends CompletorTestSupport
-{
+class HistoryCommandIntegrationTest extends CompletorTestSupport {
     File filemock
 
     void setUp() {
@@ -57,7 +55,7 @@ class HistoryCommandIntegrationTest extends CompletorTestSupport
 
     void testShowEmpty() {
         FileHistory history = new FileHistory(filemock)
-        groovyshMocker.demand.getHistory(1) {history}
+        groovyshMocker.demand.getHistory(1) { history }
         groovyshMocker.use {
             Groovysh groovyshMock = new Groovysh()
             HistoryCommand command = new HistoryCommand(groovyshMock)
@@ -71,7 +69,7 @@ class HistoryCommandIntegrationTest extends CompletorTestSupport
         history.add("test1")
         history.add("test2")
         assertEquals(2, history.size())
-        groovyshMocker.demand.getHistory(1) {history}
+        groovyshMocker.demand.getHistory(1) { history }
         groovyshMocker.use {
             Groovysh groovyshMock = new Groovysh()
             HistoryCommand command = new HistoryCommand(groovyshMock)
@@ -85,7 +83,7 @@ class HistoryCommandIntegrationTest extends CompletorTestSupport
         FileHistory history = new FileHistory(filemock)
         history.add("test1")
         history.add("test2")
-        groovyshMocker.demand.getHistory(1) {history}
+        groovyshMocker.demand.getHistory(1) { history }
         groovyshMocker.use {
             Groovysh groovyshMock = new Groovysh()
             HistoryCommand command = new HistoryCommand(groovyshMock)
@@ -98,13 +96,13 @@ class HistoryCommandIntegrationTest extends CompletorTestSupport
         FileHistory history = new FileHistory(filemock)
         history.add("test1")
         history.add("test2")
-        groovyshMocker.demand.getHistoryFull(1) {false}
-        groovyshMocker.demand.getHistory(1) {history}
-        groovyshMocker.demand.execute(1) {String it -> assert(it == 'test1'); 34}
+        groovyshMocker.demand.getHistoryFull(1) { false }
+        groovyshMocker.demand.getHistory(1) { history }
+        groovyshMocker.demand.execute(1) { String it -> assert (it == 'test1'); 34 }
         // second call
-        groovyshMocker.demand.getHistoryFull(1) {false}
-        groovyshMocker.demand.getHistory(1) {history}
-        groovyshMocker.demand.execute(1) {String it -> assert(it == 'test2'); 56}
+        groovyshMocker.demand.getHistoryFull(1) { false }
+        groovyshMocker.demand.getHistory(1) { history }
+        groovyshMocker.demand.execute(1) { String it -> assert (it == 'test2'); 56 }
         groovyshMocker.use {
             Groovysh groovyshMock = new Groovysh()
             HistoryCommand command = new HistoryCommand(groovyshMock)
@@ -119,14 +117,14 @@ class HistoryCommandIntegrationTest extends CompletorTestSupport
         FileHistory history = new FileHistory(filemock)
         history.add("test1")
         history.add("test2")
-        groovyshMocker.demand.getHistoryFull(1) {true}
-        groovyshMocker.demand.getHistory(1) {history}
-        groovyshMocker.demand.getEvictedLine(1) {'test3'}
-        groovyshMocker.demand.execute(1) {String it -> assert(it == 'test3'); 45}
+        groovyshMocker.demand.getHistoryFull(1) { true }
+        groovyshMocker.demand.getHistory(1) { history }
+        groovyshMocker.demand.getEvictedLine(1) { 'test3' }
+        groovyshMocker.demand.execute(1) { String it -> assert (it == 'test3'); 45 }
         // second call
-        groovyshMocker.demand.getHistoryFull(1) {true}
-        groovyshMocker.demand.getHistory(1) {history}
-        groovyshMocker.demand.execute(1) {String it -> assert(it == 'test1'); 56}
+        groovyshMocker.demand.getHistoryFull(1) { true }
+        groovyshMocker.demand.getHistory(1) { history }
+        groovyshMocker.demand.execute(1) { String it -> assert (it == 'test1'); 56 }
         groovyshMocker.use {
             Groovysh groovyshMock = new Groovysh()
             HistoryCommand command = new HistoryCommand(groovyshMock)

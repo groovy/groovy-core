@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 
 /**
  * Unit tests for the {@link Groovyc} ant task.
- * <p>
+ * <p/>
  * NB the *.groovy files in this directory should not get compiled with the rest of the test classes
  * since that would ruin the whole point of testing compilation by the Ant tasks.  In fact it doesn't
  * matter as the tests remove all class files that should not pre-exist from this directory at each

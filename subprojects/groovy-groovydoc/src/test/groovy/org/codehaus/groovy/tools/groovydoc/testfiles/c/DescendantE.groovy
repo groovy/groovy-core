@@ -16,7 +16,5 @@
 
 package org.codehaus.groovy.tools.groovydoc.testfiles.c
 
-import org.codehaus.groovy.tools.groovydoc.testfiles.b.*
-
 class DescendantE extends Base {
 }

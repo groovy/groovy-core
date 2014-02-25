@@ -5,40 +5,40 @@ package groovy.xml
  * W3C DOM trees using GroovyMarkup
  */
 class DOMTest extends TestXmlSupport {
-    
+
     void testSmallTree() {
         def b = DOMBuilder.newInstance()
-        
-        def root = b.root1(a:5, b:7) {
+
+        def root = b.root1(a: 5, b: 7) {
             elem1('hello1')
             elem2('hello2')
-            elem3(x:7)
+            elem3(x: 7)
         }
-        
+
         assert root != null
-        
+
         dump(root)
     }
-    
+
     void testTree() {
         def b = DOMBuilder.newInstance()
-        
-        def root = b.root2(a:5, b:7) {
+
+        def root = b.root2(a: 5, b: 7) {
             elem1('hello1')
             elem2('hello2')
-            nestedElem(x:'abc', y:'def') {
-                child(z:'def')
-                child2()  
+            nestedElem(x: 'abc', y: 'def') {
+                child(z: 'def')
+                child2()
             }
-            
-            nestedElem2(z:'zzz') {
-                child(z:'def')
-                child2("hello")  
+
+            nestedElem2(z: 'zzz') {
+                child(z: 'def')
+                child2("hello")
             }
         }
-        
+
         assert root != null
-        
+
         dump(root)
 
 /*
@@ -71,11 +71,11 @@ class DOMTest extends TestXmlSupport {
         assert root.nestedElem.attributes().y := 'def'
         assert root.nestedElem2.attributes().z := 'zzz'
         assert root.nestedElem2.child.attributes().z := 'def'
-*/        
+*/
         /** @todo parser add .@ as an operation
-                assert root.@a := 5
-                assert root.@b := 7
-        */        
+         assert root.@a := 5
+         assert root.@b := 7
+         */
     }
-    
+
 }

@@ -26,19 +26,17 @@ import org.codehaus.groovy.tools.shell.Groovysh
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class DisplayCommand
-    extends CommandSupport
-{
+        extends CommandSupport {
     DisplayCommand(final Groovysh shell) {
         super(shell, ':display', ':d')
     }
 
     Object execute(final List<String> args) {
         assertNoArguments(args)
-        
+
         if (buffer.isEmpty()) {
             io.out.println('Buffer is empty') // TODO: i18n
-        }
-        else {
+        } else {
             shell.displayBuffer(buffer)
         }
     }

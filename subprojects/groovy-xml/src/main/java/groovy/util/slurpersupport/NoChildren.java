@@ -26,7 +26,7 @@ import java.util.Map;
 
 /**
  * Lazy evaluated representation of a GPath expression returning no children.
- *
+ * <p/>
  * As this class represents a GPath expression with no results, all methods
  * are either NOPs or return an empty result.
  *
@@ -45,6 +45,7 @@ public class NoChildren extends GPathResult {
 
     /**
      * Returns <code>0</code>.
+     *
      * @return <code>0</code>
      */
     public int size() {
@@ -53,6 +54,7 @@ public class NoChildren extends GPathResult {
 
     /**
      * Returns an empty <code>String</code>.
+     *
      * @return an empty <code>String</code>
      */
     public String text() {
@@ -69,6 +71,7 @@ public class NoChildren extends GPathResult {
 
     /**
      * Returns an empty <code>Iterator</code>.
+     *
      * @return an empty <code>Iterator</code>
      */
     public Iterator childNodes() {
@@ -77,6 +80,7 @@ public class NoChildren extends GPathResult {
 
     /**
      * Returns an empty <code>Iterator</code>.
+     *
      * @return an empty <code>Iterator</code>
      */
     public Iterator iterator() {
@@ -97,6 +101,7 @@ public class NoChildren extends GPathResult {
 
     /**
      * Returns <code>this</code>.
+     *
      * @return <code>this</code>
      */
     public GPathResult find(final Closure closure) {
@@ -105,6 +110,7 @@ public class NoChildren extends GPathResult {
 
     /**
      * Returns <code>this</code>.
+     *
      * @return <code>this</code>
      */
     public GPathResult findAll(final Closure closure) {
@@ -113,6 +119,7 @@ public class NoChildren extends GPathResult {
 
     /**
      * Returns an empty iterator.
+     *
      * @return an empty iterator
      */
     public Iterator nodeIterator() {
@@ -157,6 +164,7 @@ public class NoChildren extends GPathResult {
 
     /**
      * Returns <code>false</code>.
+     *
      * @return <code>false</code>
      */
     public boolean asBoolean() {

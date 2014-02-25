@@ -19,9 +19,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Represents a number of field models which can be ValueModel, 
+ * Represents a number of field models which can be ValueModel,
  * PropertyModel, TableModel, TreeModel or nested FormModel instances
- * 
+ *
  * @author <a href="mailto:james@coredevelopers.net">James Strachan</a>
  * @version $Revision$
  */
@@ -31,7 +31,7 @@ public class FormModel {
     public FormModel() {
         this(new HashMap());
     }
-    
+
     public FormModel(Map fieldModels) {
         this.fieldModels = fieldModels;
     }
@@ -39,7 +39,7 @@ public class FormModel {
     public void addModel(String name, Object model) {
         fieldModels.put(name, model);
     }
-    
+
     public Object getModel(String name) {
         return fieldModels.get(name);
     }

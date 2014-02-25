@@ -15,29 +15,24 @@
  */
 package groovy.text;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
-import java.net.URL;
-
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport;
 
+import java.io.*;
+import java.net.URL;
+
 /**
  * Represents an API to any template engine which is basically a factory of Template instances from a given text input.
- * 
+ *
  * @author sam
  */
 public abstract class TemplateEngine {
     public abstract Template createTemplate(Reader reader) throws CompilationFailedException, ClassNotFoundException, IOException;
-    
+
     public Template createTemplate(String templateText) throws CompilationFailedException, ClassNotFoundException, IOException {
         return createTemplate(new StringReader(templateText));
     }
-    
+
     public Template createTemplate(File file) throws CompilationFailedException, ClassNotFoundException, IOException {
         Reader reader = new FileReader(file);
         try {

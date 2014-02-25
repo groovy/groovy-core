@@ -33,9 +33,7 @@ package groovy.json
  * <pre class="groovyTestCase">
  *     new StringWriter().with { w ->
  *         def builder = new groovy.json.StreamingJsonBuilder( w )
- *         builder.people {
- *             person {
- *                 firstName 'Tim'
+ *         builder.people {*             person {*                 firstName 'Tim'
  *                 lastName 'Yates'
  *                 // Named arguments are valid values for objects too
  *                 address(
@@ -45,12 +43,9 @@ package groovy.json
  *                 )
  *                 living true
  *                 eyes 'left', 'right'
- *             }
- *         }
- *
+ *}*}*
  *         assert w.toString() == '{"people":{"person":{"firstName":"Tim","lastName":"Yates","address":{"city":"Manchester","country":"UK","zip":"M1 2AB"},"living":true,"eyes":["left","right"]}}}'
- *    }
- * </pre>
+ *}* </pre>
  *
  * @author Tim Yates
  * @since 1.8.1
@@ -58,16 +53,16 @@ package groovy.json
 class StreamingJsonBuilder {
 
     Writer writer
-    
+
     /**
      * Instantiates a JSON builder, possibly with some existing data structure.
      *
      * @param writer A writer to which Json will be written
      * @param content a pre-existing data structure, default to null
      */
-    StreamingJsonBuilder( Writer writer, content = null) {
+    StreamingJsonBuilder(Writer writer, content = null) {
         this.writer = writer
-        if( content ) writer.write( JsonOutput.toJson( content ) )
+        if (content) writer.write(JsonOutput.toJson(content))
     }
 
     /**
@@ -80,14 +75,13 @@ class StreamingJsonBuilder {
      *   json name: "Tim", age: 31
      *
      *   assert w.toString() == '{"name":"Tim","age":31}'
-     * }
-     * </pre>
+     *}* </pre>
      *
      * @param m a map of key / value pairs
      * @return a map of key / value pairs
      */
     def call(Map m) {
-        writer.write JsonOutput.toJson( m )
+        writer.write JsonOutput.toJson(m)
         return m
     }
 
@@ -102,14 +96,13 @@ class StreamingJsonBuilder {
      *
      *   assert result == [ 1, 2, 3 ]
      *   assert w.toString() == "[1,2,3]"
-     * }
-     * </pre>
+     *}* </pre>
      *
      * @param l a list of values
      * @return a list of values
      */
     def call(List l) {
-        writer.write( JsonOutput.toJson( l ) )
+        writer.write(JsonOutput.toJson(l))
         return l
     }
 
@@ -124,15 +117,14 @@ class StreamingJsonBuilder {
      *
      *   assert result instanceof List
      *   assert w.toString() == "[1,2,3]"
-     * }
-     * </pre>
+     *}* </pre>
 
      * @param args an array of values
      * @return a list of values
      */
     def call(Object... args) {
         def l = args.toList()
-        writer.write JsonOutput.toJson( l )
+        writer.write JsonOutput.toJson(l)
         return l
     }
 
@@ -142,25 +134,21 @@ class StreamingJsonBuilder {
      * <p>
      * Example:
      * <pre class="groovyTestCase">
-     * class Author {
-     *      String name
-     * }
-     * def authors = [new Author (name: "Guillaume"), new Author (name: "Jochen"), new Author (name: "Paul")]
+     * class Author {*      String name
+     *}* def authors = [new Author (name: "Guillaume"), new Author (name: "Jochen"), new Author (name: "Paul")]
      *
      * new StringWriter().with { w ->
      *     def json = new groovy.json.StreamingJsonBuilder( w )
      *     json authors, { Author author ->
      *         name author.name
-     *     }
-     *
+     *}*
      *     assert w.toString() == '[{"name":"Guillaume"},{"name":"Jochen"},{"name":"Paul"}]'
-     * }
-     * </pre>
+     *}* </pre>
      * @param coll a collection
      * @param c a closure used to convert the objects of coll
      */
-    def call (Collection coll, Closure c) {
-        StreamingJsonDelegate.writeCollectionWithClosure( writer, coll, c)
+    def call(Collection coll, Closure c) {
+        StreamingJsonDelegate.writeCollectionWithClosure(writer, coll, c)
     }
 
     /**
@@ -170,21 +158,18 @@ class StreamingJsonBuilder {
      * <pre class="groovyTestCase">
      * new StringWriter().with { w ->
      *   def json = new groovy.json.StreamingJsonBuilder( w )
-     *   json {
-     *      name "Tim"
+     *   json {*      name "Tim"
      *      age 39
-     *   }
-     *
+     *}*
      *   assert w.toString() == '{"name":"Tim","age":39}'
-     * }
-     * </pre>
+     *}* </pre>
      *
      * @param c a closure whose method call statements represent key / values of a JSON object
      */
     def call(Closure c) {
-        writer.write( '{' )
-        StreamingJsonDelegate.cloneDelegateAndGetContent( writer, c )
-        writer.write( '}' )
+        writer.write('{')
+        StreamingJsonDelegate.cloneDelegateAndGetContent(writer, c)
+        writer.write('}')
     }
 
     /**
@@ -202,14 +187,11 @@ class StreamingJsonBuilder {
      * <pre class="groovyTestCase">
      * new StringWriter().with { w ->
      *     def json = new groovy.json.StreamingJsonBuilder( w )
-     *     json.person {
-     *         name "Tim"
+     *     json.person {*         name "Tim"
      *          age 28
-     *     }
-     *
+     *}*
      *     assert w.toString() == '{"person":{"name":"Tim","age":28}}'
-     * }
-     * </pre>
+     *}* </pre>
      *
      * Or alternatively with a method call taking named arguments:
      * <pre class="groovyTestCase">
@@ -218,8 +200,7 @@ class StreamingJsonBuilder {
      *     json.person name: "Tim", age: 32
      *
      *     assert w.toString() == '{"person":{"name":"Tim","age":32}}'
-     * }
-     * </pre>
+     *}* </pre>
      *
      * If you use named arguments and a closure as last argument,
      * the key/value pairs of the map (as named arguments)
@@ -230,11 +211,9 @@ class StreamingJsonBuilder {
      * <pre class="groovyTestCase">
      * new StringWriter().with { w ->
      *     def json = new groovy.json.StreamingJsonBuilder( w )
-     *     json.person(name: "Tim", age: 35) { town "Manchester" }
-     *
+     *     json.person(name: "Tim", age: 35) { town "Manchester" }*
      *     assert w.toString() == '{"person":{"name":"Tim","age":35,"town":"Manchester"}}'
-     * }
-     * </pre>
+     *}* </pre>
      *
      * The empty args call will create a key whose value will be an empty JSON object:
      * <pre class="groovyTestCase">
@@ -243,42 +222,39 @@ class StreamingJsonBuilder {
      *     json.person()
      *
      *     assert w.toString() == '{"person":{}}'
-     * }
-     * </pre>
+     *}* </pre>
      *
      * @param name the single key
      * @param args the value associated with the key
      */
     def invokeMethod(String name, Object args) {
         if (args?.size() == 0) {
-            writer.write JsonOutput.toJson( [(name): [:]] )
+            writer.write JsonOutput.toJson([(name): [:]])
         } else if (args?.size() == 1) {
             if (args[0] instanceof Closure) {
-                writer.write "{${JsonOutput.toJson( name )}:"
-                this.call( args[0] )
+                writer.write "{${JsonOutput.toJson(name)}:"
+                this.call(args[0])
                 writer.write '}'
             } else if (args[0] instanceof Map) {
-                writer.write JsonOutput.toJson( [(name): args[0]] )
-            }
-            else {
+                writer.write JsonOutput.toJson([(name): args[0]])
+            } else {
                 throw new JsonException("Expected no arguments, a single map, a single closure, or a map and closure as arguments.")
             }
         } else if (args?.size() == 2 && args[0] instanceof Map && args[1] instanceof Closure) {
-            writer.write "{${JsonOutput.toJson( name )}:{"
+            writer.write "{${JsonOutput.toJson(name)}:{"
             args[0].eachWithIndex { it, idx ->
-                if( idx > 0 ) writer.write ','
-                writer.write JsonOutput.toJson( it.key )
+                if (idx > 0) writer.write ','
+                writer.write JsonOutput.toJson(it.key)
                 writer.write ':'
-                writer.write JsonOutput.toJson( it.value )
+                writer.write JsonOutput.toJson(it.value)
             }
-            StreamingJsonDelegate.cloneDelegateAndGetContent( writer, args[1], !args[0].size() )
+            StreamingJsonDelegate.cloneDelegateAndGetContent(writer, args[1], !args[0].size())
             writer.write '}}'
-        } else if (StreamingJsonDelegate.isCollectionWithClosure( args )) {
-            writer.write "{${JsonOutput.toJson( name )}:"
-            call( args[0], args[1] )
+        } else if (StreamingJsonDelegate.isCollectionWithClosure(args)) {
+            writer.write "{${JsonOutput.toJson(name)}:"
+            call(args[0], args[1])
             writer.write '}'
-        }
-        else {
+        } else {
             throw new JsonException("Expected no arguments, a single map, a single closure, or a map and closure as arguments.")
         }
     }
@@ -287,37 +263,37 @@ class StreamingJsonBuilder {
 class StreamingJsonDelegate {
     Writer writer
     boolean first
-    
-    StreamingJsonDelegate( Writer w, boolean first ) {
+
+    StreamingJsonDelegate(Writer w, boolean first) {
         this.writer = w
         this.first = first
     }
 
     def invokeMethod(String name, Object args) {
         if (args) {
-            if( !first ) {
+            if (!first) {
                 writer.write ','
             }
-            writer.write JsonOutput.toJson( name )
+            writer.write JsonOutput.toJson(name)
             writer.write ':'
 
             if (args.size() == 1) {
-                writer.write JsonOutput.toJson( args[0] )
-            } else if (isCollectionWithClosure( args )) {
-                writeCollectionWithClosure ( writer, args[0], args[1] )
+                writer.write JsonOutput.toJson(args[0])
+            } else if (isCollectionWithClosure(args)) {
+                writeCollectionWithClosure(writer, args[0], args[1])
             } else {
-                writer.write JsonOutput.toJson( args.toList() )
+                writer.write JsonOutput.toJson(args.toList())
             }
 
             first = false
         }
     }
 
-    static boolean isCollectionWithClosure (Object[] args) {
+    static boolean isCollectionWithClosure(Object[] args) {
         args.size() == 2 && args[0] instanceof Collection && args[1] instanceof Closure
     }
 
-    static def writeCollectionWithClosure (Writer writer, Collection coll, Closure closure) {
+    static def writeCollectionWithClosure(Writer writer, Collection coll, Closure closure) {
         writer.write '['
         coll.eachWithIndex { it, idx ->
             if (idx > 0) {
@@ -325,23 +301,23 @@ class StreamingJsonDelegate {
             }
 
             writer.write '{'
-            curryDelegateAndGetContent (writer, closure, it)
+            curryDelegateAndGetContent(writer, closure, it)
             writer.write '}'
         }
         writer.write ']'
     }
 
-    static cloneDelegateAndGetContent(Writer w, Closure c, boolean first=true ) {
-        def delegate = new StreamingJsonDelegate( w, first )
+    static cloneDelegateAndGetContent(Writer w, Closure c, boolean first = true) {
+        def delegate = new StreamingJsonDelegate(w, first)
         Closure cloned = c.clone()
         cloned.delegate = delegate
         cloned.resolveStrategy = Closure.DELEGATE_FIRST
         cloned()
     }
 
-    static curryDelegateAndGetContent(Writer w, Closure c, Object o, boolean first=true) {
-        def delegate = new StreamingJsonDelegate( w, first )
-        Closure curried = c.curry (o)
+    static curryDelegateAndGetContent(Writer w, Closure c, Object o, boolean first = true) {
+        def delegate = new StreamingJsonDelegate(w, first)
+        Closure curried = c.curry(o)
         curried.delegate = delegate
         curried.resolveStrategy = Closure.DELEGATE_FIRST
         curried()

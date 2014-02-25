@@ -16,7 +16,7 @@
 
 /**
  * Represents a plain text node for use in the AST tree made by ASTBrowser 
- * 
+ *
  * @author Roshan Dawrani
  */
 package groovy.inspect
@@ -26,7 +26,7 @@ class TextNode {
     List<List<String>> properties
     TextNode parent
     List children
-     
+
     TextNode(Object userObject) {
         this.userObject = userObject
         children = new ArrayList<TextNode>()
@@ -36,16 +36,16 @@ class TextNode {
         this(userObject)
         this.properties = properties
     }
-    
+
     void add(TextNode child) {
         children << child
     }
-    
+
     void setParent(TextNode newParent) {
         parent = newParent
     }
-    
+
     String toString() {
-        userObject ? userObject.toString() : 'null' 
+        userObject ? userObject.toString() : 'null'
     }
 }

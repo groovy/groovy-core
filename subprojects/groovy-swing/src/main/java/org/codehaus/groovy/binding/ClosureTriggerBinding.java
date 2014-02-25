@@ -80,16 +80,20 @@ public class ClosureTriggerBinding implements TriggerBinding, SourceBinding {
                         boolean acc = constructor.isAccessible();
                         constructor.setAccessible(true);
                         Closure localCopy = (Closure) constructor.newInstance(args);
-                        if (!acc) { constructor.setAccessible(false); }
+                        if (!acc) {
+                            constructor.setAccessible(false);
+                        }
                         localCopy.setResolveStrategy(Closure.DELEGATE_ONLY);
-                        for (Field f:closureClass.getDeclaredFields()) {
+                        for (Field f : closureClass.getDeclaredFields()) {
                             acc = f.isAccessible();
                             f.setAccessible(true);
                             if (f.getType() == Reference.class) {
                                 delegate.fields.put(f.getName(),
                                         (BindPathSnooper) ((Reference) f.get(localCopy)).get());
                             }
-                            if (!acc) { f.setAccessible(false); }
+                            if (!acc) {
+                                f.setAccessible(false);
+                            }
                         }
                         return localCopy;
                     } catch (Exception e) {
@@ -113,7 +117,7 @@ public class ClosureTriggerBinding implements TriggerBinding, SourceBinding {
         }
         List<BindPath> rootPaths = new ArrayList<BindPath>();
         for (Map.Entry<String, BindPathSnooper> entry : delegate.fields.entrySet()) {
-            BindPath bp =createBindPath(entry.getKey(), entry.getValue());
+            BindPath bp = createBindPath(entry.getKey(), entry.getValue());
             bp.currentObject = closure;
             rootPaths.add(bp);
         }
@@ -130,13 +134,16 @@ public class ClosureTriggerBinding implements TriggerBinding, SourceBinding {
 }
 
 class DeadEndException extends RuntimeException {
-    DeadEndException(String message) { super(message); }
+    DeadEndException(String message) {
+        super(message);
+    }
 }
 
 class DeadEndObject {
     public Object getProperty(String property) {
         throw new DeadEndException("Cannot bind to a property on the return value of a method call");
     }
+
     public Object invokeMethod(String name, Object args) {
         return this;
     }

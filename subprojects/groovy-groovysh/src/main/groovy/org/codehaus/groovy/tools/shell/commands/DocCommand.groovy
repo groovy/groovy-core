@@ -20,11 +20,8 @@ import jline.console.completer.AggregateCompleter
 import jline.console.completer.ArgumentCompleter
 import jline.console.completer.Completer
 import jline.console.completer.StringsCompleter
-
 import org.codehaus.groovy.tools.shell.CommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
-import org.codehaus.groovy.tools.shell.Shell
-import org.codehaus.groovy.tools.shell.commands.ImportCompleter
 
 /**
  * The 'doc' command.
@@ -55,8 +52,8 @@ class DocCommand extends CommandSupport {
             desktop = desktopClass.desktopSupported ? desktopClass.desktop : null
 
             hasAWTDesktopPlatformSupport =
-                desktop != null &&
-                        desktop.isSupported(desktopClass.declaredClasses.find { it.simpleName == "Action" }.BROWSE)
+                    desktop != null &&
+                            desktop.isSupported(desktopClass.declaredClasses.find { it.simpleName == "Action" }.BROWSE)
 
         } catch (Exception e) {
             hasAWTDesktopPlatformSupport = false
@@ -71,9 +68,9 @@ class DocCommand extends CommandSupport {
     @Override
     Completer getCompleter() {
         return new AggregateCompleter([
-            new ArgumentCompleter([
-                new StringsCompleter(name, shortcut),
-                new ImportCompleter(shell.packageHelper, shell.interp, false)])])
+                new ArgumentCompleter([
+                        new StringsCompleter(name, shortcut),
+                        new ImportCompleter(shell.packageHelper, shell.interp, false)])])
     }
 
     Object execute(final List<String> args) {
@@ -112,8 +109,8 @@ class DocCommand extends CommandSupport {
             browseWithAWT(urls)
         } else {
             fail "Browser could not be opened caused by missing platform support for 'java.awt.Desktop'. Please set " +
-                 "a $ENV_BROWSER_GROOVYSH or $ENV_BROWSER environment variable referring to the browser binary to " +
-                 "solve this issue."
+                    "a $ENV_BROWSER_GROOVYSH or $ENV_BROWSER environment variable referring to the browser binary to " +
+                    "solve this issue."
         }
     }
 
@@ -126,7 +123,7 @@ class DocCommand extends CommandSupport {
             urls.each { url -> desktop.browse(url.toURI()) }
         } catch (Exception e) {
             fail "Browser could not be opened, an unexpected error occured (${e}). You can add a " +
-                 "$ENV_BROWSER_GROOVYSH or $ENV_BROWSER environment variable to explicitly specify a browser binary."
+                    "$ENV_BROWSER_GROOVYSH or $ENV_BROWSER environment variable to explicitly specify a browser binary."
         }
     }
 
@@ -138,7 +135,7 @@ class DocCommand extends CommandSupport {
             // we could be here caused by a IOException, SecurityException or NP Exception
 
             fail "Browser could not be opened (${e}). Please check the $ENV_BROWSER_GROOVYSH or $ENV_BROWSER " +
-                 "environment variable."
+                    "environment variable."
         }
     }
 

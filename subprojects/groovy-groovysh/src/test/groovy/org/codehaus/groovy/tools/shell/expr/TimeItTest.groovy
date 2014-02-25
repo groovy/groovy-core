@@ -22,8 +22,7 @@ package org.codehaus.groovy.tools.shell.expr
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class TimeItTest
-    extends ExprTestSupport
-{
+        extends ExprTestSupport {
     void testSingleLine() {
         def result = shell.execute('time = { it() }')
         assert result != null

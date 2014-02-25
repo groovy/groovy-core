@@ -15,11 +15,7 @@
  */
 package org.codehaus.groovy.ant;
 
-import groovy.lang.Binding;
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyShell;
-import groovy.lang.MissingMethodException;
-import groovy.lang.Script;
+import groovy.lang.*;
 import groovy.util.AntBuilder;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
@@ -37,22 +33,13 @@ import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.ResourceGroovyMethods;
 import org.codehaus.groovy.tools.ErrorReporter;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.Reader;
-import java.io.StringWriter;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.util.Vector;
 
 /**
  * Executes a series of Groovy statements.
- * <p>
+ * <p/>
  * <p>Statements can either be read in from a text file using
  * the <i>src</i> attribute or from between the enclosing groovy tags.
  */
@@ -98,7 +85,7 @@ public class Groovy extends Java {
 
     /**
      * Compiler configuration.
-     * <p>
+     * <p/>
      * Used to specify the debug output to print stacktraces in case something fails.
      * TODO: Could probably be reused to specify the encoding of the files to load or other properties.
      */
@@ -257,6 +244,7 @@ public class Groovy extends Java {
 
     /**
      * Set the script base class name
+     *
      * @param scriptBaseClass the name of the base class for scripts
      */
     public void setScriptBaseClass(final String scriptBaseClass) {
@@ -295,7 +283,8 @@ public class Groovy extends Java {
                     log.verbose("Opening PrintStream to output file " + output);
                     out = new PrintStream(
                             new BufferedOutputStream(
-                                    new FileOutputStream(output.getAbsolutePath(), append)));
+                                    new FileOutputStream(output.getAbsolutePath(), append))
+                    );
                 }
 
                 // if there are no groovy statements between the enclosing Groovy tags
@@ -420,8 +409,7 @@ public class Groovy extends Java {
                 contextField.setAccessible(true);
                 final Object context = contextField.get(propsHandler);
                 mavenPom = InvokerHelper.invokeMethod(context, "getProject", new Object[0]);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 throw new BuildException("Impossible to retrieve Maven's Ant project: " + e.getMessage(), getLocation());
             }
             // load groovy into "root.maven" classloader instead of "root" so that
@@ -450,14 +438,14 @@ public class Groovy extends Java {
     }
 
     private void configureCompiler() {
-        if (scriptBaseClass!=null) {
+        if (scriptBaseClass != null) {
             configuration.setScriptBaseClass(scriptBaseClass);
         }
         if (indy) {
             configuration.getOptimizationOptions().put("indy", Boolean.TRUE);
             configuration.getOptimizationOptions().put("int", Boolean.FALSE);
         }
-        if (configscript!=null) {
+        if (configscript != null) {
             Binding binding = new Binding();
             binding.setVariable("configuration", configuration);
 
@@ -471,7 +459,7 @@ public class Groovy extends Java {
             try {
                 shell.evaluate(confSrc);
             } catch (IOException e) {
-                throw new BuildException("Unable to configure compiler using configuration file: "+confSrc, e);
+                throw new BuildException("Unable to configure compiler using configuration file: " + confSrc, e);
             }
         }
     }
@@ -495,8 +483,7 @@ public class Groovy extends Java {
                 script.setProperty("pom", mavenPom);
             }
             script.run();
-        }
-        catch (final MissingMethodException mme) {
+        } catch (final MissingMethodException mme) {
             // not a script, try running through run method but properties will not be available
             if (scriptFile != null) {
                 try {
@@ -507,8 +494,7 @@ public class Groovy extends Java {
             } else {
                 shell.run(txt, scriptName, cmdline.getCommandline());
             }
-        }
-        catch (final CompilationFailedException e) {
+        } catch (final CompilationFailedException e) {
             processError(e);
         } catch (IOException e) {
             processError(e);

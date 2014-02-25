@@ -16,16 +16,14 @@
 
 package groovy.swing.factory
 
-import javax.swing.JMenu
+import javax.swing.*
 import javax.swing.JPopupMenu.Separator as JPopupMenu_Separator
-import javax.swing.JSeparator
-import javax.swing.JToolBar
 import javax.swing.JToolBar.Separator as JToolBar_Separator
 
 // JetGroovy bug
 
 public class SeparatorFactory extends AbstractFactory {
-    
+
     public Object newInstance(FactoryBuilderSupport builder, Object name, Object value, Map attributes) throws InstantiationException, IllegalAccessException {
         FactoryBuilderSupport.checkValueIsNull(value, name);
         Object parent = builder.getCurrent();

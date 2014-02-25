@@ -19,7 +19,6 @@ import groovy.lang.GroovySystem;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

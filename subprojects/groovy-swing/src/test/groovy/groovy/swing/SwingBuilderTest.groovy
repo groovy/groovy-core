@@ -15,19 +15,18 @@
  */
 package groovy.swing
 
+import javax.swing.*
 import javax.swing.JPopupMenu.Separator as JPopupMenu_Separator
 import javax.swing.JToolBar.Separator as JToolBar_Separator
-
-import java.awt.event.ActionEvent
-import java.awt.event.InputEvent
-import java.awt.event.KeyEvent
-import java.text.SimpleDateFormat
 import javax.swing.border.TitledBorder
 import javax.swing.plaf.metal.MetalLookAndFeel
 import javax.swing.text.DateFormatter
 import javax.swing.text.NumberFormatter
 import java.awt.*
-import javax.swing.*
+import java.awt.event.ActionEvent
+import java.awt.event.InputEvent
+import java.awt.event.KeyEvent
+import java.text.SimpleDateFormat
 
 class SwingBuilderTest extends GroovySwingTestCase {
 
@@ -58,18 +57,19 @@ class SwingBuilderTest extends GroovySwingTestCase {
     void testNamedWidgetCreation() {
         testInEDT {
             def topLevelWidgets = [
-                    frame: [JFrame, true],
-                    dialog: [JDialog, true],
-                    window: [JWindow, false],
+                    frame      : [JFrame, true],
+                    dialog     : [JDialog, true],
+                    window     : [JWindow, false],
                     fileChooser: [JFileChooser, false],
-                    optionPane: [JOptionPane, false]
+                    optionPane : [JOptionPane, false]
             ]
             def swing = new SwingBuilder()
             topLevelWidgets.each { name, widgetInfo ->
-                if (widgetInfo[1])
+                if (widgetInfo[1]) {
                     swing."$name"(id: "${name}Id".toString(), title: "This is my $name")
-                else
+                } else {
                     swing."$name"(id: "${name}Id".toString())
+                }
                 def widget = swing."${name}Id"
                 assert widget.class == widgetInfo[0]
                 if (widgetInfo[1]) assert widget.title == "This is my $name"
@@ -81,12 +81,12 @@ class SwingBuilderTest extends GroovySwingTestCase {
         testInEDT {
 
             def layouts = [
-                    borderLayout: BorderLayout,
-                    cardLayout: CardLayout,
-                    flowLayout: FlowLayout,
+                    borderLayout : BorderLayout,
+                    cardLayout   : CardLayout,
+                    flowLayout   : FlowLayout,
                     gridBagLayout: GridBagLayout,
-                    gridLayout: GridLayout,
-                    springLayout: SpringLayout
+                    gridLayout   : GridLayout,
+                    springLayout : SpringLayout
             ]
             def swing = new SwingBuilder()
             layouts.each { name, expectedLayoutClass ->
@@ -153,42 +153,42 @@ class SwingBuilderTest extends GroovySwingTestCase {
         testInEDT {
 
             def widgets = [
-                    button: JButton,
-                    checkBox: JCheckBox,
-                    checkBoxMenuItem: JCheckBoxMenuItem,
-                    colorChooser: JColorChooser,
-                    comboBox: JComboBox,
-                    desktopPane: JDesktopPane,
-                    editorPane: JEditorPane,
-                    formattedTextField: JFormattedTextField,
-                    internalFrame: JInternalFrame,
-                    label: JLabel,
-                    layeredPane: JLayeredPane,
-                    list: JList,
-                    menu: JMenu,
-                    menuBar: JMenuBar,
-                    menuItem: JMenuItem,
-                    panel: JPanel,
-                    passwordField: JPasswordField,
-                    popupMenu: JPopupMenu,
-                    progressBar: JProgressBar,
-                    radioButton: JRadioButton,
+                    button             : JButton,
+                    checkBox           : JCheckBox,
+                    checkBoxMenuItem   : JCheckBoxMenuItem,
+                    colorChooser       : JColorChooser,
+                    comboBox           : JComboBox,
+                    desktopPane        : JDesktopPane,
+                    editorPane         : JEditorPane,
+                    formattedTextField : JFormattedTextField,
+                    internalFrame      : JInternalFrame,
+                    label              : JLabel,
+                    layeredPane        : JLayeredPane,
+                    list               : JList,
+                    menu               : JMenu,
+                    menuBar            : JMenuBar,
+                    menuItem           : JMenuItem,
+                    panel              : JPanel,
+                    passwordField      : JPasswordField,
+                    popupMenu          : JPopupMenu,
+                    progressBar        : JProgressBar,
+                    radioButton        : JRadioButton,
                     radioButtonMenuItem: JRadioButtonMenuItem,
-                    scrollBar: JScrollBar,
-                    scrollPane: JScrollPane,
-                    separator: JSeparator,
-                    slider: JSlider,
-                    spinner: JSpinner,
-                    splitPane: JSplitPane,
-                    tabbedPane: JTabbedPane,
-                    table: JTable,
-                    textArea: JTextArea,
-                    textPane: JTextPane,
-                    textField: JTextField,
-                    toggleButton: JToggleButton,
-                    toolBar: JToolBar,
-                    tree: JTree,
-                    viewport: JViewport,
+                    scrollBar          : JScrollBar,
+                    scrollPane         : JScrollPane,
+                    separator          : JSeparator,
+                    slider             : JSlider,
+                    spinner            : JSpinner,
+                    splitPane          : JSplitPane,
+                    tabbedPane         : JTabbedPane,
+                    table              : JTable,
+                    textArea           : JTextArea,
+                    textPane           : JTextPane,
+                    textField          : JTextField,
+                    toggleButton       : JToggleButton,
+                    toolBar            : JToolBar,
+                    tree               : JTree,
+                    viewport           : JViewport,
             ]
             def swing = new SwingBuilder()
             widgets.each { name, expectedLayoutClass ->
@@ -214,7 +214,7 @@ class SwingBuilderTest extends GroovySwingTestCase {
 
             }
 
-            def statusCBs = {[swing.cb1a.selected, swing.cb1b.selected, swing.cb2a.selected, swing.cb2b.selected]}
+            def statusCBs = { [swing.cb1a.selected, swing.cb1b.selected, swing.cb2a.selected, swing.cb2b.selected] }
 
             assert statusCBs() == [false, false, false, false]
 
@@ -463,7 +463,7 @@ class SwingBuilderTest extends GroovySwingTestCase {
             assert swing.list(listData: list).model.size == 3
             assert swing.list(listData: vector).model.size == 4
             assert swing.list(listData: "list").model.size == 4
-            assert swing.list(listData: [a: 1, b: 2].collect { k, v -> v}).model.size == 2
+            assert swing.list(listData: [a: 1, b: 2].collect { k, v -> v }).model.size == 2
             def theList = swing.list(items: list)
             list[1] = 'a'
             assert theList.model.getElementAt(1) == 'a'
@@ -479,7 +479,7 @@ class SwingBuilderTest extends GroovySwingTestCase {
             def swing = new SwingBuilder()
             // labels don't support actions; should be ignored
             swing.label {
-                action(id: 'actionId', Name: 'about', mnemonic: 'A', closure: {x -> x})
+                action(id: 'actionId', Name: 'about', mnemonic: 'A', closure: { x -> x })
                 map()
             }
             swing.panel {
@@ -544,10 +544,10 @@ class SwingBuilderTest extends GroovySwingTestCase {
             def swing = new SwingBuilder()
             def testTarget = 'blank'
             swing.actions {
-                action(id: 'a', closure: {testTarget = 'A'})
-                action(id: 'b') {testTarget = 'B' }
-                action(id: 'c', closure: {evt -> testTarget = 'C'})
-                action(id: 'd') {evt -> testTarget = 'D' }
+                action(id: 'a', closure: { testTarget = 'A' })
+                action(id: 'b') { testTarget = 'B' }
+                action(id: 'c', closure: { evt -> testTarget = 'C' })
+                action(id: 'd') { evt -> testTarget = 'D' }
             }
 
             ActionEvent evt = new ActionEvent(this, ActionEvent.ACTION_PERFORMED, "")
@@ -565,10 +565,10 @@ class SwingBuilderTest extends GroovySwingTestCase {
             swing.actions {
                 action(id: 'z')
                 shouldFail(RuntimeException) {
-                    action(id: 'y', closure: {testTarget = 'Y'}) {testTarget = 'YY'}
+                    action(id: 'y', closure: { testTarget = 'Y' }) { testTarget = 'YY' }
                 }
                 shouldFail(RuntimeException) {
-                    action([actionPerformed: {testTarget = 'X'}] as AbstractAction, id: 'x') { testTarget = 'XX'}
+                    action([actionPerformed: { testTarget = 'X' }] as AbstractAction, id: 'x') { testTarget = 'XX' }
                 }
             }
             shouldFail(NullPointerException) {
@@ -761,7 +761,7 @@ class SwingBuilderTest extends GroovySwingTestCase {
             }
 
             swing.registerFactory("nullWidget",
-                    [newInstance: {builder, name, value, props -> null}] as AbstractFactory)
+                    [newInstance: { builder, name, value, props -> null }] as AbstractFactory)
             assert swing.nullWidget() == null
         }
     }
@@ -797,7 +797,7 @@ class SwingBuilderTest extends GroovySwingTestCase {
                     'radioButtonMenuItem'
             ]
 
-            richActionItems.each {name ->
+            richActionItems.each { name ->
                 swing."$name"(anAction, id: "${name}Action".toString())
                 swing."$name"(icon, id: "${name}Icon".toString())
                 swing."$name"("string", id: "${name}String".toString())
@@ -831,7 +831,7 @@ class SwingBuilderTest extends GroovySwingTestCase {
                     "vstrut",
             ]
 
-            noValueItems.each {name ->
+            noValueItems.each { name ->
                 //println name
                 shouldFail {
                     swing.frame {
@@ -893,7 +893,7 @@ class SwingBuilderTest extends GroovySwingTestCase {
                     //"widget",
                     "window",
             ]
-            selfItems.each {name ->
+            selfItems.each { name ->
                 //println name
                 swing.frame {
                     "$name"(swing."$name"(), id: "${name}Self".toString())
@@ -916,7 +916,7 @@ class SwingBuilderTest extends GroovySwingTestCase {
                     "textField",
                     "textPane",
             ]
-            textItems.each {name ->
+            textItems.each { name ->
                 swing.frame {
                     "$name"(swing."$name"(), id: "${name}Self".toString())
                     "$name"('text', id: "${name}Text".toString())
@@ -1002,7 +1002,7 @@ class SwingBuilderTest extends GroovySwingTestCase {
         def swing = new SwingBuilder()
 
         boolean pass = false
-        swing.doLater {sleep 100; pass = true }
+        swing.doLater { sleep 100; pass = true }
         assert !pass
         // check for pass changing up to 3 times, then call it a failed test
         int maxFailures = 3
@@ -1015,7 +1015,7 @@ class SwingBuilderTest extends GroovySwingTestCase {
 
         // doLater in the EDT is still a do later
         pass = false
-        swing.edt { swing.doLater {sleep 100; pass = true } }
+        swing.edt { swing.doLater { sleep 100; pass = true } }
         assert !pass
         // check for pass changing up to 3 times, then call it a failed test
         maxFailures = 3
@@ -1043,7 +1043,7 @@ class SwingBuilderTest extends GroovySwingTestCase {
             def swing = new SwingBuilder()
 
             boolean pass = false
-            swing.doOutside {sleep 100; pass = true }
+            swing.doOutside { sleep 100; pass = true }
             assert !pass
             // check for pass changing up to 3 times, then call it a failed test
             int maxFailures = 3
@@ -1056,7 +1056,7 @@ class SwingBuilderTest extends GroovySwingTestCase {
 
             pass = false
             swing.edt {
-                swing.doOutside {sleep 100; pass = true }
+                swing.doOutside { sleep 100; pass = true }
                 assert !pass
                 // check for pass changing up to 3 times, then call it a failed test
                 int myMaxFailures = 3
@@ -1085,7 +1085,7 @@ class SwingBuilderTest extends GroovySwingTestCase {
         if (HeadlessTestSupport.headless) return;
 
         def swing = new SwingBuilder()
-        Closure threadTest = {c ->
+        Closure threadTest = { c ->
             boolean notifyReached = false;
             Throwable caughtThrowable = null
             Thread t = Thread.start {
@@ -1095,10 +1095,14 @@ class SwingBuilderTest extends GroovySwingTestCase {
                     caughtThrowable = throwable
                 }
                 notifyReached = true
-                synchronized (swing) { swing.notifyAll() }
+                synchronized (swing) {
+                    swing.notifyAll()
+                }
             }
 
-            synchronized (swing) { swing.wait(2000); }
+            synchronized (swing) {
+                swing.wait(2000);
+            }
             if (!notifyReached && t.isAlive()) {
                 Thread.start {
                     sleep(1000)
@@ -1310,7 +1314,7 @@ class SwingBuilderTest extends GroovySwingTestCase {
             ]
 
 
-            topLevel.each {parentWidget ->
+            topLevel.each { parentWidget ->
                 components.each { childWidget ->
                     //println "$parentWidget / $childWidget"
                     def child
@@ -1319,7 +1323,7 @@ class SwingBuilderTest extends GroovySwingTestCase {
                 }
             }
 
-            containers.each {parentWidget ->
+            containers.each { parentWidget ->
                 components.each { childWidget ->
                     //println "$parentWidget / $childWidget"
                     def child
@@ -1429,7 +1433,7 @@ class SwingBuilderTest extends GroovySwingTestCase {
                     assert laf instanceof MetalLookAndFeel
                 }
                 shouldFail {
-                    swing.lookAndFeel() {laf ->
+                    swing.lookAndFeel() { laf ->
                         "do" + "Nothing"
                     }
                 }

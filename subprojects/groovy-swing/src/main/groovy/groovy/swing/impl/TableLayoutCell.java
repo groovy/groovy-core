@@ -15,12 +15,11 @@
  */
 package groovy.swing.impl;
 
-import java.awt.Component;
-import java.awt.GridBagConstraints;
+import java.awt.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/** 
+/**
  * Represents a cell in a table layout.
  *
  * @author <a href="mailto:james@coredevelopers.net">James Strachan</a>
@@ -29,7 +28,7 @@ import java.util.logging.Logger;
 public class TableLayoutCell {
 
     protected static final Logger LOG = Logger.getLogger(TableLayoutCell.class.getName());
-    
+
     private TableLayoutRow parent;
     private Component component;
     private GridBagConstraints constraints;
@@ -49,25 +48,26 @@ public class TableLayoutCell {
     private boolean colfill;
     private boolean rowfill;
 
-        
+
     public TableLayoutCell(TableLayoutRow parent) {
         this.parent = parent;
     }
 
-    public void addComponent(Component component)  {
+    public void addComponent(Component component) {
         if (this.component != null) {
             LOG.log(Level.WARNING, "This td cell already has a component: " + component);
         }
         this.component = component;
         parent.addCell(this);
     }
-    
+
     public Component getComponent() {
         return component;
     }
 
     /**
      * Sets the horizontal alignment to a case insensitive value of {LEFT, CENTER, RIGHT}
+     *
      * @param align one of  'left', 'center', or 'right'
      */
     public void setAlign(String align) {
@@ -76,15 +76,17 @@ public class TableLayoutCell {
 
     /**
      * Sets the vertical alignment to a case insensitive value of {TOP, MIDDLE, BOTTOM}
+     *
      * @param valign one of 'top', 'middle', 'bottom'
      */
     public void setValign(String valign) {
         this.valign = valign;
     }
 
-    
+
     /**
      * Sets the number of columns that this cell should span. The default value is 1
+     *
      * @param colspan The default is 1
      */
     public void setColspan(int colspan) {
@@ -93,6 +95,7 @@ public class TableLayoutCell {
 
     /**
      * Sets the number of rows that this cell should span. The default value is 1
+     *
      * @param rowspan The default is 1
      */
     public void setRowspan(int rowspan) {
@@ -101,6 +104,7 @@ public class TableLayoutCell {
 
     /**
      * Returns the colfill.
+     *
      * @return boolean
      */
     public boolean isColfill() {
@@ -109,6 +113,7 @@ public class TableLayoutCell {
 
     /**
      * Returns the rowfill.
+     *
      * @return boolean
      */
     public boolean isRowfill() {
@@ -117,6 +122,7 @@ public class TableLayoutCell {
 
     /**
      * Sets whether or not this column should allow its component to stretch to fill the space available
+     *
      * @param colfill The default is false
      */
     public void setColfill(boolean colfill) {
@@ -125,6 +131,7 @@ public class TableLayoutCell {
 
     /**
      * Sets whether or not this row should allow its component to stretch to fill the space available
+     *
      * @param rowfill The default is false
      */
     public void setRowfill(boolean rowfill) {
@@ -141,10 +148,10 @@ public class TableLayoutCell {
         }
         return constraints;
     }
-    
+
     // Implementation methods
     //-------------------------------------------------------------------------                    
-    
+
     protected GridBagConstraints createConstraints() {
         GridBagConstraints answer = new GridBagConstraints();
         answer.anchor = getAnchor();
@@ -154,15 +161,14 @@ public class TableLayoutCell {
         if (rowspan < 1) {
             rowspan = 1;
         }
-        if (isColfill())  {
+        if (isColfill()) {
             answer.fill = isRowfill()
-                ? GridBagConstraints.BOTH 
-                : GridBagConstraints.HORIZONTAL;
-        }
-        else {
+                    ? GridBagConstraints.BOTH
+                    : GridBagConstraints.HORIZONTAL;
+        } else {
             answer.fill = isRowfill()
-                ? GridBagConstraints.VERTICAL 
-                : GridBagConstraints.NONE;
+                    ? GridBagConstraints.VERTICAL
+                    : GridBagConstraints.NONE;
         }
         answer.weightx = 0.2;
         answer.weighty = 0;
@@ -170,45 +176,37 @@ public class TableLayoutCell {
         answer.gridheight = rowspan;
         return answer;
     }
-    
+
     /**
      * @return the GridBagConstraints enumeration for anchor
      */
     protected int getAnchor() {
         boolean isTop = "top".equalsIgnoreCase(valign);
         boolean isBottom = "bottom".equalsIgnoreCase(valign);
-        
+
         if ("center".equalsIgnoreCase(align)) {
             if (isTop) {
                 return GridBagConstraints.NORTH;
-            }
-            else if (isBottom) {
+            } else if (isBottom) {
                 return GridBagConstraints.SOUTH;
-            }
-            else {
+            } else {
                 return GridBagConstraints.CENTER;
             }
-        }
-        else if ("right".equalsIgnoreCase(align)) {
+        } else if ("right".equalsIgnoreCase(align)) {
             if (isTop) {
                 return GridBagConstraints.NORTHEAST;
-            }
-            else if (isBottom) {
+            } else if (isBottom) {
                 return GridBagConstraints.SOUTHEAST;
-            }
-            else {
+            } else {
                 return GridBagConstraints.EAST;
             }
-        }
-        else {
+        } else {
             // defaults to left
             if (isTop) {
                 return GridBagConstraints.NORTHWEST;
-            }
-            else if (isBottom) {
+            } else if (isBottom) {
                 return GridBagConstraints.SOUTHWEST;
-            }
-            else {
+            } else {
                 return GridBagConstraints.WEST;
             }
         }

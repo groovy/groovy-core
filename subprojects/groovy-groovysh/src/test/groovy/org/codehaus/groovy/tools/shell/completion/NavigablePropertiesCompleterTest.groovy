@@ -1,8 +1,4 @@
 package org.codehaus.groovy.tools.shell.completion
-
-import org.codehaus.groovy.antlr.GroovySourceToken
-import org.codehaus.groovy.tools.shell.util.CurlyCountingGroovyLexer
-
 /**
  * Defines method tokenList for other Unit tests and tests it
  */
@@ -32,7 +28,7 @@ class NavigablePropertiesCompleterTest extends GroovyTestCase {
         Map map = [
                 'id': 'FX-17',
                 name: 'Turnip',
-                99: 123,
+                99  : 123,
         ]
 
         Set candidates = [] as Set
@@ -44,7 +40,7 @@ class NavigablePropertiesCompleterTest extends GroovyTestCase {
         NavigablePropertiesCompleter completer = new NavigablePropertiesCompleter()
         completer.addCompletions(null, '', [] as Set)
         NodeBuilder someBuilder = new NodeBuilder()
-        Node node = someBuilder.foo(){[bar(){[bam(7)]}, baz()]}
+        Node node = someBuilder.foo() { [bar() { [bam(7)] }, baz()] }
 
         Set candidates = [] as Set
         completer.addCompletions(node, 'ba', candidates)

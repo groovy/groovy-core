@@ -38,7 +38,7 @@ class JmxAttributeInfoManager {
         if (!metaMap) return null
 
         def attribs = []
-        metaMap.each {attribName, map ->
+        metaMap.each { attribName, map ->
             map.name = attribName
             ModelMBeanAttributeInfo info = getAttributeInfoFromMap(map)
             attribs << info
@@ -69,10 +69,12 @@ class JmxAttributeInfoManager {
         desc.setField JmxBuilderTools.DESC_KEY_READABLE, isReadable
         desc.setField JmxBuilderTools.DESC_KEY_WRITABLE, isWritable
 
-        if (isReadable)
+        if (isReadable) {
             desc.setField JmxBuilderTools.DESC_KEY_GETMETHOD, map.remove(JmxBuilderTools.DESC_KEY_GETMETHOD)
-        if (isWritable)
+        }
+        if (isWritable) {
             desc.setField JmxBuilderTools.DESC_KEY_SETMETHOD, map.remove(JmxBuilderTools.DESC_KEY_SETMETHOD)
+        }
 
         desc.setField("default", map.remove('defaultValue'))
         desc.setField JmxBuilderTools.DESC_KEY_DISPLAY_NAME, map.remove(JmxBuilderTools.DESC_KEY_DISPLAY_NAME)

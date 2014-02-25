@@ -15,9 +15,9 @@
  */
 package org.codehaus.groovy.tools
 
+import com.thoughtworks.qdox.JavaDocBuilder
 import groovy.text.SimpleTemplateEngine
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
-import com.thoughtworks.qdox.JavaDocBuilder
 import org.codehaus.groovy.tools.shell.util.Logger
 
 import java.text.BreakIterator
@@ -56,16 +56,20 @@ class DocGenerator {
             if (it.exists()) {
                 builder.addSource(it.newReader())
                 log.debug "adding reader for $it"
-            } else log.debug "not found, skipping: $it.path"
+            } else {
+                log.debug "not found, skipping: $it.path"
+            }
         }
 
         def sources = builder.getSources()
 
         def methods = []
-        sources.each {source ->
+        sources.each { source ->
             def classes = source.getClasses()
-            classes.each {aClass ->
-                methods.addAll(aClass.methods.findAll { !it.annotations.any { it.type.fullQualifiedName == 'java.lang.Deprecated' } })
+            classes.each { aClass ->
+                methods.addAll(aClass.methods.findAll {
+                    !it.annotations.any { it.type.fullQualifiedName == 'java.lang.Deprecated' }
+                })
             }
         }
 
@@ -80,17 +84,16 @@ class DocGenerator {
                 }
                 if (jdkClass.startsWith('groovy')) {
                     // nothing, skip it
-                }
-                else if (jdkEnhancedClasses.containsKey(jdkClass)) {
+                } else if (jdkEnhancedClasses.containsKey(jdkClass)) {
                     List l = jdkEnhancedClasses[jdkClass];
                     l.add(method)
-                }
-                else
+                } else {
                     jdkEnhancedClasses[jdkClass] = [method]
+                }
             }
         }
 
-        jdkEnhancedClasses.keySet().each {className ->
+        jdkEnhancedClasses.keySet().each { className ->
             def thePackage = className.contains(".") ? className.replaceFirst(/\.[^\.]*$/, "") : ""
             if (!packages.containsKey(thePackage)) {
                 packages[thePackage] = []
@@ -127,32 +130,34 @@ class DocGenerator {
         out.withWriter {
             it << templateOverviewFrame.make(binding)
         }
-        
+
         // the package list
         out = new File(outputFolder, 'package-list')
         out.withWriter { writer ->
-            packages.keySet().findAll{ it }.each{ writer.println it }
+            packages.keySet().findAll { it }.each { writer.println it }
         }
-        
+
         // the allclasses-frame.html
         def templateAllClasses = createTemplate(engine, 'template.allclasses-frame.html')
         out = new File(outputFolder, 'allclasses-frame.html')
-        def fixPrimitivePackage = {className -> className.contains('.') ? className : "${PRIMITIVE_TYPE_PSEUDO_PACKAGE}.$className"}
-        binding = [classes: jdkEnhancedClasses.keySet().collect(fixPrimitivePackage).sort {it.replaceAll('.*\\.', '')}]
+        def fixPrimitivePackage = { className -> className.contains('.') ? className : "${PRIMITIVE_TYPE_PSEUDO_PACKAGE}.$className" }
+        binding = [classes: jdkEnhancedClasses.keySet().collect(fixPrimitivePackage).sort {
+            it.replaceAll('.*\\.', '')
+        }]
         out.withWriter {
             it << templateAllClasses.make(binding)
         }
 
         // the package-frame.html for each package
         def templatePackageFrame = createTemplate(engine, 'template.package-frame.html')
-        packages.each {curPackage, packageClasses ->
+        packages.each { curPackage, packageClasses ->
             def packageName = curPackage ?: PRIMITIVE_TYPE_PSEUDO_PACKAGE
             generatePackageFrame(templatePackageFrame, packageName, packageClasses)
         }
 
         // the class.html for each class
         def templateClass = createTemplate(engine, 'template.class.html')
-        packages.each {curPackage, packageClasses ->
+        packages.each { curPackage, packageClasses ->
             def packageName = curPackage ?: PRIMITIVE_TYPE_PSEUDO_PACKAGE
             packageClasses.each {
                 generateClassDetails(templateClass, packageName, it)
@@ -182,27 +187,27 @@ class DocGenerator {
      */
     private def generateIndex(def packages) {
         def index = []
-        packages.each {curPackage, packageClasses ->
+        packages.each { curPackage, packageClasses ->
             def packageName = curPackage ? curPackage : 'primitive-types'
-            packageClasses.each {className ->
+            packageClasses.each { className ->
                 def listOfMethods = jdkEnhancedClasses[className]
-                listOfMethods.each {method ->
+                listOfMethods.each { method ->
                     def methodName = method.name
                     final String simpleClassName = className.replaceAll('.*\\.', '')
                     index.add([
-                            'index': methodName.getAt(0).toUpperCase(),
-                            'packageName': packageName,
-                            'simpleClassName': simpleClassName,
-                            'class': packageName + '.' + simpleClassName,
-                            'method': method,
+                            'index'              : methodName.getAt(0).toUpperCase(),
+                            'packageName'        : packageName,
+                            'simpleClassName'    : simpleClassName,
+                            'class'              : packageName + '.' + simpleClassName,
+                            'method'             : method,
                             'parametersSignature': getParametersDecl(method),
-                            'shortComment': linkify(getFirstSentence(getComment(method)), curPackage),
+                            'shortComment'       : linkify(getFirstSentence(getComment(method)), curPackage),
                     ])
                 }
             }
         }
         def indexMap = new TreeMap()
-        def methodNameComparator = [compare: {a, b ->
+        def methodNameComparator = [compare: { a, b ->
             final String aMethodAndSignature = a.method.name + ' ' + getParametersDecl(a.method)
             final String bMethodAndSignature = b.method.name + ' ' + getParametersDecl(b.method)
 
@@ -239,40 +244,41 @@ class DocGenerator {
         def dir = new File(outputFolder, packagePath)
         dir.mkdirs()
         def out = new File(dir, aClass.replaceAll('.*\\.', '') + '.html')
-        def listOfMethods = jdkEnhancedClasses[aClass].sort {it.name}
+        def listOfMethods = jdkEnhancedClasses[aClass].sort { it.name }
         def methods = []
-        listOfMethods.each {method ->
+        listOfMethods.each { method ->
             def parameters = method.getTagsByName("param").collect {
                 [name: it.value.replaceAll(' .*', ''), comment: linkify(it.value.replaceAll('^\\w*', ''), curPackage)]
             }
-            if (parameters)
-                parameters.remove(0) // method is static, first arg is the "real this"
+            if (parameters) {
+                parameters.remove(0)
+            } // method is static, first arg is the "real this"
 
-            def seeComments = method.getTagsByName("see").collect { [target: getDocUrl(it.value, curPackage)]}
+            def seeComments = method.getTagsByName("see").collect { [target: getDocUrl(it.value, curPackage)] }
 
             def returnType = getReturnType(method)
             def comment = getComment(method)
             def methodInfo = [
-                    name: method.name,
-                    comment: linkify(comment, curPackage),
-                    shortComment: linkify(getFirstSentence(comment), curPackage),
-                    returnComment: method.getTagByName("return")?.getValue() ?: '',
-                    seeComments: seeComments,
-                    returnTypeDocUrl: getDocUrl(returnType, curPackage),
+                    name               : method.name,
+                    comment            : linkify(comment, curPackage),
+                    shortComment       : linkify(getFirstSentence(comment), curPackage),
+                    returnComment      : method.getTagByName("return")?.getValue() ?: '',
+                    seeComments        : seeComments,
+                    returnTypeDocUrl   : getDocUrl(returnType, curPackage),
                     parametersSignature: getParametersDecl(method),
-                    parametersDocUrl: getParametersDocUrl(method, curPackage),
-                    parameters: parameters,
-                    isStatic: method.parentClass.name == 'DefaultGroovyStaticMethods',
-                    since: method.getTagByName("since")?.getValue() ?: null
+                    parametersDocUrl   : getParametersDocUrl(method, curPackage),
+                    parameters         : parameters,
+                    isStatic           : method.parentClass.name == 'DefaultGroovyStaticMethods',
+                    since              : method.getTagByName("since")?.getValue() ?: null
             ]
             methods << methodInfo
         }
 
         def binding = [
-                className: aClass.replaceAll(/.*\./, ''),
+                className  : aClass.replaceAll(/.*\./, ''),
                 packageName: curPackage,
-                methods: methods,
-                title: TITLE
+                methods    : methods,
+                title      : TITLE
         ]
         out.withWriter {
             it << template.make(binding)
@@ -280,7 +286,7 @@ class DocGenerator {
     }
 
     private String getParametersDocUrl(method, curPackage) {
-        getParameters(method).collect {"${getDocUrl(it.type.toString(), curPackage)} $it.name"}.join(", ")
+        getParameters(method).collect { "${getDocUrl(it.type.toString(), curPackage)} $it.name" }.join(", ")
     }
 
     private String getDocUrl(type, curPackage) {
@@ -309,7 +315,7 @@ class DocGenerator {
         def apiBaseUrl, title
         if (inGdk) {
             apiBaseUrl = ""
-            curPackage.split('\\.').size().times { apiBaseUrl += '../'}
+            curPackage.split('\\.').size().times { apiBaseUrl += '../' }
             title = "GDK enhancement for ${target[0]}"
         } else if (type.startsWith("groovy") || type.startsWith("org.codehaus.groovy")) {
             apiBaseUrl = "http://groovy.codehaus.org/api/"
@@ -335,8 +341,8 @@ class DocGenerator {
         def dir = new File(outputFolder, packagePath)
         dir.mkdirs()
         def out = new File(dir, 'package-frame.html')
-        def binding = [classes: packageClasses.sort().collect {it.replaceAll(/.*\./, '')},
-                packageName: curPackage]
+        def binding = [classes    : packageClasses.sort().collect { it.replaceAll(/.*\./, '') },
+                       packageName: curPackage]
         out.withWriter {
             it << templatePackageFrame.make(binding)
         }
@@ -366,7 +372,7 @@ class DocGenerator {
      * @return the declaration of the method (long version)
      */
     private getParametersDecl(method) {
-        getParameters(method).collect {"${it.getType()}"}.join(", ")
+        getParameters(method).collect { "${it.getType()}" }.join(", ")
     }
 
     /**
@@ -395,7 +401,7 @@ class DocGenerator {
     }
 
     private linkify(orig, curPackage) {
-        orig.replaceAll(/\{@link\s+([^}]*)\s*\}/) {all, link -> getDocUrl(link, curPackage) }
+        orig.replaceAll(/\{@link\s+([^}]*)\s*\}/) { all, link -> getDocUrl(link, curPackage) }
     }
 
     /**
@@ -405,8 +411,8 @@ class DocGenerator {
         def outFolder = new File("target/html/groovy-jdk")
         outFolder.mkdirs()
         def start = System.currentTimeMillis()
-        def srcFiles = args.collect {getSourceFile(it)}
-        def srcFileNames = args.collect {getSourceFile(it).canonicalPath}
+        def srcFiles = args.collect { getSourceFile(it) }
+        def srcFileNames = args.collect { getSourceFile(it).canonicalPath }
         try {
             Class[] classes = DefaultGroovyMethods.additionals
             classes.each {

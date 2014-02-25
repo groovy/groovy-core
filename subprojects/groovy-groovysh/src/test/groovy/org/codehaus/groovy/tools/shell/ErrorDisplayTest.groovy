@@ -56,15 +56,17 @@ public class ErrorDisplayTest extends ShellRunnerTestSupport {
 
     void testError2() {
         readerStubber.demand.readLine { throw new Throwable("MockException") }
-        shellMocker.use { readerStubber.use {
-            Groovysh shellMock = new Groovysh()
-            ConsoleReader readerStub = new ConsoleReader()
+        shellMocker.use {
+            readerStubber.use {
+                Groovysh shellMock = new Groovysh()
+                ConsoleReader readerStub = new ConsoleReader()
 
-            InteractiveShellRunner shellRunner = new InteractiveShellRunner(shellMock, {">"})
-            shellRunner.reader = readerStub
-            // assert no exception
-            shellRunner.run()
-        }}
+                InteractiveShellRunner shellRunner = new InteractiveShellRunner(shellMock, { ">" })
+                shellRunner.reader = readerStub
+                // assert no exception
+                shellRunner.run()
+            }
+        }
     }
 
 }

@@ -29,8 +29,7 @@ import org.fusesource.jansi.AnsiConsole
  * @version $Id$
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
-class Main
-{
+class Main {
     static {
         // Install the system adapters
         AnsiConsole.systemInstall()
@@ -45,7 +44,7 @@ class Main
         IO io = new IO()
         Logger.io = io
 
-        CliBuilder cli = new CliBuilder(usage : 'groovysh [options] [...]', formatter: new HelpFormatter(), writer: io.out)
+        CliBuilder cli = new CliBuilder(usage: 'groovysh [options] [...]', formatter: new HelpFormatter(), writer: io.out)
 
         cli.classpath(messages['cli.option.classpath.description'])
         cli.cp(longOpt: 'classpath', messages['cli.option.cp.description'])
@@ -144,7 +143,7 @@ class Main
 
     static void setTerminalType(String type) {
         assert type != null
-        
+
         type = type.toLowerCase();
 
         switch (type) {
@@ -178,8 +177,7 @@ class Main
     static void setColor(Boolean value) {
         if (value == null) {
             value = true // --color is the same as --color=true
-        }
-        else {
+        } else {
             value = Boolean.valueOf(value).booleanValue(); // For JDK 1.4 compat
         }
 
@@ -194,8 +192,7 @@ class Main
             def tmp = nameValue.split('=', 2)
             name = tmp[0]
             value = tmp[1]
-        }
-        else {
+        } else {
             name = nameValue
             value = Boolean.TRUE.toString()
         }

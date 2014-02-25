@@ -15,7 +15,11 @@
  */
 package groovy.xml.dom
 
-import groovy.xml.*
+import groovy.xml.DOMBuilder
+import groovy.xml.NamespaceBuilder
+import groovy.xml.TestXmlSupport
+import groovy.xml.XmlUtil
+
 import static groovy.xml.XmlAssert.assertXmlEquals
 
 class NamespaceDOMTest extends TestXmlSupport {
@@ -83,8 +87,8 @@ class NamespaceDOMTest extends TestXmlSupport {
         def builder = DOMBuilder.newInstance()
         def multi = NamespaceBuilder.newInstance(builder)
         multi.declareNamespace(
-                '':'http://example.org/ord',
-                prod:'http://example.org/prod'
+                '': 'http://example.org/ord',
+                prod: 'http://example.org/prod'
         )
         checkXml(multi)
     }

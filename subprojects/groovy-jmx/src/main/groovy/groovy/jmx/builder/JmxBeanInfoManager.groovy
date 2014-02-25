@@ -17,13 +17,7 @@
 package groovy.jmx.builder
 
 import javax.management.ObjectName
-import javax.management.modelmbean.DescriptorSupport
-import javax.management.modelmbean.ModelMBeanAttributeInfo
-import javax.management.modelmbean.ModelMBeanConstructorInfo
-import javax.management.modelmbean.ModelMBeanInfo
-import javax.management.modelmbean.ModelMBeanInfoSupport
-import javax.management.modelmbean.ModelMBeanNotificationInfo
-import javax.management.modelmbean.ModelMBeanOperationInfo
+import javax.management.modelmbean.*
 
 /**
  * The JmxBeanInfoManager creates fully-described model mbean info object using the underlying meta map.
@@ -60,7 +54,7 @@ class JmxBeanInfoManager {
         def operations = JmxOperationInfoManager.getOperationInfosFromMap(map.operations) ?: []
 
         //generate setters/getters operations for found attribs
-        attributes.each {info ->
+        attributes.each { info ->
             MetaProperty prop = object.metaClass.getMetaProperty(JmxBuilderTools.uncapitalize(info.name))
             if (prop && info.isReadable()) {
                 operations << JmxOperationInfoManager.createGetterOperationInfoFromProperty(prop)

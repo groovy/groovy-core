@@ -40,14 +40,14 @@ class Groovysh extends Shell {
     final Parser parser
 
     final Interpreter interp
-    
+
     final List<String> imports = []
 
     public static final String AUTOINDENT_PREFERENCE_KEY = "autoindent"
     // after how many prefix characters we start displaying all metaclass methods
     public static final String METACLASS_COMPLETION_PREFIX_LENGTH_PREFERENCE_KEY = "meta-completion-prefix-length"
     int indentSize = 2
-    
+
     InteractiveShellRunner runner
 
     FileHistory history
@@ -74,7 +74,7 @@ class Groovysh extends Shell {
 
     private static Closure createDefaultRegistrar(final ClassLoader classLoader) {
 
-        return {Groovysh shell ->
+        return { Groovysh shell ->
             URL xmlCommandResource = getClass().getResource('commands.xml')
             if (xmlCommandResource != null) {
                 def r = new XmlCommandRegistrar(shell, classLoader)
@@ -96,7 +96,7 @@ class Groovysh extends Shell {
     Groovysh(final IO io) {
         this(new Binding(), io)
     }
-    
+
     Groovysh() {
         this(new IO())
     }
@@ -110,7 +110,7 @@ class Groovysh extends Shell {
      */
     Object execute(final String line) {
         assert line != null
-        
+
         // Ignore empty lines
         if (line.trim().size() == 0) {
             return null
@@ -119,19 +119,19 @@ class Groovysh extends Shell {
         maybeRecordInput(line)
 
         def result
-        
+
         // First try normal command execution
         if (isExecutable(line)) {
             result = executeCommand(line)
-            
+
             // For commands, only set the last result when its non-null/true
             if (result) {
                 setLastResult(result)
             }
-            
+
             return result
         }
-        
+
         // Otherwise treat the line as Groovy
         List<String> current = new ArrayList<String>(buffers.current())
 
@@ -152,7 +152,7 @@ class Groovysh extends Shell {
                 }
 
                 // Evaluate the current buffer w/imports and dummy statement
-                List buff = [importsSpec] + [ 'true' ] + current
+                List buff = [importsSpec] + ['true'] + current
 
                 setLastResult(result = interp.evaluate(buff))
                 buffers.clearSelected()
@@ -186,13 +186,13 @@ class Groovysh extends Shell {
 
         buffer.eachWithIndex { line, index ->
             def lineNum = formatLineNumber(index)
-            
+
             io.out.println(" ${lineNum}@|bold >|@ $line")
         }
     }
 
     String getImportStatements() {
-        return this.imports.collect({String it -> "import $it;"}).join('')
+        return this.imports.collect({ String it -> "import $it;" }).join('')
     }
 
     //
@@ -210,16 +210,17 @@ class Groovysh extends Shell {
         The code will always assume you want the line number in the prompt.  To implement differently overhead the render
         prompt variable.
      */
+
     private String buildPrompt() {
         def lineNum = formatLineNumber(buffers.current().size())
 
         def groovyshellProperty = System.getProperty("groovysh.prompt")
         if (groovyshellProperty) {
-            return  "@|bold ${groovyshellProperty}:|@${lineNum}@|bold >|@ "
+            return "@|bold ${groovyshellProperty}:|@${lineNum}@|bold >|@ "
         }
         def groovyshellEnv = System.getenv("GROOVYSH_PROMPT")
         if (groovyshellEnv) {
-            return  "@|bold ${groovyshellEnv}:|@${lineNum}@|bold >|@ "
+            return "@|bold ${groovyshellEnv}:|@${lineNum}@|bold >|@ "
         }
         return "@|bold groovy:|@${lineNum}@|bold >|@ "
 
@@ -236,7 +237,7 @@ class Groovysh extends Shell {
             return ""
         }
         StringBuilder src = new StringBuilder()
-        for (String line: buffer) {
+        for (String line : buffer) {
             src.append(line + '\n')
         }
 
@@ -245,7 +246,8 @@ class Groovysh extends Shell {
 
         // read all tokens
         try {
-            while (lexer.nextToken().getType() != CurlyCountingGroovyLexer.EOF) {}
+            while (lexer.nextToken().getType() != CurlyCountingGroovyLexer.EOF) {
+            }
         } catch (TokenStreamException e) {
             // pass
         }
@@ -256,7 +258,7 @@ class Groovysh extends Shell {
     }
 
     public String renderPrompt() {
-        return prompt.render( buildPrompt() )
+        return prompt.render(buildPrompt())
     }
 
     /**
@@ -281,9 +283,9 @@ class Groovysh extends Shell {
 
     private void loadUserScript(final String filename) {
         assert filename
-        
+
         def file = new File(userStateDirectory, filename)
-        
+
         if (file.exists()) {
             Command command = registry['load'] as Command
 
@@ -292,7 +294,7 @@ class Groovysh extends Shell {
 
                 // Disable the result hook for profile scripts
                 def previousHook = resultHook
-                resultHook = { result -> /* nothing */}
+                resultHook = { result -> /* nothing */ }
 
                 try {
                     command.load(file.toURI().toURL())
@@ -301,8 +303,7 @@ class Groovysh extends Shell {
                     // Restore the result hook
                     resultHook = previousHook
                 }
-            }
-            else {
+            } else {
                 log.error("Unable to load user-script, missing 'load' command")
             }
         }
@@ -341,12 +342,12 @@ class Groovysh extends Shell {
             record.recordError(cause)
         }
     }
-    
+
     //
     // Hooks
     //
 
-    final Closure defaultResultHook = {Object result ->
+    final Closure defaultResultHook = { Object result ->
         boolean showLastResult = !io.quiet && (io.verbose || Preferences.showLastResult)
         if (showLastResult) {
             // avoid String.valueOf here because it bypasses pretty-printing of Collections,
@@ -362,7 +363,7 @@ class Groovysh extends Shell {
             throw new IllegalStateException("Result hook is not set")
         }
 
-        resultHook.call((Object)result)
+        resultHook.call((Object) result)
 
         interp.context['_'] = result
 
@@ -380,8 +381,7 @@ class Groovysh extends Shell {
         if (log.debug) {
             // If we have debug enabled then skip the fancy bits below
             log.debug(cause)
-        }
-        else {
+        } else {
             boolean sanitize = Preferences.sanitizeStackTrace
 
             // Sanitize the stack trace unless we are in verbose mode, or the user has request otherwise
@@ -407,7 +407,7 @@ class Groovysh extends Shell {
                 buff << "        @|bold at|@ ${e.className}.${e.methodName} (@|bold "
 
                 buff << (e.nativeMethod ? 'Native Method' :
-                            (e.fileName != null && e.lineNumber != -1 ? "${e.fileName}:${e.lineNumber}" :
+                        (e.fileName != null && e.lineNumber != -1 ? "${e.fileName}:${e.lineNumber}" :
                                 (e.fileName != null ? e.fileName : 'Unknown Source')))
 
                 buff << '|@)'

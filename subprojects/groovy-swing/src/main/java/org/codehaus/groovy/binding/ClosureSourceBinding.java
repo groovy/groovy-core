@@ -53,6 +53,6 @@ public class ClosureSourceBinding implements SourceBinding {
     }
 
     public void setClosureArgument(Object argument) {
-        this.arguments = new Object[] {argument};
+        this.arguments = new Object[]{argument};
     }
 }

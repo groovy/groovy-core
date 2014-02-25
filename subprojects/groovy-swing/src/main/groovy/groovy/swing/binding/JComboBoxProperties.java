@@ -18,13 +18,14 @@ package groovy.swing.binding;
 import org.codehaus.groovy.binding.*;
 
 import javax.swing.*;
-import javax.swing.event.*;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.Map;
-import java.awt.event.ItemListener;
-import java.awt.event.ItemEvent;
 
 /**
  * @author <a href="mailto:shemnon@yahoo.com">Danno Ferrin</a>
@@ -75,7 +76,7 @@ class JComboBoxSelectedElementBinding extends AbstractSyntheticBinding implement
     }
 
     public synchronized void syntheticBind() {
-        boundComboBox = (JComboBox) ((PropertyBinding)sourceBinding).getBean();
+        boundComboBox = (JComboBox) ((PropertyBinding) sourceBinding).getBean();
         boundComboBox.addPropertyChangeListener("model", this);
         boundComboBox.addItemListener(this);
     }
@@ -108,7 +109,7 @@ class JComboBoxSelectedIndexBinding extends AbstractSyntheticBinding implements 
     }
 
     public synchronized void syntheticBind() {
-        boundComboBox = (JComboBox) ((PropertyBinding)sourceBinding).getBean();
+        boundComboBox = (JComboBox) ((PropertyBinding) sourceBinding).getBean();
         boundComboBox.addPropertyChangeListener("model", this);
         boundComboBox.addItemListener(this);
     }
@@ -141,7 +142,7 @@ class JComboBoxElementsBinding extends AbstractSyntheticBinding implements ListD
     }
 
     protected void syntheticBind() {
-        boundComboBox = (JComboBox) ((PropertyBinding)sourceBinding).getBean();
+        boundComboBox = (JComboBox) ((PropertyBinding) sourceBinding).getBean();
         boundComboBox.addPropertyChangeListener("model", this);
         boundComboBox.getModel().addListDataListener(this);
     }

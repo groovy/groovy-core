@@ -54,7 +54,7 @@ class JmxAttributeInfoManagerTest extends GroovyTestCase {
         ModelMBeanAttributeInfo[] infos = JmxAttributeInfoManager.getAttributeInfosFromMap(attribs)
 
         assert infos
-        infos.each {info ->
+        infos.each { info ->
             assert object.metaClass.getMetaProperty(JmxBuilderTools.uncapitalize(info.getName()))
         }
     }

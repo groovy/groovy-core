@@ -15,8 +15,9 @@
  */
 package groovy.swing
 
-import javax.swing.border.TitledBorder
 import groovy.swing.factory.TitledBorderFactory
+
+import javax.swing.border.TitledBorder
 
 /**
  * TitledBorderFactoryJustificationTest
@@ -24,34 +25,34 @@ import groovy.swing.factory.TitledBorderFactory
  */
 class TitledBorderFactoryJustificationTest extends GroovySwingTestCase {
     void "test justification is set to the left"() {
-            testJustificationIsSet(TitledBorder.LEFT, 'left')
+        testJustificationIsSet(TitledBorder.LEFT, 'left')
     }
 
     void "test justification is set to the center"() {
-            testJustificationIsSet(TitledBorder.CENTER, 'center')
+        testJustificationIsSet(TitledBorder.CENTER, 'center')
     }
 
     void "test justification is set to the right"() {
-            testJustificationIsSet(TitledBorder.RIGHT, 'right')
+        testJustificationIsSet(TitledBorder.RIGHT, 'right')
     }
 
     void "test justification is set to leading"() {
-            testJustificationIsSet(TitledBorder.LEADING, 'leading')
+        testJustificationIsSet(TitledBorder.LEADING, 'leading')
     }
 
     void "test justification is set to trailing"() {
-            testJustificationIsSet(TitledBorder.TRAILING, 'trailing')
+        testJustificationIsSet(TitledBorder.TRAILING, 'trailing')
     }
 
     void testJustificationIsSet(int justification, justificationString) {
         testInEDT {
             def swing = new SwingBuilder()
-                swing.frame{
-    
+            swing.frame {
+
                 def tbf = new TitledBorderFactory()
-                TitledBorder titledBorder = tbf.newInstance(swing, "TestBorder", "", [justification:justificationString])
-    
-                assert justification == titledBorder.titleJustification:"justification should be -> ($justificationString)"
+                TitledBorder titledBorder = tbf.newInstance(swing, "TestBorder", "", [justification: justificationString])
+
+                assert justification == titledBorder.titleJustification: "justification should be -> ($justificationString)"
             }
         }
     }

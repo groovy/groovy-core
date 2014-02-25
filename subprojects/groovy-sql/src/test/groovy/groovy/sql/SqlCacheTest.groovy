@@ -15,10 +15,11 @@
  */
 package groovy.sql
 
-import java.sql.SQLException
+import org.codehaus.groovy.runtime.InvokerHelper
+
 import javax.sql.DataSource
 import java.sql.Connection
-import org.codehaus.groovy.runtime.InvokerHelper
+import java.sql.SQLException
 
 import static groovy.sql.SqlTestConstants.*
 
@@ -45,12 +46,12 @@ class SqlCacheTest extends GroovyTestCase {
                 password: DB_PASSWORD)
         con = ds.connection
         def methodOverride = [
-                createStatement: {Object[] args ->
+                createStatement : { Object[] args ->
                     createStatementCallCounter++
                     assert !createStatementExpectedCall || createStatementCallCounter <= createStatementExpectedCall
                     InvokerHelper.invokeMethod(con, 'createStatement', args)
                 },
-                prepareStatement: {Object[] args ->
+                prepareStatement: { Object[] args ->
                     prepareStatementCallCounter++
                     assert !prepareStatementExpectedCall || prepareStatementCallCounter <= prepareStatementExpectedCall
                     InvokerHelper.invokeMethod(con, 'prepareStatement', args)
@@ -204,7 +205,7 @@ class SqlCacheTest extends GroovyTestCase {
      */
     void testManuallyControlledCachingWithDataSource() {
         def connectionCallNumber = 0
-        def methodOverride = [getConnection:{connectionCallNumber++; ds.getConnection()}]
+        def methodOverride = [getConnection: { connectionCallNumber++; ds.getConnection() }]
         DataSource wrappedDs = ProxyGenerator.INSTANCE.instantiateDelegate(methodOverride, [DataSource], ds)
         sql = new Sql(wrappedDs)
         sql.cacheStatements = true

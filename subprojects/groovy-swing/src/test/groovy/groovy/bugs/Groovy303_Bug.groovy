@@ -15,9 +15,10 @@
  */
 package groovy.bugs
 
-import java.awt.*
-import java.awt.event.*
 import javax.swing.*
+import java.awt.*
+import java.awt.event.ActionEvent
+import java.awt.event.ActionListener
 
 /**
  * @author Bing Ran
@@ -26,10 +27,10 @@ import javax.swing.*
  */
 class Groovy303_Bug extends GroovySwingTestCase {
     void testBug() {
-      testInEDT {
-        def scholastic = new Scholastic()
-        scholastic.createUI()
-      }
+        testInEDT {
+            def scholastic = new Scholastic()
+            scholastic.createUI()
+        }
     }
 }
 

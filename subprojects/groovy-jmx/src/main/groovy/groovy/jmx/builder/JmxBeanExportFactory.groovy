@@ -23,10 +23,8 @@ package groovy.jmx.builder
  * Supported syntax:
  * <pre>
  * def jmx = new JmxBuilder()
- * jmx.export(registrationPolicy:"replace|ignore|error") {
- *     bean(...)
- * }
- * </pre>
+ * jmx.export(registrationPolicy:"replace|ignore|error") {*     bean(...)
+ *}* </pre>
  * <p>
  * registrationPolicy indicates how resources will be registered:
  * "replace" - replaces existing bean,  <br>

@@ -23,12 +23,12 @@ import java.util.Set;
 public class MockOutputTool implements OutputTool {
     Set outputAreas; // dirs
     Map output;
-    
+
     public MockOutputTool() {
         outputAreas = new HashSet();
         output = new HashMap();
     }
-    
+
     public void makeOutputArea(String filename) {
         outputAreas.add(filename);
     }
@@ -44,7 +44,7 @@ public class MockOutputTool implements OutputTool {
     public String getText(String fileName) {
         return (String) output.get(fileName);
     }
-    
+
     public String toString() {
         return "dirs:" + outputAreas + ", files:" + output.keySet();
     }

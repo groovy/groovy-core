@@ -16,8 +16,8 @@
 
 package groovy.jmx.builder
 
-import java.lang.reflect.Constructor
 import javax.management.ObjectName
+import java.lang.reflect.Constructor
 
 /**
  * The JmxMetaMapBuilder class is used to collect meta data passed in JmxBuilder nodes.  Once collected,
@@ -66,35 +66,35 @@ class JmxMetaMapBuilder {
             // if only the jmx name is provided fill in the rest.
             if (descriptor.size() == 1 && descriptor.name) {
                 map = [
-                        target: object,
-                        name: object.getClass().name,
-                        jmxName: getObjectName(descriptor),
-                        displayName: "JMX Managed Object ${object.class.canonicalName}".toString(),
-                        attributes: buildAttributeMapFrom(object),
+                        target      : object,
+                        name        : object.getClass().name,
+                        jmxName     : getObjectName(descriptor),
+                        displayName : "JMX Managed Object ${object.class.canonicalName}".toString(),
+                        attributes  : buildAttributeMapFrom(object),
                         constructors: buildConstructorMapFrom(object),
-                        operations: buildOperationMapFrom(object)
+                        operations  : buildOperationMapFrom(object)
                 ]
 
             }
             // else, build description from descriptor
             else {
                 map = [
-                        target: object,
-                        name: object.getClass().name,
-                        displayName: descriptor.desc ?: descriptor.desc,
-                        attributes: buildAttributeMapFrom(object, descriptor.attributes ?: descriptor.attribs),
+                        target      : object,
+                        name        : object.getClass().name,
+                        displayName : descriptor.desc ?: descriptor.desc,
+                        attributes  : buildAttributeMapFrom(object, descriptor.attributes ?: descriptor.attribs),
                         constructors: buildConstructorMapFrom(object, descriptor.constructors ?: descriptor.ctors),
-                        operations: buildOperationMapFrom(object, descriptor.operations ?: descriptor.ops),
-                        listeners: buildListenerMapFrom(descriptor.listeners),
-                        mbeanServer: descriptor.server ?: descriptor.mbeanServer
+                        operations  : buildOperationMapFrom(object, descriptor.operations ?: descriptor.ops),
+                        listeners   : buildListenerMapFrom(descriptor.listeners),
+                        mbeanServer : descriptor.server ?: descriptor.mbeanServer
                 ]
 
                 // validate object Name
                 map.jmxName = getObjectName(descriptor) ?:
-                    JmxBeanInfoManager.buildDefaultObjectName(
-                            JmxBuilderTools.DEFAULT_DOMAIN,
-                            JmxBuilderTools.DEFAULT_NAME_TYPE,
-                            object)
+                        JmxBeanInfoManager.buildDefaultObjectName(
+                                JmxBuilderTools.DEFAULT_DOMAIN,
+                                JmxBuilderTools.DEFAULT_NAME_TYPE,
+                                object)
             }
 
 
@@ -102,16 +102,16 @@ class JmxMetaMapBuilder {
         // build meta map with default info if no descriptor is provided.
         else {
             map = [
-                    target: object,
-                    name: object.getClass().name,
-                    jmxName: JmxBeanInfoManager.buildDefaultObjectName(
+                    target      : object,
+                    name        : object.getClass().name,
+                    jmxName     : JmxBeanInfoManager.buildDefaultObjectName(
                             JmxBuilderTools.DEFAULT_DOMAIN,
                             JmxBuilderTools.DEFAULT_NAME_TYPE,
                             object),
-                    displayName: "JMX Managed Object ${object.class.canonicalName}".toString(),
-                    attributes: buildAttributeMapFrom(object),
+                    displayName : "JMX Managed Object ${object.class.canonicalName}".toString(),
+                    attributes  : buildAttributeMapFrom(object),
                     constructors: buildConstructorMapFrom(object),
-                    operations: buildOperationMapFrom(object)
+                    operations  : buildOperationMapFrom(object)
             ]
         }
 
@@ -135,13 +135,13 @@ class JmxMetaMapBuilder {
         // if only the name & target is specified, fill in rest with defaults
         if (descriptor.size() == 2 && (descriptor.name && descriptor.target)) {
             map = [
-                    target: object,
-                    jmxName: getObjectName(descriptor),
-                    name: object.getClass().name,
-                    displayName: "JMX Managed Object ${object.class.canonicalName}".toString(),
-                    attributes: buildAttributeMapFrom(object),
+                    target      : object,
+                    jmxName     : getObjectName(descriptor),
+                    name        : object.getClass().name,
+                    displayName : "JMX Managed Object ${object.class.canonicalName}".toString(),
+                    attributes  : buildAttributeMapFrom(object),
                     constructors: buildConstructorMapFrom(object),
-                    operations: buildOperationMapFrom(object)
+                    operations  : buildOperationMapFrom(object)
             ]
 
         }
@@ -149,21 +149,21 @@ class JmxMetaMapBuilder {
         else {
 
             map = [
-                    target: object,
-                    name: object.getClass().name,
-                    displayName: descriptor.desc ?: descriptor.desc,
-                    attributes: buildAttributeMapFrom(object, descriptor.attributes ?: descriptor.attribs),
+                    target      : object,
+                    name        : object.getClass().name,
+                    displayName : descriptor.desc ?: descriptor.desc,
+                    attributes  : buildAttributeMapFrom(object, descriptor.attributes ?: descriptor.attribs),
                     constructors: buildConstructorMapFrom(object, descriptor.constructors ?: descriptor.ctors),
-                    operations: buildOperationMapFrom(object, descriptor.operations ?: descriptor.ops),
-                    listeners: buildListenerMapFrom(descriptor.listeners),
-                    mbeanServer: descriptor.server ?: descriptor.mbeanServer
+                    operations  : buildOperationMapFrom(object, descriptor.operations ?: descriptor.ops),
+                    listeners   : buildListenerMapFrom(descriptor.listeners),
+                    mbeanServer : descriptor.server ?: descriptor.mbeanServer
             ]
 
             map.jmxName = getObjectName(descriptor) ?:
-                JmxBeanInfoManager.buildDefaultObjectName(
-                        JmxBuilderTools.DEFAULT_DOMAIN,
-                        JmxBuilderTools.DEFAULT_NAME_TYPE,
-                        object)
+                    JmxBeanInfoManager.buildDefaultObjectName(
+                            JmxBuilderTools.DEFAULT_DOMAIN,
+                            JmxBuilderTools.DEFAULT_NAME_TYPE,
+                            object)
         }
 
         map
@@ -189,7 +189,7 @@ class JmxMetaMapBuilder {
         def properties = object.metaClass.getProperties()
 
         def attribs = [:]
-        properties.each {MetaProperty prop ->
+        properties.each { MetaProperty prop ->
             if (!ATTRIB_EXCEPTION_LIST.contains(prop.name)) {
                 def attrib = [:]
                 def getterPrefix = (prop.type.name == "java.lang.Boolean" || prop.type.name == "boolean") ? "is" : "get"
@@ -225,7 +225,7 @@ class JmxMetaMapBuilder {
         }
         // attribs:["attrName1",attrName2",...,"attrNameN"]
         if (descCollection && descCollection instanceof List) {
-            descCollection.each {attrib ->
+            descCollection.each { attrib ->
                 MetaProperty prop = object.metaClass.getMetaProperty(JmxBuilderTools.uncapitalize(attrib))
                 if (prop) {
                     map.put(JmxBuilderTools.capitalize(attrib), createAttributeMap(prop, attrib, "*"))
@@ -234,7 +234,7 @@ class JmxMetaMapBuilder {
         }
         //attribs:[desc:..., readable:..., writable:...]
         if (descCollection && descCollection instanceof Map) {
-            descCollection.each {attrib, attrDescriptor ->
+            descCollection.each { attrib, attrDescriptor ->
                 MetaProperty prop = object.metaClass.getMetaProperty(JmxBuilderTools.uncapitalize(attrib))
                 if (prop) {
                     map.put(JmxBuilderTools.capitalize(attrib), createAttributeMap(prop, attrib, attrDescriptor))
@@ -324,7 +324,7 @@ class JmxMetaMapBuilder {
 
         // ctor:[ctorName:...]
         if (descCollection && descCollection instanceof Map) {
-            descCollection.each {ctorKey, descriptor ->
+            descCollection.each { ctorKey, descriptor ->
                 def params
 
                 // ctorName:[]
@@ -334,7 +334,7 @@ class JmxMetaMapBuilder {
                 // ctorName:["paramType1","paramType2"..."paramTypeN"]
                 if (descriptor && (descriptor instanceof List && descriptor.size() > 0)) {
                     params = []
-                    descriptor.each {param ->
+                    descriptor.each { param ->
                         params << JmxBuilderTools.TYPE_MAP[JmxBuilderTools.getNormalizedType(param)]
                     }
                 }
@@ -348,7 +348,7 @@ class JmxMetaMapBuilder {
                     }
 
                     params = []
-                    paramTypes.each {p ->
+                    paramTypes.each { p ->
                         params << JmxBuilderTools.TYPE_MAP[JmxBuilderTools.getNormalizedType(p)]
                     }
                 }
@@ -376,10 +376,11 @@ class JmxMetaMapBuilder {
         map.displayName = desc.description ?: desc.desc ?: "Class constructor"
         map.role = "constructor"
         map.constructor = ctor
-        if (desc.params)
+        if (desc.params) {
             map.put("params", buildParameterMapFrom(ctor, desc.params))
-        else
+        } else {
             map.put("params", buildParameterMapFrom(ctor))
+        }
 
         return map
     }
@@ -398,12 +399,12 @@ class JmxMetaMapBuilder {
 
         def declaredMethods = object.getClass().getDeclaredMethods()*.name
 
-        methods.each {method ->
+        methods.each { method ->
             // avoid picking up extra methods from parents
             if ((declaredMethods.contains(method.name) && !OPS_EXCEPTION_LIST.contains(method.name)) || (!OPS_EXCEPTION_LIST.contains(method.name))) {
                 String mName = method.name
                 MetaProperty prop = (mName.startsWith("get") || mName.startsWith("set")) ?
-                    object.metaClass.getMetaProperty(JmxBuilderTools.uncapitalize(mName[3..-1])) : null
+                        object.metaClass.getMetaProperty(JmxBuilderTools.uncapitalize(mName[3..-1])) : null
                 // skip exporting getters/setters to avoid dbl exposure.  They are exported differently.
                 if (!prop) {
                     def map = [:]
@@ -429,7 +430,7 @@ class JmxMetaMapBuilder {
 
         // operations:["opName1","opName2",..., "opNameN"]
         if (descCollection && descCollection instanceof List) {
-            descCollection.each {opName ->
+            descCollection.each { opName ->
                 // find the first method that matches the name
                 def method
                 for (m in object.metaClass.getMethods()) {
@@ -447,7 +448,7 @@ class JmxMetaMapBuilder {
 
         // operations:[foo1:[:], foo2[:], foo3:[:]...]
         if (descCollection && descCollection instanceof Map) {
-            descCollection.each {opName, descriptor ->
+            descCollection.each { opName, descriptor ->
                 def params
                 def method
 
@@ -475,7 +476,7 @@ class JmxMetaMapBuilder {
                     // gather clas array Class[]
                     if (params) {
                         def paramTypes = []
-                        params?.each {key ->
+                        params?.each { key ->
                             paramTypes << JmxBuilderTools.TYPE_MAP[JmxBuilderTools.getNormalizedType(key)]
                         }
                         params = paramTypes ?: null
@@ -539,7 +540,7 @@ class JmxMetaMapBuilder {
         if (!method) return map
         def params = method.getParameterTypes()
         if (params) {
-            params.each {def param ->
+            params.each { def param ->
                 map.put(param.name, createParameterMap(method, param, "*"))
             }
         }
@@ -557,14 +558,14 @@ class JmxMetaMapBuilder {
         if (!method) return map
 
         if (descCollection && descCollection instanceof Map) {
-            descCollection.each {param, paramMap ->
+            descCollection.each { param, paramMap ->
                 def type = getParamTypeByName(method, JmxBuilderTools.getNormalizedType(param))
                 if (type) {
                     map.put(type.name, createParameterMap(method, type, paramMap))
                 }
             }
         } else if (descCollection && descCollection instanceof List) {
-            descCollection.each {param ->
+            descCollection.each { param ->
                 def type = getParamTypeByName(method, JmxBuilderTools.getNormalizedType(param))
                 if (type) {
                     map.put(type.name, createParameterMap(method, type, "*"))
@@ -595,8 +596,9 @@ class JmxMetaMapBuilder {
 
     private static def getParamTypeByName(method, typeName) {
         for (type in method.getParameterTypes()) {
-            if (type.name.equals(typeName))
+            if (type.name.equals(typeName)) {
                 return type
+            }
         }
         return null
     }
@@ -613,7 +615,7 @@ class JmxMetaMapBuilder {
     public static buildListenerMapFrom(descCollection) {
         def map = [:]
         if (descCollection && descCollection instanceof Map) {
-            descCollection.each {name, listenerMap ->
+            descCollection.each { name, listenerMap ->
                 map.put(name, createListenerMap(listenerMap))
             }
         }

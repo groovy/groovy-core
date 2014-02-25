@@ -38,7 +38,8 @@ public class JSpinnerProperties {
                     public FullBinding createBinding(SourceBinding source, TargetBinding target) {
                         return new JSpinnerValueBinding((PropertyBinding) source, target);
                     }
-                });
+                }
+        );
         return result;
     }
 }
@@ -52,7 +53,7 @@ class JSpinnerValueBinding extends AbstractSyntheticBinding implements PropertyC
     }
 
     public synchronized void syntheticBind() {
-        boundSlider = (JSpinner) ((PropertyBinding)sourceBinding).getBean();
+        boundSlider = (JSpinner) ((PropertyBinding) sourceBinding).getBean();
         boundSlider.addPropertyChangeListener("model", this);
         boundSlider.getModel().addChangeListener(this);
     }

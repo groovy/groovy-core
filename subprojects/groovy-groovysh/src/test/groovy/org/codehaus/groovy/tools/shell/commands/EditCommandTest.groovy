@@ -22,11 +22,10 @@ package org.codehaus.groovy.tools.shell.commands
  * @author <a href="mailto:4larryj@gmail.com">Larry Jacobson</a>
  */
 class EditCommandTest
-    extends CommandTestSupport
-{
+        extends CommandTestSupport {
     void testProcessBuilderInit() {
         def mockEdit = new EditCommand(shell)
-        ProcessBuilder pb = mockEdit.getEditorProcessBuilder("/usr/bin/vim", 
+        ProcessBuilder pb = mockEdit.getEditorProcessBuilder("/usr/bin/vim",
                 "/var/folders/tu/tuATI/-Tmp-/groovysh-buffer1761911.groovy")
 
         assert pb.redirectErrorStream()
@@ -44,12 +43,12 @@ class EditCommandTest
         String partialExpression1 = 'x = {'
         String partialExpression2 = '  println 2+2'
         String partialExpression3 = '}'
-        
+
         def mockEdit = new EditCommand(shell)
-        
+
         // type an incomplete groovy expression
         shell << partialExpression1
-        
+
         // simulate a user launching an editor and completing the expression
         List<String> mockEditorContents = [partialExpression1, partialExpression2, partialExpression3]
         mockEdit.replaceCurrentBuffer(mockEditorContents)
@@ -61,12 +60,12 @@ class EditCommandTest
     void testEditorReplacingPartialGroovyExpression() {
         String partialExpression1 = 'x = {'
         String partialExpression2 = '  println 2+2'
-        
+
         def mockEdit = new EditCommand(shell)
-        
+
         // type an incomplete groovy expression
         shell << partialExpression1
-        
+
         // simulate a user launching an editor and adding to, but not completing, the expression
         List<String> mockEditorContents = [partialExpression1, partialExpression2]
         mockEdit.replaceCurrentBuffer(mockEditorContents)

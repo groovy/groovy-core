@@ -44,8 +44,7 @@ public class ScriptTestAdapter implements Test {
             // lets run the script
             InvokerHelper.runScript(scriptClass, arguments);
             result.endTest(this);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             result.addError(this, e);
         }
     }

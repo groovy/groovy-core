@@ -18,23 +18,7 @@ package org.codehaus.groovy.tools.shell.util
 
 import org.codehaus.groovy.tools.shell.Command
 import org.codehaus.groovy.tools.shell.Shell
-import org.codehaus.groovy.tools.shell.commands.AliasCommand
-import org.codehaus.groovy.tools.shell.commands.ClearCommand
-import org.codehaus.groovy.tools.shell.commands.DisplayCommand
-import org.codehaus.groovy.tools.shell.commands.DocCommand
-import org.codehaus.groovy.tools.shell.commands.EditCommand
-import org.codehaus.groovy.tools.shell.commands.ExitCommand
-import org.codehaus.groovy.tools.shell.commands.HelpCommand
-import org.codehaus.groovy.tools.shell.commands.HistoryCommand
-import org.codehaus.groovy.tools.shell.commands.ImportCommand
-import org.codehaus.groovy.tools.shell.commands.InspectCommand
-import org.codehaus.groovy.tools.shell.commands.LoadCommand
-import org.codehaus.groovy.tools.shell.commands.PurgeCommand
-import org.codehaus.groovy.tools.shell.commands.RecordCommand
-import org.codehaus.groovy.tools.shell.commands.RegisterCommand
-import org.codehaus.groovy.tools.shell.commands.SaveCommand
-import org.codehaus.groovy.tools.shell.commands.SetCommand
-import org.codehaus.groovy.tools.shell.commands.ShowCommand
+import org.codehaus.groovy.tools.shell.commands.*
 
 /**
  * Registers {@link Command} classes from an XML file like:
@@ -46,8 +30,7 @@ import org.codehaus.groovy.tools.shell.commands.ShowCommand
  * @version $Id$
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
-class DefaultCommandsRegistrar
-{
+class DefaultCommandsRegistrar {
 
     private final Shell shell
 

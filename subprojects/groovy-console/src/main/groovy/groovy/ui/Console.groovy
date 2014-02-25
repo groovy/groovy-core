@@ -15,48 +15,30 @@
  */
 package groovy.ui
 
-import groovy.inspect.swingui.ObjectBrowser
 import groovy.inspect.swingui.AstBrowser
+import groovy.inspect.swingui.ObjectBrowser
 import groovy.swing.SwingBuilder
+import groovy.transform.ThreadInterrupt
 import groovy.ui.text.FindReplaceUtility
-import org.codehaus.groovy.control.messages.SimpleMessage
-
-import java.awt.Component
-import java.awt.EventQueue
-import java.awt.Font
-import java.awt.Toolkit
-import java.awt.Window
-import java.awt.event.ActionEvent
-import java.awt.event.ComponentEvent
-import java.awt.event.ComponentListener
-import java.awt.event.FocusListener
-import java.awt.event.FocusEvent
-import java.util.prefs.Preferences
-import javax.swing.*
-import javax.swing.event.CaretEvent
-import javax.swing.event.CaretListener
-import javax.swing.event.HyperlinkListener
-import javax.swing.event.HyperlinkEvent
-import javax.swing.text.AttributeSet
-import javax.swing.text.Element
-import javax.swing.text.SimpleAttributeSet
-import javax.swing.text.Style
-import javax.swing.text.StyleConstants
-import javax.swing.text.html.HTML
-import javax.swing.filechooser.FileFilter
-
-import org.codehaus.groovy.runtime.StackTraceUtils
+import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.ErrorCollector
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
-import org.codehaus.groovy.control.messages.SyntaxErrorMessage
-import org.codehaus.groovy.syntax.SyntaxException
-import org.codehaus.groovy.control.messages.ExceptionMessage
-import java.awt.Dimension
-import java.awt.BorderLayout
-import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer
-import groovy.transform.ThreadInterrupt
-import javax.swing.event.DocumentListener
+import org.codehaus.groovy.control.messages.ExceptionMessage
+import org.codehaus.groovy.control.messages.SimpleMessage
+import org.codehaus.groovy.control.messages.SyntaxErrorMessage
+import org.codehaus.groovy.runtime.StackTraceUtils
+import org.codehaus.groovy.syntax.SyntaxException
+
+import javax.swing.*
+import javax.swing.event.*
+import javax.swing.filechooser.FileFilter
+import javax.swing.text.*
+import javax.swing.text.html.HTML
+import java.awt.*
+import java.awt.event.*
+import java.util.List
+import java.util.prefs.Preferences
 
 /**
  * Groovy Swing console.
@@ -84,7 +66,7 @@ class Console implements CaretListener, HyperlinkListener, ComponentListener, Fo
     static consoleControllers = []
 
     boolean fullStackTraces = prefs.getBoolean('fullStackTraces',
-        Boolean.valueOf(System.getProperty('groovy.full.stacktrace', 'false')))
+            Boolean.valueOf(System.getProperty('groovy.full.stacktrace', 'false')))
     Action fullStackTracesAction
 
     boolean showScriptInOutput = prefs.getBoolean('showScriptInOutput', true)
@@ -127,7 +109,7 @@ class Console implements CaretListener, HyperlinkListener, ComponentListener, Fo
     int maxHistory = 10
 
     // Maximum number of characters to show on console at any time
-    int maxOutputChars = System.getProperty('groovy.console.output.limit','20000') as int
+    int maxOutputChars = System.getProperty('groovy.console.output.limit', '20000') as int
 
     // UI
     SwingBuilder swing
@@ -156,7 +138,7 @@ class Console implements CaretListener, HyperlinkListener, ComponentListener, Fo
     // Internal history
     List history = []
     int historyIndex = 1 // valid values are 0..history.length()
-    HistoryRecord pendingRecord = new HistoryRecord( allText: '', selectionStart: 0, selectionEnd: 0)
+    HistoryRecord pendingRecord = new HistoryRecord(allText: '', selectionStart: 0, selectionEnd: 0)
     Action prevHistoryAction
     Action nextHistoryAction
 
@@ -180,14 +162,16 @@ class Console implements CaretListener, HyperlinkListener, ComponentListener, Fo
     Closure beforeExecution
     Closure afterExecution
 
-    public static URL ICON_PATH = Console.class.classLoader.getResource('groovy/ui/ConsoleIcon.png') // used by ObjectBrowser and AST Viewer
-    public static URL NODE_ICON_PATH = Console.class.classLoader.getResource('groovy/ui/icons/bullet_green.png') // used by AST Viewer
+    public static URL ICON_PATH = Console.class.classLoader.getResource('groovy/ui/ConsoleIcon.png')
+    // used by ObjectBrowser and AST Viewer
+    public static URL NODE_ICON_PATH = Console.class.classLoader.getResource('groovy/ui/icons/bullet_green.png')
+    // used by AST Viewer
 
     static groovyFileFilter = new GroovyFileFilter()
     boolean scriptRunning = false
     boolean stackOverFlowError = false
     Action interruptAction
-    
+
     static void main(args) {
         if (args.length == 1 && args[0] == '--help') {
             println '''usage: groovyConsole [options] [filename]
@@ -238,7 +222,8 @@ options:
                 def ivyPluginClass = Class.forName('groovy.ui.ConsoleIvyPlugin')
                 ivyPluginClass.newInstance().addListener(this)
             }
-        } catch(ClassNotFoundException ignore) { }
+        } catch (ClassNotFoundException ignore) {
+        }
 
         binding.variables._outputTransforms = OutputTransforms.loadOutputTransforms()
     }
@@ -251,12 +236,12 @@ options:
     }
 
     static frameConsoleDelegates = [
-            rootContainerDelegate:{
+            rootContainerDelegate: {
                 frame(
-                    title: 'GroovyConsole',
-                    //location: [100,100], // in groovy 2.0 use platform default location
-                    iconImage: imageIcon('/groovy/ui/ConsoleIcon.png').image,
-                    defaultCloseOperation: JFrame.DO_NOTHING_ON_CLOSE,
+                        title: 'GroovyConsole',
+                        //location: [100,100], // in groovy 2.0 use platform default location
+                        iconImage: imageIcon('/groovy/ui/ConsoleIcon.png').image,
+                        defaultCloseOperation: JFrame.DO_NOTHING_ON_CLOSE,
                 ) {
                     try {
                         current.locationByPlatform = true
@@ -266,9 +251,10 @@ options:
                     containingWindows += current
                 }
             },
-            menuBarDelegate: {arg->
-                current.JMenuBar = build(arg)}
-        ];
+            menuBarDelegate      : { arg ->
+                current.JMenuBar = build(arg)
+            }
+    ];
 
     void run() {
         run(frameConsoleDelegates)
@@ -276,19 +262,20 @@ options:
 
     void run(JApplet applet) {
         run([
-            rootContainerDelegate:{
-                containingWindows += SwingUtilities.getRoot(applet.getParent())
-                applet
-            },
-            menuBarDelegate: {arg->
-                current.JMenuBar = build(arg)}
+                rootContainerDelegate: {
+                    containingWindows += SwingUtilities.getRoot(applet.getParent())
+                    applet
+                },
+                menuBarDelegate      : { arg ->
+                    current.JMenuBar = build(arg)
+                }
         ])
     }
 
     void run(Map defaults) {
 
         swing = new SwingBuilder()
-        defaults.each{k, v -> swing[k] = v}
+        defaults.each { k, v -> swing[k] = v }
 
         // tweak what the stack traces filter out to be fairly broad
         System.setProperty('groovy.sanitized.stacktraces', '''org.codehaus.groovy.runtime.
@@ -299,7 +286,6 @@ options:
                 java.lang.reflect.
                 java.lang.Thread
                 groovy.ui.Console''')
-
 
         // add controller to the swingBuilder bindings
         swing.controller = this
@@ -313,8 +299,8 @@ options:
         bindResults()
 
         // stitch some actions together
-        swing.bind(source:swing.inputEditor.undoAction, sourceProperty:'enabled', target:swing.undoAction, targetProperty:'enabled')
-        swing.bind(source:swing.inputEditor.redoAction, sourceProperty:'enabled', target:swing.redoAction, targetProperty:'enabled')
+        swing.bind(source: swing.inputEditor.undoAction, sourceProperty: 'enabled', target: swing.undoAction, targetProperty: 'enabled')
+        swing.bind(source: swing.inputEditor.redoAction, sourceProperty: 'enabled', target: swing.redoAction, targetProperty: 'enabled')
 
         if (swing.consoleFrame instanceof java.awt.Window) {
             nativeFullScreenForMac(swing.consoleFrame)
@@ -373,7 +359,7 @@ options:
     }
 
     // Append a string to the output area
-    void appendOutput(String text, AttributeSet style){
+    void appendOutput(String text, AttributeSet style) {
         def doc = outputArea.styledDocument
         doc.insertString(doc.length, text, style)
         ensureNoDocLengthOverflow(doc)
@@ -417,7 +403,7 @@ options:
             int initialLength = doc.length
 
             def matcher = line =~ stacktracePattern
-            def fileName =  matcher.matches() ? matcher[0][-5] : ''
+            def fileName = matcher.matches() ? matcher[0][-5] : ''
 
             if (fileName == scriptFile?.name || fileName.startsWith(DEFAULT_SCRIPT_NAME_START)) {
                 def fileNameAndLineNumber = matcher[0][-6]
@@ -430,9 +416,9 @@ options:
                 hrefAttr.addAttribute(HTML.Attribute.HREF, 'file://' + fileNameAndLineNumber)
                 style.addAttribute(HTML.Tag.A, hrefAttr);
 
-                doc.insertString(initialLength,                     line[0..<index],                    stacktraceStyle)
-                doc.insertString(initialLength + index,             line[index..<(index + length)],     style)
-                doc.insertString(initialLength + index + length,    line[(index + length)..-1] + '\n',  stacktraceStyle)
+                doc.insertString(initialLength, line[0..<index], stacktraceStyle)
+                doc.insertString(initialLength + index, line[index..<(index + length)], style)
+                doc.insertString(initialLength + index + length, line[(index + length)..-1] + '\n', stacktraceStyle)
             } else {
                 doc.insertString(initialLength, line + '\n', stacktraceStyle)
             }
@@ -467,9 +453,8 @@ options:
             return true
         }
         switch (JOptionPane.showConfirmDialog(frame,
-            'Save changes to ' + scriptFile.name + '?',
-            'GroovyConsole', JOptionPane.YES_NO_CANCEL_OPTION))
-        {
+                'Save changes to ' + scriptFile.name + '?',
+                'GroovyConsole', JOptionPane.YES_NO_CANCEL_OPTION)) {
             case JOptionPane.YES_OPTION:
                 return fileSave()
             case JOptionPane.NO_OPTION:
@@ -486,7 +471,7 @@ options:
     // Binds the '_' and '__' variables in the shell
     void bindResults() {
         shell.setVariable('_', getLastResult()) // lastResult doesn't seem to work
-        shell.setVariable('__', history.collect {it.result})
+        shell.setVariable('__', history.collect { it.result })
     }
 
     // Handles menu event
@@ -499,11 +484,11 @@ options:
         captureStdErr = evt.source.selected
         prefs.putBoolean('captureStdErr', captureStdErr)
     }
-    
+
     void fullStackTraces(EventObject evt) {
         fullStackTraces = evt.source.selected
         System.setProperty('groovy.full.stacktrace',
-            Boolean.toString(fullStackTraces))
+                Boolean.toString(fullStackTraces))
         prefs.putBoolean('fullStackTraces', fullStackTraces)
     }
 
@@ -560,9 +545,9 @@ options:
         }
     }
 
-    void caretUpdate(CaretEvent e){
-        textSelectionStart = Math.min(e.dot,e.mark)
-        textSelectionEnd = Math.max(e.dot,e.mark)
+    void caretUpdate(CaretEvent e) {
+        textSelectionStart = Math.min(e.dot, e.mark)
+        textSelectionEnd = Math.max(e.dot, e.mark)
         setRowNumAndColNum()
     }
 
@@ -572,9 +557,9 @@ options:
 
     // If at exit time, a script is running, the user is given an option to interrupt it first
     def askToInterruptScript() {
-        if(!scriptRunning) return true
+        if (!scriptRunning) return true
         def rc = JOptionPane.showConfirmDialog(frame, "Script executing. Press 'OK' to attempt to interrupt it before exiting.",
-            'GroovyConsole', JOptionPane.OK_CANCEL_OPTION)
+                'GroovyConsole', JOptionPane.OK_CANCEL_OPTION)
         if (rc == JOptionPane.OK_OPTION) {
             doInterrupt()
             return true
@@ -588,7 +573,7 @@ options:
     }
 
     void exit(EventObject evt = null) {
-        if(askToInterruptScript()) {
+        if (askToInterruptScript()) {
             if (askToSaveFile()) {
                 if (frame instanceof java.awt.Window) {
                     frame.hide()
@@ -616,13 +601,13 @@ options:
     // Start a new window with a copy of current variables
     void fileNewWindow(EventObject evt = null) {
         Console consoleController = new Console(
-            new Binding(
-                new HashMap(shell.getContext().variables)))
+                new Binding(
+                        new HashMap(shell.getContext().variables)))
         consoleController.systemOutInterceptor = systemOutInterceptor
         consoleController.systemErrorInterceptor = systemErrorInterceptor
         SwingBuilder swing = new SwingBuilder()
-        consoleController.swing = swing 
-        frameConsoleDelegates.each {k, v -> swing[k] = v}
+        consoleController.swing = swing
+        frameConsoleDelegates.each { k, v -> swing[k] = v }
         swing.controller = consoleController
         swing.build(ConsoleActions)
         swing.build(ConsoleView)
@@ -691,7 +676,7 @@ options:
     }
 
     def finishException(Throwable t, boolean executing) {
-        if(executing) {
+        if (executing) {
             statusLabel.text = 'Execution terminated with exception.'
             history[-1].exception = t
         } else {
@@ -710,7 +695,7 @@ options:
                     int errorLine = se.line
                     String message = se.originalMessage
 
-                    String scriptFileName = scriptFile?.name ?: DEFAULT_SCRIPT_NAME_START 
+                    String scriptFileName = scriptFile?.name ?: DEFAULT_SCRIPT_NAME_START
 
                     def doc = outputArea.styledDocument
 
@@ -725,7 +710,7 @@ options:
                 } else if (error instanceof Throwable) {
                     reportException(error)
                 } else if (error instanceof ExceptionMessage) {
-                    reportException(error.cause) 
+                    reportException(error.cause)
                 } else if (error instanceof SimpleMessage) {
                     def doc = outputArea.styledDocument
                     doc.insertString(doc.length, "${error.message}\n", new SimpleAttributeSet())
@@ -735,12 +720,12 @@ options:
             reportException(t)
         }
 
-        if(!executing) {
+        if (!executing) {
             bindResults()
         }
 
         // GROOVY-4496: set the output window position to the top-left so the exception details are visible from the start
-        outputArea.caretPosition = 0 
+        outputArea.caretPosition = 0
 
         if (detachedOutput) {
             prepareOutputWindow()
@@ -756,7 +741,7 @@ options:
         appendOutputNl('Exception thrown\n', commandStyle)
 
         StringWriter sw = new StringWriter()
-        new PrintWriter(sw).withWriter {pw -> StackTraceUtils.deepSanitize(t).printStackTrace(pw) }
+        new PrintWriter(sw).withWriter { pw -> StackTraceUtils.deepSanitize(t).printStackTrace(pw) }
         appendStacktrace("\n${sw.buffer}\n")
     }
 
@@ -767,8 +752,8 @@ options:
             statusLabel.text = 'Execution complete.'
             appendOutputNl('Result: ', promptStyle)
             def obj = (visualizeScriptResults
-                ? OutputTransforms.transformResult(result, shell.getContext()._outputTransforms)
-                : result.toString())
+                    ? OutputTransforms.transformResult(result, shell.getContext()._outputTransforms)
+                    : result.toString())
 
             // multi-methods are magical!
             appendOutput(obj, resultStyle)
@@ -781,7 +766,7 @@ options:
             showOutputWindow()
         }
     }
-    
+
     def compileFinishNormal() {
         statusLabel.text = 'Compilation complete.'
     }
@@ -790,7 +775,7 @@ options:
         outputArea.setPreferredSize(null)
         outputWindow.pack()
         outputArea.setPreferredSize([calcPreferredSize(outputWindow.getWidth(), inputEditor.getWidth(), 120),
-                calcPreferredSize(outputWindow.getHeight(), inputEditor.getHeight(), 60)] as Dimension)
+                                     calcPreferredSize(outputWindow.getHeight(), inputEditor.getHeight(), 60)] as Dimension)
         outputWindow.pack()
     }
 
@@ -827,10 +812,10 @@ options:
         }
     }
 
-    void inspectLast(EventObject evt = null){
+    void inspectLast(EventObject evt = null) {
         if (null == lastResult) {
             JOptionPane.showMessageDialog(frame, 'The last result is null.',
-                'Cannot Inspect', JOptionPane.INFORMATION_MESSAGE)
+                    'Cannot Inspect', JOptionPane.INFORMATION_MESSAGE)
             return
         }
         ObjectBrowser.inspect(lastResult)
@@ -841,7 +826,7 @@ options:
     }
 
     void inspectAst(EventObject evt = null) {
-        new AstBrowser(inputArea, rootElement, shell.getClassLoader()).run({ inputArea.getText() } )
+        new AstBrowser(inputArea, rootElement, shell.getClassLoader()).run({ inputArea.getText() })
     }
 
     void largerFont(EventObject evt = null) {
@@ -856,11 +841,10 @@ options:
 
         // Put onto GUI
         if (EventQueue.isDispatchThread()) {
-            consoleControllers.each {it.appendOutputLines(str, it.outputStyle)}
-        }
-        else {
+            consoleControllers.each { it.appendOutputLines(str, it.outputStyle) }
+        } else {
             SwingUtilities.invokeLater {
-                consoleControllers.each {it.appendOutputLines(str, it.outputStyle)}
+                consoleControllers.each { it.appendOutputLines(str, it.outputStyle) }
             }
         }
         return false
@@ -874,11 +858,10 @@ options:
 
         // Put onto GUI
         if (EventQueue.isDispatchThread()) {
-            consoleControllers.each {it.appendStacktrace(str)}
-        }
-        else {
+            consoleControllers.each { it.appendStacktrace(str) }
+        } else {
             SwingUtilities.invokeLater {
-                consoleControllers.each {it.appendStacktrace(str)}
+                consoleControllers.each { it.appendStacktrace(str) }
             }
         }
         return false
@@ -887,14 +870,14 @@ options:
     // actually run the script
 
     void runScript(EventObject evt = null) {
-        if (saveOnRun && scriptFile != null)  {
+        if (saveOnRun && scriptFile != null) {
             if (fileSave(evt)) runScriptImpl(false)
         } else {
             runScriptImpl(false)
         }
     }
 
-    void saveOnRun(EventObject evt = null)  {
+    void saveOnRun(EventObject evt = null) {
         saveOnRun = evt.source.selected
         prefs.putBoolean('saveOnRun', saveOnRun)
     }
@@ -936,7 +919,7 @@ options:
     }
 
     private void runScriptImpl(boolean selected) {
-        if(scriptRunning) {
+        if (scriptRunning) {
             statusLabel.text = 'Cannot run script now as a script is already running. Please wait or use "Interrupt Script" option.'
             return
         }
@@ -944,10 +927,10 @@ options:
         interruptAction.enabled = true
         stackOverFlowError = false // reset this flag before running a script
         def endLine = System.getProperty('line.separator')
-        def record = new HistoryRecord( allText: inputArea.getText().replaceAll(endLine, '\n'),
-            selectionStart: textSelectionStart, selectionEnd: textSelectionEnd)
+        def record = new HistoryRecord(allText: inputArea.getText().replaceAll(endLine, '\n'),
+                selectionStart: textSelectionStart, selectionEnd: textSelectionEnd)
         addToHistory(record)
-        pendingRecord = new HistoryRecord(allText:'', selectionStart:0, selectionEnd:0)
+        pendingRecord = new HistoryRecord(allText: '', selectionStart: 0, selectionEnd: 0)
 
         if (prefs.getBoolean('autoClearOutput', false)) clearOutput()
 
@@ -966,11 +949,11 @@ options:
             try {
                 SwingUtilities.invokeLater { showExecutingMessage() }
                 String name = scriptFile?.name ?: (DEFAULT_SCRIPT_NAME_START + scriptNameCounter++)
-                if(beforeExecution) {
+                if (beforeExecution) {
                     beforeExecution()
                 }
                 def result
-                if(useScriptClassLoaderForScriptExecution) {
+                if (useScriptClassLoaderForScriptExecution) {
                     ClassLoader savedThreadContextClassLoader = Thread.currentThread().contextClassLoader
                     try {
                         Thread.currentThread().contextClassLoader = shell.classLoader
@@ -979,20 +962,19 @@ options:
                     finally {
                         Thread.currentThread().contextClassLoader = savedThreadContextClassLoader
                     }
-                }
-                else {
+                } else {
                     result = shell.run(record.getTextToRun(selected), name, [])
                 }
-                if(afterExecution) {
+                if (afterExecution) {
                     afterExecution()
                 }
                 SwingUtilities.invokeLater { finishNormal(result) }
             } catch (Throwable t) {
-                if(t instanceof StackOverflowError) {
+                if (t instanceof StackOverflowError) {
                     // set the flag that will be used in printing exception details in output pane
                     stackOverFlowError = true
                     clearOutput()
-                } 
+                }
                 SwingUtilities.invokeLater { finishException(t, true) }
             } finally {
                 runThread = null
@@ -1003,14 +985,14 @@ options:
     }
 
     void compileScript(EventObject evt = null) {
-        if(scriptRunning) {
+        if (scriptRunning) {
             statusLabel.text = 'Cannot compile script now as a script is already running. Please wait or use "Interrupt Script" option.'
             return
         }
         stackOverFlowError = false // reset this flag before running a script
         def endLine = System.getProperty('line.separator')
-        def record = new HistoryRecord( allText: inputArea.getText().replaceAll(endLine, '\n'),
-            selectionStart: textSelectionStart, selectionEnd: textSelectionEnd)
+        def record = new HistoryRecord(allText: inputArea.getText().replaceAll(endLine, '\n'),
+                selectionStart: textSelectionStart, selectionEnd: textSelectionEnd)
 
         if (prefs.getBoolean('autoClearOutput', false)) clearOutput()
 
@@ -1037,13 +1019,13 @@ options:
             }
         }
     }
-    
+
     def selectFilename(name = 'Open') {
         def fc = new JFileChooser(currentFileChooserDir)
         fc.fileSelectionMode = JFileChooser.FILES_ONLY
         fc.acceptAllFileFilterUsed = true
         fc.fileFilter = groovyFileFilter
-        if(name == 'Save') {
+        if (name == 'Save') {
             fc.selectedFile = new File('*.groovy')
         }
         if (fc.showDialog(frame, name) == JFileChooser.APPROVE_OPTION) {
@@ -1065,8 +1047,8 @@ options:
     private void setInputTextFromHistory(newIndex) {
         def endLine = System.getProperty('line.separator')
         if (historyIndex >= history.size()) {
-            pendingRecord = new HistoryRecord( allText: inputArea.getText().replaceAll(endLine, '\n'),
-                selectionStart: textSelectionStart, selectionEnd: textSelectionEnd)
+            pendingRecord = new HistoryRecord(allText: inputArea.getText().replaceAll(endLine, '\n'),
+                    selectionStart: textSelectionStart, selectionEnd: textSelectionEnd)
         }
         historyIndex = newIndex
         def record
@@ -1098,7 +1080,7 @@ options:
     void showAbout(EventObject evt = null) {
         def version = GroovySystem.getVersion()
         def pane = swing.optionPane()
-         // work around GROOVY-1048
+        // work around GROOVY-1048
         pane.setMessage('Welcome to the Groovy Console for evaluating Groovy scripts\nVersion ' + version)
         def dialog = pane.createDialog(frame, 'About GroovyConsole')
         dialog.show()
@@ -1114,56 +1096,56 @@ options:
 
     void findPrevious(EventObject evt = null) {
         def reverseEvt = new ActionEvent(
-            evt.getSource(), evt.getID(),
-            evt.getActionCommand(), evt.getWhen(),
-            ActionEvent.SHIFT_MASK) //reverse
+                evt.getSource(), evt.getID(),
+                evt.getActionCommand(), evt.getWhen(),
+                ActionEvent.SHIFT_MASK) //reverse
         FindReplaceUtility.FIND_ACTION.actionPerformed(reverseEvt)
     }
 
     void replace(EventObject evt = null) {
         FindReplaceUtility.showDialog(true)
     }
-    
+
     void comment(EventObject evt = null) {
-	def rootElement = inputArea.document.defaultRootElement
-	def cursorPos = inputArea.getCaretPosition()
-	int startRow = rootElement.getElementIndex(cursorPos)
-	int endRow = startRow
-	
-	if (inputArea.getSelectedText()) {
-	    def selectionStart = inputArea.getSelectionStart()
-	    startRow = rootElement.getElementIndex(selectionStart)
-	    def selectionEnd = inputArea.getSelectionEnd()
-	    endRow = rootElement.getElementIndex(selectionEnd)
-	}
-	
-	// If multiple commented lines intermix with uncommented lines, consider them uncommented 
-	def allCommented = true
-	startRow.upto(endRow) { rowIndex ->
-	    def rowElement = rootElement.getElement(rowIndex)
-	    int startOffset = rowElement.getStartOffset()
-	    int endOffset = rowElement.getEndOffset()
-	    String rowText = inputArea.document.getText(startOffset, endOffset - startOffset)
-	    if (rowText.trim().length() < 2 || !rowText.trim().substring(0, 2).equals("//")) {
-	    	allCommented = false
-	    }
-	}
-	
-	startRow.upto(endRow) { rowIndex ->
-	    def rowElement = rootElement.getElement(rowIndex)
-	    int startOffset = rowElement.getStartOffset()
-	    int endOffset = rowElement.getEndOffset()
-	    String rowText = inputArea.document.getText(startOffset, endOffset - startOffset)
-	    if (allCommented) {
-		// Uncomment this line if it is already commented
-		int slashOffset = rowText.indexOf("//")
-		inputArea.document.remove(slashOffset + startOffset, 2)
-	    } else {
-	    	// Add comment string in front of this line
-	    	inputArea.document.insertString(startOffset, "//", new SimpleAttributeSet())
-	    }
-	}
-	
+        def rootElement = inputArea.document.defaultRootElement
+        def cursorPos = inputArea.getCaretPosition()
+        int startRow = rootElement.getElementIndex(cursorPos)
+        int endRow = startRow
+
+        if (inputArea.getSelectedText()) {
+            def selectionStart = inputArea.getSelectionStart()
+            startRow = rootElement.getElementIndex(selectionStart)
+            def selectionEnd = inputArea.getSelectionEnd()
+            endRow = rootElement.getElementIndex(selectionEnd)
+        }
+
+        // If multiple commented lines intermix with uncommented lines, consider them uncommented
+        def allCommented = true
+        startRow.upto(endRow) { rowIndex ->
+            def rowElement = rootElement.getElement(rowIndex)
+            int startOffset = rowElement.getStartOffset()
+            int endOffset = rowElement.getEndOffset()
+            String rowText = inputArea.document.getText(startOffset, endOffset - startOffset)
+            if (rowText.trim().length() < 2 || !rowText.trim().substring(0, 2).equals("//")) {
+                allCommented = false
+            }
+        }
+
+        startRow.upto(endRow) { rowIndex ->
+            def rowElement = rootElement.getElement(rowIndex)
+            int startOffset = rowElement.getStartOffset()
+            int endOffset = rowElement.getEndOffset()
+            String rowText = inputArea.document.getText(startOffset, endOffset - startOffset)
+            if (allCommented) {
+                // Uncomment this line if it is already commented
+                int slashOffset = rowText.indexOf("//")
+                inputArea.document.remove(slashOffset + startOffset, 2)
+            } else {
+                // Add comment string in front of this line
+                inputArea.document.insertString(startOffset, "//", new SimpleAttributeSet())
+            }
+        }
+
     }
 
     void showMessage(String message) {
@@ -1177,7 +1159,7 @@ options:
     void showCompilingMessage() {
         statusLabel.text = 'Script compiling now. Please wait.'
     }
-    
+
     // Shows the detached 'outputArea' dialog
     void showOutputWindow(EventObject evt = null) {
         if (detachedOutput) {
@@ -1197,14 +1179,14 @@ options:
         hideOutputWindow()
     }
 
-    void smallerFont(EventObject evt = null){
+    void smallerFont(EventObject evt = null) {
         updateFontSize(inputArea.font.size - 2)
     }
 
     void updateTitle() {
         if (frame.properties.containsKey('title')) {
             if (scriptFile != null) {
-                frame.title = scriptFile.name + (dirty?' * ':'') + ' - GroovyConsole'
+                frame.title = scriptFile.name + (dirty ? ' * ' : '') + ' - GroovyConsole'
             } else {
                 frame.title = 'GroovyConsole'
             }
@@ -1217,7 +1199,7 @@ options:
         } else if (newFontSize < 4) {
             newFontSize = 4
         }
-        
+
         prefs.putInt('fontSize', newFontSize)
 
         // don't worry, the fonts won't be changed to this family, the styles will only derive from this
@@ -1305,9 +1287,9 @@ options:
         }
     }
 
-    void componentHidden(ComponentEvent e) { }
+    void componentHidden(ComponentEvent e) {}
 
-    void componentMoved(ComponentEvent e) { }
+    void componentMoved(ComponentEvent e) {}
 
     void componentResized(ComponentEvent e) {
         def component = e.getComponent()
@@ -1321,7 +1303,7 @@ options:
         }
     }
 
-    public void componentShown(ComponentEvent e) { }
+    public void componentShown(ComponentEvent e) {}
 
     public void focusGained(FocusEvent e) {
         // remember component with focus for text-copy functionality
@@ -1330,29 +1312,30 @@ options:
         }
     }
 
-    public void focusLost(FocusEvent e) { }
+    public void focusLost(FocusEvent e) {}
 }
 
 class GroovyFileFilter extends FileFilter {
-    private static final GROOVY_SOURCE_EXTENSIONS = ['*.groovy', '*.gvy', '*.gy', '*.gsh', '*.story', '*.gpp', '*.grunit']
+    private static
+    final GROOVY_SOURCE_EXTENSIONS = ['*.groovy', '*.gvy', '*.gy', '*.gsh', '*.story', '*.gpp', '*.grunit']
     private static final GROOVY_SOURCE_EXT_DESC = GROOVY_SOURCE_EXTENSIONS.join(',')
 
     public boolean accept(File f) {
         if (f.isDirectory()) {
             return true
         }
-        GROOVY_SOURCE_EXTENSIONS.find {it == getExtension(f)} ? true : false
+        GROOVY_SOURCE_EXTENSIONS.find { it == getExtension(f) } ? true : false
     }
 
     public String getDescription() {
         "Groovy Source Files ($GROOVY_SOURCE_EXT_DESC)"
     }
-    
+
     static String getExtension(f) {
         def ext = null;
         def s = f.getName()
         def i = s.lastIndexOf('.')
-        if (i > 0 &&  i < s.length() - 1) {
+        if (i > 0 && i < s.length() - 1) {
             ext = s.substring(i).toLowerCase()
         }
         "*$ext"

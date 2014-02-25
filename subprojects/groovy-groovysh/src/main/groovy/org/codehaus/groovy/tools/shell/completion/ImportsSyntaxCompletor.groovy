@@ -46,14 +46,14 @@ public class ImportsSyntaxCompletor implements IdentifierCompletor {
 
     boolean findMatchingImportedClassesCached(final String prefix, final String importSpec, List candidates) {
         Collection<String> cached
-        if (! cachedImports.containsKey(importSpec)) {
+        if (!cachedImports.containsKey(importSpec)) {
             cached = new HashSet<String>()
             collectImportedSymbols(importSpec, cached)
             cachedImports.put(importSpec, cached);
         } else {
             cached = cachedImports.get(importSpec)
         }
-        Collection<String> matches = cached.findAll {String it -> it.startsWith(prefix)}
+        Collection<String> matches = cached.findAll { String it -> it.startsWith(prefix) }
         if (matches) {
             candidates.addAll(matches)
             return true
@@ -68,7 +68,7 @@ public class ImportsSyntaxCompletor implements IdentifierCompletor {
             for (packname in org.codehaus.groovy.control.ResolveVisitor.DEFAULT_IMPORTS) {
                 Set<String> packnames = shell.packageHelper.getContents(packname[0..-2])
                 if (packnames) {
-                    preimportedClassNames.addAll(packnames.findAll{String it -> it[0] in "A".."Z"})
+                    preimportedClassNames.addAll(packnames.findAll { String it -> it[0] in "A".."Z" })
                 }
             }
             preimportedClassNames.add("BigInteger")
@@ -104,7 +104,7 @@ public class ImportsSyntaxCompletor implements IdentifierCompletor {
         String staticPrefix = 'import static '
         if (importSpec.startsWith(staticPrefix)) {
             // make sure pattern is safe, though shell should have done anyway
-            if (importSpec  ==~ STATIC_IMPORT_PATTERN) {
+            if (importSpec ==~ STATIC_IMPORT_PATTERN) {
                 if (importSpec.endsWith(".*")) {
                     importSpec = importSpec[staticPrefix.length()..-3]
                 } else {

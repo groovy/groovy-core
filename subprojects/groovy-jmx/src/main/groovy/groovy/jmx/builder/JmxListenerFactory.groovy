@@ -28,7 +28,7 @@ import javax.management.NotificationFilterSupport
  * <pre>
  * JmxBuilder.listener(event:"event type", from:"Object Name"|ObjectName(), call:{event->
  *   // event handling code here.
- * })
+ *})
  * </pre>
  *
  * @author Vladimir Vivien

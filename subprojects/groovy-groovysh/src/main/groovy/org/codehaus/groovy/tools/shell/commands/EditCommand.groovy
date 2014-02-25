@@ -27,8 +27,7 @@ import org.codehaus.groovy.tools.shell.util.Preferences
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class EditCommand
-    extends CommandSupport
-{
+        extends CommandSupport {
     EditCommand(final Groovysh shell) {
         super(shell, ':edit', ':e')
     }
@@ -56,20 +55,20 @@ class EditCommand
         if (!editor) {
             fail("Unable to determine which editor to use; check \$EDITOR") // TODO: i18n
         }
-        
+
         return editor
     }
-    
+
     Object execute(final List<String> args) {
         assertNoArguments(args)
-        
+
         File file = File.createTempFile('groovysh-buffer', '.groovy')
         file.deleteOnExit()
-        
+
         try {
             // Write the current buffer to a tmp file
             file.write(buffer.join(NEWLINE))
-            
+
             //Try to launch the editor.
             log.debug("Executing: $editorCommand $file")
             def pb = getEditorProcessBuilder("$editorCommand", "$file")
@@ -80,22 +79,22 @@ class EditCommand
             p.waitFor()
 
             log.debug("Editor contents: ${file.text}")
-            
+
             replaceCurrentBuffer(file.readLines())
         }
         finally {
             file.delete()
         }
     }
-    
+
     void replaceCurrentBuffer(List contents) {
         // clear current buffer contents
-        shell.buffers.clearSelected()       
-        
+        shell.buffers.clearSelected()
+
         // load editor contents into current buffer
         for (line in contents) {
             shell.execute(line as String)
         }
     }
-    
+
 }

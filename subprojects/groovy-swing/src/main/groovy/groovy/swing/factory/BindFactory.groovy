@@ -16,18 +16,10 @@
 package groovy.swing.factory
 
 import groovy.swing.SwingBuilder
+import groovy.swing.binding.*
+import org.codehaus.groovy.binding.*
 
 import java.util.Map.Entry
-import org.codehaus.groovy.binding.*
-import groovy.swing.binding.JComponentProperties
-import groovy.swing.binding.JSliderProperties
-import groovy.swing.binding.JTextComponentProperties
-import groovy.swing.binding.JTableProperties
-import groovy.swing.binding.JListProperties
-import groovy.swing.binding.AbstractButtonProperties
-import groovy.swing.binding.JScrollBarProperties
-import groovy.swing.binding.JComboBoxProperties
-import groovy.swing.binding.JSpinnerProperties
 
 /**
  * @author <a href="mailto:shemnon@yahoo.com">Danno Ferrin</a>
@@ -121,9 +113,9 @@ public class BindFactory extends AbstractFactory {
         TargetBinding tb = null
         if (target != null) {
             Object targetProperty = attributes.remove("targetProperty") ?: value
-            if (! (targetProperty instanceof CharSequence)) {
+            if (!(targetProperty instanceof CharSequence)) {
                 throw new IllegalArgumentException("Invalid value for targetProperty: (or node value)." +
-                " Value for this attribute must be a String but it is "+ (targetProperty != null? targetProperty.getClass().getName() : null))
+                        " Value for this attribute must be a String but it is " + (targetProperty != null ? targetProperty.getClass().getName() : null))
             }
             tb = new PropertyBinding(target, targetProperty.toString(), update)
             if (source == null) {
@@ -157,15 +149,15 @@ public class BindFactory extends AbstractFactory {
         } else if (spa && !(sea && sva)) {
             // partially property driven binding
             Object property = attributes.remove("sourceProperty") ?: value
-            if (! (property instanceof CharSequence)) {
+            if (!(property instanceof CharSequence)) {
                 throw new IllegalArgumentException("Invalid value for sourceProperty: (or node value). " +
-                    "Value for this attribute must be a String but it is "+ (property != null? property.getClass().getName() : null))
+                        "Value for this attribute must be a String but it is " + (property != null ? property.getClass().getName() : null))
             }
 
             if (source == null) {
                 // if we have a sourceProperty but no source then we're in trouble
-                throw new IllegalArgumentException("Missing value for source: even though sourceProperty: (or node value) "+
-                    "was specified. Please check you didn't write bind(model.someProperty) instead of bind{ model.someProperty }")
+                throw new IllegalArgumentException("Missing value for source: even though sourceProperty: (or node value) " +
+                        "was specified. Please check you didn't write bind(model.someProperty) instead of bind{ model.someProperty }")
             }
 
             PropertyBinding pb = new PropertyBinding(source, property.toString(), update)
@@ -352,7 +344,7 @@ public class BindFactory extends AbstractFactory {
         bindAttrs.remove('update')
         Object bindValue = bindAttrs.remove("bind")
         List propertiesToBeSkipped = ['group']
-        bindAttrs.each {k, v -> if (!(k in propertiesToBeSkipped)) fb."$k" = v}
+        bindAttrs.each { k, v -> if (!(k in propertiesToBeSkipped)) fb."$k" = v }
 
         if ((bindAttrs.group instanceof AggregateBinding) && (fb instanceof BindingUpdatable)) {
             bindAttrs.group.addBinding(fb)

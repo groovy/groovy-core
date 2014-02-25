@@ -39,42 +39,21 @@
  */
 package org.codehaus.groovy.jsr223;
 
-import groovy.lang.Binding;
-import groovy.lang.Closure;
-import groovy.lang.DelegatingMetaClass;
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.MetaClass;
-import groovy.lang.MissingMethodException;
-import groovy.lang.MissingPropertyException;
-import groovy.lang.Script;
-import groovy.lang.Tuple;
-
+import groovy.lang.*;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.syntax.SyntaxException;
-import org.codehaus.groovy.util.ManagedConcurrentValueMap;
-import org.codehaus.groovy.util.ReferenceBundle;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.runtime.MethodClosure;
+import org.codehaus.groovy.syntax.SyntaxException;
+import org.codehaus.groovy.util.ManagedConcurrentValueMap;
+import org.codehaus.groovy.util.ReferenceBundle;
 
-import javax.script.AbstractScriptEngine;
-import javax.script.Bindings;
-import javax.script.Compilable;
-import javax.script.CompiledScript;
-import javax.script.Invocable;
-import javax.script.ScriptContext;
-import javax.script.ScriptEngineFactory;
-import javax.script.ScriptException;
-import javax.script.SimpleBindings;
-
+import javax.script.*;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
-
-import java.lang.Class;
-import java.lang.String;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -127,7 +106,7 @@ public class GroovyScriptEngineImpl
         try {
             String val = (String) ctx.getAttribute("#jsr223.groovy.engine.keep.globals", ScriptContext.ENGINE_SCOPE);
             ReferenceBundle bundle = ReferenceBundle.getHardBundle();
-            if (val!=null && val.length()>0) {
+            if (val != null && val.length() > 0) {
                 if (val.equalsIgnoreCase("soft")) {
                     bundle = ReferenceBundle.getSoftBundle();
                 } else if (val.equalsIgnoreCase("weak")) {
@@ -224,9 +203,10 @@ public class GroovyScriptEngineImpl
             // enable autoFlush because otherwise it might not get done!
             final Writer writer = ctx.getWriter();
             ctx.setAttribute("out", (writer instanceof PrintWriter) ?
-                    writer :
-                    new PrintWriter(writer, true),
-                    ScriptContext.ENGINE_SCOPE);
+                            writer :
+                            new PrintWriter(writer, true),
+                    ScriptContext.ENGINE_SCOPE
+            );
 
 // Not going to do this after all (at least for now).
 // Scripts can use context.{reader, writer, errorWriter}.
@@ -438,7 +418,8 @@ public class GroovyScriptEngineImpl
                             throws Throwable {
                         return invokeImpl(thiz, m.getName(), args);
                     }
-                });
+                }
+        );
     }
 
     // determine appropriate class loader to serve as parent loader

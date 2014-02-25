@@ -24,17 +24,18 @@ import org.codehaus.groovy.tools.shell.Groovysh
  * @author <a href="mailto:me@masatonagai.com">Masato Nagai</a>
  * @author Andre Steingress
  */
-class DocCommandTest extends CommandTestSupport
-{
+class DocCommandTest extends CommandTestSupport {
     void testInitializeAWTDesktopPlatformSupportFlag() {
         boolean hasSupport
         try {
             def desktopClass = Class.forName('java.awt.Desktop')
             hasSupport =
-                desktopClass.desktopSupported &&
-                        desktopClass.desktop.isSupported(desktopClass.declaredClasses.find { it.simpleName == "Action" }.BROWSE)
+                    desktopClass.desktopSupported &&
+                            desktopClass.desktop.isSupported(desktopClass.declaredClasses.find {
+                                it.simpleName == "Action"
+                            }.BROWSE)
         }
-        catch(ClassNotFoundException e) {
+        catch (ClassNotFoundException e) {
             //We are using jdk 1.5 where 'java.awt.Desktop' does not exist
             hasSupport = false
         }
@@ -54,7 +55,7 @@ class DocCommandTest extends CommandTestSupport
         def urls = command.urlsFor('org.ietf.jgss.GSSContext')
 
         assert urls ==
-            [new URL("http://docs.oracle.com/javase/${simpleVersion()}/docs/api/org/ietf/jgss/GSSContext.html")]
+                [new URL("http://docs.oracle.com/javase/${simpleVersion()}/docs/api/org/ietf/jgss/GSSContext.html")]
     }
 
     void testUrlsForJavaClass() {

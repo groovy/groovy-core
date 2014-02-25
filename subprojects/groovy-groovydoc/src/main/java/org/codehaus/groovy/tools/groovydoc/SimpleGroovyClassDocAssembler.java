@@ -154,7 +154,7 @@ public class SimpleGroovyClassDocAssembler extends VisitorAdapter implements Gro
             String importTextWithSlashesInsteadOfDots = extractImportPath(t);
 
             GroovySourceAST child = t.childOfType(LITERAL_as);
-            if (child != null)  {
+            if (child != null) {
                 String alias = child.childOfType(DOT).getNextSibling().getText();
 
                 child = child.childOfType(DOT);
@@ -552,7 +552,8 @@ public class SimpleGroovyClassDocAssembler extends VisitorAdapter implements Gro
                     memberOrClass.setPackagePrivate(true);
                 }
             }
-            if (memberOrClass instanceof GroovyFieldDoc && !hasNonPublicVisibility && !hasPublicVisibility && isGroovy) return true;
+            if (memberOrClass instanceof GroovyFieldDoc && !hasNonPublicVisibility && !hasPublicVisibility && isGroovy)
+                return true;
         } else if (isGroovy && !(memberOrClass instanceof GroovyFieldDoc)) {
             // in groovy methods and classes are assumed public, unless informed otherwise
             memberOrClass.setPublic(true);
@@ -692,8 +693,11 @@ public class SimpleGroovyClassDocAssembler extends VisitorAdapter implements Gro
                 List<String> result = new ArrayList<String>();
                 GroovySourceAST child = (GroovySourceAST) node.getFirstChild();
                 while (child != null) {
-                    if (child.getType() == IDENT) { result.add(child.getText()); }
-                    else if (child.getType() == DOT) { result.add(getAsTextCurrent(child, defaultText)); }
+                    if (child.getType() == IDENT) {
+                        result.add(child.getText());
+                    } else if (child.getType() == DOT) {
+                        result.add(getAsTextCurrent(child, defaultText));
+                    }
                     child = (GroovySourceAST) child.getNextSibling();
                 }
                 return DefaultGroovyMethods.join(result, "/");

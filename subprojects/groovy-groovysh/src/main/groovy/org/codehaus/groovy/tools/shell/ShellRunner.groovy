@@ -25,33 +25,32 @@ import org.codehaus.groovy.tools.shell.util.Logger
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 abstract class ShellRunner
-    implements Runnable
-{
+        implements Runnable {
     protected final Logger log = Logger.create(this.class)
-    
+
     final Shell shell
-    
+
     boolean running = false
-    
+
     boolean breakOnNull = true
-    
+
     Closure errorHandler = { e ->
         log.debug(e)
-        
+
         running = false
     }
-    
+
     protected ShellRunner(final Shell shell) {
-        assert(shell != null)
-        
+        assert (shell != null)
+
         this.shell = shell
     }
-    
+
     void run() {
         log.debug('Running')
-        
+
         running = true
-        
+
         while (running) {
             try {
                 running = work()
@@ -61,7 +60,7 @@ abstract class ShellRunner
             }
             catch (Throwable t) {
                 log.debug("Work failed: $t", t)
-                
+
                 if (errorHandler) {
                     try {
                         errorHandler.call(t)
@@ -72,30 +71,30 @@ abstract class ShellRunner
                 }
             }
         }
-        
+
         log.debug('Finished')
     }
-    
+
     protected boolean work() {
         def line = readLine()
-        
+
         if (log.debugEnabled) {
             log.debug("Read line: $line")
         }
-        
+
         // Stop on null (maybe)
         if (line == null && breakOnNull) {
             return false // stop the loop
         }
-        
+
         // Ignore empty lines
         if (line.trim().size() > 0) {
             shell << line
         }
-        
+
         return true
     }
-    
+
     protected abstract String readLine()
 }
 

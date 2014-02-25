@@ -64,7 +64,7 @@ class GroovySyntaxCompletor implements Completer {
     }
 
     int complete(final String bufferLine, final int cursor, List candidates) {
-        if (! bufferLine) {
+        if (!bufferLine) {
             return -1
         }
         if (isCommand(bufferLine, shell.registry)) {
@@ -74,12 +74,12 @@ class GroovySyntaxCompletor implements Completer {
         // Build a single string for the lexer
         List<GroovySourceToken> tokens = []
         try {
-            if (! tokenizeBuffer(bufferLine.substring(0, cursor), shell.buffers.current(), tokens)) {
+            if (!tokenizeBuffer(bufferLine.substring(0, cursor), shell.buffers.current(), tokens)) {
                 return -1
             }
         } catch (InStringException ise) {
             int completionStart = ise.column + 1
-            int fileResult = + filenameCompletor.complete(bufferLine.substring(completionStart), cursor - completionStart, candidates)
+            int fileResult = +filenameCompletor.complete(bufferLine.substring(completionStart), cursor - completionStart, candidates)
             if (fileResult >= 0) {
                 return completionStart + fileResult
             }
@@ -178,9 +178,9 @@ class GroovySyntaxCompletor implements Completer {
         return CompletionCase.NO_COMPLETION
     }
 
-    int completeIdentifier(final  List<GroovySourceToken> tokens, List candidates) {
+    int completeIdentifier(final List<GroovySourceToken> tokens, List candidates) {
         boolean foundMatches = false
-        for (IdentifierCompletor completor: identifierCompletors) {
+        for (IdentifierCompletor completor : identifierCompletors) {
             foundMatches |= completor.complete(tokens, candidates)
         }
         if (foundMatches) {
@@ -212,8 +212,9 @@ class GroovySyntaxCompletor implements Completer {
 
     static class InStringException extends Exception {
         int column
+
         InStringException(int column) {
-            this.column  = column
+            this.column = column
         }
     }
 
@@ -230,7 +231,7 @@ class GroovySyntaxCompletor implements Completer {
         GroovyLexer groovyLexer
         if (previousLines.size() > 0) {
             StringBuilder src = new StringBuilder()
-            for (String line: previousLines) {
+            for (String line : previousLines) {
                 src.append(line + '\n')
             }
             src.append(bufferLine)
@@ -246,7 +247,7 @@ class GroovySyntaxCompletor implements Completer {
             try {
                 nextToken = groovyLexer.nextToken() as GroovySourceToken
                 if (nextToken.getType() == EOF) {
-                    if (! result.isEmpty() && nextToken.getLine() > result.last().getLine()) {
+                    if (!result.isEmpty() && nextToken.getLine() > result.last().getLine()) {
                         // no completion if EOF line has no tokens
                         return false
                     }
@@ -259,7 +260,7 @@ class GroovySyntaxCompletor implements Completer {
                 lastToken = nextToken
             } catch (TokenStreamException e) {
                 // getting the next token failed, possibly due to unclosed hyphens, need to investigate rest of the line to confirm
-                if (! isGString && lastToken != null) {
+                if (!isGString && lastToken != null) {
                     String restline = bufferLine.substring(lastToken.columnLast - 1)
                     int leadingBlanks = restline.find('^[ ]*').length()
                     if (restline) {

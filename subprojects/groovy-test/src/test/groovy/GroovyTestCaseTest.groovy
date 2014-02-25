@@ -23,26 +23,30 @@ import junit.framework.AssertionFailedError
  */
 class GroovyTestCaseTest extends GroovyTestCase {
 
-    void testNotYetImplementedSubclassUse () {
+    void testNotYetImplementedSubclassUse() {
         if (notYetImplemented()) return
         fail 'here the code that is expected to fail'
     }
 
-    void testNotYetImplementedStaticUse () {
+    void testNotYetImplementedStaticUse() {
         if (GroovyTestCase.notYetImplemented(this)) return
         fail 'here the code that is expected to fail'
     }
 
     void testSubclassFailing() {
-        try{ if (notYetImplemented()) return}
-        catch (AssertionFailedError expected){
+        try {
+            if (notYetImplemented()) return
+        }
+        catch (AssertionFailedError expected) {
         }
         fail 'Expected AssertionFailedError was not thrown.'
     }
 
     void testStaticFailing() {
-        try{ if (GroovyTestCase.notYetImplemented(this)) return}
-        catch (AssertionFailedError expected){
+        try {
+            if (GroovyTestCase.notYetImplemented(this)) return
+        }
+        catch (AssertionFailedError expected) {
         }
         fail 'Expected AssertionFailedError was not thrown.'
     }
@@ -51,6 +55,7 @@ class GroovyTestCaseTest extends GroovyTestCase {
         def msg = shouldFail { throw new RuntimeException('x') }
         assertEquals 'x', msg
     }
+
     void testShouldFailWithMessageForClass() {
         def msg = shouldFail(RuntimeException) { throw new RuntimeException('x') }
         println msg

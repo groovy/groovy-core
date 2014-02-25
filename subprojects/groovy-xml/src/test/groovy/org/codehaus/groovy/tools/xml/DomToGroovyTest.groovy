@@ -15,11 +15,12 @@
  */
 package org.codehaus.groovy.tools.xml
 
-import javax.xml.parsers.DocumentBuilder
-import javax.xml.parsers.DocumentBuilderFactory
 import org.w3c.dom.Document
 import org.xml.sax.InputSource
 import org.xml.sax.SAXException
+
+import javax.xml.parsers.DocumentBuilder
+import javax.xml.parsers.DocumentBuilderFactory
 
 /**
  * @author James Strachan
@@ -28,9 +29,9 @@ import org.xml.sax.SAXException
 class DomToGroovyTest extends GroovyTestCase {
 
     private static final String TEST_XML_1 =
-        "<a href='http://groovy.codehaus.org'>Groovy</a>"
+            "<a href='http://groovy.codehaus.org'>Groovy</a>"
     private static final String TEST_XML_2 =
-        "<project name='testProject'><target name='testTarget'><echo>message</echo><echo/></target></project>"
+            "<project name='testProject'><target name='testTarget'><echo>message</echo><echo/></target></project>"
     private static final String TEST_XML_3 = '''<?xml version="1.0"?>
         <!-- this example demonstrates using markup to specify a rich user interface -->
         <frame size="[300,300]" text="My Window">
@@ -52,7 +53,7 @@ class DomToGroovyTest extends GroovyTestCase {
         <element xml:lang="en-US" > blabla </element>
     '''
     private static final String EXPECTED_BUILDER_SCRIPT_1 =
-        "a(href:'http://groovy.codehaus.org', 'Groovy')"
+            "a(href:'http://groovy.codehaus.org', 'Groovy')"
     private static final String EXPECTED_BUILDER_SCRIPT_2 = '''
         project(name:'testProject') {
           target(name:'testTarget') {

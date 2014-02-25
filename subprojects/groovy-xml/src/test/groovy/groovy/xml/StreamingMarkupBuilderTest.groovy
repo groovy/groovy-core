@@ -20,8 +20,8 @@ package groovy.xml
  * are specific to StreamingMarkupBuilder. Functionality in common with
  * MarkupBuilder is tested in the BuilderTestSupport parent class.
  *
- *   @author John Wilson
- *   @author Paul King
+ * @author John Wilson
+ * @author Paul King
  */
 class StreamingMarkupBuilderTest extends BuilderTestSupport {
 

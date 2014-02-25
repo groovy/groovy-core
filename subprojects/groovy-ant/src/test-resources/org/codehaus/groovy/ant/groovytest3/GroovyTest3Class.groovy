@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 class GroovyTest3Class {
     void doSomething() {
         org.codehaus.groovy.ant.GroovyTest.FLAG = "from groovytest3.GroovyTest3Class.doSomething()"

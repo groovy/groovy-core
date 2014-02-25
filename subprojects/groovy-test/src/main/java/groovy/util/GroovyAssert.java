@@ -79,7 +79,7 @@ public class GroovyAssert {
      * The expected exception class is compared recursively with any nested
      * exceptions using getCause() until either a match is found or no more
      * nested exceptions exist.
-     * <p>
+     * <p/>
      * If a match is found the error message associated with the matching
      * exception is returned. If no match was found the method will fail.
      *

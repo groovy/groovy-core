@@ -19,31 +19,24 @@ import groovy.text.SimpleTemplateEngine;
 import groovy.text.Template;
 import groovy.text.TemplateEngine;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.Writer;
+import javax.servlet.ServletConfig;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
 import java.net.URL;
 import java.util.Date;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 /**
  * A generic servlet for serving (mostly HTML) templates.
- * <p>
+ * <p/>
  * It delegates work to a <code>groovy.text.TemplateEngine</code> implementation
  * processing HTTP requests.
- * <p>
+ * <p/>
  * <h4>Usage</h4>
- * <p>
+ * <p/>
  * <code>helloworld.html</code> is a headless HTML-like template
  * <pre><code>
  *  &lt;html&gt;
@@ -55,7 +48,7 @@ import javax.servlet.http.HttpServletResponse;
  *    &lt;/body&gt;
  *  &lt;/html&gt;
  * </code></pre>
- * <p>
+ * <p/>
  * Minimal <code>web.xml</code> example serving HTML-like templates
  * <pre><code>
  * &lt;web-app&gt;
@@ -69,9 +62,9 @@ import javax.servlet.http.HttpServletResponse;
  *   &lt;/servlet-mapping&gt;
  * &lt;/web-app&gt;
  * </code></pre>
- * <p>
+ * <p/>
  * <h4>Template engine configuration</h4>
- * <p>
+ * <p/>
  * By default, the TemplateServer uses the {@link groovy.text.SimpleTemplateEngine}
  * which interprets JSP-like templates. The init parameter <code>template.engine</code>
  * defines the fully qualified class name of the template to use:
@@ -81,19 +74,19 @@ import javax.servlet.http.HttpServletResponse;
  *   template.engine = groovy.text.GStringTemplateEngine
  *   template.engine = groovy.text.XmlTemplateEngine
  * </pre>
- * <p>
+ * <p/>
  * <h3>Servlet Init Parameters</h3>
- * <p>
+ * <p/>
  * <h4>Logging and extra-output options</h4>
- * <p>
+ * <p/>
  * This implementation provides a verbosity flag switching log statements.
  * The servlet init parameter name is:
  * <pre>
  *   generated.by = true(default) | false
  * </pre>
- * <p>
+ * <p/>
  * <h4>Groovy Source Encoding Parameter</h4>
- * <p>
+ * <p/>
  * The following servlet init parameter name can be used to specify the encoding TemplateServlet will use
  * to read the template groovy source files:
  * <pre>
@@ -203,7 +196,8 @@ public class TemplateServlet extends AbstractHttpServlet {
      * Find a cached template for a given key. If a <code>File</code> is passed then
      * any cached object is validated against the File to determine if it is out of
      * date
-     * @param key a unique key for the template, such as a file's absolutePath or a URL.
+     *
+     * @param key  a unique key for the template, such as a file's absolutePath or a URL.
      * @param file a file to be used to determine if the cached template is stale. May be null.
      * @return The cached template, or null if there was no cached entry, or the entry was stale.
      */
@@ -216,7 +210,7 @@ public class TemplateServlet extends AbstractHttpServlet {
         if (verbose) {
             log("Looking for cached template by key \"" + key + "\"");
         }
-        
+
         TemplateCacheEntry entry = (TemplateCacheEntry) cache.get(key);
         if (entry != null) {
             if (entry.validate(file)) {
@@ -240,9 +234,10 @@ public class TemplateServlet extends AbstractHttpServlet {
 
     /**
      * Compile the template and store it in the cache.
-     * @param key a unique key for the template, such as a file's absolutePath or a URL.
+     *
+     * @param key    a unique key for the template, such as a file's absolutePath or a URL.
      * @param reader a reader for the template's source.
-     * @param file a file to be used to determine if the cached template is stale. May be null.
+     * @param file   a file to be used to determine if the cached template is stale. May be null.
      * @return the created template.
      * @throws Exception Any exception when creating the template.
      */
@@ -285,8 +280,8 @@ public class TemplateServlet extends AbstractHttpServlet {
 
     /**
      * Gets the template created by the underlying engine parsing the request.
-     *
-     * <p>
+     * <p/>
+     * <p/>
      * This method looks up a simple (weak) hash map for an existing template
      * object that matches the source file. If the source file didn't change in
      * length and its last modified stamp hasn't changed compared to a precompiled
@@ -295,8 +290,8 @@ public class TemplateServlet extends AbstractHttpServlet {
      * template engine. This new instance is put to the cache for consecutive
      * calls.
      *
-     * @return The template that will produce the response text.
      * @param file The file containing the template source.
+     * @return The template that will produce the response text.
      * @throws ServletException If the request specified an invalid template source file
      */
     protected Template getTemplate(File file) throws ServletException {
@@ -320,15 +315,15 @@ public class TemplateServlet extends AbstractHttpServlet {
 
     /**
      * Gets the template created by the underlying engine parsing the request.
-     *
-     * <p>
+     * <p/>
+     * <p/>
      * This method looks up a simple (weak) hash map for an existing template
      * object that matches the source URL. If there is no cache entry, a new one is
      * created by the underlying template engine. This new instance is put
      * to the cache for consecutive calls.
      *
-     * @return The template that will produce the response text.
      * @param url The URL containing the template source..
+     * @return The template that will produce the response text.
      * @throws ServletException If the request specified an invalid template source URL
      */
     protected Template getTemplate(URL url) throws ServletException {
@@ -350,7 +345,7 @@ public class TemplateServlet extends AbstractHttpServlet {
 
     /**
      * Initializes the servlet from hints the container passes.
-     * <p>
+     * <p/>
      * Delegates to sub-init methods and parses the following parameters:
      * <ul>
      * <li> <tt>"generatedBy"</tt> : boolean, appends "Generated by ..." to the
@@ -381,7 +376,7 @@ public class TemplateServlet extends AbstractHttpServlet {
 
     /**
      * Creates the template engine.
-     * <p>
+     * <p/>
      * Called by {@link TemplateServlet#init(ServletConfig)} and returns just
      * <code>new groovy.text.SimpleTemplateEngine()</code> if the init parameter
      * <code>template.engine</code> is not set by the container configuration.
@@ -408,7 +403,7 @@ public class TemplateServlet extends AbstractHttpServlet {
 
     /**
      * Services the request with a response.
-     * <p>
+     * <p/>
      * First the request is parsed for the source file uri. If the specified file
      * could not be found or can not be read an error message is sent as response.
      *
@@ -429,7 +424,7 @@ public class TemplateServlet extends AbstractHttpServlet {
         Template template;
         long getMillis;
         String name;
-        
+
         File file = super.getScriptUriAsFile(request);
         if (file != null) {
             name = file.getName();

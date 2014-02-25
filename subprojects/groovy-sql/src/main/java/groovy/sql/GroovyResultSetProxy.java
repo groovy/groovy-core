@@ -15,17 +15,15 @@
  */
 package groovy.sql;
 
-import groovy.lang.DelegatingMetaClass;
 import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
+import org.codehaus.groovy.runtime.InvokerHelper;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.ResultSet;
-
-import org.codehaus.groovy.runtime.InvokerHelper;
 
 /**
  * GroovyResultSetProxy is used to create a proxy for GroovyResultSet.
@@ -103,7 +101,8 @@ public final class GroovyResultSetProxy implements InvocationHandler {
      * because if you use a metaclass from an interface, methods defined on
      * Object cannot be called.
      */
-    private abstract static class DummyResultSet implements GroovyResultSet {}
+    private abstract static class DummyResultSet implements GroovyResultSet {
+    }
 
     private MetaClass getMetaClass() {
         if (metaClass == null) {

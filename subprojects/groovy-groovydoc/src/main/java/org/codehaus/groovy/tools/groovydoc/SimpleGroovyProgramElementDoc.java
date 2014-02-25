@@ -102,11 +102,19 @@ public class SimpleGroovyProgramElementDoc extends SimpleGroovyDoc implements Gr
         annotationRefs.add(ref);
     }
 
-    public GroovyClassDoc containingClass() {/*todo*/return null;}
+    public GroovyClassDoc containingClass() {/*todo*/
+        return null;
+    }
 
-    public String modifiers() {/*todo*/return null;}
+    public String modifiers() {/*todo*/
+        return null;
+    }
 
-    public int modifierSpecifier() {/*todo*/return 0;}
+    public int modifierSpecifier() {/*todo*/
+        return 0;
+    }
 
-    public String qualifiedName() {/*todo*/return null;}
+    public String qualifiedName() {/*todo*/
+        return null;
+    }
 }

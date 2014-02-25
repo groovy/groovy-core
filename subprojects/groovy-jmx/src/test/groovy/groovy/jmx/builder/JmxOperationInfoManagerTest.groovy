@@ -136,7 +136,7 @@ class JmxOperationInfoManagerTest extends GroovyTestCase {
     void testGetDynamicOperationInfo() {
         def object = new MockManagedObject()
         // note: closure:{->} returns 0 param, but closure:{} returns 1 param.
-        MockManagedObject.metaClass."dynamicMethod" = {->
+        MockManagedObject.metaClass."dynamicMethod" = { ->
             println "This is a dynamic method"
         }
         def maps = JmxMetaMapBuilder.buildOperationMapFrom(object);

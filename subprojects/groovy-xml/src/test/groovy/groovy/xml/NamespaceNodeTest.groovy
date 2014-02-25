@@ -15,7 +15,7 @@ class NamespaceNodeTest extends TestXmlSupport {
         assert result[n.inner][0].@name == 'foo'
         assert result[n.inner][1].text() == 'bar'
     }
-    
+
     void testTree() {
         def builder = NodeBuilder.newInstance()
         def xmlns = new NamespaceBuilder(builder)

@@ -39,14 +39,15 @@ class SqlCallTest extends GroovyTestCase {
 
     protected tryDrop(String tableName) {
         try {
-           sql.execute("DROP TABLE $tableName".toString())
-        } catch(Exception e){ }
+            sql.execute("DROP TABLE $tableName".toString())
+        } catch (Exception e) {
+        }
     }
 
     @Override
     void setUp() {
         sql = setUpSql()
-        ["PERSON"].each{ tryDrop(it) }
+        ["PERSON"].each { tryDrop(it) }
 
         sql.execute("CREATE TABLE person ( id INTEGER, firstname VARCHAR(10), lastname VARCHAR(10), PRIMARY KEY (id))")
 

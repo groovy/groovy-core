@@ -41,9 +41,7 @@ import java.io.StringReader;
 import java.util.*;
 import java.util.regex.Pattern;
 
-import static org.codehaus.groovy.tools.groovydoc.SimpleGroovyClassDoc.LINK_REGEX;
-import static org.codehaus.groovy.tools.groovydoc.SimpleGroovyClassDoc.TAG_REGEX;
-import static org.codehaus.groovy.tools.groovydoc.SimpleGroovyClassDoc.CODE_REGEX;
+import static org.codehaus.groovy.tools.groovydoc.SimpleGroovyClassDoc.*;
 
 /*
  *  todo: order methods alphabetically (implement compareTo enough?)

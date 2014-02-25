@@ -31,19 +31,17 @@ import java.util.List;
 import java.util.Map;
 
 import static groovy.json.JsonTokenType.*;
-import static groovy.json.JsonTokenType.CLOSE_CURLY;
-import static groovy.json.JsonTokenType.COMMA;
 
 /**
  * This is the original slurper included in case someone relies on its exact behavior.
- *
+ * <p/>
  * JSON slurper which parses text or reader content into a data structure of lists and maps.
- * <p>
+ * <p/>
  * Example usage:
  * <code><pre>
  * def slurper = new JsonSlurper()
  * def result = slurper.parseText('{"person":{"name":"Guillaume","age":33,"pets":["dog","cat"]}}')
- *
+ * <p/>
  * assert result.person.name == "Guillaume"
  * assert result.person.age == 33
  * assert result.person.pets.size() == 2
@@ -67,7 +65,7 @@ public class JsonSlurperClassic {
             throw new IllegalArgumentException("The JSON input text should neither be null nor empty.");
         }
 
-        return parse(new LineColumnReader (new StringReader (text)));
+        return parse(new LineColumnReader(new StringReader(text)));
     }
 
     /**
@@ -113,7 +111,7 @@ public class JsonSlurperClassic {
     /**
      * Parse a JSON data structure from content within a given File.
      *
-     * @param file File containing JSON content
+     * @param file    File containing JSON content
      * @param charset the charset for this File
      * @return a data structure of lists and maps
      * @since 2.2.0
@@ -126,16 +124,16 @@ public class JsonSlurperClassic {
         Reader reader = null;
         try {
             if (charset == null || charset.length() == 0) {
-                reader = ResourceGroovyMethods.newReader ( file );
+                reader = ResourceGroovyMethods.newReader(file);
             } else {
                 reader = ResourceGroovyMethods.newReader(file, charset);
             }
             return parse(reader);
-        } catch(IOException ioe) {
+        } catch (IOException ioe) {
             throw new JsonException("Unable to process file: " + file.getPath(), ioe);
         } finally {
             if (reader != null) {
-                DefaultGroovyMethodsSupport.closeWithWarning ( reader );
+                DefaultGroovyMethodsSupport.closeWithWarning(reader);
             }
         }
     }
@@ -154,7 +152,7 @@ public class JsonSlurperClassic {
     /**
      * Parse a JSON data structure from content at a given URL.
      *
-     * @param url URL containing JSON content
+     * @param url    URL containing JSON content
      * @param params connection parameters
      * @return a data structure of lists and maps
      * @since 2.2.0
@@ -167,7 +165,7 @@ public class JsonSlurperClassic {
      * Parse a JSON data structure from content at a given URL. Convenience variant when using Groovy named parameters for the connection params.
      *
      * @param params connection parameters
-     * @param url URL containing JSON content
+     * @param url    URL containing JSON content
      * @return a data structure of lists and maps
      * @since 2.2.0
      */
@@ -184,7 +182,7 @@ public class JsonSlurperClassic {
                 reader = ResourceGroovyMethods.newReader(url, params);
             }
             return parse(reader);
-        } catch(IOException ioe) {
+        } catch (IOException ioe) {
             throw new JsonException("Unable to process url: " + url.toString(), ioe);
         } finally {
             if (reader != null) {
@@ -196,7 +194,7 @@ public class JsonSlurperClassic {
     /**
      * Parse a JSON data structure from content at a given URL.
      *
-     * @param url URL containing JSON content
+     * @param url     URL containing JSON content
      * @param charset the charset for this File
      * @return a data structure of lists and maps
      * @since 2.2.0
@@ -208,8 +206,8 @@ public class JsonSlurperClassic {
     /**
      * Parse a JSON data structure from content at a given URL.
      *
-     * @param url URL containing JSON content
-     * @param params connection parameters
+     * @param url     URL containing JSON content
+     * @param params  connection parameters
      * @param charset the charset for this File
      * @return a data structure of lists and maps
      * @since 2.2.0
@@ -221,8 +219,8 @@ public class JsonSlurperClassic {
     /**
      * Parse a JSON data structure from content at a given URL. Convenience variant when using Groovy named parameters for the connection params.
      *
-     * @param params connection parameters
-     * @param url URL containing JSON content
+     * @param params  connection parameters
+     * @param url     URL containing JSON content
      * @param charset the charset for this File
      * @return a data structure of lists and maps
      * @since 2.2.0
@@ -240,7 +238,7 @@ public class JsonSlurperClassic {
                 reader = ResourceGroovyMethods.newReader(url, params, charset);
             }
             return parse(reader);
-        } catch(IOException ioe) {
+        } catch (IOException ioe) {
             throw new JsonException("Unable to process url: " + url.toString(), ioe);
         } finally {
             if (reader != null) {
@@ -260,7 +258,7 @@ public class JsonSlurperClassic {
 
         JsonToken currentToken;
 
-        for(;;) {
+        for (; ; ) {
             currentToken = lexer.nextToken();
 
             if (currentToken == null) {
@@ -329,7 +327,7 @@ public class JsonSlurperClassic {
         JsonToken previousToken;
         JsonToken currentToken;
 
-        for(;;) {
+        for (; ; ) {
             currentToken = lexer.nextToken();
 
             if (currentToken == null) {
@@ -373,7 +371,7 @@ public class JsonSlurperClassic {
                         "Expected " + COLON.getLabel() + " " +
                                 "on line: " + currentToken.getStartLine() + ", " +
                                 "column: " + currentToken.getStartColumn() + ".\n" +
-                                "But got '" + currentToken.getText() +  "' instead."
+                                "But got '" + currentToken.getText() + "' instead."
                 );
             }
 

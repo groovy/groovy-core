@@ -16,12 +16,10 @@
 
 package org.codehaus.groovy.tools.shell.commands
 
-import org.codehaus.groovy.tools.shell.CommandSupport
 import org.codehaus.groovy.tools.shell.Command
+import org.codehaus.groovy.tools.shell.CommandSupport
 import org.codehaus.groovy.tools.shell.Groovysh
-import org.codehaus.groovy.tools.shell.CommandRegistry
 import org.codehaus.groovy.tools.shell.completion.CommandNameCompleter
-import org.codehaus.groovy.tools.shell.util.SimpleCompletor
 
 /**
  * The 'help' command.
@@ -30,8 +28,7 @@ import org.codehaus.groovy.tools.shell.util.SimpleCompletor
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class HelpCommand
-    extends CommandSupport
-{
+        extends CommandSupport {
     HelpCommand(final Groovysh shell) {
         super(shell, ':help', ':h')
 
@@ -40,8 +37,8 @@ class HelpCommand
 
     protected List createCompleters() {
         return [
-            new CommandNameCompleter(registry),
-            null
+                new CommandNameCompleter(registry),
+                null
         ]
     }
 
@@ -51,23 +48,22 @@ class HelpCommand
         if (args.size() > 1) {
             fail(messages.format('error.unexpected_args', args.join(' ')))
         }
-        
+
         if (args.size() == 1) {
             help(args[0])
-        }
-        else {
+        } else {
             list()
         }
     }
 
     private void help(final String name) {
         assert name
-        
+
         Command command = registry.find(name)
         if (!command) {
             fail("No such command: $name") // TODO: i18n
         }
-        
+
         io.out.println()
         io.out.println("usage: @|bold ${command.name}|@ $command.usage") // TODO: i18n
         io.out.println()
@@ -79,24 +75,25 @@ class HelpCommand
         // Figure out the max command name and shortcut length dynamically
         int maxName = 0
         int maxShortcut
-        
+
         for (Command command in registry.commands()) {
             if (command.hidden) {
                 continue
             }
-            
+
             if (command.name.size() > maxName) {
                 maxName = command.name.size()
             }
-            
+
             if (command.shortcut.size() > maxShortcut) {
                 maxShortcut = command.shortcut.size()
             }
         }
-        
+
         io.out.println()
         io.out.println('For information about @|green Groovy|@, visit:') // TODO: i18n
-        io.out.println('    @|cyan http://groovy.codehaus.org|@ ') // FIXME: parsing freaks out if end tok is at the last char...
+        io.out.println('    @|cyan http://groovy.codehaus.org|@ ')
+        // FIXME: parsing freaks out if end tok is at the last char...
         io.out.println()
 
         // List the commands we know about
@@ -106,19 +103,19 @@ class HelpCommand
             if (command.hidden) {
                 continue
             }
-            
+
             def n = command.name.padRight(maxName, ' ')
             def s = command.shortcut.padRight(maxShortcut, ' ')
-            
+
             //
             // TODO: Wrap description if needed
             //
-            
+
             def d = command.description
-            
+
             io.out.println("  @|bold ${n}|@  (@|bold ${s}|@) $d")
         }
-        
+
         io.out.println()
         io.out.println('For help on a specific command type:') // TODO: i18n
         io.out.println('    :help @|bold command|@ ')

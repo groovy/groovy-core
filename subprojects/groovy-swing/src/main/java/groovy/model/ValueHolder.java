@@ -19,9 +19,9 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 /**
- * A simple ValueModel implementation which is a holder of an object value. 
+ * A simple ValueModel implementation which is a holder of an object value.
  * Used to share local variables with closures
- * 
+ *
  * @author <a href="mailto:james@coredevelopers.net">James Strachan</a>
  * @version $Revision$
  */
@@ -34,37 +34,39 @@ public class ValueHolder implements ValueModel {
     public ValueHolder() {
         this(Object.class);
     }
-    
+
     public ValueHolder(Class type) {
         this.type = type;
     }
-    
+
     public ValueHolder(Object value) {
         this.value = value;
         this.type = (value != null) ? value.getClass() : Object.class;
     }
-    
-    /** 
+
+    /**
      * Add a PropertyChangeListener to the listener list.
+     *
      * @param listener The listener to add.
      */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        if ( propertyChangeSupport == null ) {
+        if (propertyChangeSupport == null) {
             propertyChangeSupport = new PropertyChangeSupport(this);
         }
         propertyChangeSupport.addPropertyChangeListener(listener);
     }
-    
-    /** 
+
+    /**
      * Removes a PropertyChangeListener from the listener list.
+     *
      * @param listener The listener to remove.
      */
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        if ( propertyChangeSupport != null ) {
+        if (propertyChangeSupport != null) {
             propertyChangeSupport.removePropertyChangeListener(listener);
         }
     }
-    
+
 
     public Object getValue() {
         return value;
@@ -73,7 +75,7 @@ public class ValueHolder implements ValueModel {
     public void setValue(Object value) {
         Object oldValue = this.value;
         this.value = value;
-        if ( propertyChangeSupport != null ) {
+        if (propertyChangeSupport != null) {
             propertyChangeSupport.firePropertyChange("value", oldValue, value);
         }
     }
@@ -85,7 +87,7 @@ public class ValueHolder implements ValueModel {
     public boolean isEditable() {
         return editable;
     }
-    
+
     public void setEditable(boolean editable) {
         this.editable = editable;
     }

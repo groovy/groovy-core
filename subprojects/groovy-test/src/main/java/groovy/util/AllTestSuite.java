@@ -37,9 +37,9 @@ import java.util.logging.Logger;
  * The files are assumed to be Groovy source files and be either a TestCase or a Script that can
  * be wrapped transparently into a TestCase.
  * The directory and the pattern can be set via System properties (see this classes' constants for details.)
- * <p>
+ * <p/>
  * When setting the loglevel of this class to FINEST, all file loading will be logged.
- * <p>
+ * <p/>
  * See also groovy.util.AllTestSuiteTest.groovy
  *
  * @author Andrew Glover
@@ -125,7 +125,7 @@ public class AllTestSuite extends TestSuite {
     protected void loadTest(String filename) throws CompilationFailedException, IOException {
         Class type = compile(filename);
         if (TestCase.class.isAssignableFrom(type)) {
-            addTestSuite((Class<? extends TestCase>)type);
+            addTestSuite((Class<? extends TestCase>) type);
         } else if (Script.class.isAssignableFrom(type)) {
             addTest(new ScriptTestAdapter(type, EMPTY_ARGS));
         } else {

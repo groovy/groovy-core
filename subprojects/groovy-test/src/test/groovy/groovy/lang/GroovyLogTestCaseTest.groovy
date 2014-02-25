@@ -4,9 +4,9 @@ import java.util.logging.Level
 import java.util.logging.Logger
 
 /**
-Showing usage of the GroovyLogTestCase
-@author Dierk Koenig
-**/
+ Showing usage of the GroovyLogTestCase
+ @author Dierk Koenig
+  * */
 
 class GroovyLogTestCaseTest extends GroovyLogTestCase {
 
@@ -16,14 +16,14 @@ class GroovyLogTestCaseTest extends GroovyLogTestCase {
         LOG.finer 'some log entry'
     }
 
-    void testStringLog(){
+    void testStringLog() {
         def result = stringLog(Level.FINER, 'groovy.lang.GroovyLogTestCaseTest') {
             loggedMethod()
         }
         assertTrue result, result.contains('some log entry')
     }
 
-    void testCombinedUsageForMetaClass(){
+    void testCombinedUsageForMetaClass() {
 /*
         def result = withLevel(Level.FINER, 'groovy.lang.MetaClass') {
             stringLog(Level.FINER, 'methodCalls'){

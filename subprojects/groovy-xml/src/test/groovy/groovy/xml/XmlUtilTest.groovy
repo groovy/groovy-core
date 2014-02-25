@@ -21,9 +21,7 @@ import org.xml.sax.InputSource
 import javax.xml.transform.stream.StreamSource
 
 import static groovy.xml.XmlAssert.assertXmlEquals
-import static groovy.xml.XmlUtil.newSAXParser
-import static groovy.xml.XmlUtil.escapeControlCharacters
-import static groovy.xml.XmlUtil.escapeXml
+import static groovy.xml.XmlUtil.*
 import static javax.xml.XMLConstants.W3C_XML_SCHEMA_NS_URI
 
 /**
@@ -50,9 +48,9 @@ class XmlUtilTest extends GroovyTestCase {
         Locale.setDefault(Locale.ENGLISH)
 
         def cases = [
-            "<person><first>James</first><last>Kirk</last></person>",
-            "<person><first>James</first><middle>T.</middle><last>Kirk</last></person>",
-            "<person title='Captain'><first>James</first><last>Kirk</last></person>"
+                "<person><first>James</first><last>Kirk</last></person>",
+                "<person><first>James</first><middle>T.</middle><last>Kirk</last></person>",
+                "<person title='Captain'><first>James</first><last>Kirk</last></person>"
         ]
 
         def xsd = '''<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
@@ -67,9 +65,9 @@ class XmlUtilTest extends GroovyTestCase {
         </xs:schema>'''
 
         def expected = [
-            /Kirk, James No Error/,
-            /Kirk, James .*Invalid content.*middle.*last.*expected/,
-            /Kirk, James .*title.*not allowed.*in element.*person/
+                /Kirk, James No Error/,
+                /Kirk, James .*Invalid content.*middle.*last.*expected/,
+                /Kirk, James .*title.*not allowed.*in element.*person/
         ]
 
         try {
@@ -93,7 +91,7 @@ class XmlUtilTest extends GroovyTestCase {
 
     // GROOVY-5775
     void testEscaping() {
-      def ans = escapeControlCharacters(escapeXml('"bread" & "butter"\r\n'))
-      assert ans == '&quot;bread&quot; &amp; &quot;butter&quot;&#13;&#10;'
+        def ans = escapeControlCharacters(escapeXml('"bread" & "butter"\r\n'))
+        assert ans == '&quot;bread&quot; &amp; &quot;butter&quot;&#13;&#10;'
     }
 }

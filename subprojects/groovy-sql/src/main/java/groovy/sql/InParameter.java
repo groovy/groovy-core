@@ -25,12 +25,14 @@ public interface InParameter {
 
     /**
      * The JDBC data type.
+     *
      * @return the type
      */
     int getType();
 
     /**
      * The object holding the data value.
+     *
      * @return the value
      */
     Object getValue();

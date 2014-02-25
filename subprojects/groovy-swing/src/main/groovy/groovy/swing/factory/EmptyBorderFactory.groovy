@@ -15,7 +15,7 @@
  */
 package groovy.swing.factory
 
-import javax.swing.BorderFactory
+import javax.swing.*
 
 /**
  * accepts values in lieu of attributes:
@@ -36,7 +36,7 @@ class EmptyBorderFactory extends SwingBorderFactory {
             } else if (value instanceof List && value.size() == 4) {
                 // we need GDK methods on Collection for boolean .any{} and boolean .all{} :(
                 boolean ints = true
-                value.each {ints = ints & it instanceof Integer}
+                value.each { ints = ints & it instanceof Integer }
                 if (ints) {
                     return BorderFactory.createEmptyBorder(*value)
                 }

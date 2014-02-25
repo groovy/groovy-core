@@ -22,14 +22,13 @@ package org.codehaus.groovy.tools.shell.util
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class MessageSourceTest
-    extends GroovyTestCase
-{
+        extends GroovyTestCase {
     MessageSource messages
 
     void setUp() {
         messages = new MessageSource(this.class)
     }
-    
+
     void testLoadAndGetMessage() {
         def a = messages['a']
         assert '1' == a

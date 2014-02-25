@@ -16,10 +16,11 @@
 
 package groovy.swing.impl
 
-import java.awt.Component
+import javax.swing.*
 import javax.swing.table.TableCellEditor
 import javax.swing.tree.TreeCellEditor
-import javax.swing.*
+import java.awt.*
+import java.util.List
 
 /**
  * @author Alexander Klein
@@ -30,7 +31,7 @@ class ClosureCellEditor extends AbstractCellEditor implements TableCellEditor, T
     Closure editorValue
     List children = []
     boolean defaultEditor
-    
+
     JTable table
     JTree tree
     Object value
@@ -39,12 +40,12 @@ class ClosureCellEditor extends AbstractCellEditor implements TableCellEditor, T
     boolean leaf
     int row
     int column
-    
+
     ClosureCellEditor(Closure c = null, Map<String, Closure> callbacks = [:]) {
         this.editorValue = c
         this.callbacks.putAll(callbacks)
     }
-    
+
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
         this.table = table
@@ -55,10 +56,10 @@ class ClosureCellEditor extends AbstractCellEditor implements TableCellEditor, T
         this.leaf = false
         this.row = row
         this.column = column
-        
+
         return prepare();
     }
-    
+
     Component getTreeCellEditorComponent(JTree tree, Object value, boolean isSelected, boolean expanded, boolean leaf, int row) {
         this.table = null
         this.tree = tree
@@ -68,10 +69,10 @@ class ClosureCellEditor extends AbstractCellEditor implements TableCellEditor, T
         this.leaf = leaf
         this.row = row
         this.column = -1
-        
+
         return prepare();
     }
-    
+
     private Component prepare() {
         if (children.isEmpty() || defaultEditor) {
             defaultEditor = true
@@ -91,12 +92,12 @@ class ClosureCellEditor extends AbstractCellEditor implements TableCellEditor, T
             return (Component) children[0]
         }
     }
-    
+
     @Override
     public Object getCellEditorValue() {
         editorValue.call()
     }
-    
+
     public void setEditorValue(Closure editorValue) {
         if (editorValue != null) {
             editorValue.delegate = this
@@ -104,7 +105,7 @@ class ClosureCellEditor extends AbstractCellEditor implements TableCellEditor, T
         }
         this.editorValue = editorValue
     }
-    
+
     public void setPrepareEditor(Closure prepareEditor) {
         if (prepareEditor != null) {
             prepareEditor.delegate = this
@@ -112,13 +113,14 @@ class ClosureCellEditor extends AbstractCellEditor implements TableCellEditor, T
         }
         this.prepareEditor = prepareEditor
     }
-    
+
     @Override
     public Object invokeMethod(String name, Object args) {
         def calledMethod = ClosureCellEditor.metaClass.getMetaMethod(name, args)
-        if (callbacks."$name" && callbacks."$name" instanceof Closure)
+        if (callbacks."$name" && callbacks."$name" instanceof Closure) {
             return callbacks."$name".call(calledMethod, this, args)
-        else
+        } else {
             return calledMethod?.invoke(this, args)
+        }
     }
 }

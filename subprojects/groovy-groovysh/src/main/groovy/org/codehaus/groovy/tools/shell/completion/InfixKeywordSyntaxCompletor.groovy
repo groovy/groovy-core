@@ -29,7 +29,7 @@ public class InfixKeywordSyntaxCompletor implements IdentifierCompletor {
             "instanceof",
             "extends",
             "implements",
-            ]
+    ]
 
     @Override
     public boolean complete(final List<GroovySourceToken> tokens, List candidates) {

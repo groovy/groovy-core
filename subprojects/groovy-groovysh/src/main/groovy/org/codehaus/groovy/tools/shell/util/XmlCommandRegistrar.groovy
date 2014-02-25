@@ -16,8 +16,8 @@
 
 package org.codehaus.groovy.tools.shell.util
 
-import org.codehaus.groovy.tools.shell.Shell
 import org.codehaus.groovy.tools.shell.Command
+import org.codehaus.groovy.tools.shell.Shell
 
 /**
  * Registers {@link Command} classes from an XML file like:
@@ -29,43 +29,42 @@ import org.codehaus.groovy.tools.shell.Command
  * @version $Id$
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
-class XmlCommandRegistrar
-{
+class XmlCommandRegistrar {
     private final Logger log = Logger.create(this.class)
-    
+
     private final Shell shell
-    
+
     private final ClassLoader classLoader
-    
+
     XmlCommandRegistrar(final Shell shell, final ClassLoader classLoader) {
         assert shell != null
         assert classLoader != null
-        
+
         this.shell = shell
         this.classLoader = classLoader
     }
-    
+
     void register(final URL url) {
         assert url
-        
+
         if (log.debugEnabled) {
             log.debug("Registering commands from: $url")
         }
-        
-        url.withReader {Reader reader ->
+
+        url.withReader { Reader reader ->
             groovy.util.Node doc = new groovy.util.XmlParser().parse(reader)
 
-            doc.children().each {groovy.util.Node element ->
+            doc.children().each { groovy.util.Node element ->
                 String classname = element.text()
-                
+
                 Class type = classLoader.loadClass(classname)
-                
+
                 Command command = type.newInstance(shell) as Command
-                
+
                 if (log.debugEnabled) {
                     log.debug("Created command '${command.name}': $command")
                 }
-                
+
                 shell << command
             }
         }

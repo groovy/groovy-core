@@ -16,10 +16,11 @@
 package groovy.json
 
 import groovy.transform.CompileStatic
-
-import static JsonTokenType.*
-import java.text.SimpleDateFormat
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
+
+import java.text.SimpleDateFormat
+
+import static groovy.json.JsonTokenType.*
 
 /**
  * Class responsible for the actual String serialization of the possible values of a JSON structure.
@@ -152,16 +153,16 @@ class JsonOutput {
      */
     static String toJson(Map m) {
         "{" + m.collect { k, v ->
-                if (k == null) {
-                    throw new IllegalArgumentException('Maps with null keys can\'t be converted to JSON')
-                }
-                toJson(k.toString()) + ':' + toJson(v)
+            if (k == null) {
+                throw new IllegalArgumentException('Maps with null keys can\'t be converted to JSON')
+            }
+            toJson(k.toString()) + ':' + toJson(v)
         }.join(',') + "}"
     }
 
     /**
      * Pretty print a JSON payload
-     * 
+     *
      * @param jsonPayload
      * @return
      */
@@ -182,11 +183,11 @@ class JsonOutput {
                 output.append('\n')
                 output.append(' ' * indent)
                 output.append('}')
-            } else if(token.type == OPEN_BRACKET) {
+            } else if (token.type == OPEN_BRACKET) {
                 indent += 4
                 output.append('[\n')
                 output.append(' ' * indent)
-            } else if(token.type == CLOSE_BRACKET) {
+            } else if (token.type == CLOSE_BRACKET) {
                 indent -= 4
                 output.append('\n')
                 output.append(' ' * indent)
@@ -201,8 +202,8 @@ class JsonOutput {
                 // length 2 (i.e. textStr=/""/ ) and will not strip the leading/trailing
                 // quotes (just reverses them).
                 String textStr = token.text
-                String textWithoutQuotes = textStr.substring( 1, textStr.size()-1 )
-                output.append('"' + StringEscapeUtils.escapeJava( textWithoutQuotes ) + '"')
+                String textWithoutQuotes = textStr.substring(1, textStr.size() - 1)
+                output.append('"' + StringEscapeUtils.escapeJava(textWithoutQuotes) + '"')
             } else {
                 output.append(token.text)
             }

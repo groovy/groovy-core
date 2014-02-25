@@ -20,12 +20,12 @@ public class ClassWithMethodComment {
     /**
      * This is a method comment
      *
-     * @return the value
-     * @param row the row of interest
-     * @param rowIndex the index of the row of interest
+     * @param row         the row of interest
+     * @param rowIndex    the index of the row of interest
      * @param columnIndex the column of interest
-     */    
+     * @return the value
+     */
     public Object getValue(Object row, int rowIndex, int columnIndex) {
-       return new Object();
+        return new Object();
     }
 }

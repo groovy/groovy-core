@@ -15,13 +15,17 @@
  */
 package org.codehaus.groovy.tools.groovydoc;
 
-import java.util.*;
+import org.codehaus.groovy.groovydoc.GroovyClassDoc;
+import org.codehaus.groovy.groovydoc.GroovyExecutableMemberDoc;
+import org.codehaus.groovy.groovydoc.GroovyParameter;
+import org.codehaus.groovy.groovydoc.GroovyType;
 
-import org.codehaus.groovy.groovydoc.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SimpleGroovyExecutableMemberDoc extends SimpleGroovyMemberDoc implements GroovyExecutableMemberDoc {
     List parameters;
-    
+
     public SimpleGroovyExecutableMemberDoc(String name, GroovyClassDoc belongsToClass) {
         super(name, belongsToClass);
         parameters = new ArrayList();
@@ -35,15 +39,35 @@ public class SimpleGroovyExecutableMemberDoc extends SimpleGroovyMemberDoc imple
         parameters.add(parameter);
     }
 
-    
-    public String flatSignature() {/*todo*/return null;}
-    public boolean isNative() {/*todo*/return false;}
-    public boolean isSynchronized() {/*todo*/return false;}
-    public boolean isVarArgs() {/*todo*/return false;}
-//    public GroovyParamTag[] paramTags() {/*todo*/return null;}
-    public String signature() {/*todo*/return null;}
-    public GroovyClassDoc[] thrownExceptions() {/*todo*/return null;}
-    public GroovyType[] thrownExceptionTypes() {/*todo*/return null;}
+
+    public String flatSignature() {/*todo*/
+        return null;
+    }
+
+    public boolean isNative() {/*todo*/
+        return false;
+    }
+
+    public boolean isSynchronized() {/*todo*/
+        return false;
+    }
+
+    public boolean isVarArgs() {/*todo*/
+        return false;
+    }
+
+    //    public GroovyParamTag[] paramTags() {/*todo*/return null;}
+    public String signature() {/*todo*/
+        return null;
+    }
+
+    public GroovyClassDoc[] thrownExceptions() {/*todo*/
+        return null;
+    }
+
+    public GroovyType[] thrownExceptionTypes() {/*todo*/
+        return null;
+    }
 //    public GroovyThrowsTag[] throwsTags() {/*todo*/return null;}
 //    public GroovyTypeVariable[] typeParameters() {/*todo*/return null;}
 //    public GroovyParamTag[] typeParamTags() {/*todo*/return null;}

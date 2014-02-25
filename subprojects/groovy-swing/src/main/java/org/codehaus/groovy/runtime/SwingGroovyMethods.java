@@ -448,7 +448,7 @@ public class SwingGroovyMethods {
     /**
      * Overloads the left shift operator to provide an easy way to add
      * rows to a DefaultTableModel.
-     * <p>
+     * <p/>
      * if row.size &lt; model.size -&gt; row will be padded with nulls<br>
      * if row.size &gt; model.size -&gt; additional columns will be discarded<br>
      *
@@ -472,7 +472,7 @@ public class SwingGroovyMethods {
      * <b>WARNING:</b> this operation does not replace the item at the
      * specified index, rather it inserts the item at that index, thus
      * increasing the size of the model by 1.<p>
-     * <p>
+     * <p/>
      * if row.size &lt; model.size -&gt; row will be padded with nulls<br>
      * if row.size &gt; model.size -&gt; additional columns will be discarded
      *
@@ -494,7 +494,7 @@ public class SwingGroovyMethods {
         int cols = delegate.getColumnCount();
         Object[] rowData = new Object[cols];
         int i = 0;
-        for (Iterator it = DefaultGroovyMethods.iterator(row); it.hasNext() && i < cols;) {
+        for (Iterator it = DefaultGroovyMethods.iterator(row); it.hasNext() && i < cols; ) {
             rowData[i++] = it.next();
         }
         return rowData;

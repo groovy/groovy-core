@@ -30,24 +30,24 @@ import java.io.IOException;
 /**
  * This servlet will run Groovy scripts as Groovlets.  Groovlets are scripts
  * with these objects implicit in their scope:
- *
+ * <p/>
  * <ul>
- *  <li>request - the HttpServletRequest</li>
- *  <li>response - the HttpServletResponse</li>
- *  <li>application - the ServletContext associated with the servlet</li>
- *  <li>session - the HttpSession associated with the HttpServletRequest</li>
- *  <li>out - the PrintWriter associated with the ServletRequest</li>
+ * <li>request - the HttpServletRequest</li>
+ * <li>response - the HttpServletResponse</li>
+ * <li>application - the ServletContext associated with the servlet</li>
+ * <li>session - the HttpSession associated with the HttpServletRequest</li>
+ * <li>out - the PrintWriter associated with the ServletRequest</li>
  * </ul>
- *
+ * <p/>
  * <p>Your script sources can be placed either in your web application's normal
  * web root (allows for subdirectories) or in /WEB-INF/groovy/* (also allows
  * subdirectories).
- *
+ * <p/>
  * <p>To make your web application more groovy, you must add the GroovyServlet
  * to your application's web.xml configuration using any mapping you like, so
  * long as it follows the pattern *.* (more on this below).  Here is the
  * web.xml entry:
- *
+ * <p/>
  * <pre>
  *    &lt;servlet>
  *      &lt;servlet-name>Groovy&lt;/servlet-name>
@@ -60,7 +60,7 @@ import java.io.IOException;
  *      &lt;url-pattern>*.gdo&lt;/url-pattern>
  *    &lt;/servlet-mapping>
  * </pre>
- *
+ * <p/>
  * <p>The URL pattern does not require the "*.groovy" mapping.  You can, for
  * example, make it more Struts-like but groovy by making your mapping "*.gdo".
  *
@@ -69,7 +69,6 @@ import java.io.IOException;
  * @author Guillaume Laforge
  * @author Christian Stein
  * @author Marcel Overdijk
- *
  * @see groovy.servlet.ServletBinding
  */
 public class GroovyServlet extends AbstractHttpServlet {
@@ -82,8 +81,7 @@ public class GroovyServlet extends AbstractHttpServlet {
     /**
      * Initialize the GroovyServlet.
      *
-     * @throws ServletException
-     *  if this method encountered difficulties
+     * @throws ServletException if this method encountered difficulties
      */
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
@@ -103,7 +101,7 @@ public class GroovyServlet extends AbstractHttpServlet {
         final String scriptUri = getScriptUri(request);
 
         // Set it to HTML by default
-        response.setContentType("text/html; charset="+encoding);
+        response.setContentType("text/html; charset=" + encoding);
 
         // Set up the script context
         final ServletBinding binding = new ServletBinding(request, response, servletContext);
@@ -173,7 +171,7 @@ public class GroovyServlet extends AbstractHttpServlet {
      * Hook method to setup the GroovyScriptEngine to use.<br>
      * Subclasses may override this method to provide a custom engine.
      */
-    protected GroovyScriptEngine createGroovyScriptEngine(){
+    protected GroovyScriptEngine createGroovyScriptEngine() {
         return new GroovyScriptEngine(this);
     }
 }

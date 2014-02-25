@@ -16,7 +16,7 @@
 
 /**
  * A factory class for plain text nodes for use in the AST tree made by ASTBrowser 
- * 
+ *
  * @author Roshan Dawrani
  */
 package groovy.inspect

@@ -20,12 +20,13 @@ import java.util.Set;
 
 /**
  * An aggregation of multiple bindings
+ *
  * @author Danno Ferrin
  * @since Groovy 1.6
  */
 public class AggregateBinding implements BindingUpdatable {
 
-    protected  boolean bound;
+    protected boolean bound;
 
     // use linked hash set so order is preserved
     protected Set<BindingUpdatable> bindings = new LinkedHashSet<BindingUpdatable>();

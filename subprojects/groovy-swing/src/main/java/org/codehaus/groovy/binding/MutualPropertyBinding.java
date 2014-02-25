@@ -104,7 +104,7 @@ public class MutualPropertyBinding implements FullBinding {
     }
 
     public void setReverseConverter(Closure reverseConverter) {
-       this.reverseConverter = reverseConverter;
+        this.reverseConverter = reverseConverter;
         rebuildBindings();
     }
 
@@ -157,7 +157,7 @@ public class MutualPropertyBinding implements FullBinding {
             // both converter and reverseConverter must be set or not
             if ((converter == null) != (reverseConverter == null)) {
                 throw new RuntimeException("Both converter or reverseConverter must be set or unset to bind.  Only "
-                        + ((converter != null) ? "converter": "reverseConverter") + " is set.");
+                        + ((converter != null) ? "converter" : "reverseConverter") + " is set.");
             }
             // don't bind if we are half set up, quietly stop
             if (forwardBinding == null || reverseBinding == null) {

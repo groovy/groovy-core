@@ -1,9 +1,9 @@
 package groovy.servlet;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.jmock.Mock;
 import org.jmock.MockObjectTestCase;
+
+import javax.servlet.http.HttpServletRequest;
 
 public class GroovyServletTest extends MockObjectTestCase {
 

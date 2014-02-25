@@ -15,12 +15,7 @@
  */
 package org.codehaus.groovy.jsr223
 
-import javax.script.ScriptEngineManager
-import javax.script.ScriptEngine
-import javax.script.ScriptEngineFactory
-import javax.script.ScriptException
-
-import javax.script.SimpleScriptContext
+import javax.script.*
 
 /**
  * Tests JSR-223 Groovy engine implementation.
@@ -58,7 +53,7 @@ class JSR223Test extends GroovyTestCase {
     void testCheckParameters() {
         ScriptEngine engine = manager.getEngineByName("groovy")
         assertNotNull(engine)
-        
+
         ScriptEngineFactory factory = engine.getFactory()
         assertNotNull(factory)
 
@@ -90,7 +85,7 @@ class JSR223Test extends GroovyTestCase {
         assertNotNull(engine)
 
         try {
-            Object x =  engine.eval("z")
+            Object x = engine.eval("z")
             assertFalse("Didn't get ScriptException for syntax error", true)
         } catch (ScriptException e) {
         }

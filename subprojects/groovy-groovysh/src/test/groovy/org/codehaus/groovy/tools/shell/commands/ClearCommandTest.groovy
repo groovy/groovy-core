@@ -22,8 +22,7 @@ package org.codehaus.groovy.tools.shell.commands
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  */
 class ClearCommandTest
-    extends CommandTestSupport
-{
+        extends CommandTestSupport {
     void testClear() {
         shell << ':clear'
     }

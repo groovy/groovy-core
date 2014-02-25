@@ -15,7 +15,7 @@ class TokenUtilTest extends GroovyTestCase {
         CurlyCountingGroovyLexer lexer = CurlyCountingGroovyLexer.createGroovyLexer(src)
         def result = lexer.toList()
         if (result && result.size() > 1) {
-           return result[0..-2]
+            return result[0..-2]
         }
         return []
     }
@@ -23,16 +23,16 @@ class TokenUtilTest extends GroovyTestCase {
     void testTokenList() {
         assertEquals([], tokenList(""))
         assertEquals('foo', tokenList("foo")[0].getText())
-        assertEquals(['foo'], tokenList("foo").collect { it.getText()})
-        assertEquals(['foo', '{', 'bar'], tokenList("foo{bar").collect { it.getText()})
-        assertEquals(['1', '..', '2'], tokenList("1..2").collect { it.getText()})
+        assertEquals(['foo'], tokenList("foo").collect { it.getText() })
+        assertEquals(['foo', '{', 'bar'], tokenList("foo{bar").collect { it.getText() })
+        assertEquals(['1', '..', '2'], tokenList("1..2").collect { it.getText() })
     }
 
     static tokensString(List<GroovySourceToken> tokens) {
         if (tokens == null) {
             return null
         }
-        return tokens.collect {it.getText()}.join()
+        return tokens.collect { it.getText() }.join()
     }
 
 }

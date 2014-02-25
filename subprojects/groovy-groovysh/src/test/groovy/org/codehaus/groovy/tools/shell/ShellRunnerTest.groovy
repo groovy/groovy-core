@@ -39,26 +39,30 @@ class ShellRunnerTest extends GroovyTestCase {
         groovysh.buffers.select(1)
 
         MockFor readerMocker = primedMockForConsoleReader()
-        readerMocker.demand.readLine(1) {'Foo {'}
+        readerMocker.demand.readLine(1) { 'Foo {' }
         MockFor preferencesMocker = new MockFor(Preferences)
-        preferencesMocker.demand.get(1) {"false"}
-        preferencesMocker.use {readerMocker.use {
-            InteractiveShellRunner runner = new InteractiveShellRunner(groovysh, {">"})
-            runner.readLine()
-            assertEquals(0, runner.wrappedInputStream.inserted.available())
-        }}
+        preferencesMocker.demand.get(1) { "false" }
+        preferencesMocker.use {
+            readerMocker.use {
+                InteractiveShellRunner runner = new InteractiveShellRunner(groovysh, { ">" })
+                runner.readLine()
+                assertEquals(0, runner.wrappedInputStream.inserted.available())
+            }
+        }
     }
 
     void testReadLineIndentNone() {
         MockFor readerMocker = primedMockForConsoleReader()
-        readerMocker.demand.readLine(1) {'Foo {'}
+        readerMocker.demand.readLine(1) { 'Foo {' }
         MockFor preferencesMocker = new MockFor(Preferences)
-        preferencesMocker.demand.get(1) {"true"}
-        preferencesMocker.use {readerMocker.use {
-            InteractiveShellRunner runner = new InteractiveShellRunner(groovysh, {">"})
-            runner.readLine()
-            assertEquals(0, runner.wrappedInputStream.inserted.available())
-        }}
+        preferencesMocker.demand.get(1) { "true" }
+        preferencesMocker.use {
+            readerMocker.use {
+                InteractiveShellRunner runner = new InteractiveShellRunner(groovysh, { ">" })
+                runner.readLine()
+                assertEquals(0, runner.wrappedInputStream.inserted.available())
+            }
+        }
     }
 
     void testReadLineIndentOne() {
@@ -66,28 +70,32 @@ class ShellRunnerTest extends GroovyTestCase {
         groovysh.buffers.select(1)
 
         MockFor readerMocker = primedMockForConsoleReader()
-        readerMocker.demand.readLine(1) {'Foo {'}
+        readerMocker.demand.readLine(1) { 'Foo {' }
         MockFor preferencesMocker = new MockFor(Preferences)
-        preferencesMocker.demand.get(1) {"true"}
-        preferencesMocker.use {readerMocker.use {
-            InteractiveShellRunner runner = new InteractiveShellRunner(groovysh, {">"})
-            runner.readLine()
-            assertEquals(groovysh.indentSize, runner.wrappedInputStream.inserted.available())
-        }}
+        preferencesMocker.demand.get(1) { "true" }
+        preferencesMocker.use {
+            readerMocker.use {
+                InteractiveShellRunner runner = new InteractiveShellRunner(groovysh, { ">" })
+                runner.readLine()
+                assertEquals(groovysh.indentSize, runner.wrappedInputStream.inserted.available())
+            }
+        }
     }
 
     void testReadLineIndentTwo() {
         groovysh.buffers.buffers.add(["Foo { {"])
         groovysh.buffers.select(1)
         MockFor readerMocker = primedMockForConsoleReader()
-        readerMocker.demand.readLine(1) {'Foo { {'}
+        readerMocker.demand.readLine(1) { 'Foo { {' }
         MockFor preferencesMocker = new MockFor(Preferences)
-        preferencesMocker.demand.get(1) {"true"}
-        preferencesMocker.use {readerMocker.use {
-            InteractiveShellRunner runner = new InteractiveShellRunner(groovysh, {">"})
-            runner.readLine()
-            assertEquals(groovysh.indentSize * 2, runner.wrappedInputStream.inserted.available())
-        }}
+        preferencesMocker.demand.get(1) { "true" }
+        preferencesMocker.use {
+            readerMocker.use {
+                InteractiveShellRunner runner = new InteractiveShellRunner(groovysh, { ">" })
+                runner.readLine()
+                assertEquals(groovysh.indentSize * 2, runner.wrappedInputStream.inserted.available())
+            }
+        }
     }
 
     private MockFor primedMockForConsoleReader() {
@@ -114,13 +122,15 @@ class ShellRunnerTest2 extends GroovyTestCase {
         MockFor readerMocker = new MockFor(ConsoleReader)
         readerMocker.demand.setExpandEvents {}
         readerMocker.demand.addCompleter(2) {}
-        readerMocker.demand.readLine(1) {'Foo { {'}
+        readerMocker.demand.readLine(1) { 'Foo { {' }
         MockFor preferencesMocker = new MockFor(Preferences)
-        preferencesMocker.demand.get(1) {"true"}
-        preferencesMocker.use {readerMocker.use {
-            InteractiveShellRunner runner = new InteractiveShellRunner(groovysh, {">"})
-            runner.readLine()
-            assertEquals(0, runner.wrappedInputStream.inserted.available())
-        }}
+        preferencesMocker.demand.get(1) { "true" }
+        preferencesMocker.use {
+            readerMocker.use {
+                InteractiveShellRunner runner = new InteractiveShellRunner(groovysh, { ">" })
+                runner.readLine()
+                assertEquals(0, runner.wrappedInputStream.inserted.available())
+            }
+        }
     }
 }

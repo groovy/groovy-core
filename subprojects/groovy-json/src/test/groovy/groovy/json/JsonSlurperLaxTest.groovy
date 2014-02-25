@@ -1,25 +1,24 @@
 package groovy.json
 
-
 /**
  * Created by Richard on 2/2/14.
  */
-class JsonSlurperLaxTest extends JsonSlurperTest{
-    public JsonSlurperLaxTest () {
-        parser = new JsonSlurper().setType( JsonParserType.LAX );
+class JsonSlurperLaxTest extends JsonSlurperTest {
+    public JsonSlurperLaxTest() {
+        parser = new JsonSlurper().setType(JsonParserType.LAX);
     }
 
 
     void testNullEmptyMalformedPayloads() {
-        shouldFail(IllegalArgumentException) { parser.parseText(null)   }
-        shouldFail(IllegalArgumentException) { parser.parseText("")     }
+        shouldFail(IllegalArgumentException) { parser.parseText(null) }
+        shouldFail(IllegalArgumentException) { parser.parseText("") }
 
-        shouldFail(JsonException) { parser.parseText("[")           }
-        shouldFail(JsonException) { parser.parseText('{"')          }
-        shouldFail(JsonException) { parser.parseText("[a")           }
-        shouldFail(JsonException) { parser.parseText('{a"')          }
-        shouldFail(JsonException) { parser.parseText("[\"a\"")           }
-        shouldFail(JsonException) { parser.parseText('{"a"')          }
+        shouldFail(JsonException) { parser.parseText("[") }
+        shouldFail(JsonException) { parser.parseText('{"') }
+        shouldFail(JsonException) { parser.parseText("[a") }
+        shouldFail(JsonException) { parser.parseText('{a"') }
+        shouldFail(JsonException) { parser.parseText("[\"a\"") }
+        shouldFail(JsonException) { parser.parseText('{"a"') }
 
     }
 
@@ -27,14 +26,13 @@ class JsonSlurperLaxTest extends JsonSlurperTest{
     void testObjectWithSimpleValues() {
         assert parser.parseText('{"a": 1, "b" : true , "c":false, "d": null}') == [a: 1, b: true, c: false, d: null]
 
-         parser.parseText('{true}')
-         shouldFail { parser.parseText('{"a"}') }
-         parser.parseText('{"a":true')
-         parser.parseText('{"a":}')
-         shouldFail {parser.parseText('{"a":"b":"c"}') }
-         parser.parseText('{:true}')
+        parser.parseText('{true}')
+        shouldFail { parser.parseText('{"a"}') }
+        parser.parseText('{"a":true')
+        parser.parseText('{"a":}')
+        shouldFail { parser.parseText('{"a":"b":"c"}') }
+        parser.parseText('{:true}')
     }
-
 
 
     void testArrayOfArrayWithSimpleValues() {
@@ -93,7 +91,7 @@ class JsonSlurperLaxTest extends JsonSlurperTest{
             }
         """
 
-        Map <String, Object> map = parser.parseText(jsonString);
+        Map<String, Object> map = parser.parseText(jsonString);
         assert map.foo == "bar"
         assert map.foo1 == "bar1"
         assert map.foo2 == "bar2"
@@ -104,9 +102,6 @@ class JsonSlurperLaxTest extends JsonSlurperTest{
         assert map.strings == ["we", "are", "string", "here", "us", "roar"]
         assert map["he said"] == '"fire all your guns at once baby, and explode into the night"'
         assert map.the == "end"
-
-
-
 
 
     }

@@ -35,26 +35,15 @@ import java.util.regex.Pattern
  * <pre>
  * import groovy.mock.interceptor.StubFor
  *
- * class Person {
- *   String first, last
- * }
- *
- * class Family {
- *   Person mother, father
- *   def nameOfFather() { "$father.first $father.last" }
- * }
- *
+ * class Person {*   String first, last
+ *}*
+ * class Family {*   Person mother, father
+ *   def nameOfFather() { "$father.first $father.last" }*}*
  * def stub = new StubFor(Person)
- * stub.demand.with {
- *   getLast{ 'name' }
- *   getFirst{ 'dummy' }
- * }
- * stub.use {
- *   def john = new Person(first:'John', last:'Smith')
+ * stub.demand.with {*   getLast{ 'name' }*   getFirst{ 'dummy' }*}* stub.use {*   def john = new Person(first:'John', last:'Smith')
  *   def f = new Family(father:john)
  *   assert f.nameOfFather() == 'dummy name'
- * }
- * stub.expect.verify()
+ *}* stub.expect.verify()
  * </pre>
  * Here, <code>Family</code> is our class under test and <code>Person</code> is the collaborator.
  * We are using normal Groovy property semantics here; hence the statement
@@ -81,13 +70,13 @@ class StubFor {
         this.clazz = clazz
         proxy = MockProxyMetaClass.make(clazz, interceptConstruction)
         demand = new Demand()
-        ignore = new Ignore(parent:this)
+        ignore = new Ignore(parent: this)
         expect = new LooseExpectation(demand)
         proxy.interceptor = new MockInterceptor(expectation: expect)
     }
 
     /**
-     * @See MockFor#use(Closure)
+     * @See MockFor # use ( Closure )
      */
     void use(Closure closure) {
         proxy.use closure
@@ -117,7 +106,7 @@ class StubFor {
      * the method call will fall through to the underlying instance, i.e. half-mock style.
      * The <code>filter</code> object is invoked using the normal Groovy <code>isCase()</code> semantics.
      *
-     * @See MockFor#ignore(Object, Closure)
+     * @See MockFor # ignore ( Object , Closure )
      */
     def ignore(Object filter, Closure filterBehavior = null) {
         // if Stubbing Strings, attempt not to also match Strings with filter
@@ -131,9 +120,9 @@ class StubFor {
      * Allows a more traditional instance-style stubbing paradigm. This is the
      * recommended method to call to use the instance-style with Groovy classes.
      *
-     * @See MockFor#proxyInstance(Object)
+     * @See MockFor # proxyInstance ( Object )
      */
-    GroovyObject proxyInstance(args=null) {
+    GroovyObject proxyInstance(args = null) {
         makeProxyInstance(args, false)
     }
 
@@ -141,9 +130,9 @@ class StubFor {
      * Allows a more traditional instance-style stubbing paradigm. This is the
      * recommended method to call to use the instance-style with Java classes.
      *
-     * @See MockFor#proxyDelegateInstance(Object)
+     * @See MockFor # proxyDelegateInstance ( Object )
      */
-    GroovyObject proxyDelegateInstance(args=null) {
+    GroovyObject proxyDelegateInstance(args = null) {
         makeProxyInstance(args, true)
     }
 
