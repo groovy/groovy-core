@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author Alex.Tkachman
  */
-public class ClassInfo extends ManagedConcurrentMap.Entry<Class,ClassInfo> {
+public final class ClassInfo extends ManagedConcurrentMap.Entry<Class,ClassInfo> {
 
     private static final Set<ClassInfo> modifiedExpandos = new HashSet<ClassInfo>();
 
@@ -69,10 +69,31 @@ public class ClassInfo extends ManagedConcurrentMap.Entry<Class,ClassInfo> {
     public int getVersion() {
         return version;
     }
-
+    
     public void incVersion() {
-        version++;
+        doIncVersion();
         VMPluginFactory.getPlugin().invalidateCallSites();
+    }
+
+    private void doIncVersion() {
+        version++;
+        incVersionForDerivedOrImplementingClasses();
+    }
+
+    private void incVersionForDerivedOrImplementingClasses() {
+        Class theClass = getCachedClass().getTheClass();
+        incVersions(theClass, getAllLocalClassInfo());
+        incVersions(theClass, getAllGlobalClassInfo());
+    }
+
+    private void incVersions(Class theClass, Collection<ClassInfo> classInfos) {
+        if (classInfos != null) {
+            for(ClassInfo classInfo : classInfos) {
+                if(classInfo != this && theClass.isAssignableFrom(classInfo.getCachedClass().getTheClass())) {
+                    classInfo.doIncVersion();
+                }
+            }
+        }
     }
 
     public ExpandoMetaClass getModifiedExpando() {
@@ -106,13 +127,22 @@ public class ClassInfo extends ManagedConcurrentMap.Entry<Class,ClassInfo> {
     }
 
     public static Collection<ClassInfo> getAllClassInfo () {
+        Collection<ClassInfo> localClassInfos = getAllLocalClassInfo();
+        return localClassInfos != null ? localClassInfos : getAllGlobalClassInfo();
+    }
+
+    private static Collection getAllGlobalClassInfo() {
+        return globalClassSet.values();
+    }
+
+    private static Collection<ClassInfo> getAllLocalClassInfo() {
         ThreadLocalMapHandler handler = localMapRef.get();
         SoftReference<LocalMap> ref=null;
         if (handler!=null) ref = handler.get();
         LocalMap map=null;
         if (ref!=null) map = ref.get();
         if (map!=null) return map.values();
-        return globalClassSet.values();
+        return null;
     }
 
     public MetaClass getStrongMetaClass() {
