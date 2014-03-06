@@ -183,7 +183,12 @@ public final class ClassInfo extends ManagedConcurrentMap.Entry<Class,ClassInfo>
     }
 
     public MetaClass getMetaClassForClass() {
-        return strongMetaClass != null ? strongMetaClass : weakMetaClass == null ? null : weakMetaClass.get();
+        if (strongMetaClass!=null) return strongMetaClass;
+        MetaClass weakMc = getWeakMetaClass();
+        if (isValidWeakMetaClass(weakMc)) {
+            return weakMc;
+        }
+        return null;
     }
 
     private MetaClass getMetaClassUnderLock() {
@@ -194,14 +199,8 @@ public final class ClassInfo extends ManagedConcurrentMap.Entry<Class,ClassInfo>
         final MetaClassRegistry metaClassRegistry = GroovySystem.getMetaClassRegistry();
         MetaClassRegistry.MetaClassCreationHandle mccHandle = metaClassRegistry.getMetaClassCreationHandler();
         
-        if (answer != null) {
-            boolean enableGloballyOn = (mccHandle instanceof ExpandoMetaClassCreationHandle);
-            boolean cachedAnswerIsEMC = (answer instanceof ExpandoMetaClass);
-            // if EMC.enableGlobally() is OFF, return whatever the cached answer is.
-            // but if EMC.enableGlobally() is ON and the cached answer is not an EMC, come up with a fresh answer
-            if(!enableGloballyOn || cachedAnswerIsEMC) {
-                return answer;
-            }
+        if (isValidWeakMetaClass(answer, mccHandle)) {
+            return answer;
         }
 
         answer = mccHandle.create(get(), metaClassRegistry);
@@ -213,6 +212,21 @@ public final class ClassInfo extends ManagedConcurrentMap.Entry<Class,ClassInfo>
             setWeakMetaClass(answer);
         }
         return answer;
+    }
+    
+    private boolean isValidWeakMetaClass(MetaClass metaClass) {
+        return isValidWeakMetaClass(metaClass, GroovySystem.getMetaClassRegistry().getMetaClassCreationHandler());
+    }
+
+    /**
+     * if EMC.enableGlobally() is OFF, return whatever the cached answer is.
+     * but if EMC.enableGlobally() is ON and the cached answer is not an EMC, come up with a fresh answer
+     */
+    private boolean isValidWeakMetaClass(MetaClass metaClass, MetaClassRegistry.MetaClassCreationHandle mccHandle) {
+        if(metaClass==null) return false;
+        boolean enableGloballyOn = (mccHandle instanceof ExpandoMetaClassCreationHandle);
+        boolean cachedAnswerIsEMC = (metaClass instanceof ExpandoMetaClass);
+        return (!enableGloballyOn || cachedAnswerIsEMC);
     }
 
     public final MetaClass getMetaClass() {
