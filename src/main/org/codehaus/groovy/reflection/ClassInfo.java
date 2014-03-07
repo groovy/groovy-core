@@ -117,13 +117,18 @@ public final class ClassInfo extends ManagedConcurrentMap.Entry<Class,ClassInfo>
     }
 
     public static ClassInfo getClassInfo (Class cls) {
+        LocalMap map = getLocalClassInfoMap();
+        if (map!=null) return map.get(cls);
+        return (ClassInfo) globalClassSet.getOrPut(cls,null);
+    }
+
+    private static LocalMap getLocalClassInfoMap() {
         ThreadLocalMapHandler handler = localMapRef.get();
         SoftReference<LocalMap> ref=null;
         if (handler!=null) ref = handler.get();
         LocalMap map=null;
         if (ref!=null) map = ref.get();
-        if (map!=null) return map.get(cls);
-        return (ClassInfo) globalClassSet.getOrPut(cls,null);
+        return map;
     }
 
     public static Collection<ClassInfo> getAllClassInfo () {
@@ -136,11 +141,7 @@ public final class ClassInfo extends ManagedConcurrentMap.Entry<Class,ClassInfo>
     }
 
     private static Collection<ClassInfo> getAllLocalClassInfo() {
-        ThreadLocalMapHandler handler = localMapRef.get();
-        SoftReference<LocalMap> ref=null;
-        if (handler!=null) ref = handler.get();
-        LocalMap map=null;
-        if (ref!=null) map = ref.get();
+        LocalMap map = getLocalClassInfoMap();
         if (map!=null) return map.values();
         return null;
     }
