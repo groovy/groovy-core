@@ -71,26 +71,29 @@ public final class ClassInfo extends ManagedConcurrentMap.Entry<Class,ClassInfo>
     }
     
     public void incVersion() {
-        doIncVersion();
+        doIncVersion(new HashSet<Class>());
         VMPluginFactory.getPlugin().invalidateCallSites();
     }
 
-    private void doIncVersion() {
-        version++;
-        incVersionForDerivedOrImplementingClasses();
-    }
-
-    private void incVersionForDerivedOrImplementingClasses() {
+    private void doIncVersion(Set<Class> alreadyHandled) {
         Class theClass = getCachedClass().getTheClass();
-        incVersions(theClass, getAllLocalClassInfo());
-        incVersions(theClass, getAllGlobalClassInfo());
+        if(!alreadyHandled.contains(theClass)) {
+            alreadyHandled.add(theClass);
+            version++;
+            incVersionForDerivedOrImplementingClasses(theClass, alreadyHandled);
+        }
     }
 
-    private void incVersions(Class theClass, Collection<ClassInfo> classInfos) {
+    private void incVersionForDerivedOrImplementingClasses(Class theClass, Set<Class> alreadyHandled) {
+        incVersions(theClass, alreadyHandled, getAllLocalClassInfo());
+        incVersions(theClass, alreadyHandled, getAllGlobalClassInfo());
+    }
+
+    private void incVersions(Class theClass, Set<Class> alreadyHandled, Collection<ClassInfo> classInfos) {
         if (classInfos != null) {
             for(ClassInfo classInfo : classInfos) {
                 if(classInfo != this && theClass.isAssignableFrom(classInfo.getCachedClass().getTheClass())) {
-                    classInfo.doIncVersion();
+                    classInfo.doIncVersion(alreadyHandled);
                 }
             }
         }
