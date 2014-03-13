@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2013 the original author or authors.
+ * Copyright 2003-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,12 @@
  */
 package groovy.json
 
-
-import groovy.util.GroovyTestCase
 import static groovy.json.JsonOutput.toJson
 import groovy.transform.Canonical
 
 /**
- * 
  * @author Guillaume Laforge
+ * @author Andrey Bloschetsov
  */
 class JsonOutputTest extends GroovyTestCase {
     
@@ -154,7 +152,7 @@ class JsonOutputTest extends GroovyTestCase {
 
     void testURL() {
         assert toJson(new URL("http://glaforge.appspot.com")) == '"http://glaforge.appspot.com"'
-        assert JsonOutput.toJson(new URL('file', '', 'C:\\this\\is\\windows\\path')) == '"file:C:\\\\this\\\\is\\\\windows\\\\path"' // GROOVY-6560
+        assert toJson(new URL('file', '', 'C:\\this\\is\\windows\\path')) == '"file:C:\\\\this\\\\is\\\\windows\\\\path"' // GROOVY-6560
     }
 
     void testCalendar() {
