@@ -138,6 +138,15 @@ class JsonOutputTest extends GroovyTestCase {
         assert toJson("\u0019") == '"\\u0019"'
     }
 
+    void testGString() {
+        assert toJson("1 + 2 = ${1 + 2}") == '"1 + 2 = 3"'
+    }
+
+    void testStringBuilderBuffer() {
+        assert toJson(new StringBuilder().append(14).append(' March ').append(2014)) == '"14 March 2014"'
+        assert toJson(new StringBuffer().append(14).append(' March ').append(2014)) == '"14 March 2014"'
+    }
+
     void testCharArray() {
         char[] charArray = ['a', 'b', 'c']
 
