@@ -18,7 +18,7 @@ package org.codehaus.groovy.transform
 /**
  * @author Marcin Grzejszczak
  */
-class PojoBuilderTransformTest extends GroovyShellTestCase {
+class PojoBuilderASTTransformationTest extends GroovyShellTestCase {
 
     void testBuilder() {
         def personBuilder = evaluate("""

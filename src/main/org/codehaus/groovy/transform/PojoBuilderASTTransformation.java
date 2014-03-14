@@ -16,6 +16,7 @@
 package org.codehaus.groovy.transform;
 
 import static org.codehaus.groovy.transform.AbstractASTTransformUtil.*;
+import static org.codehaus.groovy.transform.AbstractASTTransformUtil.assignStatement;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +31,6 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
-import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.FieldExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
@@ -42,8 +42,6 @@ import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.syntax.Token;
-import org.codehaus.groovy.syntax.Types;
 
 import groovy.transform.PojoBuilder;
 
@@ -58,7 +56,6 @@ public class PojoBuilderASTTransformation extends AbstractASTTransformation {
     static final Class MY_CLASS = PojoBuilder.class;
     static final ClassNode MY_TYPE = ClassHelper.make(MY_CLASS);
     static final String MY_TYPE_NAME = "@" + MY_TYPE.getNameWithoutPackage();
-	private static final Token ASSIGN = Token.newSymbol(Types.ASSIGN, -1, -1);
 
     public void visit(ASTNode[] nodes, SourceUnit source) {
         init(nodes, source);
@@ -140,14 +137,16 @@ public class PojoBuilderASTTransformation extends AbstractASTTransformation {
 
 	private static MethodNode createWithBuilderMethodForField(ClassNode annotatedClassNode, FieldNode fieldNode) {
 		final BlockStatement body = new BlockStatement();
-		Parameter[] parameters = new Parameter[]{ new Parameter(fieldNode.getType(), fieldNode.getName()) };
-		// this.field = parameter
-		body.addStatement(assignStatement(new FieldExpression(fieldNode), new VariableExpression(parameters[0])));
+        String fieldName = fieldNode.getName();
+        Parameter parameter = new Parameter(fieldNode.getType(), fieldName);
+        // this.field = parameter
+        body.addStatement(assignStatement(new FieldExpression(fieldNode), new VariableExpression(parameter)));
 		// return this
 		body.addStatement(new ReturnStatement(VariableExpression.THIS_EXPRESSION));
-		String firstLetterUppercasedFieldName = fieldNode.getName().substring(0, 1).toUpperCase() + fieldNode.getName().substring(1);
+        String firstLetterUppercasedFieldName = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1);
 		// Builder withField(type parameter) { this.field = parameter; return this; }
-		return new MethodNode("with" + firstLetterUppercasedFieldName, ACC_PUBLIC, annotatedClassNode.getPlainNodeReference(), parameters, ClassNode.EMPTY_ARRAY, body);
+        return new MethodNode("with" + firstLetterUppercasedFieldName, ACC_PUBLIC, annotatedClassNode.getPlainNodeReference(),
+                new Parameter[] {parameter}, ClassNode.EMPTY_ARRAY, body);
 	}
 
 	private static void appendBuildMethod(ClassNode annotatedClassNode, ClassNode classToCreateBuilderFor, List<FieldNode> createdPrivateFields) {
@@ -169,7 +168,7 @@ public class PojoBuilderASTTransformation extends AbstractASTTransformation {
 		final Expression callClassToCreateBuilderForConstructor = new ConstructorCallExpression(classToCreateBuilderFor, ArgumentListExpression.EMPTY_ARGUMENTS);
 		VariableExpression classToCreateBuilderForVariable = new VariableExpression("objectToBuild", classToCreateBuilderFor);
 		// ObjectToBuild objectToBuild = new ObjectToBuild();
-		Statement constructorCallToVariableAssignment = new ExpressionStatement(new DeclarationExpression(classToCreateBuilderForVariable, ASSIGN, callClassToCreateBuilderForConstructor));
+        Statement constructorCallToVariableAssignment = declStatement(classToCreateBuilderForVariable, callClassToCreateBuilderForConstructor);
 		body.addStatement(constructorCallToVariableAssignment);
 		// objectToBuild.property = field; 
 		for (FieldNode createdPrivateField : createdPrivateFields) {
@@ -190,14 +189,14 @@ public class PojoBuilderASTTransformation extends AbstractASTTransformation {
 		// ObjectToBuild objectToBuild = new ObjectToBuild();
 		// set values
 		VariableExpression classToCreateBuilderForVariable = initializeObjectAndSetItsValues(classToCreateBuilderFor, createdPrivateFields, body);
-		Parameter[] parameters = new Parameter[]{ new Parameter(ClassHelper.CLOSURE_TYPE.getPlainNodeReference(), "validationClosure") };
+        Parameter parameter = new Parameter(ClassHelper.CLOSURE_TYPE.getPlainNodeReference(), "validationClosure");
 		// call validation closure with created object as parameter
-		MethodCallExpression closureCall = new MethodCallExpression(new VariableExpression(parameters[0]), "call", classToCreateBuilderForVariable);
+        MethodCallExpression closureCall = new MethodCallExpression(new VariableExpression(parameter), "call", classToCreateBuilderForVariable);
 		body.addStatement(new ExpressionStatement(closureCall));
 		// return objectToBuild
 		body.addStatement(new ReturnStatement(classToCreateBuilderForVariable));
 		// ObjectToBuild build(Closure validationClosure) { ObjectToBuild objectToBuild = new ObjectToBuild(); SET_VALUES; validationClosure.call(objectToBuild); return objectToBuild;}
-		return new MethodNode("build", ACC_PUBLIC, classToCreateBuilderFor, parameters, ClassNode.EMPTY_ARRAY, body);
+        return new MethodNode("build", ACC_PUBLIC, classToCreateBuilderFor, new Parameter[] {parameter}, ClassNode.EMPTY_ARRAY, body);
 	}
 
 }
