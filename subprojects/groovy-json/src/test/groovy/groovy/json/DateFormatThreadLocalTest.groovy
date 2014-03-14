@@ -25,7 +25,7 @@ class DateFormatThreadLocalTest extends GroovyTestCase {
     void testFormat() {
         // 14 March 2014, 9:18:12 in Moscow
         Calendar now = Calendar.getInstance(TimeZone.getTimeZone('Europe/Moscow'))
-        now.set(2014, 2, 14, 9, 18, 12)
+        now.set(year: 2014, month: Calendar.MARCH, date: 14, hourOfDay: 9, minute: 18, second: 12)
 
         SimpleDateFormat formatter = new DateFormatThreadLocal().get()
         assert formatter.format(now.getTime()) == '2014-03-14T05:18:12+0000' // When in Moscow 9am in London 5am
