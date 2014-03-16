@@ -472,8 +472,7 @@ class DelegateTransformTest extends CompilableTestSupport {
         assertScript """
             interface AddAllCollectionSelector {
                 boolean addAll(Collection<? extends Integer> c)
-                // TODO should return type for remove be Integer
-                def remove(int index)
+                Integer remove(int index)
             }
 
             class SplitNumberList {

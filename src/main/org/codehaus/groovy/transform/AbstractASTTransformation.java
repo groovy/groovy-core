@@ -22,6 +22,7 @@ import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.GenericsType;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
@@ -140,6 +141,7 @@ public abstract class AbstractASTTransformation implements Opcodes, ASTTransform
     public static boolean shouldSkipOnDescriptor(String descriptor, List<ClassNode> excludeTypes, List<ClassNode> includeTypes) {
         if (excludeTypes != null) {
             for (ClassNode cn : excludeTypes) {
+                // TODO correct to generics spec?
                 for (MethodNode mn : nonGeneric(cn).getMethods()) {
                     if (mn.getTypeDescriptor().equals(descriptor)) return true;
                 }
@@ -210,6 +212,17 @@ public abstract class AbstractASTTransformation implements Opcodes, ASTTransform
             }
         }
         return makeClassSafe0(type, gtypes);
+    }
+
+    static MethodNode correctToGenericsSpec(Map genericsSpec, MethodNode mn) {
+        ClassNode correctedType = correctToGenericsSpecRecurse(genericsSpec, mn.getReturnType());
+        Parameter[] origParameters = mn.getParameters();
+        Parameter[] newParameters = new Parameter[origParameters.length];
+        for (int i = 0; i < origParameters.length; i++) {
+            Parameter origParameter = origParameters[i];
+            newParameters[i] = new Parameter(correctToGenericsSpecRecurse(genericsSpec, origParameter.getType()), origParameter.getName(), origParameter.getInitialExpression());
+        }
+        return new MethodNode(mn.getName(), mn.getModifiers(), correctedType, newParameters, mn.getExceptions(), mn.getCode());
     }
 
     static ClassNode correctToGenericsSpecRecurse(Map genericsSpec, ClassNode type) {

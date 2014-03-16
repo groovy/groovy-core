@@ -200,8 +200,12 @@ public class DelegateASTTransformation extends AbstractASTTransformation impleme
             return;
 
         if (shouldSkip(candidate.getName(), excludes, includes)) return;
-        checkIncludeExclude(node, excludes, includes, excludeTypes, includeTypes, MY_TYPE_NAME);
-        if (shouldSkipOnDescriptor(candidate.getTypeDescriptor(), excludeTypes, includeTypes)) return;
+
+        Map genericsSpec = Verifier.createGenericsSpec(fieldNode.getDeclaringClass(), new HashMap());
+        genericsSpec = Verifier.createGenericsSpec(fieldNode.getType(), genericsSpec);
+
+        String correctedTypeDescriptor = correctToGenericsSpec(genericsSpec, candidate).getTypeDescriptor();
+        if (shouldSkipOnDescriptor(correctedTypeDescriptor, excludeTypes, includeTypes)) return;
 
         // ignore methods from GroovyObject
         for (MethodNode mn : GROOVYOBJECT_TYPE.getMethods()) {
@@ -226,8 +230,6 @@ public class DelegateASTTransformation extends AbstractASTTransformation impleme
                 break;
             }
         }
-        Map genericsSpec = Verifier.createGenericsSpec(fieldNode.getDeclaringClass(), new HashMap());
-        genericsSpec = Verifier.createGenericsSpec(fieldNode.getType(), genericsSpec);
         if (existingNode == null || existingNode.getCode() == null) {
 
             final boolean includeParameterAnnotations = hasBooleanValue(node.getMember(MEMBER_PARAMETER_ANNOTATIONS), true);
