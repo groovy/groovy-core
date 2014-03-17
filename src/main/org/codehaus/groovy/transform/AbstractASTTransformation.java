@@ -194,10 +194,18 @@ public abstract class AbstractASTTransformation implements Opcodes, ASTTransform
         return type.getPlainNodeReference();
     }
 
+    public static ClassNode makeClassSafe(Class klass) {
+        return makeClassSafeWithGenerics(klass);
+    }
+
     public static ClassNode makeClassSafe0(ClassNode type, GenericsType... genericTypes) {
         ClassNode plainNodeReference = newClass(type);
         if (genericTypes != null && genericTypes.length > 0) plainNodeReference.setGenericsTypes(genericTypes);
         return plainNodeReference;
+    }
+
+    public static ClassNode makeClassSafeWithGenerics(Class clazz, ClassNode... genericTypes) {
+        return makeClassSafeWithGenerics(ClassHelper.make(clazz), genericTypes);
     }
 
     public static ClassNode makeClassSafeWithGenerics(ClassNode type, ClassNode... genericTypes) {
