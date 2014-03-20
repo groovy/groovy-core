@@ -53,9 +53,10 @@ import groovy.transform.PojoBuilder;
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 public class PojoBuilderASTTransformation extends AbstractASTTransformation {
 
-    static final Class MY_CLASS = PojoBuilder.class;
-    static final ClassNode MY_TYPE = ClassHelper.make(MY_CLASS);
-    static final String MY_TYPE_NAME = "@" + MY_TYPE.getNameWithoutPackage();
+    private static final Class MY_CLASS = PojoBuilder.class;
+    private static final ClassNode MY_TYPE = ClassHelper.make(MY_CLASS);
+    private static final String MY_TYPE_NAME = "@" + MY_TYPE.getNameWithoutPackage();
+    private static final Expression DEFAULT_INITIAL_VALUE_EXPRESSION = null;
 
     public void visit(ASTNode[] nodes, SourceUnit source) {
         init(nodes, source);
@@ -100,11 +101,17 @@ public class PojoBuilderASTTransformation extends AbstractASTTransformation {
 
     private static List<FieldNode> createPrivateFieldsForClass(ClassNode cNode, List<FieldNode> classToCreateBuilderForFields) {
         List<FieldNode> createdPrivateFields = new ArrayList<FieldNode>();
-        for (FieldNode field : classToCreateBuilderForFields) {
-            createdPrivateFields.add(field);
-            cNode.addField(field);
+        for (FieldNode fNode : classToCreateBuilderForFields) {
+            FieldNode fNodeCopy = createFieldCopyInGivenClass(fNode, cNode);
+            createdPrivateFields.add(fNodeCopy);
+            cNode.addField(fNodeCopy);
         }
         return createdPrivateFields;
+    }
+
+    private static FieldNode createFieldCopyInGivenClass(FieldNode fNode, ClassNode cNode) {
+        return new FieldNode(fNode.getName(), fNode.getModifiers(), ClassHelper.make(fNode.getType().getName()), cNode,
+                DEFAULT_INITIAL_VALUE_EXPRESSION);
     }
 
     private static List<FieldNode> getAllFieldsOfClassWithIncludesExcludes(ClassNode classToCreateBuilderFor, List<String> includes, List<String> excludes) {

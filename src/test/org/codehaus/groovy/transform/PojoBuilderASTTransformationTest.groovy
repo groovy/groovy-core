@@ -135,4 +135,24 @@ class PojoBuilderASTTransformationTest extends GroovyShellTestCase {
         }
     }
 
+    void testBuilderWithPrimitiveFields() {
+        def primitivePojoBuilder = evaluate("""
+            import groovy.transform.PojoBuilder
+
+            class PrimitivePojo {
+                int intField
+                boolean booleanField
+            }
+
+            @PojoBuilder(forClass = PrimitivePojo)
+            class PrimitivePojoBuilder {
+
+            }
+
+            return new PrimitivePojoBuilder()
+        """)
+        def person = primitivePojoBuilder.withIntField(5).build()
+        assert person.intField == 5
+        assert person.booleanField == false
+    }
 }
