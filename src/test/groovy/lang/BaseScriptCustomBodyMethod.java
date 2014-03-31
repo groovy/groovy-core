@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2014 the original author or authors.
+ * Copyright 2003-2011 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,16 +12,21 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * Derived from Boon all rights granted to Groovy project for this fork.
  */
-package groovy.json.internal;
+package groovy.lang;
 
 /**
- * @author Richard Hightower
+ * A derived Script which adds some 'global' methods available to the script
  */
-public enum Type {
+public abstract class BaseScriptCustomBodyMethod extends Script {
 
-    INTEGER, STRING, DOUBLE, TRUE, FALSE, NULL, MAP, LIST;
+    abstract protected Object runScriptBody();
 
+    public String cheese = "Swiss";
+
+    @Override
+    public Object run() {
+        cheese = "Cheddar";
+        return runScriptBody();
+    }
 }

@@ -37,6 +37,8 @@ import org.objectweb.asm.Opcodes;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -134,29 +136,49 @@ public abstract class AbstractASTTransformation implements Opcodes, ASTTransform
         return rawExcludes == null ? new ArrayList<String>() : StringGroovyMethods.tokenize(rawExcludes, ", ");
     }
 
-    public static boolean shouldSkip(String name, List<String> excludes, List<String> includes) {
-        return (excludes != null && excludes.contains(name)) || name.contains("$") || (includes != null && !includes.isEmpty() && !includes.contains(name));
+    public static boolean deemedInternalName(String name) {
+        return name.contains("$");
     }
 
-    public static boolean shouldSkipOnDescriptor(String descriptor, List<ClassNode> excludeTypes, List<ClassNode> includeTypes) {
-        if (excludeTypes != null) {
+    public static boolean shouldSkip(String name, List<String> excludes, List<String> includes) {
+        return (excludes != null && excludes.contains(name)) || deemedInternalName(name) || (includes != null && !includes.isEmpty() && !includes.contains(name));
+    }
+
+    public static boolean shouldSkipOnDescriptor(Map genericsSpec, String descriptor, List<ClassNode> excludeTypes, List<ClassNode> includeTypes) {
             for (ClassNode cn : excludeTypes) {
-                // TODO correct to generics spec?
-                for (MethodNode mn : nonGeneric(cn).getMethods()) {
-                    if (mn.getTypeDescriptor().equals(descriptor)) return true;
+                List<ClassNode> remaining = new LinkedList<ClassNode>();
+                remaining.add(cn);
+                Map updatedGenericsSpec = new HashMap(genericsSpec);
+                while (!remaining.isEmpty()) {
+                    ClassNode next = remaining.remove(0);
+                    if (!next.equals(ClassHelper.OBJECT_TYPE)) {
+                        updatedGenericsSpec = Verifier.createGenericsSpec(next, updatedGenericsSpec);
+                        for (MethodNode mn : next.getMethods()) {
+                            String md = correctToGenericsSpec(updatedGenericsSpec, mn).getTypeDescriptor();
+                            if (md.equals(descriptor)) return true;
+                        }
+                        remaining.addAll(Arrays.asList(next.getInterfaces()));
+                    }
                 }
             }
-            return false;
-        }
-        if (includeTypes != null) {
+            if (includeTypes.isEmpty()) return false;
             for (ClassNode cn : includeTypes) {
-                for (MethodNode mn : nonGeneric(cn).getMethods()) {
-                    if (mn.getTypeDescriptor().equals(descriptor)) return false;
+                List<ClassNode> remaining = new LinkedList<ClassNode>();
+                remaining.add(cn);
+                Map updatedGenericsSpec = new HashMap(genericsSpec);
+                while (!remaining.isEmpty()) {
+                    ClassNode next = remaining.remove(0);
+                    if (!next.equals(ClassHelper.OBJECT_TYPE)) {
+                        updatedGenericsSpec = Verifier.createGenericsSpec(next, updatedGenericsSpec);
+                        for (MethodNode mn : next.getMethods()) {
+                            String md = correctToGenericsSpec(updatedGenericsSpec, mn).getTypeDescriptor();
+                            if (md.equals(descriptor)) return false;
+                        }
+                        remaining.addAll(Arrays.asList(next.getInterfaces()));
+                    }
                 }
             }
             return true;
-        }
-        return false;
     }
 
     protected void checkIncludeExclude(AnnotationNode node, List<String> excludes, List<String> includes, String typeName) {
@@ -195,7 +217,7 @@ public abstract class AbstractASTTransformation implements Opcodes, ASTTransform
     }
 
     public static ClassNode makeClassSafe(Class klass) {
-        return makeClassSafeWithGenerics(klass);
+        return makeClassSafeWithGenerics(ClassHelper.make(klass));
     }
 
     public static ClassNode makeClassSafe0(ClassNode type, GenericsType... genericTypes) {
@@ -204,25 +226,20 @@ public abstract class AbstractASTTransformation implements Opcodes, ASTTransform
         return plainNodeReference;
     }
 
-    public static ClassNode makeClassSafeWithGenerics(Class clazz, ClassNode... genericTypes) {
-        return makeClassSafeWithGenerics(ClassHelper.make(clazz), genericTypes);
-    }
 
-    public static ClassNode makeClassSafeWithGenerics(ClassNode type, ClassNode... genericTypes) {
-        if (type.isArray() /*&& type.getComponentType().isUsingGenerics()*/) {
+    public static ClassNode makeClassSafeWithGenerics(ClassNode type, GenericsType... genericTypes) {
+        if (type.isArray()) {
             return makeClassSafeWithGenerics(type.getComponentType(), genericTypes).makeArray();
         }
         GenericsType[] gtypes = new GenericsType[0];
         if (genericTypes != null) {
             gtypes = new GenericsType[genericTypes.length];
-            for (int i = 0; i < gtypes.length; i++) {
-                gtypes[i] = new GenericsType(newClass(genericTypes[i]));
-            }
+            System.arraycopy(genericTypes, 0, gtypes, 0, gtypes.length);
         }
         return makeClassSafe0(type, gtypes);
     }
 
-    static MethodNode correctToGenericsSpec(Map genericsSpec, MethodNode mn) {
+    public static MethodNode correctToGenericsSpec(Map genericsSpec, MethodNode mn) {
         ClassNode correctedType = correctToGenericsSpecRecurse(genericsSpec, mn.getReturnType());
         Parameter[] origParameters = mn.getParameters();
         Parameter[] newParameters = new Parameter[origParameters.length];
@@ -233,18 +250,41 @@ public abstract class AbstractASTTransformation implements Opcodes, ASTTransform
         return new MethodNode(mn.getName(), mn.getModifiers(), correctedType, newParameters, mn.getExceptions(), mn.getCode());
     }
 
-    static ClassNode correctToGenericsSpecRecurse(Map genericsSpec, ClassNode type) {
+    public static ClassNode correctToGenericsSpecRecurse(Map genericsSpec, ClassNode type) {
         if (type.isGenericsPlaceHolder()) {
             String name = type.getGenericsTypes()[0].getName();
             type = (ClassNode) genericsSpec.get(name);
         }
         if (type == null) type = ClassHelper.OBJECT_TYPE;
         GenericsType[] oldgTypes = type.getGenericsTypes();
-        ClassNode[] newgTypes = new ClassNode[0];
+        GenericsType[] newgTypes = new GenericsType[0];
         if (oldgTypes != null) {
-            newgTypes = new ClassNode[oldgTypes.length];
+            newgTypes = new GenericsType[oldgTypes.length];
             for (int i = 0; i < newgTypes.length; i++) {
-                newgTypes[i] = Verifier.correctToGenericsSpec(genericsSpec, oldgTypes[i]);
+                GenericsType oldgType = oldgTypes[i];
+                if (oldgType.isPlaceholder() ) {
+                    if (genericsSpec.get(oldgType.getName())!=null) {
+                        newgTypes[i] = new GenericsType((ClassNode) genericsSpec.get(oldgType.getName()));
+                    } else {
+                        newgTypes[i] = new GenericsType(ClassHelper.OBJECT_TYPE);
+                    }
+                } else if (oldgType.isWildcard()) {
+                    ClassNode oldLower = oldgType.getLowerBound();
+                    ClassNode lower = oldLower!=null?correctToGenericsSpecRecurse(genericsSpec, oldLower):null;
+                    ClassNode[] oldUpper = oldgType.getUpperBounds();
+                    ClassNode[] upper = null;
+                    if (oldUpper!=null) {
+                        upper = new ClassNode[oldUpper.length];
+                        for (int j = 0; j < oldUpper.length; j++) {
+                            upper[j] = correctToGenericsSpecRecurse(genericsSpec,oldUpper[j]);
+                        }
+                    }
+                    GenericsType fixed = new GenericsType(oldgType.getType(), upper, lower);
+                    fixed.setWildcard(true);
+                    newgTypes[i] = fixed;
+                } else {
+                    newgTypes[i] = new GenericsType(Verifier.correctToGenericsSpec(genericsSpec, oldgType));
+                }
             }
         }
         return makeClassSafeWithGenerics(type, newgTypes);

@@ -467,28 +467,44 @@ class DelegateTransformTest extends CompilableTestSupport {
         """
     }
 
-    // GROOVY-6330
+    // GROOVY-6329
     void testIncludeAndExcludeByType() {
         assertScript """
-            interface AddAllCollectionSelector {
-                boolean addAll(Collection<? extends Integer> c)
-                Integer remove(int index)
+            interface OddInclusionsTU<T, U> {
+                boolean addAll(Collection<? extends T> t)
+                boolean add(U u)
+                T remove(int index)
             }
 
-            class SplitNumberList {
-                // collection variant of addAll and remove will work on odd list, all other methods on even list
-                @Delegate(excludeTypes=AddAllCollectionSelector) List<Integer> evens = [2, 4, 6]
-                @Delegate(includeTypes=AddAllCollectionSelector) List<Integer> odds = [1, 3, 5]
-                def getEvensThenOdds() { evens + odds }
+            interface OddInclusionsU<U> extends OddInclusionsTU<Integer, U> { }
+
+            interface OddInclusions extends OddInclusionsU<Integer> { }
+
+            interface OtherInclusions {
+                void clear()
             }
 
-            def list = new SplitNumberList()
-            assert list.evensThenOdds == [2, 4, 6, 1, 3, 5]
+            interface EvenExclusions extends OddInclusions, OtherInclusions { }
+
+            class MixedNumbers {
+                // collection variant of addAll and remove will work on odd list
+                @Delegate(includeTypes=OddInclusions) List<Integer> odds = [1, 3]
+                // clear will work on other list
+                @Delegate(includeTypes=OtherInclusions) List<Integer> others = [0]
+                // all other methods will work on even list
+                @Delegate(excludeTypes=EvenExclusions) List<Integer> evens = [2, 4, 6]
+                def getAll() { evens + odds + others }
+            }
+
+            def list = new MixedNumbers()
+            assert list.all == [2, 4, 6, 1, 3, 0]
+            list.add(5)
             list.addAll([7, 9])
             list.addAll(1, [8])
             list.remove(0)
             assert list.indexOf(8) == 1
-            assert list.evensThenOdds == [2, 8, 4, 6, 3, 5, 7, 9]
+            list.clear()
+            assert list.all == [2, 8, 4, 6, 3, 5, 7, 9]
         """
     }
 
