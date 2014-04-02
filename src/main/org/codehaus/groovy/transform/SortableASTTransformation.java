@@ -16,9 +16,17 @@
 package org.codehaus.groovy.transform;
 
 import groovy.transform.Sortable;
+import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.AnnotatedNode;
+import org.codehaus.groovy.ast.AnnotationNode;
+import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.InnerClassNode;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.runtime.AbstractComparator;
-import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.CompilePhase;
@@ -29,22 +37,23 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import static org.codehaus.groovy.ast.ClassHelper.OBJECT_TYPE;
 import static org.codehaus.groovy.ast.tools.GeneralUtils.*;
-import static org.codehaus.groovy.ast.tools.GenericsUtils.makeSafe;
 import static org.codehaus.groovy.ast.tools.GenericsUtils.newClass;
 
 /**
  * Injects a set of Comparators and sort methods.
  *
  * @author Andres Almiray
+ * @author Paul King
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
+
 public class SortableASTTransformation extends AbstractASTTransformation {
-    private static final ClassNode MY_TYPE = newClass(Sortable.class);
-    private static final ClassNode COMPARABLE_TYPE = newClass(Comparable.class);
-    private static final ClassNode COMPARATOR_TYPE = newClass(Comparator.class);
-    private static final ClassNode ABSTRACT_COMPARATOR_TYPE = newClass(AbstractComparator.class);
-    private static final Expression NIL = ConstantExpression.NULL;
+    private static final ClassNode MY_TYPE = ClassHelper.make(Sortable.class);
+    private static final ClassNode COMPARABLE_TYPE = ClassHelper.make(Comparable.class);
+    private static final ClassNode COMPARATOR_TYPE = ClassHelper.make(Comparator.class);
+    private static final ClassNode ABSTRACT_COMPARATOR_TYPE = ClassHelper.make(AbstractComparator.class);
 
     private static final String VALUE = "value";
     private static final String OBJ = "obj";
@@ -87,7 +96,7 @@ public class SortableASTTransformation extends AbstractASTTransformation {
                 "compareTo",
                 ACC_PUBLIC,
                 ClassHelper.int_TYPE,
-                params(param(ClassHelper.OBJECT_TYPE, OBJ)),
+                params(param(OBJECT_TYPE, OBJ)),
                 ClassNode.EMPTY_ARRAY,
                 createCompareToMethodBody(classNode, properties)
         ));
@@ -101,30 +110,30 @@ public class SortableASTTransformation extends AbstractASTTransformation {
         List<Statement> statements = new ArrayList<Statement>();
 
         // if(this.is(obj)) return 0;
-        statements.add(ifs(new MethodCallExpression(THIS, "is", vars(OBJ)), constx(0)));
+        statements.add(ifS(callThisX("is", vars(OBJ)), returnS(constX(0))));
         // if(!(obj instanceof <type>)) return -1;
-        statements.add(ifs(not(iof(var(OBJ), makeSafe(classNode))), constx(-1)));
+        statements.add(ifS(not(isInstanceOf(var(OBJ), newClass(classNode))), returnS(constX(-1))));
         // int value = 0;
-        statements.add(decls(var(VALUE, ClassHelper.int_TYPE), constx(0)));
+        statements.add(declS(var(VALUE, ClassHelper.int_TYPE), constX(0)));
         for (PropertyNode property : properties) {
             String name = property.getName();
             // TODO: check that this.prop is Comparable otherwise KABOOM!
             // value = this.prop <=> obj.prop;
             statements.add(
-                    assigns(var(VALUE), cmp(prop(THIS, name), prop(var(OBJ), name)))
+                    assignS(var(VALUE), cmp(prop(var("this"), name), prop(var(OBJ), name)))
             );
             // if(value != 0) return value;
             statements.add(
-                    ifs(ne(var(VALUE), constx(0)), var(VALUE))
+                    ifS(ne(var(VALUE), constX(0)), returnS(var(VALUE)))
             );
         }
 
         if (properties.isEmpty()) {
             // let this object be less than obj
-            statements.add(returns(constx(-1)));
+            statements.add(returnS(constX(-1)));
         } else {
             // objects are equal
-            statements.add(returns(constx(0)));
+            statements.add(returnS(constX(0)));
         }
 
         final BlockStatement body = new BlockStatement();
@@ -136,13 +145,13 @@ public class SortableASTTransformation extends AbstractASTTransformation {
         String propertyName = property.getName();
         return block(
                 // if(arg0 == arg1) return 0;
-                ifs(eq(var(ARG0), var(ARG1)), constx(0)),
+                ifS(eq(var(ARG0), var(ARG1)), returnS(constX(0))),
                 // if(arg0 != null && arg1 == null) return -1;
-                ifs(and(ne(var(ARG0), NIL), eq(var(ARG1), NIL)), constx(-1)),
+                ifS(and(notNullExpr(var(ARG0)), equalsNullX(var(ARG1))), returnS(constX(-1))),
                 // if(arg0 == null && arg1 != null) return 1;
-                ifs(and(eq(var(ARG0), NIL), ne(var(ARG1), NIL)), constx(1)),
+                ifS(and(equalsNullX(var(ARG0)), notNullExpr(var(ARG1))), returnS(constX(1))),
                 // return arg0.prop <=> arg1.prop;
-                returns(cmp(prop(var(ARG0), propertyName), prop(var(ARG1), propertyName)))
+                returnS(cmp(prop(var(ARG0), propertyName), prop(var(ARG1), propertyName)))
         );
     }
 
@@ -156,9 +165,7 @@ public class SortableASTTransformation extends AbstractASTTransformation {
                 "compare",
                 ACC_PUBLIC,
                 ClassHelper.int_TYPE,
-                params(
-                        param(ClassHelper.OBJECT_TYPE, ARG0),
-                        param(ClassHelper.OBJECT_TYPE, ARG1)),
+                params(param(OBJECT_TYPE, ARG0), param(OBJECT_TYPE, ARG1)),
                 ClassNode.EMPTY_ARRAY,
                 createCompareToMethodBody(classNode, property)
         ));
@@ -169,7 +176,7 @@ public class SortableASTTransformation extends AbstractASTTransformation {
                 fieldName,
                 ACC_STATIC | ACC_FINAL | ACC_PRIVATE | ACC_SYNTHETIC,
                 COMPARATOR_TYPE,
-                new ConstructorCallExpression(cmpClass, NO_ARGS));
+                ctorX(cmpClass));
 
         classNode.addMethod(new MethodNode(
                 "comparatorBy" + StringGroovyMethods.capitalize(propertyName),
@@ -177,7 +184,7 @@ public class SortableASTTransformation extends AbstractASTTransformation {
                 COMPARATOR_TYPE,
                 Parameter.EMPTY_ARRAY,
                 ClassNode.EMPTY_ARRAY,
-                returns(field(cmpField))
+                returnS(field(cmpField))
         ));
     }
 
