@@ -29,7 +29,9 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import static org.codehaus.groovy.transform.GroovyASTUtils.*;
+import static org.codehaus.groovy.ast.tools.GeneralUtils.*;
+import static org.codehaus.groovy.ast.tools.GenericsUtils.makeSafe;
+import static org.codehaus.groovy.ast.tools.GenericsUtils.newClass;
 
 /**
  * Injects a set of Comparators and sort methods.
@@ -38,10 +40,10 @@ import static org.codehaus.groovy.transform.GroovyASTUtils.*;
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 public class SortableASTTransformation extends AbstractASTTransformation {
-    private static final ClassNode MY_TYPE = makeClassSafe(Sortable.class);
-    private static final ClassNode COMPARABLE_TYPE = makeClassSafe(Comparable.class);
-    private static final ClassNode COMPARATOR_TYPE = makeClassSafe(Comparator.class);
-    private static final ClassNode ABSTRACT_COMPARATOR_TYPE = makeClassSafe(AbstractComparator.class);
+    private static final ClassNode MY_TYPE = newClass(Sortable.class);
+    private static final ClassNode COMPARABLE_TYPE = newClass(Comparable.class);
+    private static final ClassNode COMPARATOR_TYPE = newClass(Comparator.class);
+    private static final ClassNode ABSTRACT_COMPARATOR_TYPE = newClass(AbstractComparator.class);
     private static final Expression NIL = ConstantExpression.NULL;
 
     private static final String VALUE = "value";
@@ -68,14 +70,15 @@ public class SortableASTTransformation extends AbstractASTTransformation {
         init(nodes, source);
         AnnotationNode annotation = (AnnotationNode) nodes[0];
         AnnotatedNode parent = (AnnotatedNode) nodes[1];
-
         if (parent instanceof ClassNode) {
             createSortable(source, annotation, (ClassNode) parent);
         }
     }
 
-    public static void createSortable(SourceUnit sourceUnit, AnnotationNode annotation, ClassNode classNode) {
-        List<PropertyNode> properties = findProperties(annotation, classNode);
+    private void createSortable(SourceUnit sourceUnit, AnnotationNode annotation, ClassNode classNode) {
+        List<String> includes = getMemberList(annotation, "includes");
+        List<String> excludes = getMemberList(annotation, "excludes");
+        List<PropertyNode> properties = findProperties(annotation, classNode, includes, excludes);
         if (!classNode.implementsInterface(COMPARABLE_TYPE)) {
             classNode.addInterface(COMPARABLE_TYPE);
         }
@@ -100,7 +103,7 @@ public class SortableASTTransformation extends AbstractASTTransformation {
         // if(this.is(obj)) return 0;
         statements.add(ifs(new MethodCallExpression(THIS, "is", vars(OBJ)), constx(0)));
         // if(!(obj instanceof <type>)) return -1;
-        statements.add(ifs(not(iof(var(OBJ), classx(classNode))), constx(-1)));
+        statements.add(ifs(not(iof(var(OBJ), makeSafe(classNode))), constx(-1)));
         // int value = 0;
         statements.add(decls(var(VALUE, ClassHelper.int_TYPE), constx(0)));
         for (PropertyNode property : properties) {
@@ -178,28 +181,8 @@ public class SortableASTTransformation extends AbstractASTTransformation {
         ));
     }
 
-    private static List<PropertyNode> findProperties(AnnotationNode annotation, ClassNode classNode) {
+    private static List<PropertyNode> findProperties(AnnotationNode annotation, ClassNode classNode, List<String> includes, List<String> excludes) {
         List<PropertyNode> properties = new ArrayList<PropertyNode>();
-        List<String> includes = new ArrayList<String>();
-        List<String> excludes = new ArrayList<String>();
-
-        Expression expr = annotation.getMember("includes");
-        if (expr instanceof ListExpression) {
-            for (Expression x : ((ListExpression) expr).getExpressions()) {
-                if (x instanceof ConstantExpression) {
-                    includes.add(String.valueOf(((ConstantExpression) x).getValue()));
-                }
-            }
-        }
-        expr = annotation.getMember("excludes");
-        if (expr instanceof ListExpression) {
-            for (Expression x : ((ListExpression) expr).getExpressions()) {
-                if (x instanceof ConstantExpression) {
-                    excludes.add(String.valueOf(((ConstantExpression) x).getValue()));
-                }
-            }
-        }
-
         for (PropertyNode property : classNode.getProperties()) {
             String propertyName = property.getName();
             if (property.isStatic() ||
@@ -207,7 +190,6 @@ public class SortableASTTransformation extends AbstractASTTransformation {
                     !includes.isEmpty() && !includes.contains(propertyName)) continue;
             properties.add(property);
         }
-
         return properties;
     }
 }
