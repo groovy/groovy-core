@@ -38,7 +38,9 @@ import java.util.Comparator;
 import java.util.List;
 
 import static org.codehaus.groovy.ast.ClassHelper.OBJECT_TYPE;
+import static org.codehaus.groovy.ast.ClassHelper.make;
 import static org.codehaus.groovy.ast.tools.GeneralUtils.*;
+import static org.codehaus.groovy.ast.tools.GenericsUtils.makeClassSafe;
 import static org.codehaus.groovy.ast.tools.GenericsUtils.newClass;
 
 /**
@@ -50,10 +52,10 @@ import static org.codehaus.groovy.ast.tools.GenericsUtils.newClass;
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 
 public class SortableASTTransformation extends AbstractASTTransformation {
-    private static final ClassNode MY_TYPE = ClassHelper.make(Sortable.class);
-    private static final ClassNode COMPARABLE_TYPE = ClassHelper.make(Comparable.class);
-    private static final ClassNode COMPARATOR_TYPE = ClassHelper.make(Comparator.class);
-    private static final ClassNode ABSTRACT_COMPARATOR_TYPE = ClassHelper.make(AbstractComparator.class);
+    private static final ClassNode MY_TYPE = make(Sortable.class);
+    private static final ClassNode COMPARABLE_TYPE = makeClassSafe(Comparable.class);
+    private static final ClassNode COMPARATOR_TYPE = makeClassSafe(Comparator.class);
+    private static final ClassNode ABSTRACT_COMPARATOR_TYPE = makeClassSafe(AbstractComparator.class);
 
     private static final String VALUE = "value";
     private static final String OBJ = "obj";
