@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  * @author Alex.Tkachman
  */
-public class ClassInfo extends ManagedConcurrentMap.Entry<Class,ClassInfo> {
+public final class ClassInfo extends ManagedConcurrentMap.Entry<Class,ClassInfo> {
 
     private static final Set<ClassInfo> modifiedExpandos = new HashSet<ClassInfo>();
 
@@ -69,10 +69,37 @@ public class ClassInfo extends ManagedConcurrentMap.Entry<Class,ClassInfo> {
     public int getVersion() {
         return version;
     }
-
+    
     public void incVersion() {
-        version++;
+        doIncVersion(new HashSet<Class>());
         VMPluginFactory.getPlugin().invalidateCallSites();
+    }
+
+    private void doIncVersion(Set<Class> alreadyHandled) {
+        Class theClass = getTheClass();
+        if(theClass != null && !alreadyHandled.contains(theClass)) {
+            alreadyHandled.add(theClass);
+            version++;
+            incVersionForDerivedOrImplementingClasses(theClass, alreadyHandled);
+        }
+    }
+
+    private void incVersionForDerivedOrImplementingClasses(Class theClass, Set<Class> alreadyHandled) {
+        incVersions(theClass, alreadyHandled, getAllLocalClassInfo());
+        incVersions(theClass, alreadyHandled, getAllGlobalClassInfo());
+    }
+
+    private void incVersions(Class theClass, Set<Class> alreadyHandled, Collection<ClassInfo> classInfos) {
+        if (classInfos != null) {
+            for(ClassInfo classInfo : classInfos) {
+                if(classInfo != this) {
+                    Class clazz = classInfo.getTheClass();
+                    if(clazz != null && theClass.isAssignableFrom(clazz)) {
+                        classInfo.doIncVersion(alreadyHandled);
+                    }
+                }
+            }
+        }
     }
 
     public ExpandoMetaClass getModifiedExpando() {
@@ -86,6 +113,11 @@ public class ClassInfo extends ManagedConcurrentMap.Entry<Class,ClassInfo> {
             info.setStrongMetaClass(null);
         }
     }
+    
+    private Class getTheClass() {
+        CachedClass cachedClass = getCachedClass();
+        return (cachedClass != null) ? cachedClass.getTheClass() : null;
+    }
 
     public CachedClass getCachedClass() {
         return cachedClassRef.get();
@@ -96,23 +128,33 @@ public class ClassInfo extends ManagedConcurrentMap.Entry<Class,ClassInfo> {
     }
 
     public static ClassInfo getClassInfo (Class cls) {
-        ThreadLocalMapHandler handler = localMapRef.get();
-        SoftReference<LocalMap> ref=null;
-        if (handler!=null) ref = handler.get();
-        LocalMap map=null;
-        if (ref!=null) map = ref.get();
+        LocalMap map = getLocalClassInfoMap();
         if (map!=null) return map.get(cls);
         return (ClassInfo) globalClassSet.getOrPut(cls,null);
     }
 
-    public static Collection<ClassInfo> getAllClassInfo () {
+    private static LocalMap getLocalClassInfoMap() {
         ThreadLocalMapHandler handler = localMapRef.get();
         SoftReference<LocalMap> ref=null;
         if (handler!=null) ref = handler.get();
         LocalMap map=null;
         if (ref!=null) map = ref.get();
-        if (map!=null) return map.values();
+        return map;
+    }
+
+    public static Collection<ClassInfo> getAllClassInfo () {
+        Collection<ClassInfo> localClassInfos = getAllLocalClassInfo();
+        return localClassInfos != null ? localClassInfos : getAllGlobalClassInfo();
+    }
+
+    private static Collection getAllGlobalClassInfo() {
         return globalClassSet.values();
+    }
+
+    private static Collection<ClassInfo> getAllLocalClassInfo() {
+        LocalMap map = getLocalClassInfoMap();
+        if (map!=null) return map.values();
+        return null;
     }
 
     public MetaClass getStrongMetaClass() {
@@ -134,7 +176,7 @@ public class ClassInfo extends ManagedConcurrentMap.Entry<Class,ClassInfo> {
           modifiedExpandos.add(this);
         }
 
-        weakMetaClass = null;
+        clearWeakMetaClass();
     }
 
     public MetaClass getWeakMetaClass() {
@@ -145,15 +187,26 @@ public class ClassInfo extends ManagedConcurrentMap.Entry<Class,ClassInfo> {
         version++;
 
         strongMetaClass = null;
-        if (answer == null) {
-           weakMetaClass = null;
-        } else {
+        clearWeakMetaClass();
+        if (answer != null) {
            weakMetaClass = new ManagedReference<MetaClass> (softBundle,answer);
         }
     }
 
+    private void clearWeakMetaClass() {
+        if (weakMetaClass != null) {
+            weakMetaClass.clear();
+        }
+        weakMetaClass = null;
+    }
+
     public MetaClass getMetaClassForClass() {
-        return strongMetaClass != null ? strongMetaClass : weakMetaClass == null ? null : weakMetaClass.get();
+        if (strongMetaClass!=null) return strongMetaClass;
+        MetaClass weakMc = getWeakMetaClass();
+        if (isValidWeakMetaClass(weakMc)) {
+            return weakMc;
+        }
+        return null;
     }
 
     private MetaClass getMetaClassUnderLock() {
@@ -164,14 +217,8 @@ public class ClassInfo extends ManagedConcurrentMap.Entry<Class,ClassInfo> {
         final MetaClassRegistry metaClassRegistry = GroovySystem.getMetaClassRegistry();
         MetaClassRegistry.MetaClassCreationHandle mccHandle = metaClassRegistry.getMetaClassCreationHandler();
         
-        if (answer != null) {
-            boolean enableGloballyOn = (mccHandle instanceof ExpandoMetaClassCreationHandle);
-            boolean cachedAnswerIsEMC = (answer instanceof ExpandoMetaClass);
-            // if EMC.enableGlobally() is OFF, return whatever the cached answer is.
-            // but if EMC.enableGlobally() is ON and the cached answer is not an EMC, come up with a fresh answer
-            if(!enableGloballyOn || cachedAnswerIsEMC) {
-                return answer;
-            }
+        if (isValidWeakMetaClass(answer, mccHandle)) {
+            return answer;
         }
 
         answer = mccHandle.create(get(), metaClassRegistry);
@@ -183,6 +230,21 @@ public class ClassInfo extends ManagedConcurrentMap.Entry<Class,ClassInfo> {
             setWeakMetaClass(answer);
         }
         return answer;
+    }
+    
+    private boolean isValidWeakMetaClass(MetaClass metaClass) {
+        return isValidWeakMetaClass(metaClass, GroovySystem.getMetaClassRegistry().getMetaClassCreationHandler());
+    }
+
+    /**
+     * if EMC.enableGlobally() is OFF, return whatever the cached answer is.
+     * but if EMC.enableGlobally() is ON and the cached answer is not an EMC, come up with a fresh answer
+     */
+    private boolean isValidWeakMetaClass(MetaClass metaClass, MetaClassRegistry.MetaClassCreationHandle mccHandle) {
+        if(metaClass==null) return false;
+        boolean enableGloballyOn = (mccHandle instanceof ExpandoMetaClassCreationHandle);
+        boolean cachedAnswerIsEMC = (metaClass instanceof ExpandoMetaClass);
+        return (!enableGloballyOn || cachedAnswerIsEMC);
     }
 
     public final MetaClass getMetaClass() {
@@ -201,13 +263,7 @@ public class ClassInfo extends ManagedConcurrentMap.Entry<Class,ClassInfo> {
         final MetaClass instanceMetaClass = getPerInstanceMetaClass(obj);
         if (instanceMetaClass != null)
             return instanceMetaClass;
-
-        lock();
-        try {
-            return getMetaClassUnderLock();
-        } finally {
-            unlock();
-        }
+        return getMetaClass();
     }
 
     public static int size () {
