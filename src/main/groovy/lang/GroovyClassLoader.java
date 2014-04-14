@@ -210,7 +210,7 @@ public class GroovyClassLoader extends URLClassLoader {
      * @return the main class defined in the given script
      */
     public Class parseClass(String text) throws CompilationFailedException {
-        return parseClass(text, "script" + System.currentTimeMillis() +
+        return parseClass(text, "script" +
                 Math.abs(text.hashCode()) + ".groovy");
     }
 
