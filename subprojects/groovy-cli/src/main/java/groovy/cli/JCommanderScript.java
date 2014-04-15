@@ -64,11 +64,11 @@ abstract public class JCommanderScript extends Script {
 
     /**
      * Return the JCommander for this script.
-     * If there isn't one already, then create it and set the default command name from the script's class name.
+     * If there isn't one already, then create it using createScriptJCommander.
      *
      * @return the JCommander for this script.
      */
-    public JCommander getScriptJCommanderWithInit() {
+    protected JCommander getScriptJCommanderWithInit() {
         try {
             JCommander jc = (JCommander) getProperty(SCRIPT_JCOMMANDER);
             if (jc == null) {
@@ -83,11 +83,20 @@ abstract public class JCommanderScript extends Script {
             }
             return jc;
         } catch (MissingPropertyException mpe) {
-            setProperty(SCRIPT_JCOMMANDER, createScriptJCommander());
-            return (JCommander) getBinding().getProperty(SCRIPT_JCOMMANDER);
+            JCommander jc = createScriptJCommander();
+            // Since no property or binding already exists, we can use plain old setProperty here.
+            setProperty(SCRIPT_JCOMMANDER, jc);
+            return jc;
         }
     }
 
+    /**
+     * Create a new (hopefully just once for this script!) JCommander instance.
+     * The default name for the command name in usage is the script's class simple name.
+     * This is the time to load it up with command objects, which is done by initializeJCommanderCommands.
+     *
+     * @return A JCommander instance with the commands (if any) initialized.
+     */
     public JCommander createScriptJCommander() {
         JCommander jc = new JCommander(this);
         jc.setProgramName(this.getClass().getSimpleName());
@@ -97,6 +106,12 @@ abstract public class JCommanderScript extends Script {
         return jc;
     }
 
+    /**
+     * Add command objects to the given JCommander.
+     * The default behavior is to look for JCommanderCommand annotations.
+     *
+     * @param jc The JCommander instance to add the commands (if any) to.
+     */
     public void initializeJCommanderCommands(JCommander jc) {
         Class cls = this.getClass();
         while (cls != null) {
@@ -118,6 +133,14 @@ abstract public class JCommanderScript extends Script {
         }
     }
 
+    /**
+     * Do JCommander.parse using the given arguments.
+     * If you want to do any special checking before the Runnable commands get run,
+     * this is the place to do it by overriding.
+     *
+     * @param jc The JCommander instance for this script instance.
+     * @param args  The argument array.
+     */
     public void parseScriptArguments(JCommander jc, String[] args) {
         jc.parse(args);
     }
@@ -149,10 +172,30 @@ abstract public class JCommanderScript extends Script {
         }
     }
 
+    /**
+     * Error messages that arise from command line processing call this.
+     * The default is to use the Script's println method (which will go to the
+     * 'out' binding, if any, and System.out otherwise).
+     * If you want to use System.err, a logger, or something, this is the thing to override.
+     *
+     * @param message
+     */
     public void printErrorMessage(String message) {
         println(message);
     }
 
+    /**
+     * If a ParameterException occurs during parseScriptArguments, runScriptCommand, or runScriptBody
+     * then this gets called to report the problem.
+     * The default behavior is to show the arguments and the JCommander.usage using printErrorMessage.
+     * The return value becomes the return value for the Script.run which will be the exit code
+     * if we've been called from the command line.
+     *
+     * @param jc The JCommander instance
+     * @param args The argument array
+     * @param pe The ParameterException that occurred
+     * @return The value that Script.run should return.
+     */
     public Object handleParameterException(JCommander jc, String[] args, ParameterException pe) {
         StringBuilder sb = new StringBuilder();
 
