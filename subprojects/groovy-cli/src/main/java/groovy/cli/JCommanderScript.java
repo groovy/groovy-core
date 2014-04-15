@@ -48,7 +48,7 @@ abstract public class JCommanderScript extends Script {
     @Override
     public Object run() {
         String[] args = getScriptArguments();
-        JCommander jc = getScriptJCommander();
+        JCommander jc = getScriptJCommanderWithInit();
         try {
             parseScriptArguments(jc, args);
             runScriptCommand(jc);
@@ -68,9 +68,20 @@ abstract public class JCommanderScript extends Script {
      *
      * @return the JCommander for this script.
      */
-    public JCommander getScriptJCommander() {
+    public JCommander getScriptJCommanderWithInit() {
         try {
-            return (JCommander) getBinding().getProperty(SCRIPT_JCOMMANDER);
+            JCommander jc = (JCommander) getProperty(SCRIPT_JCOMMANDER);
+            if (jc == null) {
+                jc = createScriptJCommander();
+                // The script has a real property (a field or getter) but if we let Script.setProperty handle
+                // this then it just gets stuffed into a binding that shadows the property.
+                // This is somewhat related to other bugged behavior in Script wrt properties and bindings.
+                // See http://jira.codehaus.org/browse/GROOVY-6582 for example.
+                // The correct behavior for Script.setProperty should to check for the
+                // property before creating a binding doesn't already exist.
+                this.getMetaClass().setProperty(this, SCRIPT_JCOMMANDER, jc);
+            }
+            return jc;
         } catch (MissingPropertyException mpe) {
             setProperty(SCRIPT_JCOMMANDER, createScriptJCommander());
             return (JCommander) getBinding().getProperty(SCRIPT_JCOMMANDER);
@@ -97,7 +108,8 @@ abstract public class JCommanderScript extends Script {
                         field.setAccessible(true);
                         jc.addCommand(field.get(this));
                     } catch (IllegalAccessException e) {
-                        printErrorMessage("Trying to add JCommanderCommand but got error '" + e.getMessage() + "' when getting value of field " + field.getName());
+                        printErrorMessage("Trying to add JCommanderCommand but got error '" + e.getMessage()
+                                + "' when getting value of field " + field.getName());
                     }
                 }
             }
