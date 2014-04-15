@@ -22,7 +22,10 @@ package groovy.cli.test
 
 public class JCommanderScriptTest extends GroovyTestCase {
     void testParameterizedScript() {
-        assertScript '''
+        GroovyShell shell = new GroovyShell()
+        shell.context.setVariable('args',
+                ["--codepath", "/usr/x.jar", "placeholder", "-cp", "/bin/y.jar", "-cp", "z", "another"] as String[])
+        def result = shell.evaluate '''
 @groovy.transform.BaseScript(groovy.cli.JCommanderScript)
 import com.beust.jcommander.Parameter
 import groovy.transform.Field
@@ -33,20 +36,14 @@ import groovy.transform.Field
 @Parameter(names = ["-cp", "--codepath"])
 @Field List<String> codepath = []
 
-// Override the default of using the 'args' binding for our test.
-String[] getScriptArguments() {
-   [   "--codepath", "/usr/x.jar", "placeholder", "-cp", "/bin/y.jar", "another"
-   ] as String[]
-}
-
-println parameters
-
-println codepath
+//println parameters
+//println codepath
 
 assert parameters == ['placeholder', 'another']
-assert codepath == ['/usr/x.jar', '/bin/y.jar']
+assert codepath == ['/usr/x.jar', '/bin/y.jar', 'z']
 
-true
+[parameters.size(), codepath.size()]
 '''
+        assert result == [2, 3]
     }
 }
