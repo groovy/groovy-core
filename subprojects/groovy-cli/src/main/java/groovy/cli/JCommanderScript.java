@@ -117,7 +117,7 @@ abstract public class JCommanderScript extends Script {
         while (cls != null) {
             Field[] fields = cls.getDeclaredFields();
             for (Field field : fields) {
-                Annotation annotation = field.getAnnotation(JCommanderCommand.class);
+                Annotation annotation = field.getAnnotation(Command.class);
                 if (annotation != null) {
                     try {
                         field.setAccessible(true);

@@ -46,8 +46,8 @@ public class CommandAdd {
     private Boolean interactive = false;
 }
 
-@JCommanderCommand @Field CommandCommit commitCommand = new CommandCommit()
-@JCommanderCommand @Field CommandAdd addCommand = new CommandAdd()
+@Command @Field CommandCommit commitCommand = new CommandCommit()
+@Command @Field CommandAdd addCommand = new CommandAdd()
 
 println verbose
 println scriptJCommander.parsedCommand
