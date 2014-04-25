@@ -11949,8 +11949,8 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     /**
      * Truncate the value
      *
-     * @param number a Double
-     * @return the Double truncated to 0 decimal places (i.e. a synonym for floor)
+     * @param number a Float
+     * @return the Float truncated to 0 decimal places (i.e. a synonym for floor)
      * @since 1.6.0
      */
     public static float trunc(Float number) {
@@ -12001,6 +12001,52 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      */
     public static double trunc(Double number, int precision) {
         return Math.floor(number *Math.pow(10,precision))/Math.pow(10,precision);
+    }
+
+    /**
+     * Round the value
+     *
+     * @param number a BigDecimal
+     * @return the rounded value of that BigDecimal
+     * @since 1.0
+     */
+    public static long round(BigDecimal number) {
+        return Math.round(number.doubleValue());
+    }
+
+    /**
+     * Round the value
+     *
+     * @param number a BigDecimal
+     * @param precision the number of decimal places to keep
+     * @return the Double rounded to the number of decimal places specified by precision
+     * @since 1.6.4
+     */
+    public static double round(BigDecimal number, int precision) {
+        return Math.floor(number.doubleValue() *Math.pow(10,precision)+0.5)/Math.pow(10,precision);
+    }
+
+    /**
+     * Truncate the value
+     *
+     * @param number a BigDecimal
+     * @return the Double truncated to 0 decimal places (i.e. a synonym for floor)
+     * @since 1.6.4
+     */
+    public static double trunc(BigDecimal number) {
+        return Math.floor(number.doubleValue());
+    }
+
+    /**
+     * Truncate the value
+     *
+     * @param number a Double
+     * @param precision the number of decimal places to keep
+     * @return the Double truncated to the number of decimal places specified by precision
+     * @since 1.6.4
+     */
+    public static double trunc(BigDecimal number, int precision) {
+        return Math.floor(number.doubleValue() *Math.pow(10,precision))/Math.pow(10,precision);
     }
 
     /**
