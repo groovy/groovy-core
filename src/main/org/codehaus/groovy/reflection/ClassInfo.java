@@ -17,7 +17,6 @@ package org.codehaus.groovy.reflection;
 
 import groovy.lang.*;
 
-import org.codehaus.groovy.reflection.GroovyClassValue.ComputeValue;
 import org.codehaus.groovy.reflection.stdclasses.*;
 import org.codehaus.groovy.util.*;
 import org.codehaus.groovy.vmplugin.VMPluginFactory;
@@ -56,14 +55,13 @@ public class ClassInfo {
     private static ReferenceBundle softBundle = ReferenceBundle.getSoftBundle();
     private static ReferenceBundle weakBundle = ReferenceBundle.getWeakBundle();
     
-    private static final GroovyClassValue<ClassInfo> globalClassValue = GroovyClassValueFactory.createGroovyClassValue(new ComputeValue<ClassInfo>(){
-		@Override
-		public ClassInfo computeValue(Class<?> type) {
+    private static final ClassValue<ClassInfo> globalClassValue = new ClassValue<ClassInfo>(){
+		protected ClassInfo computeValue(Class<?> type) {
 			ClassInfo ret = new ClassInfo(type);
 			globalClassSet.add(ret);
 			return ret;
 		}
-	});
+	};
     
     private static final GlobalClassSet globalClassSet = new GlobalClassSet();
 
