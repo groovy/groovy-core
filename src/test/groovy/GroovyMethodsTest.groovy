@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2012 the original author or authors.
+ * Copyright 2003-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -447,6 +447,17 @@ class GroovyMethodsTest extends GroovyTestCase {
         assert list.size() == 4
         assert list.pop() == 'd'
         assert list.size() == 3
+    }
+
+    void testPushPopForDeque_Groovy4181_Groovy6396() {
+        String[] x = "1/2/3/".split("/")
+        LinkedList <String> stack1 = new LinkedList<String>(Arrays.asList(x))
+        assert stack1.pop() == '1'
+
+        Deque stack2 = new LinkedList()
+        stack2.push(1)
+        stack2.push(2)
+        assert stack2.peek() == 2
     }
 
     void testInForArrays() {
