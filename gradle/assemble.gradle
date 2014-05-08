@@ -7,7 +7,7 @@ archivesBaseName = 'groovy'
 
 ext.licenseSpec = copySpec {
     from 'config/build'
-    from(zipTree(configurations.compile.fileCollection { it.name.startsWith 'commons-cli' }.singleFile).matching {
+    from(zipTree(configurations.cli.fileCollection { it.name.startsWith 'commons-cli' }.singleFile).matching {
         include 'META-INF/LICENSE.txt'
     }) {
         eachFile { details ->

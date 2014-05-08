@@ -16,6 +16,7 @@
 
 package groovy.util
 
+import groovy.cli.CliParser
 import org.apache.commons.cli.*
 import org.codehaus.groovy.cli.GroovyPosixParser
 import org.codehaus.groovy.runtime.InvokerHelper
@@ -163,7 +164,7 @@ import org.codehaus.groovy.runtime.InvokerHelper
  *   valueSeparator: char
  * </pre>
  * See {@link org.apache.commons.cli.Option} for the meaning of these properties
- * and {@link CliBuilderTest} for further examples.
+ * and {@code CliBuilderTest} for further examples.
  * <p>
  *
  * @author Dierk Koenig

@@ -15,11 +15,14 @@
  */
 package org.codehaus.groovy.tools
 
+import groovy.cli.CliOptionBuilder
+import groovy.cli.CliOptions
+import groovy.cli.CliParser
+import groovy.cli.CliParserFactory
 import groovy.grape.Grape
 import groovy.transform.Field
 import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
-import org.apache.commons.cli.*
 
 //commands
 
@@ -112,29 +115,13 @@ import org.apache.commons.cli.*
 }
 
 @Field resolve = {arg, cmd ->
-    Options options = new Options();
-    options.addOption(
-        OptionBuilder.hasArg(false)
-            .withLongOpt("ant")
-            .create('a')
-    );
-    options.addOption(
-        OptionBuilder.hasArg(false)
-            .withLongOpt("dos")
-            .create('d')
-    );
-    options.addOption(
-        OptionBuilder.hasArg(false)
-            .withLongOpt("shell")
-            .create('s')
-    );
-    options.addOption(
-            OptionBuilder.hasArg(false)
-                .withLongOpt("ivy")
-                .create('i')
-        );
-    CommandLine cmd2 = new GroovyInternalPosixParser().parse(options, arg[1..-1] as String[], true);
-    arg = cmd2.args
+    CliParser parser2 = CliParserFactory.newParser()
+    parser2.addOption(CliOptionBuilder.hasArg(false).withLongOpt("ant").create('a'))
+    parser2.addOption(CliOptionBuilder.hasArg(false).withLongOpt("dos").create('d'))
+    parser2.addOption(CliOptionBuilder.hasArg(false).withLongOpt("shell").create('s'))
+    parser2.addOption(CliOptionBuilder.hasArg(false).withLongOpt("ivy").create('i'))
+    CliOptions cmd2 = parser2.parse(arg[1..-1] as String[])
+    arg = cmd2.remainingArgs()
 
     // set the instance so we can re-set the logger
     Grape.getInstance()
@@ -231,16 +218,7 @@ import org.apache.commons.cli.*
     String spaces = ' ' * spacesLen
 
     PrintWriter pw = new PrintWriter(binding.variables.out ?: System.out)
-    new HelpFormatter().printHelp(
-            pw,
-            80,
-            "grape [options] <command> [args]\n",
-            "options:",
-            options,
-            2,
-            4,
-            null, // footer
-            true);
+    cmd.displayHelp(pw, "grape [options] <command> [args]\n", "options:")
     pw.flush()
 
     println ""
@@ -267,72 +245,47 @@ import org.apache.commons.cli.*
     }
 }
 
-// command line parsing
-@Field Options options = new Options();
-
-options.addOption(
-    OptionBuilder.withLongOpt("define")
+parser.addOption(
+        CliOptionBuilder.withLongOpt("define")
         .withDescription("define a system property")
         .hasArg(true)
         .withArgName("name=value")
         .create('D')
 );
-options.addOption(
-    OptionBuilder.withLongOpt("resolver")
+parser.addOption(
+        CliOptionBuilder.withLongOpt("resolver")
         .withDescription("define a grab resolver (for install)")
         .hasArg(true)
         .withArgName("url")
         .create('r')
 );
-options.addOption(
-    OptionBuilder.hasArg(false)
+parser.addOption(
+        CliOptionBuilder.hasArg(false)
         .withDescription("usage information")
         .withLongOpt("help")
         .create('h')
 );
 
 // Logging Level Options
-options.addOptionGroup(
-    new OptionGroup().addOption(
-        OptionBuilder.hasArg(false)
-        .withDescription("Log level 0 - only errors")
-        .withLongOpt("quiet")
-        .create('q'))
-    .addOption(
-        OptionBuilder.hasArg(false)
-        .withDescription("Log level 1 - errors and warnings")
-        .withLongOpt("warn")
-        .create('w'))
-    .addOption(
-        OptionBuilder.hasArg(false)
-        .withDescription("Log level 2 - info")
-        .withLongOpt("info")
-        .create('i'))
-    .addOption(
-        OptionBuilder.hasArg(false)
-        .withDescription("Log level 3 - verbose")
-        .withLongOpt("verbose")
-
-        .create('V'))
-    .addOption(
-        OptionBuilder.hasArg(false)
-        .withDescription("Log level 4 - debug")
-        .withLongOpt("debug")
-        .create('d'))
-)
+parser.addOptionGroup([
+        CliOptionBuilder.hasArg(false).withDescription("Log level 0 - only errors").withLongOpt("quiet").create('q'),
+        CliOptionBuilder.hasArg(false).withDescription("Log level 1 - errors and warnings").withLongOpt("warn").create('w'),
+        CliOptionBuilder.hasArg(false).withDescription("Log level 2 - info").withLongOpt("info").create('i'),
+        CliOptionBuilder.hasArg(false).withDescription("Log level 3 - verbose").withLongOpt("verbose").create('V'),
+        CliOptionBuilder.hasArg(false).withDescription("Log level 4 - debug").withLongOpt("debug").create('d')
+])
 
 
-options.addOption(
-    OptionBuilder.hasArg(false)
+parser.addOption(
+    CliOptionBuilder.hasArg(false)
         .withDescription("display the Groovy and JVM versions")
         .withLongOpt("version")
         .create('v')
 );
 
 
-@Field CommandLine cmd
-
-cmd = new GroovyInternalPosixParser().parse(options, args, true);
+@Field CliParser parser = CliParserFactory.newParser()
+@Field CliOptions cmd = parser.parse(args)
 
 if (cmd.hasOption('h')) {
     grapeHelp()

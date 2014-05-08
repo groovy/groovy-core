@@ -15,20 +15,18 @@
  */
 package org.codehaus.groovy.antlr.java;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.GroovyInternalPosixParser;
-import org.apache.commons.cli.Options;
+import groovy.cli.CliOptions;
+import groovy.cli.CliParser;
+import groovy.cli.CliParserFactory;
 import java.util.Arrays;
 
 public class Java2GroovyMain {
 
     public static void main(String[] args) {
         try {
-            Options options = new Options();
-            CommandLineParser cliParser = new GroovyInternalPosixParser();
-            CommandLine cli = cliParser.parse(options, args);
-            String[] filenames = cli.getArgs();
+            CliParser cliParser = CliParserFactory.newParser();
+            CliOptions cli = cliParser.parse(args);
+            String[] filenames = cli.remainingArgs();
             if (filenames.length == 0) {
                 System.err.println("Needs at least one filename");
             }

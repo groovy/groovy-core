@@ -1,6 +1,7 @@
 dependencies {
     compile rootProject
     compile project(':groovy-console')
+    compile project(':groovy-cli')
     testCompile project(':groovy-test')
     compile("jline:jline:$jlineVersion") {
         exclude(group: 'junit', module: 'junit')

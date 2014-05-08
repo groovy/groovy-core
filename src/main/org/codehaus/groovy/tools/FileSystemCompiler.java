@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2013 the original author or authors.
+ * Copyright 2003-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,13 @@
 
 package org.codehaus.groovy.tools;
 
+import groovy.cli.CliOptionBuilder;
+import groovy.cli.CliOptions;
+import groovy.cli.CliParser;
+import groovy.cli.CliParserFactory;
 import groovy.lang.Binding;
 import groovy.lang.GroovyResourceLoader;
 import groovy.lang.GroovyShell;
-import org.apache.commons.cli.*;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.ConfigurationException;
@@ -64,15 +67,10 @@ public class FileSystemCompiler {
         unit.compile();
     }
 
-    public static void displayHelp(final Options options) {
-        final HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp(80, "groovyc [options] <source-files>", "options:", options, "");
-    }
-
     public static void displayVersion() {
         String version = GroovySystem.getVersion();
         System.err.println("Groovy compiler version " + version);
-        System.err.println("Copyright 2003-2013 The Codehaus. http://groovy.codehaus.org/");
+        System.err.println("Copyright 2003-2014 The Codehaus. http://groovy.codehaus.org/");
         System.err.println("");
     }
 
@@ -112,24 +110,21 @@ public class FileSystemCompiler {
      * the VM to exit and the lookup for .groovy files can be controlled
      */
     public static void commandLineCompile(String[] args, boolean lookupUnnamedFiles) throws Exception {
-        Options options = createCompilationOptions();
+        CliParser cliParser = CliParserFactory.newParser();
+        createCompilationOptions(cliParser);
+        CliOptions cli = cliParser.parse(args);
 
-        CommandLineParser cliParser = new GroovyInternalPosixParser();
-
-        CommandLine cli;
-        cli = cliParser.parse(options, args);
-
-        if (cli.hasOption('h')) {
-            displayHelp(options);
+        if (cli.hasOption("h")) {
+            cli.displayHelp("groovyc [options] <source-files>", "options:");
             return;
         }
 
-        if (cli.hasOption('v')) {
+        if (cli.hasOption("v")) {
             displayVersion();
             return;
         }
 
-        displayStackTraceOnError = cli.hasOption('e');
+        displayStackTraceOnError = cli.hasOption("e");
 
         CompilerConfiguration configuration = generateCompilerConfigurationFromOptions(cli);
 
@@ -138,7 +133,7 @@ public class FileSystemCompiler {
         String[] filenames = generateFileNamesFromOptions(cli);
         boolean fileNameErrors = filenames == null;
         if (!fileNameErrors && (filenames.length == 0)) {
-            displayHelp(options);
+            cli.displayHelp("groovyc [options] <source-files>", "options:");
             return;
         }
 
@@ -222,8 +217,8 @@ public class FileSystemCompiler {
         }
     }
 
-    public static String[] generateFileNamesFromOptions(CommandLine cli) {
-        String[] filenames = cli.getArgs();
+    public static String[] generateFileNamesFromOptions(CliOptions cli) {
+        String[] filenames = cli.remainingArgs();
         List<String> fileList = new ArrayList<String>(filenames.length);
         boolean errors = false;
         for (String filename : filenames) {
@@ -249,7 +244,7 @@ public class FileSystemCompiler {
         }
     }
 
-    public static CompilerConfiguration generateCompilerConfigurationFromOptions(CommandLine cli) throws IOException {
+    public static CompilerConfiguration generateCompilerConfigurationFromOptions(CliOptions cli) throws IOException {
         //
         // Setup the configuration data
 
@@ -259,8 +254,8 @@ public class FileSystemCompiler {
             configuration.setClasspath(cli.getOptionValue("classpath"));
         }
 
-        if (cli.hasOption('d')) {
-            configuration.setTargetDirectory(cli.getOptionValue('d'));
+        if (cli.hasOption("d")) {
+            configuration.setTargetDirectory(cli.getOptionValue("d"));
         }
 
         if (cli.hasOption("encoding")) {
@@ -272,7 +267,7 @@ public class FileSystemCompiler {
         }
 
         // joint compilation parameters
-        if (cli.hasOption('j')) {
+        if (cli.hasOption("j")) {
             Map<String, Object> compilerOptions = new HashMap<String, Object>();
 
             String[] opts = cli.getOptionValues("J");
@@ -307,41 +302,35 @@ public class FileSystemCompiler {
         return configuration;
     }
 
+
     @SuppressWarnings({"AccessStaticViaInstance"})
-    public static Options createCompilationOptions() {
-        //
-        // Parse the command line
+    public static void createCompilationOptions(CliParser cliParser) {
+        cliParser.addOption(CliOptionBuilder.hasArg().withArgName("path").withDescription("Specify where to find the class files - must be first argument").create("classpath"));
+        cliParser.addOption(CliOptionBuilder.withLongOpt("classpath").hasArg().withArgName("path").withDescription("Aliases for '-classpath'").create("cp"));
+        cliParser.addOption(CliOptionBuilder.withLongOpt("sourcepath").hasArg().withArgName("path").withDescription("Specify where to find the source files").create());
+        cliParser.addOption(CliOptionBuilder.withLongOpt("temp").hasArg().withArgName("temp").withDescription("Specify temporary directory").create());
+        cliParser.addOption(CliOptionBuilder.withLongOpt("encoding").hasArg().withArgName("encoding").withDescription("Specify the encoding of the user class files").create());
+        cliParser.addOption(CliOptionBuilder.hasArg().withDescription("Specify where to place generated class files").create('d'));
+        cliParser.addOption(CliOptionBuilder.withLongOpt("help").withDescription("Print a synopsis of standard options").create('h'));
+        cliParser.addOption(CliOptionBuilder.withLongOpt("version").withDescription("Print the version").create('v'));
+        cliParser.addOption(CliOptionBuilder.withLongOpt("exception").withDescription("Print stack trace on error").create('e'));
+        cliParser.addOption(CliOptionBuilder.withLongOpt("jointCompilation").withDescription("Attach javac compiler to compile .java files").create('j'));
+        cliParser.addOption(CliOptionBuilder.withLongOpt("basescript").hasArg().withArgName("class").withDescription("Base class name for scripts (must derive from Script)").create('b'));
 
-        Options options = new Options();
-
-        options.addOption(OptionBuilder.hasArg().withArgName("path").withDescription("Specify where to find the class files - must be first argument").create("classpath"));
-        options.addOption(OptionBuilder.withLongOpt("classpath").hasArg().withArgName("path").withDescription("Aliases for '-classpath'").create("cp"));
-        options.addOption(OptionBuilder.withLongOpt("sourcepath").hasArg().withArgName("path").withDescription("Specify where to find the source files").create());
-        options.addOption(OptionBuilder.withLongOpt("temp").hasArg().withArgName("temp").withDescription("Specify temporary directory").create());
-        options.addOption(OptionBuilder.withLongOpt("encoding").hasArg().withArgName("encoding").withDescription("Specify the encoding of the user class files").create());
-        options.addOption(OptionBuilder.hasArg().withDescription("Specify where to place generated class files").create('d'));
-//            options.addOption(OptionBuilder.withLongOpt("strict").withDescription("Turn on strict type safety.").create('s'));
-        options.addOption(OptionBuilder.withLongOpt("help").withDescription("Print a synopsis of standard options").create('h'));
-        options.addOption(OptionBuilder.withLongOpt("version").withDescription("Print the version").create('v'));
-        options.addOption(OptionBuilder.withLongOpt("exception").withDescription("Print stack trace on error").create('e'));
-        options.addOption(OptionBuilder.withLongOpt("jointCompilation").withDescription("Attach javac compiler to compile .java files").create('j'));
-        options.addOption(OptionBuilder.withLongOpt("basescript").hasArg().withArgName("class").withDescription("Base class name for scripts (must derive from Script)").create('b'));
-
-        options.addOption(
-                OptionBuilder.withArgName("property=value")
+        cliParser.addOption(
+                CliOptionBuilder.withArgName("property=value")
                         .withValueSeparator()
                         .hasArgs(2)
                         .withDescription("name-value pairs to pass to javac")
                         .create("J"));
-        options.addOption(
-                OptionBuilder.withArgName("flag")
+        cliParser.addOption(
+                CliOptionBuilder.withArgName("flag")
                         .hasArg()
                         .withDescription("passed to javac for joint compilation")
                         .create("F"));
 
-        options.addOption(OptionBuilder.withLongOpt("indy").withDescription("enables compilation using invokedynamic").create());
-        options.addOption(OptionBuilder.withLongOpt("configscript").hasArg().withDescription("A script for tweaking the configuration options").create());
-        return options;
+        cliParser.addOption(CliOptionBuilder.withLongOpt("indy").withDescription("enables compilation using invokedynamic").create());
+        cliParser.addOption(CliOptionBuilder.withLongOpt("configscript").hasArg().withDescription("A script for tweaking the configuration options").create());
     }
 
     /**
