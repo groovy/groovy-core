@@ -14,22 +14,16 @@
  * limitations under the License.
  */
 
-package groovy.cli;
+package org.codehaus.groovy.cli;
 
-public class CliParseException extends RuntimeException {
-    public CliParseException() {
-        super();
-    }
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.GnuParser;
 
-    public CliParseException(String message) {
-        super(message);
-    }
-
-    public CliParseException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public CliParseException(Throwable cause) {
-        super(cause);
+/**
+ * @author paulk
+ */
+public class CommonsCliGnuParserWrapper extends CommonsCliParserWrapper {
+    protected CommandLineParser getParserDelegate() {
+        return new GnuParser();
     }
 }

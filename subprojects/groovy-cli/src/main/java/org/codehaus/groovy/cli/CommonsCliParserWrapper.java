@@ -17,15 +17,18 @@
 package org.codehaus.groovy.cli;
 
 import groovy.cli.CliOptions;
+import groovy.cli.CliParseException;
 import groovy.cli.CliParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GroovyInternalPosixParser;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 
@@ -34,17 +37,25 @@ import java.util.Map;
  */
 public class CommonsCliParserWrapper implements CliParser {
 
-    private CommandLineParser cliParser = new GroovyInternalPosixParser();
-    private Options cliOptions = new Options();
+    protected CommandLineParser cliParser = getParserDelegate();
+    protected Options cliOptions = new Options();
+
+    protected CommandLineParser getParserDelegate() {
+        return new GroovyInternalPosixParser();
+    }
 
     public CliOptions parse(String[] arguments) {
+        return parse(arguments, true);
+    }
+
+    public CliOptions parse(String[] arguments, boolean stopAtNonOption) {
         CommandLine cli = null;
         try {
-            cli = cliParser.parse(cliOptions, arguments);
+            cli = cliParser.parse(cliOptions, arguments, stopAtNonOption);
         } catch (ParseException e) {
-            throw new RuntimeException(e);
+            throw new CliParseException(e.getMessage());
         }
-        return new CommonsCliOptionsWrapper(cli, cliOptions);
+        return new CommonsCliOptionsWrapper(cli);
     }
 
     public void addOption(Map<String, Object> map) {
@@ -60,8 +71,8 @@ public class CommonsCliParserWrapper implements CliParser {
     }
 
     private Option makeOption(Map<String, Object> map) {
-        Option option = new Option((String) map.get("opt"), (String) map.get("description"));
-        option.setLongOpt((String) map.get("longOpt"));
+        Option option = new Option(getString(map, "opt"), getString(map, "description"));
+        option.setLongOpt(getString(map, "longOpt"));
         Boolean required = (Boolean) map.get("required");
         if (required != null) option.setRequired(required);
         Boolean optionalArg = (Boolean) map.get("optionalArg");
@@ -70,7 +81,30 @@ public class CommonsCliParserWrapper implements CliParser {
 //            option.setType(type);
         Object valueSep = map.get("valueSep");
         if (valueSep != null) option.setValueSeparator(valueSep.toString().charAt(0));
-        option.setArgName((String) map.get("argName"));
+        option.setArgName(getString(map, "argName"));
         return option;
+    }
+
+    private String getString(Map<String, Object> map, String optionName) {
+        Object result = map.get(optionName);
+        return result == null ? null : result.toString();
+    }
+
+    public void displayHelp(String cmdLineSyntax, String header) {
+        final HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp(80, cmdLineSyntax, header, cliOptions, "");
+    }
+
+    public void displayHelp(PrintWriter pw, String cmdLineSyntax, String header) {
+        displayHelp(pw, 80, cmdLineSyntax, header, null);
+    }
+
+    public void displayHelp(PrintWriter pw, int width, String cmdLineSyntax, String header, String footer) {
+        displayHelp(pw, width, cmdLineSyntax, header, 2, 4, footer);
+    }
+
+    public void displayHelp(PrintWriter pw, int width, String cmdLineSyntax, String header, int leftPad, int descPad, String footer) {
+        final HelpFormatter formatter = new HelpFormatter();
+        formatter.printHelp(pw, width, cmdLineSyntax, header, cliOptions, leftPad, descPad, footer, false);
     }
 }

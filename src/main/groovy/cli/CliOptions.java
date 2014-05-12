@@ -16,8 +16,6 @@
 
 package groovy.cli;
 
-import java.io.PrintWriter;
-
 /**
  * @author paulk
  */
@@ -31,8 +29,4 @@ public interface CliOptions {
     String getOptionValue(String optionName, String defaultValue);
 
     String[] getOptionValues(String optionName);
-
-    void displayHelp(String cmdLineSyntax, String header);
-
-    void displayHelp(PrintWriter pw, String cmdLineSyntax, String header);
 }

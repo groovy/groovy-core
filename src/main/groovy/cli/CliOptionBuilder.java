@@ -130,7 +130,7 @@ public class CliOptionBuilder {
     }
 
     public static Map<String, Object> create(char opt) throws IllegalArgumentException {
-        return create(String.valueOf(opt));
+        return create(((Character)opt).toString());
     }
 
     public static Map<String, Object> create() throws IllegalArgumentException {
@@ -143,7 +143,7 @@ public class CliOptionBuilder {
 
     public static Map<String, Object> create(String opt) throws IllegalArgumentException {
         Map<String, Object> result = new HashMap<String, Object>();
-        result.put("opt", opt);
+        if (opt != null) result.put("opt", opt);
         result.put("description", description);
         result.put("longOpt", longOpt);
         result.put("required", required);

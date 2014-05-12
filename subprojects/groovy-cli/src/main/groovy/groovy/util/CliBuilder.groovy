@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2013 the original author or authors.
+ * Copyright 2003-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,11 @@
 
 package groovy.util
 
+import groovy.cli.CliOptionBuilder
+import groovy.cli.CliOptions
+import groovy.cli.CliParseException
 import groovy.cli.CliParser
-import org.apache.commons.cli.*
-import org.codehaus.groovy.cli.GroovyPosixParser
+import groovy.cli.CliParserFactory
 import org.codehaus.groovy.runtime.InvokerHelper
 
 /**
@@ -180,14 +182,29 @@ class CliBuilder {
     /**
      * Normally set internally but allows you full customisation of the underlying processing engine.
      */
-    CommandLineParser parser = null
+    def parser = null
 
-    /**
-     * To change from the default PosixParser to the GnuParser, set this to false. Ignored if the parser is explicitly set.
-     * @deprecated use the parser option instead with an instance of your preferred parser
-     */
-    @Deprecated
-    Boolean posix = null
+    private CliParser _parser = null
+
+    CliParser getParser() {
+        if (_parser == null) {
+            if (parser instanceof CliParser) {
+                _parser = parser
+            } else if (parser instanceof String) {
+                try {
+                    _parser = loader ? CliParserFactory.newParser(loader, parser) : CliParserFactory.newParser(parser)
+                } catch(ignore) {
+                }
+            }
+            if (parser != null && _parser == null) {
+                System.err.println("Incompatible CliParser, ignoring and using default")
+            }
+            if (_parser == null) {
+                _parser = loader ? CliParserFactory.newParser(loader) : CliParserFactory.newParser()
+            }
+        }
+        return _parser
+    }
 
     /**
      * Whether arguments of the form '{@code @}<i>filename</i>' will be expanded into the arguments contained within the file named <i>filename</i> (default true).
@@ -195,9 +212,14 @@ class CliBuilder {
     boolean expandArgumentFiles = true
 
     /**
-     * Normally set internally but can be overridden if you want to customise how the usage message is displayed.
+     * @deprecated - currently ignored
      */
-    HelpFormatter formatter = new HelpFormatter()
+    def formatter = null
+
+    /**
+     * An optional Class Loader to use for loading a custom parser
+     */
+    ClassLoader loader = null
 
     /**
      * Defaults to stdout but you can provide your own PrintWriter if desired.
@@ -223,12 +245,7 @@ class CliBuilder {
     /**
      * Allows customisation of the usage message width.
      */
-    int width = formatter.defaultWidth
-
-    /**
-     * Not normally accessed directly but full access to underlying options if needed.
-     */
-    Options options = new Options()
+    int width = 74
 
     /**
      * Internal method: Detect option specification method calls.
@@ -236,15 +253,15 @@ class CliBuilder {
     def invokeMethod(String name, Object args) {
         if (args instanceof Object[]) {
             if (args.size() == 1 && (args[0] instanceof String || args[0] instanceof GString)) {
-                options.addOption(option(name, [:], args[0]))
+                getParser().addOption(option(name, [:], args[0]))
                 return null
             }
-            if (args.size() == 1 && args[0] instanceof Option && name == 'leftShift') {
-                options.addOption(args[0])
+            if (args.size() == 1 && args[0] instanceof Map && name == 'leftShift') {
+                getParser().addOption(args[0])
                 return null
             }
             if (args.size() == 2 && args[0] instanceof Map) {
-                options.addOption(option(name, args[0], args[1]))
+                getParser().addOption(option(name, args[0], args[1]))
                 return null
             }
         }
@@ -257,12 +274,9 @@ class CliBuilder {
      */
     OptionAccessor parse(args) {
         if (expandArgumentFiles) args = expandArgumentFiles(args)
-        if (!parser) {
-            parser = posix == null ? new GroovyPosixParser() : posix == true ? new PosixParser() : new GnuParser()
-        }
         try {
-            return new OptionAccessor(parser.parse(options, args as String[], stopAtNonOption))
-        } catch (ParseException pe) {
+            return new OptionAccessor(getParser().parse(args as String[], stopAtNonOption))
+        } catch (CliParseException pe) {
             writer.println("error: " + pe.message)
             usage()
             return null
@@ -273,7 +287,7 @@ class CliBuilder {
      * Print the usage message with writer (default: System.out) and formatter (default: HelpFormatter)
      */
     void usage() {
-        formatter.printHelp(writer, width, usage, header, options, formatter.defaultLeftPad, formatter.defaultDescPad, footer)
+        getParser().displayHelp(writer, width, usage, header, 1, 3, footer)
         writer.flush()
     }
 
@@ -282,15 +296,20 @@ class CliBuilder {
     /**
      * Internal method: How to create an option from the specification.
      */
-    Option option(shortname, Map details, info) {
-        Option option
+    private Map mappedKey = [args: 'numberOfArgs', valueSeparator: 'valueSep']
+    Map<String, Object> option(shortname, Map details, info) {
+        Map<String, Object> option
         if (shortname == '_') {
-            option = OptionBuilder.withDescription(info).withLongOpt(details.longOpt).create()
+            option = CliOptionBuilder.withDescription(info).withLongOpt(details.longOpt).create()
             details.remove('longOpt')
         } else {
-            option = new Option(shortname, info)
+            option = CliOptionBuilder.withDescription(info).create(shortname)
         }
-        details.each { key, value -> option[key] = value }
+        details.each { key, value ->
+            String newKey = key instanceof GString ? newKey.toString() : key
+            newKey = mappedKey.containsKey(newKey) ? mappedKey[newKey] : newKey
+            option[newKey] = value
+        }
         return option
     }
 
@@ -329,9 +348,9 @@ class CliBuilder {
 }
 
 class OptionAccessor {
-    CommandLine inner
+    CliOptions inner
 
-    OptionAccessor(CommandLine inner) {
+    OptionAccessor(CliOptions inner) {
         this.inner = inner
     }
 
@@ -343,7 +362,7 @@ class OptionAccessor {
         def methodname = 'getOptionValue'
         if (name.size() > 1 && name.endsWith('s')) {
             def singularName = name[0..-2]
-            if (hasOption(singularName)) {
+            if (inner.hasOption(singularName)) {
                 name = singularName
                 methodname += 's'
             }
@@ -356,6 +375,6 @@ class OptionAccessor {
     }
 
     List<String> arguments() {
-        inner.args.toList()
+        inner.remainingArgs().toList()
     }
 }

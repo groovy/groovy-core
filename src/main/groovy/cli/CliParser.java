@@ -16,6 +16,7 @@
 
 package groovy.cli;
 
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +26,15 @@ import java.util.Map;
 public interface CliParser {
     CliOptions parse(String[] arguments);
 
+    CliOptions parse(String[] arguments, boolean stopAtNonOption);
+
     void addOption(Map<String, Object> map);
 
     void addOptionGroup(List<Map<String, Object>> maps);
+
+    void displayHelp(String cmdLineSyntax, String header);
+
+    void displayHelp(PrintWriter pw, String cmdLineSyntax, String header);
+
+    void displayHelp(PrintWriter pw, int width, String cmdLineSyntax, String header, String footer);
 }

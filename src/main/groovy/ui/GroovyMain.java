@@ -112,12 +112,11 @@ public class GroovyMain {
         CliParser parser = CliParserFactory.newParser();
         buildOptions(parser);
 
-        CliOptions options = null;
         try {
-            options = parser.parse(args);
+            CliOptions options = parser.parse(args);
 
             if (options.hasOption("h")) {
-                printHelp(out, options);
+                printHelp(out, parser);
             } else if (options.hasOption("v")) {
                 String version = GroovySystem.getVersion();
                 out.println("Groovy Version: " + version + " JVM: " + System.getProperty("java.version") + 
@@ -131,15 +130,15 @@ public class GroovyMain {
             }
         } catch (CliParseException pe) {
             out.println("error: " + pe.getMessage());
-            if (options != null) printHelp(out, options);
+            printHelp(out, parser);
         } catch (IOException ioe) {
             out.println("error: " + ioe.getMessage());
         }
     }
 
-    private static void printHelp(PrintStream out, CliOptions options) {
+    private static void printHelp(PrintStream out, CliParser parser) {
         PrintWriter pw = new PrintWriter(out);
-        options.displayHelp(pw, "groovy [options] [args]", "options:");
+        parser.displayHelp(pw, "groovy [options] [args]", "options:");
         pw.flush();
     }
 

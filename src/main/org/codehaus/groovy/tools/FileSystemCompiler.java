@@ -112,10 +112,10 @@ public class FileSystemCompiler {
     public static void commandLineCompile(String[] args, boolean lookupUnnamedFiles) throws Exception {
         CliParser cliParser = CliParserFactory.newParser();
         createCompilationOptions(cliParser);
-        CliOptions cli = cliParser.parse(args);
+        CliOptions cli = cliParser.parse(args, false);
 
         if (cli.hasOption("h")) {
-            cli.displayHelp("groovyc [options] <source-files>", "options:");
+            cliParser.displayHelp("groovyc [options] <source-files>", "options:");
             return;
         }
 
@@ -133,7 +133,7 @@ public class FileSystemCompiler {
         String[] filenames = generateFileNamesFromOptions(cli);
         boolean fileNameErrors = filenames == null;
         if (!fileNameErrors && (filenames.length == 0)) {
-            cli.displayHelp("groovyc [options] <source-files>", "options:");
+            cliParser.displayHelp("groovyc [options] <source-files>", "options:");
             return;
         }
 

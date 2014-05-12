@@ -18,21 +18,15 @@ package org.codehaus.groovy.cli;
 
 import groovy.cli.CliOptions;
 import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
-
-import java.io.PrintWriter;
 
 /**
  * @author paulk
  */
 public class CommonsCliOptionsWrapper implements CliOptions {
     private final CommandLine cli;
-    private final Options cliOptions;
 
-    public CommonsCliOptionsWrapper(CommandLine cli, Options cliOptions) {
+    public CommonsCliOptionsWrapper(CommandLine cli) {
         this.cli = cli;
-        this.cliOptions = cliOptions;
     }
 
     public String[] remainingArgs() {
@@ -48,21 +42,10 @@ public class CommonsCliOptionsWrapper implements CliOptions {
     }
 
     public String getOptionValue(String optionName, String defaultValue) {
-        String optionValue = cli.getOptionValue(optionName);
-        return optionValue == null ? defaultValue : optionValue;
+        return cli.hasOption(optionName) ? cli.getOptionValue(optionName) : defaultValue;
     }
 
     public String[] getOptionValues(String optionName) {
         return cli.getOptionValues(optionName);
-    }
-
-    public void displayHelp(String cmdLineSyntax, String header) {
-        final HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp(80, cmdLineSyntax, header, cliOptions, "");
-    }
-
-    public void displayHelp(PrintWriter pw, String cmdLineSyntax, String header) {
-        final HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp(pw, 80, cmdLineSyntax, header, cliOptions, 2, 4, null, false);
     }
 }

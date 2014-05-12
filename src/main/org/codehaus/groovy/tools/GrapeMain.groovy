@@ -218,7 +218,7 @@ import org.apache.ivy.util.Message
     String spaces = ' ' * spacesLen
 
     PrintWriter pw = new PrintWriter(binding.variables.out ?: System.out)
-    cmd.displayHelp(pw, "grape [options] <command> [args]\n", "options:")
+    parser.displayHelp(pw, "grape [options] <command> [args]\n", "options:")
     pw.flush()
 
     println ""
