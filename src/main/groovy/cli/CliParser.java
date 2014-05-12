@@ -37,4 +37,6 @@ public interface CliParser {
     void displayHelp(PrintWriter pw, String cmdLineSyntax, String header);
 
     void displayHelp(PrintWriter pw, int width, String cmdLineSyntax, String header, String footer);
+
+    void displayHelp(PrintWriter pw, int width, String cmdLineSyntax, String header, int leftPad, int descPad, String footer);
 }

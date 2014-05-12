@@ -22,6 +22,7 @@ import org.codehaus.groovy.cli.CommonsCliPosixParserWrapper
 import org.codehaus.groovy.cli.GroovyPosixParser
 import org.apache.commons.cli.Option
 import org.apache.commons.cli.OptionBuilder
+import org.codehaus.groovy.cli.JoptSimpleParserWrapper
 
 /**
  * Test class for the CliBuilder -- but then that is obvious from the name :-)
@@ -69,7 +70,7 @@ class CliBuilderTest extends GroovyTestCase {
     private final expectedParameter = 'ASCII'
     private final usageString = 'groovy [option]* filename'
 
-    private void runSample(parser, optionList) {
+    private void runSample(parser, optionList, jopt = false) {
         def cli = new CliBuilder(usage: usageString, writer: printWriter, parser: parser)
         cli.h(longOpt: 'help', 'usage information')
         cli.c(argName: 'charset', args: 1, longOpt: 'encoding', 'character encoding')
@@ -91,6 +92,16 @@ class CliBuilderTest extends GroovyTestCase {
  -h,--help                 usage information
  -i                        modify files in place, create backup if
                            extension is given (e.g. '.bak')"""
+        // TODO can we align help formatting?
+        if (jopt) {
+            expectedUsage = """Option                      Description                       """ + """
+------                      -----------                       """ + """
+-c, --encoding <charset>    character encoding                """ + """
+-h, --help                  usage information                 """ + """
+-i [extension]              modify files in place, create     """ + """
+                              backup if extension is given (e.
+                              g. '.bak')                      """
+        }
         assertEquals(expectedUsage, stringWriter.toString().tokenize('\r\n').join('\n'))
         stringWriter = new StringWriter()
         printWriter = new PrintWriter(stringWriter)
@@ -115,6 +126,10 @@ class CliBuilderTest extends GroovyTestCase {
         runSample(new CommonsCliBasicParserWrapper(), ['-h', '-c', expectedParameter])
     }
 
+    void testSampleShort_JoptSimpleParser() {
+        runSample(new JoptSimpleParserWrapper(), ['-h', '-c', expectedParameter], true)
+    }
+
     void testSampleShort_GnuParser() {
         runSample(new CommonsCliGnuParserWrapper(), ['-h', '-c', expectedParameter])
     }
@@ -133,6 +148,10 @@ class CliBuilderTest extends GroovyTestCase {
 
     void testSampleLong_BasicParser() {
         runSample(new CommonsCliBasicParserWrapper(), ['--help', '--encoding', expectedParameter])
+    }
+
+    void testSampleLong_JoptSimpleParser() {
+        runSample(new JoptSimpleParserWrapper(), ['--help', '--encoding', expectedParameter], true)
     }
 
     void testSampleLong_GnuParser() {
