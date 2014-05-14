@@ -144,6 +144,7 @@ allprojects {
                     'org/codehaus/groovy/tools/shell/util/HelpFormatter*.class'
             ].join(',')
             boolean isRoot = project == rootProject
+            boolean isGroovyCli = project.name == "groovy-cli"
             def gradleProject = project
             ant {
                 taskdef name: 'jarjar', classname: 'com.tonicsystems.jarjar.JarJarTask', classpath: rootProject.configurations.tools.asPath
@@ -152,18 +153,20 @@ allprojects {
                             src: jar.archivePath,
                             excludes: keepUntouched)
 
-                    // only groovy core will include the dependencies repackaged
-                    if (isRoot) {
+                    // groovy core will include the asm & antlr dependencies repackaged
+                    // groovy cli will include the commons-cli dependencies repackaged
+                    if (isRoot || isGroovyCli) {
                         configurations.runtime.files.findAll { file ->
-                            ['antlr', 'asm', 'commons-cli', 'openbeans'].any {
+                            (isRoot ? ['antlr', 'asm', 'openbeans'] : ['commons-cli']).any {
                                 file.name.startsWith(it)
                             } && ['asm-attr', 'asm-util', 'asm-analysis'].every { !file.name.startsWith(it) }
                         }.each { jarjarFile ->
                             zipfileset(src: jarjarFile)
                         }
-
-                        zipfileset(src: configurations.runtime.files.find { file -> file.name.startsWith('asm-util') },
-                                includes: 'org/objectweb/asm/util/Printer.class,org/objectweb/asm/util/Textifier.class,org/objectweb/asm/util/Trace*')
+                        if (isRoot) {
+                            zipfileset(src: configurations.runtime.files.find { file -> file.name.startsWith('asm-util') },
+                                    includes: 'org/objectweb/asm/util/Printer.class,org/objectweb/asm/util/Textifier.class,org/objectweb/asm/util/Trace*')
+                        }
                     }
                     rule pattern: 'antlr.**', result: 'groovyjarjarantlr.@1'
                     rule pattern: 'org.objectweb.**', result: 'groovyjarjarasm.@1'

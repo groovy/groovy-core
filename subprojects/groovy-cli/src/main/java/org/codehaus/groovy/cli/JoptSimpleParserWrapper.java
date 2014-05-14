@@ -81,26 +81,34 @@ public class JoptSimpleParserWrapper implements CliParser {
     }
 
     public void addOptionGroup(List<Map<String, Object>> maps) {
-
+        // TODO make it a real group
+        for (Map<String, Object> map : maps) {
+            addOption(map);
+        }
     }
 
     public void displayHelp(String cmdLineSyntax, String header) {
+        System.out.print("usage: " + cmdLineSyntax + "\n------\n");
+        BuiltinHelpFormatter formatter = new BuiltinHelpFormatter(80, 4);
         try {
+            parser.formatHelpWith(formatter);
             parser.printHelpOn(System.out);
         } catch (IOException ignore) {
         }
     }
 
     public void displayHelp(PrintWriter pw, String cmdLineSyntax, String header) {
-
+        displayHelp(pw, 80, cmdLineSyntax, header, null);
     }
 
     public void displayHelp(PrintWriter pw, int width, String cmdLineSyntax, String header, String footer) {
-
+        displayHelp(pw, width, cmdLineSyntax, header, 2, 4, footer);
     }
 
     public void displayHelp(PrintWriter pw, int width, String cmdLineSyntax, String header, int leftPad, int descPad, String footer) {
-        BuiltinHelpFormatter formatter = new BuiltinHelpFormatter(width, 4);
+        // TODO support header, footer, etc.
+        pw.print("usage: " + cmdLineSyntax + "\n------\n");
+        BuiltinHelpFormatter formatter = new BuiltinHelpFormatter(width, descPad);
 //        formatter.printHelp(pw, width, cmdLineSyntax, header, cliOptions, leftPad, descPad, footer, false);
         try {
             parser.formatHelpWith(formatter);

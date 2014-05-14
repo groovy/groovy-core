@@ -283,9 +283,11 @@ parser.addOption(
         .create('v')
 );
 
-
+// uncomment JOpt version instead of default to test alternative CLI parser
+//@Field CliParser parser = CliParserFactory.newParser("org.codehaus.groovy.cli.JoptSimpleParserWrapper")
 @Field CliParser parser = CliParserFactory.newParser()
-@Field CliOptions cmd = parser.parse(args)
+@Field CliOptions cmd
+cmd = parser.parse(args)
 
 if (cmd.hasOption('h')) {
     grapeHelp()
@@ -304,7 +306,7 @@ cmd.getOptionValues('D')?.each {String prop ->
     System.setProperty(k, v ?: "")
 }
 
-String[] arg = cmd.args
+String[] arg = cmd.remainingArgs()
 if (arg?.length == 0) {
     grapeHelp()
 } else if (commands.containsKey(arg[0])) {

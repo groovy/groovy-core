@@ -94,13 +94,15 @@ class CliBuilderTest extends GroovyTestCase {
                            extension is given (e.g. '.bak')"""
         // TODO can we align help formatting?
         if (jopt) {
-            expectedUsage = """Option                      Description                       """ + """
-------                      -----------                       """ + """
--c, --encoding <charset>    character encoding                """ + """
--h, --help                  usage information                 """ + """
--i [extension]              modify files in place, create     """ + """
-                              backup if extension is given (e.
-                              g. '.bak')                      """
+            expectedUsage = """usage: $usageString
+------
+Option                     Description                       """ + """
+------                     -----------                       """ + """
+-c, --encoding <charset>   character encoding                """ + """
+-h, --help                 usage information                 """ + """
+-i [extension]             modify files in place, create     """ + """
+                             backup if extension is given (e.
+                             g. '.bak')                      """
         }
         assertEquals(expectedUsage, stringWriter.toString().tokenize('\r\n').join('\n'))
         stringWriter = new StringWriter()
