@@ -1,5 +1,5 @@
 /*
- *  Copyright 2003-2013 the original author or authors.
+ *  Copyright 2003-2014 the original author or authors.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
  *  compliance with the License.  You may obtain a copy of the License at
@@ -15,13 +15,15 @@
 package groovy.util
 
 import groovy.cli.CliOptionBuilder
+import groovy.cli.Option
+import groovy.cli.Unparsed
+import groovy.transform.ToString
 import org.codehaus.groovy.cli.CommonsCliBasicParserWrapper
 import org.codehaus.groovy.cli.CommonsCliGnuParserWrapper
 import org.codehaus.groovy.cli.CommonsCliParserWrapper
 import org.codehaus.groovy.cli.CommonsCliPosixParserWrapper
 import org.codehaus.groovy.cli.GroovyPosixParser
-import org.apache.commons.cli.Option
-import org.apache.commons.cli.OptionBuilder
+import org.apache.commons.cli.Option as CommonsOption
 import org.codehaus.groovy.cli.JoptSimpleParserWrapper
 
 /**
@@ -287,7 +289,7 @@ usage: groovy
 
     private void multipleOccurrencesSeparateSeparate(parser) {
         def cli = new CliBuilder(parser: parser)
-        cli.a(longOpt: 'arg', args: Option.UNLIMITED_VALUES, 'arguments')
+        cli.a(longOpt: 'arg', args: CommonsOption.UNLIMITED_VALUES, 'arguments')
         def options = cli.parse(['-a', '1', '-a', '2', '-a', '3'])
         assert options.a == '1'
         assert options.as == ['1', '2', '3']
@@ -304,7 +306,7 @@ usage: groovy
 
     private void multipleOccurrencesSeparateJuxtaposed(parser) {
         def cli = new CliBuilder(parser: parser)
-        //cli.a ( longOpt : 'arg' , args : Option.UNLIMITED_VALUES , 'arguments' )
+        //cli.a ( longOpt : 'arg' , args : CommonsOption.UNLIMITED_VALUES , 'arguments' )
         cli.a(longOpt: 'arg', args: 1, 'arguments')
         def options = cli.parse(['-a1', '-a2', '-a3'])
         assertEquals('1', options.a)
@@ -324,7 +326,7 @@ usage: groovy
 
     private void multipleOccurrencesTogetherSeparate(parser) {
         def cli = new CliBuilder(parser: parser)
-        cli.a(longOpt: 'arg', args: Option.UNLIMITED_VALUES, valueSeparator: ',' as char, 'arguments')
+        cli.a(longOpt: 'arg', args: CommonsOption.UNLIMITED_VALUES, valueSeparator: ',' as char, 'arguments')
         def options = cli.parse(['-a 1,2,3'])
         assertEquals(' 1', options.a)
         assertEquals([' 1', '2', '3'], options.as)
@@ -343,7 +345,7 @@ usage: groovy
 
     private void multipleOccurrencesTogetherJuxtaposed(parser) {
         def cli = new CliBuilder(parser: parser)
-        cli.a(longOpt: 'arg', args: Option.UNLIMITED_VALUES, valueSeparator: ',' as char, 'arguments')
+        cli.a(longOpt: 'arg', args: CommonsOption.UNLIMITED_VALUES, valueSeparator: ',' as char, 'arguments')
         def options = cli.parse(['-a1,2,3'])
         assertEquals('1', options.a)
         assertEquals(['1', '2', '3'], options.as)
@@ -514,5 +516,63 @@ usage: groovy
     void testExpandArgsWithEmptyArg() {
         def cli = new CliBuilder(expandArgumentFiles: true)
         cli.parse(['something', ''])
+    }
+
+    interface PersonI {
+        @Option String first()
+        @Option String last()
+        @Option boolean flag1()
+        @Option Boolean flag2()
+        @Option Boolean flag3()
+        @Unparsed List remaining()
+    }
+
+    def argz = "--first John --last Smith --flag1 --flag2 and some more".split()
+
+    void testParseFromSpec() {
+        def builder1 = new CliBuilder()
+        def p1 = builder1.parseFromSpec(PersonI, argz)
+        assert p1.first() == 'John'
+        assert p1.last() == 'Smith'
+        assert p1.flag1()
+        assert p1.flag2()
+        assert !p1.flag3()
+        assert p1.remaining() == ['and', 'some', 'more']
+    }
+
+    @ToString(includeFields=true, includePackage=false)
+    class Person {
+        private String first
+        private String last
+        private boolean flag1
+        private Boolean flag2
+        private Boolean flag3
+        private List remaining
+
+        @Option void setFirst(String first) {
+            this.first = first
+        }
+        @Option void setLast(String last) {
+            this.last = last
+        }
+        @Option void setFlag1(boolean flag1) {
+            this.flag1 = flag1
+        }
+        @Option void setFlag2(boolean flag2) {
+            this.flag2 = flag2
+        }
+        @Option void setFlag3(boolean flag3) {
+            this.flag3 = flag3
+        }
+        @Unparsed void setRemaining(List remaining) {
+            this.remaining = remaining
+        }
+    }
+
+    void testParseFromInstance() {
+        def p2 = new Person()
+        def builder2 = new CliBuilder()
+        builder2.parseFromInstance(p2, argz)
+        assert p2.toString() == 'CliBuilderTest$Person(John, Smith, true, true, false, [and, some, more])'
     }
 }

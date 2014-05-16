@@ -21,7 +21,13 @@ import groovy.cli.CliOptions
 import groovy.cli.CliParseException
 import groovy.cli.CliParser
 import groovy.cli.CliParserFactory
+import groovy.cli.Option
+import groovy.cli.Unparsed
 import org.codehaus.groovy.runtime.InvokerHelper
+import org.codehaus.groovy.runtime.MetaClassHelper
+
+import java.lang.annotation.Annotation
+import java.lang.reflect.Method
 
 /**
  * Provides a builder to assist the processing of command line arguments.
@@ -266,6 +272,73 @@ class CliBuilder {
             }
         }
         return InvokerHelper.getMetaClass(this).invokeMethod(this, name, args)
+    }
+
+    public <T> T parseFromSpec(Class<T> optionsClass, args) {
+        def p = getParser()
+        addOptionsFromAnnotations(p, optionsClass, false)
+        CliOptions cli = p.parse(args)
+        def options = [:]
+        setOptionsFromAnnotations(cli, optionsClass, options, false)
+        options as T
+    }
+
+    public <T> T parseFromInstance(T options, args) {
+        def p = getParser()
+        addOptionsFromAnnotations(p, options.getClass(), true)
+        CliOptions cli = p.parse(args)
+        setOptionsFromAnnotations(cli, options.getClass(), options, true)
+        options
+    }
+
+    void addOptionsFromAnnotations(CliParser cliParser, Class optionClass, boolean namesAreSetters) {
+        optionClass.methods.findAll{ it.getAnnotation(Option) }.each { Method m ->
+            Annotation annotation = m.getAnnotation(Option)
+            String shortName = annotation.shortName()
+            String description = annotation.description()
+            char valueSeparator = annotation.valueSeparator()
+            String longName = adjustLongName(annotation.longName(), m, namesAreSetters)
+            CliOptionBuilder builder = CliOptionBuilder.withLongOpt(longName)
+            if (description && !description.isEmpty()) builder.withDescription(description)
+            if (valueSeparator) builder.withValueSeparator(valueSeparator)
+            builder.hasArg(namesAreSetters ? m.parameterTypes.size() > 0 && m.parameterTypes[0].getSimpleName().toLowerCase() != 'boolean' : m.returnType.getSimpleName().toLowerCase() != 'boolean')
+            cliParser.addOption(shortName && !shortName.isEmpty() ? builder.create(shortName) : builder.create())
+        }
+    }
+
+    def setOptionsFromAnnotations(CliOptions cliOptions, Class optionClass, Object t, boolean namesAreSetters) {
+        optionClass.methods.findAll{ it.getAnnotation(Option) }.each { Method m ->
+            Annotation annotation = m.getAnnotation(Option)
+            String longName = adjustLongName(annotation.longName(), m, namesAreSetters)
+            if (namesAreSetters) {
+                boolean isFlag = m.parameterTypes.size() > 0 && m.parameterTypes[0].getSimpleName().toLowerCase() == 'boolean'
+                if (cliOptions.hasOption(longName) || isFlag) {
+                    m.invoke(t, [isFlag ? cliOptions.hasOption(longName) : cliOptions.getOptionValue(longName)] as Object[])
+                }
+            } else {
+                boolean isFlag = m.returnType.getSimpleName().toLowerCase() == 'boolean'
+                t.put(longName, cliOptions.hasOption(longName) ? { -> isFlag ? true : cliOptions.getOptionValue(longName) } : {-> isFlag ? false : null})
+            }
+        }
+        def remaining = cliOptions.remainingArgs()
+        optionClass.methods.findAll{ it.getAnnotation(Unparsed) }.each { Method m ->
+            if (namesAreSetters) {
+                m.invoke(t, remaining.toList())
+            } else {
+                String longName = adjustLongName("", m, namesAreSetters)
+                t.put(longName, { -> remaining.toList() })
+            }
+        }
+    }
+
+    private String adjustLongName(String longName, Method m, boolean namesAreSetters) {
+        if (!longName || longName.isEmpty()) {
+            longName = m.getName()
+            if (namesAreSetters && longName.startsWith("set")) {
+                longName = MetaClassHelper.convertPropertyName(longName.substring(3))
+            }
+        }
+        longName
     }
 
     /**
