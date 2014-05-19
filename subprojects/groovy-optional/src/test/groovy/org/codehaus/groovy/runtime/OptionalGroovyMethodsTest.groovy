@@ -85,10 +85,41 @@ class OptionalGroovyMethodsTest extends Specification {
     // embeded value. Because of compatibility to Java's originaln
     // Original behavior.
     void testToString() {
-        expect:
         def a = Optional.of(3.3)
+        expect:
         a.toString() == "Optional[3.3]" // != "3.3"
         a.get().toString() == "3.3"
         a.map{"<"+it.toString()+">"}.get() == "<3.3>"
     }
+
+    // Optional.toString() is not delegated to the toString() on the
+    // embeded value. Because of compatibility to Java's originaln
+    // Original behavior.
+    void testToString() {
+        def a = Optional.of(3.3)
+        expect:
+        a.toString() == "Optional[3.3]" // != "3.3"
+        a.get().toString() == "3.3"
+        a.map{"<"+it.toString()+">"}.get() == "<3.3>"
+    }
+
+    void testMap() {
+        expect:
+        Optional.of("abc").map{it.toUpperCase()} == Optional.of("ABC")
+    }
+    
+    void testFlatMap() {
+        def divide = {it == 0 ? Optional.empty() : Optional.of(3.0/it) }
+        expect:
+        Optional.of(3.0).flatMap(divide) != Optional.of(1.0) // equals i not dispatched to target.
+        Optional.of(3.0).flatMap(divide).get() == Optional.of(1.0).get()
+        Optional.of(0).flatMap(divide) == Optional.empty()
+    }
+    
+    void testFilter() {
+        expect:
+        Optional.of(3).filter { it % 2 == 0 } == Optional.empty()
+        Optional.of(3).filter { it % 2 == 1 } == Optional.of(3)
+    }
+    
 }
