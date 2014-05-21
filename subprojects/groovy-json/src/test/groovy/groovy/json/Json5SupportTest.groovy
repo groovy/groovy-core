@@ -1,6 +1,8 @@
 package groovy.json
 
-class Json5SupportTest extends JsonSlurperTest {
+class Json5SupportTest extends GroovyTestCase {
+    JsonSlurper parser
+    
     void setUp() {
         parser = new JsonSlurper().setType(JsonParserType.JSON5)
     }
@@ -33,6 +35,9 @@ class Json5SupportTest extends JsonSlurperTest {
                 key: "value",
                 anotherKey: "anotherValue",
             }
-        """.stripIndent())
+        """.stripIndent()) == [
+            key: "value",
+            anotherKey: "anotherValue"
+        ]
     }
 }
