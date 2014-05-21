@@ -1,6 +1,6 @@
 package groovy.json
 
-class JsonSlurperLaxTest extends JsonSlurperTest {
+class Json5SupportTest extends JsonSlurperTest {
     void setUp() {
         parser = new JsonSlurper().setType(JsonParserType.JSON5)
     }
@@ -25,5 +25,14 @@ class JsonSlurperLaxTest extends JsonSlurperTest {
         """.stripIndent()) == [
             key: "value"
         ]
+    }
+    
+    void testTrailingCommas() {
+        assert parser.parseText("""\
+            {
+                key: "value",
+                anotherKey: "anotherValue",
+            }
+        """.stripIndent())
     }
 }
