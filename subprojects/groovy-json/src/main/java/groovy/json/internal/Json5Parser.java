@@ -34,23 +34,23 @@ public class Json5Parser extends JsonParserCharArray {
     private final boolean lazyChop;
     private final boolean defaultCheckDates;
 
-    public JsonParserLax() {
+    public Json5Parser() {
         this(true);
     }
 
-    public JsonParserLax(boolean useValues) {
+    public Json5Parser(boolean useValues) {
         this(useValues, false);
     }
 
-    public JsonParserLax(boolean useValues, boolean chop) {
+    public Json5Parser(boolean useValues, boolean chop) {
         this(useValues, chop, !chop);
     }
 
-    public JsonParserLax(boolean useValues, boolean chop, boolean lazyChop) {
+    public Json5Parser(boolean useValues, boolean chop, boolean lazyChop) {
         this(useValues, chop, lazyChop, true);
     }
 
-    public JsonParserLax(boolean useValues, boolean chop, boolean lazyChop, boolean defaultCheckDates) {
+    public Json5Parser(boolean useValues, boolean chop, boolean lazyChop, boolean defaultCheckDates) {
         this.useValues = useValues;
         this.chop = chop;
         this.lazyChop = lazyChop;
