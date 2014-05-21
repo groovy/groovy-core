@@ -48,6 +48,7 @@ package groovy.json;
  *     Use CHAR_BUFFER if eager parsing of ints, dates, longs, are appealing.
  *     Use CHARACTER_SOURCE if you are dealing with large JSON files over 2MB.
  *     INDEX_OVERLAY is highly tuned for object deserialization from JSON.
+ *     Use JSON5 for JSON 5 Support
  * </p>
  * @author Rick Hightower
  * @since 2.3.0
@@ -90,5 +91,10 @@ public enum JsonParserType {
      * INDEX_OVERLAY. It should be on average the fastest known JSON parser on the JVM circa Jan 2014.
      * But not as fast as INDEX_OVERLAY.
      */
-    CHAR_BUFFER;
+    CHAR_BUFFER,
+    
+    /**
+     * This is a parser for the JSON 5 Specification Variant
+     */
+    JSON5;
 }
