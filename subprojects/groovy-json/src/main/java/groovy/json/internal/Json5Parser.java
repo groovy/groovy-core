@@ -302,6 +302,11 @@ public class Json5Parser extends JsonParserCharArray {
                 case '-':
                     return decodeNumberLax(true);
 
+                case '+':
+                    __index++;
+                    __currentChar = charArray[__index];
+                    return decodeNumberLax(false);
+
                 default:
                     value = decodeStringLax();
             }
