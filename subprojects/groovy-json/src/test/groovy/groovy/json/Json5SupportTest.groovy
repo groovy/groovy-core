@@ -41,4 +41,14 @@ class Json5SupportTest extends GroovyTestCase {
             anotherKey: "anotherValue"
         ]
     }
+    
+    void testPositiveNumbers() {
+        assert parser.parseText("""\
+            {
+                key: +1
+            }
+        """) == [
+            key: 1    
+        ]
+    }
 }
