@@ -3,12 +3,13 @@ package groovy.json
 class Json5SupportTest extends GroovyTestCase {
     JsonSlurper parser
     
+    @Override
     void setUp() {
         parser = new JsonSlurper().setType(JsonParserType.JSON5)
     }
     
     void testBashCommentsRemoved() {
-        shouldFail(JsonException) {
+        shouldFail {
             parser.parseText("""\
             # This is a Comment
             {
