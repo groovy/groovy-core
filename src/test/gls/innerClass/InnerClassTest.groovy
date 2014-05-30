@@ -492,6 +492,26 @@ import org.codehaus.groovy.classgen.Verifier
             injectVariables(t, ['p': 'q'])
         '''
     }
+
+    void testInnerInnerMissingPropertyHandling() {
+        assertScript '''
+            class Outer {
+              private static List items = []
+              void add() { items.add('Outer') }
+              static class Inner {
+                void add() { items.add('Inner') }
+                static class InnerInner {
+                  void add() { items.add('InnerInner') }
+                }
+              }
+            }
+
+            new Outer().add()
+            new Outer.Inner().add()
+            new Outer.Inner.InnerInner().add()
+            assert Outer.items == ["Outer", "Inner", "InnerInner"]
+        '''
+    }
 }
 
 class MyOuterClass4028 {
