@@ -64,7 +64,7 @@ abstract public class JCommanderScript extends Script {
     }
 
     /**
-     * If the given numeric code is numeric and non-zero, then return that from this process using System.exit.
+     * If the given code is numeric and non-zero, then return that from this process using System.exit.
      * Non-numeric values (including null) are taken to be zero and returned as-is.
      *
      * @param code
@@ -134,7 +134,7 @@ abstract public class JCommanderScript extends Script {
 
     /**
      * Add command objects to the given JCommander.
-     * The default behavior is to look for JCommanderCommand annotations.
+     * The default behavior is to look for Subcommand annotations.
      *
      * @param jc The JCommander instance to add the commands (if any) to.
      */
@@ -149,7 +149,7 @@ abstract public class JCommanderScript extends Script {
                         field.setAccessible(true);
                         jc.addCommand(field.get(this));
                     } catch (IllegalAccessException e) {
-                        printErrorMessage("Trying to add JCommanderCommand but got error '" + e.getMessage()
+                        printErrorMessage("Trying to add JCommander @Subcommand but got error '" + e.getMessage()
                                 + "' when getting value of field " + field.getName());
                     }
                 }

@@ -16,11 +16,15 @@
 
 package groovy.cli.test
 
+import groovy.transform.SourceURI
+
 /**
  * @author Jim White
  */
 
 public class JCommanderScriptTest extends GroovyTestCase {
+    @SourceURI URI sourceURI
+
     void testParameterizedScript() {
         GroovyShell shell = new GroovyShell()
         shell.context.setVariable('args',
@@ -45,5 +49,19 @@ assert codepath == ['/usr/x.jar', '/bin/y.jar', 'z']
 [parameters.size(), codepath.size()]
 '''
         assert result == [2, 3]
+    }
+
+    void testSimpleCommandScript() {
+        GroovyShell shell = new GroovyShell()
+        shell.context.setVariable('args',
+                [ "--codepath", "/usr/x.jar", "placeholder", "-cp", "/bin/y.jar", "another" ] as String[])
+        def result = shell.evaluate(new File(new File(sourceURI).parentFile, 'SimpleJCommanderScriptTest.groovy'))
+        assert result == [777]
+    }
+
+    void testMultipleCommandScript() {
+        GroovyShell shell = new GroovyShell()
+        def result = shell.evaluate(new File(new File(sourceURI).parentFile, 'MultipleJCommanderScriptTest.groovy'))
+        assert result == [33]
     }
 }

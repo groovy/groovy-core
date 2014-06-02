@@ -31,10 +31,10 @@ import com.beust.jcommander.Parameter
 @Parameter(names = ["-cp", "--codepath"])
 @Field List<String> codepath = []
 
-// Override the default of using the 'args' binding for our test.
-String[] getScriptArguments() {
-   [ "--codepath", "/usr/x.jar", "placeholder", "-cp", "/bin/y.jar", "another" ] as String[]
-}
+//// Override the default of using the 'args' binding for our test.
+//String[] getScriptArguments() {
+//   [ "--codepath", "/usr/x.jar", "placeholder", "-cp", "/bin/y.jar", "another" ] as String[]
+//}
 
 println parameters
 
@@ -43,4 +43,4 @@ println codepath
 assert parameters == ['placeholder', 'another']
 assert codepath == ['/usr/x.jar', '/bin/y.jar']
 
-true
+[777]
