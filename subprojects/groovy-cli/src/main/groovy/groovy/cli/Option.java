@@ -55,4 +55,11 @@ public @interface Option {
      * @return the value separator for this multi-valued option
      */
     char valueSeparator() default 0;
+
+    /**
+     * The default value for this option
+     *
+     * @return the default value for this option
+     */
+    String defaultValue() default "";
 }

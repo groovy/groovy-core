@@ -524,10 +524,15 @@ usage: groovy
         @Option boolean flag1()
         @Option Boolean flag2()
         @Option Boolean flag3()
+        @Option int age()
+        @Option Integer born()
+        @Option float discount()
+        @Option BigDecimal pi()
+        @Option File biography()
         @Unparsed List remaining()
     }
 
-    def argz = "--first John --last Smith --flag1 --flag2 and some more".split()
+    def argz = "--first John --last Smith --flag1 --flag2 --age  21 --born 1980 --discount 3.5 --pi 3.14159 --biography cv.txt and some more".split()
 
     void testParseFromSpec() {
         def builder1 = new CliBuilder()
@@ -537,6 +542,11 @@ usage: groovy
         assert p1.flag1()
         assert p1.flag2()
         assert !p1.flag3()
+        assert p1.born() == 1980
+        assert p1.age() == 21
+        assert p1.discount() == 3.5f
+        assert p1.pi() == 3.14159
+        assert p1.biography() == new File('cv.txt')
         assert p1.remaining() == ['and', 'some', 'more']
     }
 
@@ -547,6 +557,11 @@ usage: groovy
         private boolean flag1
         private Boolean flag2
         private Boolean flag3
+        private int age
+        private Integer born
+        private float discount
+        private BigDecimal pi
+        private File biography
         private List remaining
 
         @Option void setFirst(String first) {
@@ -564,6 +579,21 @@ usage: groovy
         @Option void setFlag3(boolean flag3) {
             this.flag3 = flag3
         }
+        @Option void setAge(int age) {
+            this.age = age
+        }
+        @Option void setBorn(Integer born) {
+            this.born = born
+        }
+        @Option void setDiscount(float discount) {
+            this.discount = discount
+        }
+        @Option void setPi(BigDecimal pi) {
+            this.pi = pi
+        }
+        @Option void setBiography(File biography) {
+            this.biography = biography
+        }
         @Unparsed void setRemaining(List remaining) {
             this.remaining = remaining
         }
@@ -573,6 +603,6 @@ usage: groovy
         def p2 = new Person()
         def builder2 = new CliBuilder()
         builder2.parseFromInstance(p2, argz)
-        assert p2.toString() == 'CliBuilderTest$Person(John, Smith, true, true, false, [and, some, more])'
+        assert p2.toString() == 'CliBuilderTest$Person(John, Smith, true, true, false, 21, 1980, 3.5, 3.14159, cv.txt, [and, some, more])'
     }
 }

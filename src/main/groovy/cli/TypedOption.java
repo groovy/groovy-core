@@ -16,19 +16,10 @@
 
 package groovy.cli;
 
-/**
- * @author paulk
- */
-public interface CliOptions {
-    String[] remainingArgs();
+import java.util.HashMap;
 
-    boolean hasOption(String optionName);
-
-    String getOptionValue(String optionName);
-
-    <T> T getOptionValue(TypedOption<T> option);
-
-    String getOptionValue(String optionName, String defaultValue);
-
-    String[] getOptionValues(String optionName);
+public class TypedOption<T> extends HashMap<String, Object> {
+    public T defaultValue() {
+        return (T) super.get("defaultValue");
+    }
 }

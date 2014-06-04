@@ -16,7 +16,6 @@
 
 package groovy.cli;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -28,9 +27,10 @@ public class CliOptionBuilder {
     private static String argName;
     private static Boolean required;
     private static Integer numberOfArgs = -1; // unspecified
-    //    private static Object type;
+    private static Class type;
     private static Boolean optionalArg;
     private static Character valueSep;
+    private static Object defaultValue;
 
     private static CliOptionBuilder instance = new CliOptionBuilder();
 
@@ -44,15 +44,16 @@ public class CliOptionBuilder {
         description = null;
         argName = "arg";
         longOpt = null;
-//        type = null;
+        type = null;
         required = false;
         numberOfArgs = -1;
         optionalArg = false;
         valueSep = (char) 0;
+        defaultValue = null;
     }
 
-    public static CliOptionBuilder withLongOpt(String newLongopt) {
-        CliOptionBuilder.longOpt = newLongopt;
+    public static CliOptionBuilder withLongOpt(String longOpt) {
+        CliOptionBuilder.longOpt = longOpt;
         return instance;
     }
 
@@ -78,6 +79,11 @@ public class CliOptionBuilder {
 
     public static CliOptionBuilder withValueSeparator(char sep) {
         CliOptionBuilder.valueSep = sep;
+        return instance;
+    }
+
+    public static CliOptionBuilder withDefaultValue(Object value) {
+        CliOptionBuilder.defaultValue = value;
         return instance;
     }
 
@@ -119,10 +125,10 @@ public class CliOptionBuilder {
         return instance;
     }
 
-//    public static CliOptionBuilder withType(Object newType) {
-//        CliOptionBuilder.type = newType;
-//        return instance;
-//    }
+    public static CliOptionBuilder withType(Class newType) {
+        CliOptionBuilder.type = newType;
+        return instance;
+    }
 
     public static CliOptionBuilder withDescription(String newDescription) {
         CliOptionBuilder.description = newDescription;
@@ -142,13 +148,15 @@ public class CliOptionBuilder {
     }
 
     public static Map<String, Object> create(String opt) throws IllegalArgumentException {
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new TypedOption<Object>();
         if (opt != null) result.put("opt", opt);
         result.put("description", description);
         result.put("longOpt", longOpt);
         result.put("required", required);
         result.put("optionalArg", optionalArg);
         result.put("numberOfArgs", numberOfArgs);
+        result.put("type", type);
+        result.put("defaultValue", defaultValue);
         result.put("valueSep", valueSep);
         result.put("argName", argName);
         reset();

@@ -17,6 +17,7 @@
 package org.codehaus.groovy.cli;
 
 import groovy.cli.CliOptions;
+import groovy.cli.TypedOption;
 import joptsimple.OptionSet;
 
 import java.util.List;
@@ -42,6 +43,11 @@ public class JoptSimpleOptionsWrapper implements CliOptions {
 
     public String getOptionValue(String optionName) {
         return (String) options.valueOf(optionName);
+    }
+
+    public <T> T getOptionValue(TypedOption<T> option) {
+        // TODO support types
+        return null;
     }
 
     public String getOptionValue(String optionName, String defaultValue) {

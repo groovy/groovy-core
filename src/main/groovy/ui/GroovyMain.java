@@ -145,8 +145,7 @@ public class GroovyMain {
     /**
      * Build the options parser.  Has to be synchronized because of the way Options are constructed.
      *
-     * @return an options parser.
-     * @param parser
+     * @param parser an options parser
      */
     @SuppressWarnings("static-access")
     private static synchronized void buildOptions(CliParser parser) {

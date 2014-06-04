@@ -22,6 +22,7 @@ import groovy.cli.CliParseException
 import groovy.cli.CliParser
 import groovy.cli.CliParserFactory
 import groovy.cli.Option
+import groovy.cli.TypedOption
 import groovy.cli.Unparsed
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.codehaus.groovy.runtime.MetaClassHelper
@@ -191,6 +192,7 @@ class CliBuilder {
     def parser = null
 
     private CliParser _parser = null
+    Map<String, TypedOption> savedTypeOptions = new HashMap<String, TypedOption>()
 
     CliParser getParser() {
         if (_parser == null) {
@@ -296,13 +298,22 @@ class CliBuilder {
             Annotation annotation = m.getAnnotation(Option)
             String shortName = annotation.shortName()
             String description = annotation.description()
+            String defaultValue = annotation.defaultValue()
             char valueSeparator = annotation.valueSeparator()
             String longName = adjustLongName(annotation.longName(), m, namesAreSetters)
             CliOptionBuilder builder = CliOptionBuilder.withLongOpt(longName)
             if (description && !description.isEmpty()) builder.withDescription(description)
+            if (defaultValue && !defaultValue.isEmpty()) builder.withDefaultValue(defaultValue)
             if (valueSeparator) builder.withValueSeparator(valueSeparator)
-            builder.hasArg(namesAreSetters ? m.parameterTypes.size() > 0 && m.parameterTypes[0].getSimpleName().toLowerCase() != 'boolean' : m.returnType.getSimpleName().toLowerCase() != 'boolean')
-            cliParser.addOption(shortName && !shortName.isEmpty() ? builder.create(shortName) : builder.create())
+            Class type = namesAreSetters ? (m.parameterTypes.size() > 0 ? m.parameterTypes[0] : null) : m.returnType
+            if (type) {
+                builder.hasArg(type.simpleName.toLowerCase() != 'boolean')
+                builder.withType(type)
+            }
+
+            def typedOption = shortName && !shortName.isEmpty() ? builder.create(shortName) : builder.create()
+            savedTypeOptions[longName] = typedOption
+            cliParser.addOption(typedOption)
         }
     }
 
@@ -311,13 +322,13 @@ class CliBuilder {
             Annotation annotation = m.getAnnotation(Option)
             String longName = adjustLongName(annotation.longName(), m, namesAreSetters)
             if (namesAreSetters) {
-                boolean isFlag = m.parameterTypes.size() > 0 && m.parameterTypes[0].getSimpleName().toLowerCase() == 'boolean'
+                boolean isFlag = m.parameterTypes.size() > 0 && m.parameterTypes[0].simpleName.toLowerCase() == 'boolean'
                 if (cliOptions.hasOption(longName) || isFlag) {
-                    m.invoke(t, [isFlag ? cliOptions.hasOption(longName) : cliOptions.getOptionValue(longName)] as Object[])
+                    m.invoke(t, [isFlag ? cliOptions.hasOption(longName) : cliOptions.getOptionValue(savedTypeOptions[longName])] as Object[])
                 }
             } else {
-                boolean isFlag = m.returnType.getSimpleName().toLowerCase() == 'boolean'
-                t.put(longName, cliOptions.hasOption(longName) ? { -> isFlag ? true : cliOptions.getOptionValue(longName) } : {-> isFlag ? false : null})
+                boolean isFlag = m.returnType.simpleName.toLowerCase() == 'boolean'
+                t.put(longName, cliOptions.hasOption(longName) ? { -> isFlag ? true : cliOptions.getOptionValue(savedTypeOptions[longName]) } : {-> isFlag ? false : null})
             }
         }
         def remaining = cliOptions.remainingArgs()

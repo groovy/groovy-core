@@ -17,16 +17,29 @@
 package org.codehaus.groovy.cli;
 
 import groovy.cli.CliOptions;
+import groovy.cli.TypedOption;
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.codehaus.groovy.runtime.StringGroovyMethods;
+
+import java.util.Map;
+
+import static org.codehaus.groovy.cli.CommonsCliParserWrapper.makeDefaultValueKey;
+import static org.codehaus.groovy.cli.CommonsCliParserWrapper.stripLeadingHyphens;
 
 /**
  * @author paulk
  */
 public class CommonsCliOptionsWrapper implements CliOptions {
     private final CommandLine cli;
+    private final Options cliOptions;
+    private final Map<String, Object> defaultValues;
 
-    public CommonsCliOptionsWrapper(CommandLine cli) {
+    public CommonsCliOptionsWrapper(CommandLine cli, Options cliOptions, Map<String, Object> defaultValues) {
         this.cli = cli;
+        this.cliOptions = cliOptions;
+        this.defaultValues = defaultValues;
     }
 
     public String[] remainingArgs() {
@@ -38,7 +51,31 @@ public class CommonsCliOptionsWrapper implements CliOptions {
     }
 
     public String getOptionValue(String optionName) {
-        return cli.getOptionValue(optionName);
+        if (hasOption(optionName)) {
+            return cli.getOptionValue(optionName);
+        }
+        Option[] options = cli.getOptions();
+        for (Option option : options) {
+            if (optionName.equals(stripLeadingHyphens(option.getOpt())) || optionName.equals(stripLeadingHyphens(option.getLongOpt()))) {
+                return defaultValues.get(makeDefaultValueKey(option)).toString();
+            }
+        }
+        return null;
+    }
+
+    public <T> T getOptionValue(TypedOption<T> typedOption) {
+        String optionName = (String) typedOption.get("longOpt");
+        if (hasOption(optionName)) {
+            Option option = cliOptions.getOption(optionName);
+            Object type = option.getType();
+            String optionValue = cli.getOptionValue(optionName);
+            return (T) getTypedValue(type, optionValue);
+        }
+        return typedOption.defaultValue();
+    }
+
+    private <T> T getTypedValue(Object type, String optionValue) {
+        return StringGroovyMethods.asType(optionValue, (Class<T>) type);
     }
 
     public String getOptionValue(String optionName, String defaultValue) {

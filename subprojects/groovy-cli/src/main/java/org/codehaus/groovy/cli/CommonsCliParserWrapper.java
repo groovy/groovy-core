@@ -29,6 +29,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -39,6 +40,7 @@ public class CommonsCliParserWrapper implements CliParser {
 
     protected CommandLineParser cliParser = getParserDelegate();
     protected Options cliOptions = new Options();
+    protected Map<String, Object> defaultValues = new HashMap<String, Object>();
 
     protected CommandLineParser getParserDelegate() {
         return new GroovyInternalPosixParser();
@@ -55,7 +57,7 @@ public class CommonsCliParserWrapper implements CliParser {
         } catch (ParseException e) {
             throw new CliParseException(e.getMessage());
         }
-        return new CommonsCliOptionsWrapper(cli);
+        return new CommonsCliOptionsWrapper(cli, cliOptions, defaultValues);
     }
 
     public void addOption(Map<String, Object> map) {
@@ -77,14 +79,27 @@ public class CommonsCliParserWrapper implements CliParser {
         if (required != null) option.setRequired(required);
         Boolean optionalArg = (Boolean) map.get("optionalArg");
         if (optionalArg != null) option.setOptionalArg(optionalArg);
+        Object defaultValue = map.get("defaultValue");
+        defaultValues.put(makeDefaultValueKey(option), defaultValue);
         option.setArgs((Integer) map.get("numberOfArgs"));
-//            option.setType(type);
+        Class type = (Class) map.get("type");
+        if (type != null) option.setType(type);
         Object valueSep = map.get("valueSep");
         if (valueSep != null) option.setValueSeparator(valueSep.toString().charAt(0));
         option.setArgName(getString(map, "argName"));
         return option;
     }
 
+    static String makeDefaultValueKey(Option option) {
+        return stripLeadingHyphens(option.getOpt()) + "_" + stripLeadingHyphens(option.getLongOpt());
+    }
+
+    static String stripLeadingHyphens(String s) {
+        if (s == null) return "";
+        if (s.startsWith("--")) return s.substring(2, s.length());
+        if (s.startsWith("-")) return s.substring(1, s.length());
+        return s;
+    }
     private String getString(Map<String, Object> map, String optionName) {
         Object result = map.get(optionName);
         return result == null ? null : result.toString();
