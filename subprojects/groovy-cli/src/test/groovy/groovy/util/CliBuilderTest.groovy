@@ -606,4 +606,36 @@ usage: groovy
         // properties show first in toString()
         assert p2.toString() == 'CliBuilderTest$Person(John, true, Smith, true, true, false, 21, 1980, 3.5, 3.14159, cv.txt, [and, some, more])'
     }
+
+    void testParseScript() {
+        new GroovyShell().run('''
+            import groovy.cli.OptionField
+            import groovy.cli.UnparsedField
+            @OptionField String first
+            @OptionField String last
+            @OptionField boolean flag1
+            @OptionField Boolean flag2
+            @OptionField(longName = 'specialFlag') Boolean flag3
+            @OptionField Boolean flag4
+            @OptionField int age
+            @OptionField Integer born
+            @OptionField float discount
+            @OptionField BigDecimal pi
+            @OptionField File biography
+            @UnparsedField List remaining
+            new CliBuilder().parseFromInstance(this, args)
+            assert first == 'John'
+            assert last == 'Smith'
+            assert flag1
+            assert flag2
+            assert flag3
+            assert !flag4
+            assert born == 1980
+            assert age == 21
+            assert discount == 3.5f
+            assert pi == 3.14159
+            assert biography == new File('cv.txt')
+            assert remaining == ['and', 'some', 'more']
+        ''', 'CliBuilderTestScript.groovy', argz)
+    }
 }

@@ -342,12 +342,21 @@ class CliBuilder {
         }
         def remaining = cliOptions.remainingArgs()
         optionClass.methods.findAll{ it.getAnnotation(Unparsed) }.each { Method m ->
-            if (namesAreSetters) {
-                m.invoke(t, remaining.toList())
-            } else {
-                String longName = adjustLongName("", m, namesAreSetters)
-                t.put(longName, { -> remaining.toList() })
-            }
+            processSetRemaining(m, remaining, t, namesAreSetters)
+        }
+        optionClass.declaredFields.findAll{ it.getAnnotation(Unparsed) }.each { Field f ->
+            String setterName = "set" + MetaClassHelper.capitalize(f.getName());
+            Method m = optionClass.getMethod(setterName, f.getType())
+            processSetRemaining(m, remaining, t, namesAreSetters)
+        }
+    }
+
+    private void processSetRemaining(Method m, remaining, Object t, boolean namesAreSetters) {
+        if (namesAreSetters) {
+            m.invoke(t, remaining.toList())
+        } else {
+            String longName = adjustLongName("", m, namesAreSetters)
+            t.put(longName, { -> remaining.toList() })
         }
     }
 

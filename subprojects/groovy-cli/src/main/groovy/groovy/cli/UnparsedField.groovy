@@ -14,24 +14,12 @@
  * limitations under the License.
  */
 
-package groovy.cli;
+package groovy.cli
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import groovy.transform.AnnotationCollector
+import groovy.transform.Field
 
-/**
- * Indicates that a method will contain the remaining arguments.
- */
-@java.lang.annotation.Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD, ElementType.FIELD})
-public @interface Unparsed {
-    /**
-     * The description for the remaining non-option arguments
-     *
-     * @return the description for the remaining non-option arguments
-     */
-    String description() default "ARGUMENTS";
-}
+@Unparsed
+@Field(addSetter=true)
+@AnnotationCollector
+@interface UnparsedField { }

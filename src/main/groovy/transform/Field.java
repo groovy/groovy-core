@@ -49,4 +49,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.LOCAL_VARIABLE})
 @GroovyASTTransformationClass("org.codehaus.groovy.transform.FieldASTTransformation")
 public @interface Field {
+    boolean addSetter() default false;
 }
