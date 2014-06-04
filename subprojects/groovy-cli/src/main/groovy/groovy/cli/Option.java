@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
  */
 @java.lang.annotation.Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD})
+@Target({ElementType.METHOD, ElementType.FIELD})
 public @interface Option {
     /**
      * The description of this option

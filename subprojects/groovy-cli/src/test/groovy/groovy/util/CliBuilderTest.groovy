@@ -523,7 +523,8 @@ usage: groovy
         @Option String last()
         @Option boolean flag1()
         @Option Boolean flag2()
-        @Option Boolean flag3()
+        @Option(longName = 'specialFlag') Boolean flag3()
+        @Option flag4()
         @Option int age()
         @Option Integer born()
         @Option float discount()
@@ -532,7 +533,7 @@ usage: groovy
         @Unparsed List remaining()
     }
 
-    def argz = "--first John --last Smith --flag1 --flag2 --age  21 --born 1980 --discount 3.5 --pi 3.14159 --biography cv.txt and some more".split()
+    def argz = "--first John --last Smith --flag1 --flag2 --specialFlag --age  21 --born 1980 --discount 3.5 --pi 3.14159 --biography cv.txt and some more".split()
 
     void testParseFromSpec() {
         def builder1 = new CliBuilder()
@@ -541,7 +542,8 @@ usage: groovy
         assert p1.last() == 'Smith'
         assert p1.flag1()
         assert p1.flag2()
-        assert !p1.flag3()
+        assert p1.flag3()
+        assert !p1.flag4()
         assert p1.born() == 1980
         assert p1.age() == 21
         assert p1.discount() == 3.5f
@@ -552,11 +554,12 @@ usage: groovy
 
     @ToString(includeFields=true, includePackage=false)
     class Person {
-        private String first
+        @Option String first
         private String last
-        private boolean flag1
+        @Option boolean flag1
         private Boolean flag2
         private Boolean flag3
+        private Boolean flag4
         private int age
         private Integer born
         private float discount
@@ -564,20 +567,17 @@ usage: groovy
         private File biography
         private List remaining
 
-        @Option void setFirst(String first) {
-            this.first = first
-        }
         @Option void setLast(String last) {
             this.last = last
-        }
-        @Option void setFlag1(boolean flag1) {
-            this.flag1 = flag1
         }
         @Option void setFlag2(boolean flag2) {
             this.flag2 = flag2
         }
-        @Option void setFlag3(boolean flag3) {
+        @Option(longName = 'specialFlag') void setFlag3(boolean flag3) {
             this.flag3 = flag3
+        }
+        @Option void setFlag4(boolean flag4) {
+            this.flag4 = flag4
         }
         @Option void setAge(int age) {
             this.age = age
@@ -603,6 +603,7 @@ usage: groovy
         def p2 = new Person()
         def builder2 = new CliBuilder()
         builder2.parseFromInstance(p2, argz)
-        assert p2.toString() == 'CliBuilderTest$Person(John, Smith, true, true, false, 21, 1980, 3.5, 3.14159, cv.txt, [and, some, more])'
+        // properties show first in toString()
+        assert p2.toString() == 'CliBuilderTest$Person(John, true, Smith, true, true, false, 21, 1980, 3.5, 3.14159, cv.txt, [and, some, more])'
     }
 }

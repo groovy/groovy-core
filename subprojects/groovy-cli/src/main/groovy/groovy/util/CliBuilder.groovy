@@ -28,6 +28,7 @@ import org.codehaus.groovy.runtime.InvokerHelper
 import org.codehaus.groovy.runtime.MetaClassHelper
 
 import java.lang.annotation.Annotation
+import java.lang.reflect.Field
 import java.lang.reflect.Method
 
 /**
@@ -296,40 +297,48 @@ class CliBuilder {
     void addOptionsFromAnnotations(CliParser cliParser, Class optionClass, boolean namesAreSetters) {
         optionClass.methods.findAll{ it.getAnnotation(Option) }.each { Method m ->
             Annotation annotation = m.getAnnotation(Option)
-            String shortName = annotation.shortName()
-            String description = annotation.description()
-            String defaultValue = annotation.defaultValue()
-            char valueSeparator = annotation.valueSeparator()
-            String longName = adjustLongName(annotation.longName(), m, namesAreSetters)
-            CliOptionBuilder builder = CliOptionBuilder.withLongOpt(longName)
-            if (description && !description.isEmpty()) builder.withDescription(description)
-            if (defaultValue && !defaultValue.isEmpty()) builder.withDefaultValue(defaultValue)
-            if (valueSeparator) builder.withValueSeparator(valueSeparator)
-            Class type = namesAreSetters ? (m.parameterTypes.size() > 0 ? m.parameterTypes[0] : null) : m.returnType
-            if (type) {
-                builder.hasArg(type.simpleName.toLowerCase() != 'boolean')
-                builder.withType(type)
-            }
-
-            def typedOption = shortName && !shortName.isEmpty() ? builder.create(shortName) : builder.create()
-            savedTypeOptions[longName] = typedOption
-            cliParser.addOption(typedOption)
+            cliParser.addOption(processAddAnnotation(annotation, m, namesAreSetters))
         }
+        optionClass.declaredFields.findAll{ it.getAnnotation(Option) }.each { Field f ->
+            Annotation annotation = f.getAnnotation(Option)
+            String setterName = "set" + MetaClassHelper.capitalize(f.getName());
+            Method m = optionClass.getMethod(setterName, f.getType())
+            cliParser.addOption(processAddAnnotation(annotation, m, true))
+        }
+    }
+
+    private processAddAnnotation(Option annotation, Method m, boolean namesAreSetters) {
+        String shortName = annotation.shortName()
+        String description = annotation.description()
+        String defaultValue = annotation.defaultValue()
+        char valueSeparator = annotation.valueSeparator()
+        String longName = adjustLongName(annotation.longName(), m, namesAreSetters)
+        CliOptionBuilder builder = CliOptionBuilder.withLongOpt(longName)
+        if (description && !description.isEmpty()) builder.withDescription(description)
+        if (defaultValue && !defaultValue.isEmpty()) builder.withDefaultValue(defaultValue)
+        if (valueSeparator) builder.withValueSeparator(valueSeparator)
+        Class type = namesAreSetters ? (m.parameterTypes.size() > 0 ? m.parameterTypes[0] : null) : m.returnType
+        if (type) {
+            builder.hasArg(type.simpleName.toLowerCase() != 'boolean')
+            builder.withType(type)
+        }
+        def typedOption = shortName && !shortName.isEmpty() ? builder.create(shortName) : builder.create()
+        savedTypeOptions[longName] = typedOption
+        typedOption
     }
 
     def setOptionsFromAnnotations(CliOptions cliOptions, Class optionClass, Object t, boolean namesAreSetters) {
         optionClass.methods.findAll{ it.getAnnotation(Option) }.each { Method m ->
             Annotation annotation = m.getAnnotation(Option)
             String longName = adjustLongName(annotation.longName(), m, namesAreSetters)
-            if (namesAreSetters) {
-                boolean isFlag = m.parameterTypes.size() > 0 && m.parameterTypes[0].simpleName.toLowerCase() == 'boolean'
-                if (cliOptions.hasOption(longName) || isFlag) {
-                    m.invoke(t, [isFlag ? cliOptions.hasOption(longName) : cliOptions.getOptionValue(savedTypeOptions[longName])] as Object[])
-                }
-            } else {
-                boolean isFlag = m.returnType.simpleName.toLowerCase() == 'boolean'
-                t.put(longName, cliOptions.hasOption(longName) ? { -> isFlag ? true : cliOptions.getOptionValue(savedTypeOptions[longName]) } : {-> isFlag ? false : null})
-            }
+            processSetAnnotation(m, t, longName, cliOptions, namesAreSetters)
+        }
+        optionClass.declaredFields.findAll{ it.getAnnotation(Option) }.each { Field f ->
+            Annotation annotation = f.getAnnotation(Option)
+            String setterName = "set" + MetaClassHelper.capitalize(f.getName());
+            Method m = optionClass.getMethod(setterName, f.getType())
+            String longName = adjustLongName(annotation.longName(), m, true)
+            processSetAnnotation(m, t, longName, cliOptions, true)
         }
         def remaining = cliOptions.remainingArgs()
         optionClass.methods.findAll{ it.getAnnotation(Unparsed) }.each { Method m ->
@@ -339,6 +348,20 @@ class CliBuilder {
                 String longName = adjustLongName("", m, namesAreSetters)
                 t.put(longName, { -> remaining.toList() })
             }
+        }
+    }
+
+    private void processSetAnnotation(Method m, Object t, String longName, CliOptions cliOptions, boolean namesAreSetters) {
+        if (namesAreSetters) {
+            boolean isFlag = m.parameterTypes.size() > 0 && m.parameterTypes[0].simpleName.toLowerCase() == 'boolean'
+            if (cliOptions.hasOption(longName) || isFlag) {
+                m.invoke(t, [isFlag ? cliOptions.hasOption(longName) : cliOptions.getOptionValue(savedTypeOptions[longName])] as Object[])
+            }
+        } else {
+            boolean isFlag = m.returnType.simpleName.toLowerCase() == 'boolean'
+            t.put(m.getName(), cliOptions.hasOption(longName) ?
+                    { -> isFlag ? true : cliOptions.getOptionValue(savedTypeOptions[longName]) } :
+                    { -> isFlag ? false : null })
         }
     }
 
