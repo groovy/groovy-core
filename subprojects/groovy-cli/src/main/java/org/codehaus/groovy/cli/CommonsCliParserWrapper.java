@@ -73,7 +73,8 @@ public class CommonsCliParserWrapper implements CliParser {
     }
 
     private Option makeOption(Map<String, Object> map) {
-        Option option = new Option(getString(map, "opt"), getString(map, "description"));
+        String opt = getString(map, "opt");
+        Option option = new Option(opt == null ? "" : opt, getString(map, "description"));
         option.setLongOpt(getString(map, "longOpt"));
         Boolean required = (Boolean) map.get("required");
         if (required != null) option.setRequired(required);
