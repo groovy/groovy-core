@@ -23,6 +23,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.codehaus.groovy.runtime.StringGroovyMethods;
 
+import java.lang.reflect.Array;
 import java.util.Map;
 
 import static org.codehaus.groovy.cli.CommonsCliParserWrapper.makeDefaultValueKey;
@@ -50,6 +51,10 @@ public class CommonsCliOptionsWrapper implements CliOptions {
         return cli.hasOption(optionName);
     }
 
+    public <T> boolean hasOption(TypedOption<T> typedOption) {
+        return cli.hasOption((String) typedOption.get("longOpt"));
+    }
+
     public String getOptionValue(String optionName) {
         if (hasOption(optionName)) {
             return cli.getOptionValue(optionName);
@@ -66,16 +71,17 @@ public class CommonsCliOptionsWrapper implements CliOptions {
     public <T> T getOptionValue(TypedOption<T> typedOption) {
         String optionName = (String) typedOption.get("longOpt");
         if (hasOption(optionName)) {
-            Option option = cliOptions.getOption(optionName);
-            Object type = option.getType();
-            String optionValue = cli.getOptionValue(optionName);
-            return (T) getTypedValue(type, optionValue);
+            return getTypedValueFromName(optionName);
         }
         return typedOption.defaultValue();
     }
 
-    private <T> T getTypedValue(Object type, String optionValue) {
-        return StringGroovyMethods.asType(optionValue, (Class<T>) type);
+    public <T> T getOptionValue(TypedOption<T> typedOption, T defaultValue) {
+        String optionName = (String) typedOption.get("longOpt");
+        if (hasOption(optionName)) {
+            return getTypedValueFromName(optionName);
+        }
+        return defaultValue;
     }
 
     public String getOptionValue(String optionName, String defaultValue) {
@@ -84,5 +90,32 @@ public class CommonsCliOptionsWrapper implements CliOptions {
 
     public String[] getOptionValues(String optionName) {
         return cli.getOptionValues(optionName);
+    }
+
+    public <T> T[] getOptionValues(TypedOption<T> typedOption) {
+        String optionName = (String) typedOption.get("longOpt");
+        String[] optionValues = cli.getOptionValues(optionName);
+        Option option = cliOptions.getOption(optionName);
+        Object type = option.getType();
+        T[] result = null;
+        int count = 0;
+        for (String optionValue : optionValues) {
+            if (result == null) {
+                result = (T[]) Array.newInstance((Class<?>) type, optionValues.length);
+            }
+            result[count++] = (T) getTypedValue(type, optionValue);
+        }
+        return result;
+    }
+
+    private <T> T getTypedValueFromName(String optionName) {
+        Option option = cliOptions.getOption(optionName);
+        Object type = option.getType();
+        String optionValue = cli.getOptionValue(optionName);
+        return (T) getTypedValue(type, optionValue);
+    }
+
+    private <T> T getTypedValue(Object type, String optionValue) {
+        return StringGroovyMethods.asType(optionValue, (Class<T>) type);
     }
 }

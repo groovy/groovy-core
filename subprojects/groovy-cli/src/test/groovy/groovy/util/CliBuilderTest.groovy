@@ -530,10 +530,11 @@ usage: groovy
         @Option float discount()
         @Option BigDecimal pi()
         @Option File biography()
+        @Option java.math.RoundingMode roundingMode()
         @Unparsed List remaining()
     }
 
-    def argz = "--first John --last Smith --flag1 --flag2 --specialFlag --age  21 --born 1980 --discount 3.5 --pi 3.14159 --biography cv.txt and some more".split()
+    def argz = "--first John --last Smith --flag1 --flag2 --specialFlag --age  21 --born 1980 --discount 3.5 --pi 3.14159 --biography cv.txt --roundingMode DOWN and some more".split()
 
     void testParseFromSpec() {
         def builder1 = new CliBuilder()
@@ -549,6 +550,7 @@ usage: groovy
         assert p1.discount() == 3.5f
         assert p1.pi() == 3.14159
         assert p1.biography() == new File('cv.txt')
+        assert p1.roundingMode() == java.math.RoundingMode.DOWN
         assert p1.remaining() == ['and', 'some', 'more']
     }
 
@@ -565,6 +567,7 @@ usage: groovy
         private float discount
         private BigDecimal pi
         private File biography
+        private java.math.RoundingMode roundingMode
         private List remaining
 
         @Option void setLast(String last) {
@@ -594,6 +597,9 @@ usage: groovy
         @Option void setBiography(File biography) {
             this.biography = biography
         }
+        @Option void setRoundingMode(java.math.RoundingMode roundingMode) {
+            this.roundingMode = roundingMode
+        }
         @Unparsed void setRemaining(List remaining) {
             this.remaining = remaining
         }
@@ -604,7 +610,7 @@ usage: groovy
         def builder2 = new CliBuilder()
         builder2.parseFromInstance(p2, argz)
         // properties show first in toString()
-        assert p2.toString() == 'CliBuilderTest$Person(John, true, Smith, true, true, false, 21, 1980, 3.5, 3.14159, cv.txt, [and, some, more])'
+        assert p2.toString() == 'CliBuilderTest$Person(John, true, Smith, true, true, false, 21, 1980, 3.5, 3.14159, cv.txt, DOWN, [and, some, more])'
     }
 
     void testParseScript() {
@@ -622,6 +628,7 @@ usage: groovy
             @OptionField float discount
             @OptionField BigDecimal pi
             @OptionField File biography
+            @OptionField java.math.RoundingMode roundingMode
             @UnparsedField List remaining
             new CliBuilder().parseFromInstance(this, args)
             assert first == 'John'
@@ -635,6 +642,7 @@ usage: groovy
             assert discount == 3.5f
             assert pi == 3.14159
             assert biography == new File('cv.txt')
+            assert roundingMode == java.math.RoundingMode.DOWN
             assert remaining == ['and', 'some', 'more']
         ''', 'CliBuilderTestScript.groovy', argz)
     }

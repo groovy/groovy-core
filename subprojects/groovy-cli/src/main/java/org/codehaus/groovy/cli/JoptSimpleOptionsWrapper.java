@@ -41,6 +41,10 @@ public class JoptSimpleOptionsWrapper implements CliOptions {
         return options.has(optionName);
     }
 
+    public <T> boolean hasOption(TypedOption<T> option) {
+        return false;
+    }
+
     public String getOptionValue(String optionName) {
         return (String) options.valueOf(optionName);
     }
@@ -54,8 +58,16 @@ public class JoptSimpleOptionsWrapper implements CliOptions {
         return options.has(optionName) ? (String) options.valueOf(optionName) : defaultValue;
     }
 
+    public <T> T getOptionValue(TypedOption<T> option, T defaultValue) {
+        return null;
+    }
+
     public String[] getOptionValues(String optionName) {
         List<?> result = options.valuesOf(optionName);
         return result.toArray(new String[result.size()]);
+    }
+
+    public <T> T[] getOptionValues(TypedOption<T> option) {
+        return null;
     }
 }
