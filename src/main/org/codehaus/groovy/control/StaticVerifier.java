@@ -44,6 +44,7 @@ public class StaticVerifier extends ClassCodeVisitorSupport {
 
     @Override
     public void visitVariableExpression(VariableExpression ve) {
+        if (ve.isSynthetic()) return;
         Variable v = ve.getAccessedVariable();
         if (v != null && v instanceof DynamicVariable) {
             if (!inPropertyExpression || inSpecialConstructorCall) addStaticVariableError(ve);
