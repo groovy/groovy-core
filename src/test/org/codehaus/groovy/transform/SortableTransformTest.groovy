@@ -59,6 +59,55 @@ class SortableTransformTest extends CompilableTestSupport {
         '''
     }
 
+    void testSortableWithCompileStatic() {
+        assertScript '''
+            import groovy.transform.*
+
+            @CompileStatic
+            @Canonical
+            @Sortable(includes = ['completed'])
+            class DeliveryBucket {
+                Date completed
+                Long count
+            }
+
+            def buckets = [
+                new DeliveryBucket(new Date()+1, 111),
+                new DeliveryBucket(new Date(), 222)
+            ]
+
+            assert buckets*.count == [111, 222]
+            assert buckets.sort()*.count == [222, 111]
+        '''
+    }
+
+    void testSortableWithDuckTyping() {
+        assertScript '''
+            import groovy.transform.*
+
+            @Canonical
+            @Sortable(includes = 'quackVolume')
+            class Duck {
+                Integer quackVolume
+            }
+
+            @Canonical
+            class DuckWhistle {
+                Integer quackVolume
+            }
+
+            def quacks = [
+                new Duck(4),
+                new Duck(2),
+                new DuckWhistle(3),
+            ]
+
+            assert quacks*.class == [Duck, Duck, DuckWhistle]
+            assert quacks.sort{ it.quackVolume }*.class == [Duck, DuckWhistle, Duck]
+            assert quacks.sort(false, Duck.comparatorByQuackVolume())*.class == [Duck, DuckWhistle, Duck]
+        '''
+    }
+
     void testBadIncludesAndExcludes() {
         def message = shouldFail '''
             @groovy.transform.Sortable(includes='first', excludes='last') class Person {

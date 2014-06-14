@@ -30,6 +30,7 @@ import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.AttributeExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.BooleanExpression;
+import org.codehaus.groovy.ast.expr.CastExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
@@ -167,6 +168,14 @@ public class GeneralUtils {
 
     public static StaticMethodCallExpression callX(ClassNode receiver, String methodName) {
         return callX(receiver, methodName, MethodCallExpression.NO_ARGUMENTS);
+    }
+
+    public static CastExpression castX(ClassNode type, Expression expression) {
+        return new CastExpression(type, expression);
+    }
+
+    public static CastExpression castX(ClassNode type, Expression expression, boolean ignoreAutoboxing) {
+        return new CastExpression(type, expression, ignoreAutoboxing);
     }
 
     public static ClassExpression classX(ClassNode clazz) {
