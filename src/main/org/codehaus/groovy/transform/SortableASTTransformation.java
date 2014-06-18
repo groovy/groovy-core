@@ -89,7 +89,7 @@ public class SortableASTTransformation extends AbstractASTTransformation {
                 ClassHelper.int_TYPE,
                 params(param(newClass(classNode), OTHER)),
                 ClassNode.EMPTY_ARRAY,
-                createCompareToMethodBody(properties)
+                createCompareToMethodBody(properties, classNode)
         ));
 
         for (PropertyNode property : properties) {
@@ -103,7 +103,7 @@ public class SortableASTTransformation extends AbstractASTTransformation {
         }
     }
 
-    private static Statement createCompareToMethodBody(List<PropertyNode> properties) {
+    private static Statement createCompareToMethodBody(List<PropertyNode> properties, ClassNode classNode) {
         List<Statement> statements = new ArrayList<Statement>();
 
         // if (this.is(other)) return 0;
@@ -111,11 +111,11 @@ public class SortableASTTransformation extends AbstractASTTransformation {
         // int value = 0;
         statements.add(declS(varX(VALUE, ClassHelper.int_TYPE), constX(0)));
         for (PropertyNode property : properties) {
-//            String getterName = getGetterName(property);
-            String propName = property.getName();
+            String getterName = getGetterName(property);
+//            String propName = property.getName();
             // value = this.prop <=> other.prop;
-            statements.add(assignS(varX(VALUE), cmpX(propX(varX("this"), propName), callX(varX(OTHER), propName))));
-//            statements.add(assignS(varX(VALUE), cmpX(callThisX(getterName), callX(varX(OTHER), getterName))));
+//            statements.add(assignS(varX(VALUE), cmpX(propX(varX("this"), propName), propX(varX(OTHER, classNode), propName))));
+            statements.add(assignS(varX(VALUE), cmpX(callThisX(getterName), callX(varX(OTHER, classNode), getterName))));
             // if (value != 0) return value;
             statements.add(ifS(neX(varX(VALUE), constX(0)), returnS(varX(VALUE))));
         }
@@ -133,20 +133,19 @@ public class SortableASTTransformation extends AbstractASTTransformation {
         return body;
     }
 
-    private static Statement createCompareMethodBody(PropertyNode property) {
-        // getter version gives: BUG! exception in phase 'class generation' in source unit 'TestScript28.groovy' Error while popping argument from operand stack tracker in class DeliveryBucket method int compareTo(DeliveryBucket)
-        String propName = property.getName();
-//        String getterName = getGetterName(property);
+    private static Statement createCompareMethodBody(PropertyNode property, ClassNode classNode) {
+//        String propName = property.getName();
+        String getterName = getGetterName(property);
         return block(
+                // if (arg0.is(arg1)) return 0;
+                ifS(callX(varX(ARG0), "is", args(ARG1)), returnS(constX(0))),
                 // if (arg0 == arg1) return 0;
-                ifS(eqX(varX(ARG0), varX(ARG1)), returnS(constX(0))),
-                // if (arg0 != null && arg1 == null) return -1;
                 ifS(andX(notNullX(varX(ARG0)), equalsNullX(varX(ARG1))), returnS(constX(-1))),
                 // if (arg0 == null && arg1 != null) return 1;
                 ifS(andX(equalsNullX(varX(ARG0)), notNullX(varX(ARG1))), returnS(constX(1))),
                 // return arg0.prop <=> arg1.prop;
-                returnS(cmpX(propX(varX(ARG0), propName), propX(varX(ARG1), propName)))
-//                returnS(cmpX(callX(varX(ARG0), getterName), callX(varX(ARG1), getterName)))
+//                returnS(cmpX(propX(varX(ARG0), propName), propX(varX(ARG1), propName)))
+                returnS(cmpX(callX(varX(ARG0, classNode), getterName), callX(varX(ARG1, classNode), getterName)))
         );
     }
 
@@ -163,7 +162,7 @@ public class SortableASTTransformation extends AbstractASTTransformation {
                 ClassHelper.int_TYPE,
                 params(param(newClass(classNode), ARG0), param(newClass(classNode), ARG1)),
                 ClassNode.EMPTY_ARRAY,
-                createCompareMethodBody(property)
+                createCompareMethodBody(property, classNode)
         ));
 
         String fieldName = "this$" + StringGroovyMethods.capitalize(propName) + "Comparator";

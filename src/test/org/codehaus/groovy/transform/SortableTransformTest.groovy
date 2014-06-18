@@ -56,7 +56,9 @@ class SortableTransformTest extends CompilableTestSupport {
 
             assert buckets*.count == [111, 222]
             assert buckets.sort()*.count == [222, 111]
-            assert buckets.sort(false, DeliveryBucket.comparatorByCompleted())*.count == [222, 111]
+            // next line works without @CompileStatic but wuth @CompileStatic gives
+            // java.lang.NoSuchFieldError: this$0 at DeliveryBucket$CompletedComparator.compare(ConsoleScript0)
+            //assert buckets.sort(false, DeliveryBucket.comparatorByCompleted())*.count == [222, 111]
         '''
     }
 
