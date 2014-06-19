@@ -18,6 +18,7 @@ package groovy.json;
 import groovy.json.internal.JsonFastParser;
 import groovy.json.internal.JsonParserCharArray;
 import groovy.json.internal.JsonParserLax;
+import groovy.json.internal.Json5Parser;
 import groovy.json.internal.JsonParserUsingCharacterSource;
 import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport;
 import org.codehaus.groovy.runtime.ResourceGroovyMethods;
@@ -328,20 +329,16 @@ public class JsonSlurper {
 
     private JsonParser createParser() {
         switch (type) {
-
             case LAX:
                 return new JsonParserLax(false, chop, lazyChop, checkDates);
-
             case CHAR_BUFFER:
                 return new JsonParserCharArray();
-
             case CHARACTER_SOURCE:
                 return new JsonParserUsingCharacterSource();
-
-
             case INDEX_OVERLAY:
                 return new JsonFastParser(false, chop, lazyChop, checkDates);
-
+            case JSON5:
+                return new Json5Parser(false, chop, lazyChop, checkDates);
             default:
                 return new JsonParserCharArray();
         }
