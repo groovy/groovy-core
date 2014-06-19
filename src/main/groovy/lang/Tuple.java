@@ -44,10 +44,7 @@ public class Tuple extends AbstractList {
     }
 
     public boolean equals(Object that) {
-        if (that instanceof Tuple) {
-            return equals((Tuple) that);
-        }
-        return false;
+        return that instanceof Tuple && equals((Tuple) that);
     }
 
     public boolean equals(Tuple that) {
@@ -65,8 +62,7 @@ public class Tuple extends AbstractList {
 
     public int hashCode() {
         if (hashCode == 0) {
-            for (int i = 0; i < contents.length; i++ ) {
-                Object value = contents[i];
+            for (Object value : contents) {
                 int hash = (value != null) ? value.hashCode() : 0xbabe;
                 hashCode ^= hash;
             }

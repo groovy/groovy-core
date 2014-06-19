@@ -15,13 +15,12 @@
  */
 package groovy.lang;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Represents a sequence of objects which represents zero or many instances of
@@ -62,10 +61,7 @@ public class Sequence extends ArrayList implements GroovyObject {
     }
     
     public boolean equals(Object that) {
-        if (that instanceof Sequence) {
-            return equals((Sequence) that);
-        }
-        return false;
+        return that instanceof Sequence && equals((Sequence) that);
     }
 
     public boolean equals(Sequence that) {
@@ -158,9 +154,8 @@ public class Sequence extends ArrayList implements GroovyObject {
         }
         catch (MissingMethodException e) {
             // lets apply the method to each item in the collection
-            List answer = new ArrayList(size());
-            for (Iterator iter = iterator(); iter.hasNext(); ) {
-                Object element = iter.next();
+            List<Object> answer = new ArrayList<Object>(size());
+            for (Object element : this) {
                 Object value = InvokerHelper.invokeMethod(element, name, args);
                 answer.add(value);
             }
@@ -193,8 +188,7 @@ public class Sequence extends ArrayList implements GroovyObject {
      */
     protected void checkCollectionType(Collection c) {
         if (type != null) {
-            for (Iterator iter = c.iterator(); iter.hasNext(); ) {
-                Object element = iter.next();
+            for (Object element : c) {
                 checkType(element);
             }
         }

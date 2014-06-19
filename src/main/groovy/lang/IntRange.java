@@ -398,7 +398,7 @@ public class IntRange extends AbstractList<Integer> implements Range<Integer> {
             int value = getFrom();
             while (value <= getTo()) {
                 closure.call(Integer.valueOf(value));
-                if((0L + value + step) >= Integer.MAX_VALUE) {
+                if((value + step) >= Integer.MAX_VALUE) {
                     break;
                 }
                 value = value + step;
@@ -407,7 +407,7 @@ public class IntRange extends AbstractList<Integer> implements Range<Integer> {
             int value = getTo();
             while (value >= getFrom()) {
                 closure.call(Integer.valueOf(value));
-                if((0L + value + step) <= Integer.MIN_VALUE) {
+                if((value + step) <= Integer.MIN_VALUE) {
                     break;
                 }
                 value = value + step;

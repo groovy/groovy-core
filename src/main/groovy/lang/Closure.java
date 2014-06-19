@@ -823,6 +823,7 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
     /* (non-Javadoc)
      * @see java.lang.Object#clone()
      */
+    @Override
     public Object clone() {
         try {
             return super.clone();
@@ -965,6 +966,7 @@ public abstract class Closure<V> extends GroovyObjectSupport implements Cloneabl
         /* (non-Javadoc)
          * @see java.lang.Object#equals(java.lang.Object)
          */
+        @Override
         public boolean equals(Object arg0) {
             return Closure.this.equals(arg0);
         }
