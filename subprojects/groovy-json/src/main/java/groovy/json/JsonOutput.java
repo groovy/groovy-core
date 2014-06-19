@@ -454,7 +454,7 @@ public class JsonOutput {
     /**
      * Pretty print a JSON payload.
      *
-     * @param jsonPayload
+     * @param jsonPayload payload
      * @return a pretty representation of JSON payload.
      */
     public static String prettyPrint(String jsonPayload) {

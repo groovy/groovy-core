@@ -20,7 +20,6 @@ package groovy.json.internal;
 import groovy.json.JsonException;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -43,8 +42,7 @@ public class JsonParserCharArray extends BaseJsonParser {
         __index = 0;
         charArray = cs;
         lastIndex = cs.length - 1;
-        Object value = decodeValue();
-        return value;
+        return decodeValue();
     }
 
     protected final boolean hasMore() {
@@ -101,7 +99,7 @@ public class JsonParserCharArray extends BaseJsonParser {
         return index - 1;
     }
 
-    protected final Object decodeJsonObject() {
+    protected final java.util.Map<String, Object> decodeJsonObject() {
 
         if (__currentChar == '{') {
             __index++;
@@ -147,8 +145,6 @@ public class JsonParserCharArray extends BaseJsonParser {
             if (__currentChar == '}') {
                 __index++;
                 break;
-            } else if (__currentChar == ',') {
-                continue;
             } else {
                 complain(
                         "expecting '}' or ',' but got current char " + charDescription(__currentChar));
@@ -167,8 +163,8 @@ public class JsonParserCharArray extends BaseJsonParser {
         return decodeValueInternal();
     }
 
-    private final Object decodeValueInternal() {
-        Object value = null;
+    private Object decodeValueInternal() {
+        Object value;
         skipWhiteSpace();
 
         switch (__currentChar) {
@@ -224,7 +220,7 @@ public class JsonParserCharArray extends BaseJsonParser {
 
     int[] endIndex = new int[1];
 
-    private final Object decodeNumber() {
+    private Object decodeNumber() {
 
         Number num = CharScanner.parseJsonNumber(charArray, __index, charArray.length, endIndex);
         __index = endIndex[0];
@@ -301,7 +297,7 @@ public class JsonParserCharArray extends BaseJsonParser {
         boolean encoded = hasEscapeChar(array, index, indexHolder);
         index = indexHolder[0];
 
-        String value = null;
+        String value;
         if (encoded) {
             index = findEndQuote(array, index);
             value = builder.decodeJsonString(array, startIndex, index).toString();
@@ -317,9 +313,9 @@ public class JsonParserCharArray extends BaseJsonParser {
         return value;
     }
 
-    protected final List decodeJsonArray() {
+    protected final List<?> decodeJsonArray() {
 
-        ArrayList<Object> list = null;
+        ArrayList<Object> list;
 
         boolean foundEnd = false;
         char[] charArray = this.charArray;
@@ -337,10 +333,10 @@ public class JsonParserCharArray extends BaseJsonParser {
         /* the list might be empty  */
             if (__currentChar == ']') {
                 __index++;
-                return new ArrayList();
+                return new ArrayList<Object>();
             }
 
-            list = new ArrayList();
+            list = new ArrayList<Object>();
 
             while (this.hasMore()) {
 
@@ -366,7 +362,6 @@ public class JsonParserCharArray extends BaseJsonParser {
 
                 if (c == ',') {
                     __index++;
-                    continue;
                 } else if (c == ']' && lastIndex != __index) {
                     __index++;
                     foundEnd = true;
@@ -386,8 +381,7 @@ public class JsonParserCharArray extends BaseJsonParser {
 
         } catch (Exception ex) {
             if (ex instanceof JsonException) {
-                JsonException jsonException = (JsonException) ex;
-                throw jsonException;
+                throw (JsonException) ex;
             }
             throw new JsonException(exceptionDetails("issue parsing JSON array"), ex);
         }

@@ -149,31 +149,33 @@ public class LazyMap extends AbstractMap<String, Object> {
 
     }
 
+    @Override
     public boolean equals(Object o) {
         buildIfNeeded();
         return map.equals(o);
     }
 
+    @Override
     public int hashCode() {
         buildIfNeeded();
         return map.hashCode();
     }
 
+    @Override
     public String toString() {
-
         buildIfNeeded();
         return map.toString();
     }
 
+    @Override
     protected Object clone() throws CloneNotSupportedException {
-
         if (map == null) {
             return null;
         } else {
             if (map instanceof LinkedHashMap) {
                 return ((LinkedHashMap) map).clone();
             } else {
-                return new LinkedHashMap(this);
+                return new LinkedHashMap<String, Object>(this);
             }
         }
     }

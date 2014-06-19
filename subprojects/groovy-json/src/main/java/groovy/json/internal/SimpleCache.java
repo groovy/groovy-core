@@ -25,7 +25,7 @@ import java.util.Map;
  */
 public class SimpleCache<K, V> implements Cache<K, V> {
 
-    Map<K, V> map = new LinkedHashMap();
+    Map<K, V> map = new LinkedHashMap<K, V>();
 
     private static class InternalCacheLinkedList<K, V> extends LinkedHashMap<K, V> {
         final int limit;

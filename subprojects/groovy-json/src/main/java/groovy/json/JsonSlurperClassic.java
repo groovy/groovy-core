@@ -255,8 +255,8 @@ public class JsonSlurperClassic {
      * @param lexer the lexer
      * @return a list of JSON values
      */
-    private List parseArray(JsonLexer lexer) {
-        List content = new ArrayList ();
+    private List<Object> parseArray(JsonLexer lexer) {
+        List<Object> content = new ArrayList<Object>();
 
         JsonToken currentToken;
 
@@ -323,11 +323,11 @@ public class JsonSlurperClassic {
      * @param lexer the lexer
      * @return a Map representing a JSON object
      */
-    private Map parseObject(JsonLexer lexer) {
-        Map content = new HashMap ();
+    private Map<String, Object> parseObject(JsonLexer lexer) {
+        Map<String, Object> content = new HashMap<String, Object>();
 
-        JsonToken previousToken = null;
-        JsonToken currentToken = null;
+        JsonToken previousToken;
+        JsonToken currentToken;
 
         for(;;) {
             currentToken = lexer.nextToken();

@@ -18,7 +18,6 @@
 package groovy.json.internal;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -126,10 +125,10 @@ public class JsonFastParser extends JsonParserCharArray {
                 return decodeJsonObjectLazyFinalParse();
 
             case 't':
-                return decodeTrue() == true ? ValueContainer.TRUE : ValueContainer.FALSE;
+                return decodeTrue() ? ValueContainer.TRUE : ValueContainer.FALSE;
 
             case 'f':
-                return decodeFalse() == false ? ValueContainer.FALSE : ValueContainer.TRUE;
+                return !decodeFalse() ? ValueContainer.FALSE : ValueContainer.TRUE;
 
             case 'n':
                 return decodeNull() == null ? ValueContainer.NULL : ValueContainer.NULL;
@@ -159,7 +158,7 @@ public class JsonFastParser extends JsonParserCharArray {
         }
     }
 
-    private final Value decodeNumberOverlay(final boolean minus) {
+    private Value decodeNumberOverlay(final boolean minus) {
 
         char[] array = charArray;
 
@@ -192,9 +191,7 @@ public class JsonFastParser extends JsonParserCharArray {
 
         Type type = doubleFloat ? Type.DOUBLE : Type.INTEGER;
 
-        NumberValue value = new NumberValue(chop, type, startIndex, __index, this.charArray);
-
-        return value;
+        return new NumberValue(chop, type, startIndex, __index, this.charArray);
     }
 
     private Value decodeStringOverlay() {
@@ -238,7 +235,7 @@ public class JsonFastParser extends JsonParserCharArray {
         /* the list might be empty  */
         if (__currentChar == ']') {
             __index++;
-            return new ValueContainer(new ArrayList());
+            return new ValueContainer(new ArrayList<Object>());
         }
 
         List<Object> list;

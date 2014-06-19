@@ -113,8 +113,7 @@ public class CharScanner {
     }
 
     public static boolean isDigits(final char[] inputArray) {
-        for (int index = 0; index < inputArray.length; index++) {
-            char a = inputArray[index];
+        for (char a : inputArray) {
             if (!isDigit(a)) {
                 return false;
             }
@@ -180,7 +179,6 @@ public class CharScanner {
         for (; index < inputArray.length; index++, currentLineLength++) {
             c = inputArray[index];
 
-            inner:
             for (j = 0; j < delims.length; j++) {
                 split = delims[j];
                 if (c == split) {
@@ -191,7 +189,7 @@ public class CharScanner {
 
                     currentLineLength = 0;
                     resultIndex++;
-                    break inner;
+                    break;
                 }
             }
         }
@@ -274,7 +272,6 @@ public class CharScanner {
 
             c = inputArray[index];
 
-            inner:
             for (j = 0; j < delims.length; j++) {
                 split = delims[j];
                 if (c == split) {
@@ -290,7 +287,7 @@ public class CharScanner {
 
                     currentLineLength = 0;
                     resultIndex++;
-                    break inner;
+                    break;
                 }
             }
         }
@@ -330,7 +327,6 @@ public class CharScanner {
 
             c = inputArray[index];
 
-            inner:
             for (j = 0; j < delims.length; j++) {
                 split = delims[j];
                 if (c == split) {
@@ -346,7 +342,7 @@ public class CharScanner {
 
                     currentLineLength = 0;
                     resultIndex++;
-                    break inner;
+                    break;
                 }
             }
         }
@@ -414,7 +410,7 @@ public class CharScanner {
     private static char[][] __shrink(char[][] array, int size) {
         char[][] newArray = new char[array.length - size][];
 
-        System.arraycopy(array, 0, (char[][]) newArray, 0, array.length - size);
+        System.arraycopy(array, 0, newArray, 0, array.length - size);
         return newArray;
     }
 
@@ -627,7 +623,7 @@ public class CharScanner {
         return parseJsonNumber(buffer, from, to, null);
     }
 
-    public static final boolean isNumberDigit(int c) {
+    public static boolean isNumberDigit(int c) {
         return c >= ALPHA_0 && c <= ALPHA_9;
     }
 
@@ -637,7 +633,7 @@ public class CharScanner {
     }
 
     public static Number parseJsonNumber(char[] buffer, int from, int max, int size[]) {
-        Number value = null;
+        Number value;
         boolean simple = true;
         int digitsPastPoint = 0;
 
@@ -652,7 +648,7 @@ public class CharScanner {
             char ch = buffer[index];
             if (isNumberDigit(ch)) {
 
-                if (foundDot == true) {
+                if (foundDot) {
                     digitsPastPoint++;
                 }
             } else if (ch <= 32 || isDelimiter(ch)) {
@@ -740,7 +736,7 @@ public class CharScanner {
             char ch = buffer[index];
             if (isNumberDigit(ch)) {
 
-                if (foundDot == true) {
+                if (foundDot) {
                     digitsPastPoint++;
                 }
             } else if (ch == '.') {
@@ -936,7 +932,7 @@ public class CharScanner {
             charString = "'" + (char) c + "'";
         }
 
-        charString = charString + " with an int value of " + ((int) c);
+        charString = charString + " with an int value of " + c;
         return charString;
     }
 
