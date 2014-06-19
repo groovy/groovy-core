@@ -771,9 +771,7 @@ public class NioGroovyMethods extends DefaultGroovyMethodsSupport {
 
         // TODO GroovyDoc doesn't parse this file as our java.g doesn't handle this JDK7 syntax
         try ( DirectoryStream<Path> stream = Files.newDirectoryStream(self) ) {
-            Iterator<Path> itr = stream.iterator();
-            while( itr.hasNext() ) {
-                Path path = itr.next();
+            for (Path path : stream) {
                 if (fileType == FileType.ANY ||
                         (fileType != FileType.FILES && Files.isDirectory(path)) ||
                         (fileType != FileType.DIRECTORIES && Files.isRegularFile(path))) {
@@ -830,9 +828,7 @@ public class NioGroovyMethods extends DefaultGroovyMethodsSupport {
             // throws FileNotFoundException, IllegalArgumentException {
         checkDir(self);
         try ( DirectoryStream<Path> stream = Files.newDirectoryStream(self)) {
-            Iterator<Path> itr = stream.iterator();
-            while ( itr.hasNext() ) {
-                Path path = itr.next();
+            for (Path path : stream) {
                 if (Files.isDirectory(path)) {
                     if (fileType != FileType.FILES) closure.call(path);
                     eachFileRecurse(path, fileType, closure);
@@ -1017,10 +1013,10 @@ public class NioGroovyMethods extends DefaultGroovyMethodsSupport {
         try ( DirectoryStream<Path> stream = Files.newDirectoryStream(self) ) {
 
             final Iterator<Path> itr = stream.iterator();
-            List<Path> files = new LinkedList<Path>();
+            List<Path> files = new LinkedList<>();
             while(itr.hasNext()) { files.add(itr.next()); }
 
-            if (sort != null) files = DefaultGroovyMethods.sort(files, sort);
+            if (sort != null) files = DefaultGroovyMethods.sort((Iterable<Path>) files, sort);
 
             for (Path path : files) {
                 if (Files.isDirectory(path)) {
@@ -1202,16 +1198,12 @@ public class NioGroovyMethods extends DefaultGroovyMethodsSupport {
         // delete contained files
         try ( DirectoryStream<Path> stream = Files.newDirectoryStream(self) ) {
 
-            Iterator<Path> itr = stream.iterator();
-
-            while (itr.hasNext()) {
-                Path path = itr.next();
+            for (Path path : stream) {
                 if (Files.isDirectory(path)) {
                     if (!deleteDir(path)) {
                         return false;
                     }
-                }
-                else {
+                } else {
                     Files.delete(path);
                 }
             }
@@ -1286,7 +1278,7 @@ public class NioGroovyMethods extends DefaultGroovyMethodsSupport {
         if (c == Writable.class) {
             return (T) asWritable(path);
         }
-        return DefaultGroovyMethods.asType((Object) path, c);
+        return DefaultGroovyMethods.asType(path, c);
     }
 
     /**
