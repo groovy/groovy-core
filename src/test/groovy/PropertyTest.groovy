@@ -203,6 +203,22 @@ class PropertyTest extends GroovyTestCase {
             fail("We shouldn't be able to read bean.superThing, but we can: '$bean.superThing'")
         }
     }
+
+    public void testPropertyWithMultipleSetters() {
+        assertScript '''
+            class A {
+                private field
+                void setX(Integer a) {field=a}
+                void set(String b) {field=b}
+                def getX(){field}
+            }
+            def a = new A()
+            a.x = 1
+            assert a.x==1
+            a.x = "3"
+            assert a.x == "3"
+        '''
+    }
     
 }
 
