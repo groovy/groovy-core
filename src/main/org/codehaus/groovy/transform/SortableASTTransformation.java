@@ -26,6 +26,7 @@ import org.codehaus.groovy.ast.InnerClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.classgen.VariableScopeVisitor;
 import org.codehaus.groovy.runtime.AbstractComparator;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
@@ -95,6 +96,7 @@ public class SortableASTTransformation extends AbstractASTTransformation {
         for (PropertyNode property : properties) {
             createComparatorFor(classNode, property);
         }
+        new VariableScopeVisitor(sourceUnit, true).visitClass(classNode);
     }
 
     private void implementComparable(ClassNode classNode) {
@@ -111,11 +113,9 @@ public class SortableASTTransformation extends AbstractASTTransformation {
         // int value = 0;
         statements.add(declS(varX(VALUE, ClassHelper.int_TYPE), constX(0)));
         for (PropertyNode property : properties) {
-            String getterName = getGetterName(property);
-//            String propName = property.getName();
+            String propName = property.getName();
             // value = this.prop <=> other.prop;
-//            statements.add(assignS(varX(VALUE), cmpX(propX(varX("this"), propName), propX(varX(OTHER, classNode), propName))));
-            statements.add(assignS(varX(VALUE), cmpX(callThisX(getterName), callX(varX(OTHER, classNode), getterName))));
+            statements.add(assignS(varX(VALUE), cmpX(propX(varX("this"), propName), propX(varX(OTHER, classNode), propName))));
             // if (value != 0) return value;
             statements.add(ifS(neX(varX(VALUE), constX(0)), returnS(varX(VALUE))));
         }
@@ -134,8 +134,7 @@ public class SortableASTTransformation extends AbstractASTTransformation {
     }
 
     private static Statement createCompareMethodBody(PropertyNode property, ClassNode classNode) {
-//        String propName = property.getName();
-        String getterName = getGetterName(property);
+        String propName = property.getName();
         return block(
                 // if (arg0.is(arg1)) return 0;
                 ifS(callX(varX(ARG0), "is", args(ARG1)), returnS(constX(0))),
@@ -144,8 +143,7 @@ public class SortableASTTransformation extends AbstractASTTransformation {
                 // if (arg0 == null && arg1 != null) return 1;
                 ifS(andX(equalsNullX(varX(ARG0)), notNullX(varX(ARG1))), returnS(constX(1))),
                 // return arg0.prop <=> arg1.prop;
-//                returnS(cmpX(propX(varX(ARG0), propName), propX(varX(ARG1), propName)))
-                returnS(cmpX(callX(varX(ARG0, classNode), getterName), callX(varX(ARG1, classNode), getterName)))
+                returnS(cmpX(propX(varX(ARG0), propName), propX(varX(ARG1), propName)))
         );
     }
 
