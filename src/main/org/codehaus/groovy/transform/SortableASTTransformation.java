@@ -31,6 +31,7 @@ import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.StringGroovyMethods;
 
 import java.util.ArrayList;
@@ -59,6 +60,7 @@ public class SortableASTTransformation extends AbstractASTTransformation {
     private static final ClassNode COMPARABLE_TYPE = makeClassSafe(Comparable.class);
     private static final ClassNode COMPARATOR_TYPE = makeClassSafe(Comparator.class);
     private static final ClassNode ABSTRACT_COMPARATOR_TYPE = makeClassSafe(AbstractComparator.class);
+    private static final ClassNode INVOKER_HELPER_TYPE = makeClassSafe(InvokerHelper.class);
 
     private static final String VALUE = "value";
     private static final String OBJ = "obj";
@@ -115,8 +117,8 @@ public class SortableASTTransformation extends AbstractASTTransformation {
         statements.add(declS(varX(VALUE, ClassHelper.int_TYPE), constX(0)));
         for (PropertyNode property : properties) {
             String name = property.getName();
-            // value = this.prop <=> obj.prop;
-            statements.add(assignS(varX(VALUE), cmpX(propX(varX("this"), name), propX(varX(OBJ), name))));
+            // value = this.prop <=> ((<type>)obj).prop;
+            statements.add(assignS(varX(VALUE), cmpX(propX(varX("this"), name), propX(castX(newClass(classNode), varX(OBJ)), name))));
             // if(value != 0) return value;
             statements.add(ifS(neX(varX(VALUE), constX(0)), returnS(varX(VALUE))));
         }
@@ -144,7 +146,7 @@ public class SortableASTTransformation extends AbstractASTTransformation {
                 // if(arg0 == null && arg1 != null) return 1;
                 ifS(andX(equalsNullX(varX(ARG0)), notNullX(varX(ARG1))), returnS(constX(1))),
                 // return arg0.prop <=> arg1.prop;
-                returnS(cmpX(propX(varX(ARG0), propertyName), propX(varX(ARG1), propertyName)))
+                returnS(cmpX(callX(INVOKER_HELPER_TYPE, "getProperty", args(varX(ARG0), constX(propertyName))), callX(INVOKER_HELPER_TYPE, "getProperty", args(varX(ARG1), constX(propertyName)))))
         );
     }
 
