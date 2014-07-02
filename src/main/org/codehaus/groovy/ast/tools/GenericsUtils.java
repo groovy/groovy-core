@@ -357,6 +357,11 @@ public class GenericsUtils {
         return type;
     }
 
+    @SuppressWarnings("unchecked")
+    public static Map<String,ClassNode> createGenericsSpec(ClassNode current) {
+        return createGenericsSpec(current, Collections.EMPTY_MAP);
+    }
+
     public static Map<String,ClassNode> createGenericsSpec(ClassNode current, Map<String,ClassNode> oldSpec) {
         Map<String,ClassNode> ret = new HashMap<String,ClassNode>(oldSpec);
         // ret contains the type specs, what we now need is the type spec for the
@@ -400,7 +405,7 @@ public class GenericsUtils {
             }
         } else {
             // have first to find matching super class or interface
-            Map <String,ClassNode> genSpec = createGenericsSpec(type,Collections.EMPTY_MAP);
+            Map <String,ClassNode> genSpec = createGenericsSpec(type);
             ClassNode superClass = ClassHelper.getNextSuperClass(type,target);
             if (superClass!=null){
                 ClassNode corrected = GenericsUtils.correctToGenericsSpecRecurse(genSpec, superClass);
