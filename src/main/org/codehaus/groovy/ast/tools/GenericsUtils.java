@@ -257,9 +257,18 @@ public class GenericsUtils {
         return makeClassSafeWithGenerics(ClassHelper.make(klass));
     }
 
+    public static ClassNode makeClassSafeWithGenerics(Class klass, ClassNode genericsType) {
+        GenericsType[] genericsTypes = new GenericsType[1];
+        genericsTypes[0] = new GenericsType(genericsType);
+        return makeClassSafeWithGenerics(ClassHelper.make(klass), genericsTypes);
+    }
+
     public static ClassNode makeClassSafe0(ClassNode type, GenericsType... genericTypes) {
         ClassNode plainNodeReference = newClass(type);
-        if (genericTypes != null && genericTypes.length > 0) plainNodeReference.setGenericsTypes(genericTypes);
+        if (genericTypes != null && genericTypes.length > 0) {
+            plainNodeReference.setGenericsTypes(genericTypes);
+            if (type.isGenericsPlaceHolder()) plainNodeReference.setGenericsPlaceHolder(true);
+        }
         return plainNodeReference;
     }
 
@@ -293,6 +302,11 @@ public class GenericsUtils {
         if (type.isGenericsPlaceHolder()) {
             String name = type.getGenericsTypes()[0].getName();
             type = genericsSpec.get(name);
+            if (type != null && type.isGenericsPlaceHolder() && type.getGenericsTypes() == null) {
+                ClassNode placeholder = ClassHelper.makeWithoutCaching(type.getUnresolvedName());
+                placeholder.setGenericsPlaceHolder(true);
+                type = makeClassSafeWithGenerics(type, new GenericsType(placeholder));
+            }
         }
         if (type == null) type = ClassHelper.OBJECT_TYPE;
         GenericsType[] oldgTypes = type.getGenericsTypes();

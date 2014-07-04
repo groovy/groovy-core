@@ -1619,6 +1619,18 @@ public class StaticTypeCheckingVisitor extends ClassCodeVisitorSupport {
         checkForbiddenSpreadArgument(argumentList);
 
         ClassNode[] args = getArgumentTypes(argumentList);
+        if (    args.length>0 &&
+                typeCheckingContext.getEnclosingClosure()!=null &&
+                argumentList.getExpression(0) instanceof VariableExpression &&
+                ((VariableExpression) argumentList.getExpression(0)).isThisExpression() &&
+                call.getType() instanceof InnerClassNode &&
+                call.getType().getOuterClass().equals(args[0]) &&
+                !call.getType().isStaticClass())
+        {
+            args[0] = CLOSURE_TYPE;
+        }
+
+
         MethodNode node = null;
         if (args.length == 1
                 && implementsInterfaceOrIsSubclassOf(args[0], MAP_TYPE)
@@ -3523,7 +3535,7 @@ public class StaticTypeCheckingVisitor extends ClassCodeVisitorSupport {
                     }
                     if (property != null) {
                         ClassNode type = property.getOriginType();
-                        if (implementsInterfaceOrIsSubclassOf(args[0], type)) {
+                        if (implementsInterfaceOrIsSubclassOf(wrapTypeIfNecessary(args[0]), wrapTypeIfNecessary(type))) {
                             MethodNode node = new MethodNode(name, Opcodes.ACC_PUBLIC, VOID_TYPE, new Parameter[]{
                                     new Parameter(type, "arg")
                             }, ClassNode.EMPTY_ARRAY, GENERATED_EMPTY_STATEMENT);
