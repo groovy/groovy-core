@@ -311,6 +311,7 @@ public abstract class StaticTypeCheckingSupport {
      * @return true if the class node is assignable to the other class node, false otherwise
      */
     static boolean isAssignableTo(ClassNode type, ClassNode toBeAssignedTo) {
+        if (toBeAssignedTo == null) return true;
         if (UNKNOWN_PARAMETER_TYPE==type) return true;
         if (type==toBeAssignedTo) return true;
         if (toBeAssignedTo.redirect() == STRING_TYPE && type.redirect() == GSTRING_TYPE) {
