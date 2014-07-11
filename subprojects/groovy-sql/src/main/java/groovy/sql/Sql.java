@@ -207,6 +207,25 @@ import static org.codehaus.groovy.runtime.SqlGroovyMethods.toRowResult;
  * }
  * </pre>
  *
+ * <h4>Working with the IN operator</h4>
+ *
+ * There are two ways you can specify parameters for the <tt>IN</tt> operator, first you can specify the
+ * parameters individually:
+ * <pre>
+ * def rows = sql.rows('select * from PROJECT where name IN (?,?)', ['Groovy', 'Griffon'])
+ * assert row.size() == 2
+ * </pre>
+ * <p>
+ * Or you can provide an <tt>Array</tt> or <tt>Collection</tt> as a parameter:
+ * <pre>
+ * def projectList = ['Groovy', 'Griffon']
+ * def rows = sql.rows('select * from PROJECT where name IN ?', [projectList])
+ * assert row.size() == 2
+ * </pre>
+ * <p>
+ * Note that when providing an <tt>Array</tt> or <tt>Collection</tt> type in the parameters for
+ * the <tt>IN</tt> operator you do not enclose the parameter placeholder in parentheses.
+ *
  * <h4>More details</h4>
  *
  * See the method and constructor JavaDoc for more details.
@@ -4360,17 +4379,12 @@ public class Sql {
         return statement;
     }
 
+    /**
+     * @deprecated Use {@link #buildSqlWithParams(String, java.util.List)} instead
+     */
+    @Deprecated
     public SqlWithParams checkForNamedParams(String sql, List<Object> params) {
-        SqlWithParams preCheck = buildSqlWithIndexedProps(sql);
-        if (preCheck == null) {
-            return new SqlWithParams(sql, params);
-        }
-
-        List<Tuple> indexPropList = new ArrayList<Tuple>();
-        for (Object next : preCheck.getParams()) {
-            indexPropList.add((Tuple) next);
-        }
-        return new SqlWithParams(preCheck.getSql(), getUpdatedParams(params, indexPropList));
+        return buildSqlWithParams(sql, params);
     }
 
     /**
@@ -4379,6 +4393,27 @@ public class Sql {
     @Deprecated
     public SqlWithParams preCheckForNamedParams(String sql) {
         return buildSqlWithIndexedProps(sql);
+    }
+
+    public List<Object> getUpdatedParams(List<Object> params, List<Tuple> indexPropList) {
+        return ExtractIndexAndSql.updateFromIndexedProperties(params, indexPropList);
+    }
+
+    /**
+     * Hook to allow derived classes to override behavior associated with the
+     * parsing and updating of parameters from a given sql statement.
+     *
+     * @param sql the sql statement to process
+     * @param params a list of parameters
+     * @return a {@link SqlWithParams} instance containing the parsed sql
+     *         and updated parameters.
+     */
+    protected SqlWithParams buildSqlWithParams(String sql, List<Object> params) {
+        ExtractIndexAndSql extract = extractIndexAndSql(sql, params);
+        if (extract == null) {
+            return new SqlWithParams(sql, params);
+        }
+        return new SqlWithParams(extract.getNewSql(), extract.getNewParams());
     }
 
     /**
@@ -4392,42 +4427,43 @@ public class Sql {
      *         the sql was performed.
      */
     protected SqlWithParams buildSqlWithIndexedProps(String sql) {
+        ExtractIndexAndSql extract = extractIndexAndSql(sql, new ArrayList<Object>());
+        if (extract == null) {
+            return null;
+        }
+        List<Object> indexPropList = new ArrayList<Object>(extract.getIndexPropList());
+        return new SqlWithParams(extract.getNewSql(), indexPropList);
+    }
+
+    private ExtractIndexAndSql extractIndexAndSql(String sql, List<Object> params) {
         // look for quick exit
         if (!enableNamedQueries || !ExtractIndexAndSql.hasNamedParameters(sql)) {
             return null;
         }
 
-        String newSql;
-        List<Tuple> propList;
+        ExtractIndexAndSql extract = null;
         if (cacheNamedQueries && namedParamSqlCache.containsKey(sql)) {
-            newSql = namedParamSqlCache.get(sql);
-            propList = namedParamIndexPropCache.get(sql);
+            String newSql = namedParamSqlCache.get(sql);
+            List<Tuple> indexPropList = namedParamIndexPropCache.get(sql);
+            List<Object> newParams = ExtractIndexAndSql.updateFromIndexedProperties(params, indexPropList);
+            extract = new ExtractIndexAndSql(newSql, newParams, indexPropList);
         } else {
-            ExtractIndexAndSql extractIndexAndSql = ExtractIndexAndSql.from(sql);
-            newSql = extractIndexAndSql.getNewSql();
-            propList = extractIndexAndSql.getIndexPropList();
-            namedParamSqlCache.put(sql, newSql);
-            namedParamIndexPropCache.put(sql, propList);
+            extract = ExtractIndexAndSql.from(sql, params);
+            // Do not cache if placeholder expansion was performed.  With placeholder
+            // expansion the same sql requires parsing every time since the parsed
+            // sql may change depending on the size of the Array/Collection parameters
+            // being expanded.
+            if (cacheNamedQueries && !extract.hasExpandedPlaceholders()) {
+                namedParamSqlCache.put(sql, extract.getNewSql());
+                namedParamIndexPropCache.put(sql, extract.getIndexPropList());
+            }
         }
 
-        if (sql.equals(newSql)) {
+        if (sql.equals(extract.getNewSql())) {
             return null;
         }
 
-        List<Object> indexPropList = new ArrayList<Object>(propList);
-        return new SqlWithParams(newSql, indexPropList);
-    }
-
-    public List<Object> getUpdatedParams(List<Object> params, List<Tuple> indexPropList) {
-        List<Object> updatedParams = new ArrayList<Object>();
-        for (Tuple tuple : indexPropList) {
-            int index = (Integer) tuple.get(0);
-            String prop = (String) tuple.get(1);
-            if (index < 0 || index >= params.size())
-                throw new IllegalArgumentException("Invalid index " + index + " should be in range 1.." + params.size());
-            updatedParams.add(prop.equals("<this>") ? params.get(index) : InvokerHelper.getProperty(params.get(index), prop));
-        }
-        return updatedParams;
+        return extract;
     }
 
     private PreparedStatement getPreparedStatement(Connection connection, String sql, List<Object> params) throws SQLException {

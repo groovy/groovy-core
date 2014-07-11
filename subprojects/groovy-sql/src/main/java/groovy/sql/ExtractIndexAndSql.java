@@ -16,8 +16,12 @@
 package groovy.sql;
 
 import groovy.lang.Tuple;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.InvokerHelper;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,7 +40,15 @@ class ExtractIndexAndSql {
 
     private final String sql;
     private List<Tuple> indexPropList;
+    private List<Object> params;
+
     private String newSql;
+    private List<Object> newParams;
+
+    /**
+     * Buffer used to store the sql statement as it's parsed.
+     */
+    private final StringBuilder buffer;
 
     /**
      * Used to track the current position within the sql while parsing
@@ -44,14 +56,29 @@ class ExtractIndexAndSql {
     private int index = 0;
 
     /**
+     * Indicates whether parameter placeholders required expansion
+     */
+    private boolean placeholdersExpanded = false;
+
+    /**
      * Static factory method used to create a new instance.  Since parsing of the input
      * is required, this ensures the object is fully initialized.
      *
      * @param sql statement to be parsed
+     * @param params list of parameter values
      * @return an instance of {@link ExtractIndexAndSql}
      */
+    static ExtractIndexAndSql from(String sql, List<Object> params) {
+        return new ExtractIndexAndSql(sql, params).invoke();
+    }
+
+    /**
+     * @param sql statement to be parsed
+     * @return an instance of {@link ExtractIndexAndSql}
+     * @see {@link ExtractIndexAndSql#from(String, java.util.List)}
+     */
     static ExtractIndexAndSql from(String sql) {
-        return new ExtractIndexAndSql(sql).invoke();
+        return ExtractIndexAndSql.from(sql, new ArrayList<Object>());
     }
 
     /**
@@ -64,8 +91,22 @@ class ExtractIndexAndSql {
         return NAMED_QUERY_PATTERN.matcher(sql).find();
     }
 
-    private ExtractIndexAndSql(String sql) {
+    /**
+     * Constructs this object from the values provided.  No parsing is performed.
+     */
+    ExtractIndexAndSql(String sql, List<Object> params, List<Tuple> indexPropList) {
+        this.sql = newSql = sql;
+        this.params = newParams = params;
+        this.indexPropList = indexPropList;
+        buffer = null;
+    }
+
+    private ExtractIndexAndSql(String sql, List<Object> params) {
         this.sql = sql;
+        this.params = (params != null) ? new ArrayList<Object>(params) : new ArrayList<Object>();
+        indexPropList = new ArrayList<Tuple>();
+        newParams = new ArrayList<Object>();
+        buffer =  new StringBuilder(sql.length());
     }
 
     List<Tuple> getIndexPropList() {
@@ -76,46 +117,62 @@ class ExtractIndexAndSql {
         return newSql;
     }
 
+    List<Object> getNewParams() {
+        return newParams;
+    }
+
+    /**
+     * Indicates whether or not placeholders within the sql statement were expanded.
+     *
+     * @return true if sql statement required placeholders to be
+     *         expanded (i.e., ? -> (?,?,..), else false
+     */
+    boolean hasExpandedPlaceholders() {
+        return placeholdersExpanded;
+    }
+
     private ExtractIndexAndSql invoke() {
-        indexPropList = new ArrayList<Tuple>();
-        StringBuilder sb = new StringBuilder();
         StringBuilder currentChunk = new StringBuilder();
-        while (index < sql.length()) {
-            switch (sql.charAt(index)) {
+        int len = sql.length();
+        while (index < len) {
+            char c = sql.charAt(index);
+            switch (c) {
                 case QUOTE:
-                    sb.append(adaptForNamedParams(currentChunk.toString(), indexPropList));
-                    currentChunk = new StringBuilder();
-                    appendToEndOfString(sb);
+                    appendAndClearChunk(currentChunk);
+                    appendToEndOfString();
                     break;
                 case '-':
                     if (next() == '-') {
-                        sb.append(adaptForNamedParams(currentChunk.toString(), indexPropList));
-                        currentChunk = new StringBuilder();
-                        appendToEndOfLine(sb);
+                        appendAndClearChunk(currentChunk);
+                        appendToEndOfLine();
                     } else {
-                        currentChunk.append(sql.charAt(index));
+                        currentChunk.append(c);
                     }
                     break;
                 case '/':
                     if (next() == '*') {
-                        sb.append(adaptForNamedParams(currentChunk.toString(), indexPropList));
-                        currentChunk = new StringBuilder();
-                        appendToEndOfComment(sb);
+                        appendAndClearChunk(currentChunk);
+                        appendToEndOfComment();
                     } else {
-                        currentChunk.append(sql.charAt(index));
+                        currentChunk.append(c);
                     }
                     break;
                 default:
-                    currentChunk.append(sql.charAt(index));
+                    currentChunk.append(c);
             }
             index++;
         }
-        sb.append(adaptForNamedParams(currentChunk.toString(), indexPropList));
-        newSql = sb.toString();
+        appendAndClearChunk(currentChunk);
+        newSql = buffer.toString();
         return this;
     }
 
-    private void appendToEndOfString(StringBuilder buffer) {
+    private void appendAndClearChunk(StringBuilder chunk) {
+        buffer.append(adaptForNamedParams(chunk.toString()));
+        chunk.setLength(0);
+    }
+
+    private void appendToEndOfString() {
         buffer.append(QUOTE);
         int startQuoteIndex = index;
         ++index;
@@ -154,7 +211,7 @@ class ExtractIndexAndSql {
         return (index - 1) - pos;
     }
 
-    private void appendToEndOfComment(StringBuilder buffer) {
+    private void appendToEndOfComment() {
         while (index < sql.length()) {
             char c = sql.charAt(index);
             buffer.append(c);
@@ -167,7 +224,7 @@ class ExtractIndexAndSql {
         }
     }
 
-    private void appendToEndOfLine(StringBuilder buffer) {
+    private void appendToEndOfLine() {
         while (index < sql.length()) {
             char c = sql.charAt(index);
             buffer.append(c);
@@ -182,23 +239,83 @@ class ExtractIndexAndSql {
         return ((index + 1) < sql.length()) ? sql.charAt(index + 1) : '\0';
     }
 
-    private String adaptForNamedParams(String sql, List<Tuple> indexPropList) {
+    private String adaptForNamedParams(String sql) {
         StringBuilder newSql = new StringBuilder();
         int txtIndex = 0;
 
         Matcher matcher = NAMED_QUERY_PATTERN.matcher(sql);
         while (matcher.find()) {
-            newSql.append(sql.substring(txtIndex, matcher.start())).append('?');
             String indexStr = matcher.group(1);
             if (indexStr == null) indexStr = matcher.group(3);
             int index = (indexStr == null || indexStr.length() == 0 || ":".equals(indexStr)) ? 0 : new Integer(indexStr) - 1;
             String prop = matcher.group(2);
             if (prop == null) prop = matcher.group(4);
             indexPropList.add(new Tuple(new Object[]{index, prop == null || prop.length() == 0 ? "<this>" : prop}));
+            String placeholder = getParamPlaceholder(prop, index);
+            newSql.append(sql.substring(txtIndex, matcher.start())).append(placeholder);
             txtIndex = matcher.end();
         }
         newSql.append(sql.substring(txtIndex)); // append ending SQL after last param.
         return newSql.toString();
+    }
+
+    private String getParamPlaceholder(String propName, int propIndex) {
+        String placeholder = "?";
+        if (!params.isEmpty()) {
+            int newPropIndex = (propName == null || propName.length() == 0) ? indexPropList.size() - 1 : propIndex;
+            Object o = getPropertyFromParams(params, newPropIndex, propName);
+            if (isNotNullArrayOrCollection(o)) {
+                Object[] paramsArray = DefaultGroovyMethods.asType(o, Object[].class);
+                placeholder = expandPlaceholdersFor(paramsArray);
+                placeholdersExpanded = true;
+            } else {
+                newParams.add(o);
+            }
+        }
+        return placeholder;
+    }
+
+    private String expandPlaceholdersFor(Object[] paramsArray) {
+        if (paramsArray == null || paramsArray.length == 0) {
+            newParams.add("");
+            return "(?)";
+        }
+        StringBuilder sb = new StringBuilder("(");
+        for (int i = 0; i < paramsArray.length; i++) {
+            if (i == 0) {
+                sb.append("?");
+            } else {
+                sb.append(",?");
+            }
+            newParams.add(paramsArray[i]);
+        }
+        sb.append(")");
+        return sb.toString();
+    }
+
+    private boolean isNotNullArrayOrCollection(Object o) {
+        return o != null &&
+                (Collection.class.isAssignableFrom(o.getClass()) || o.getClass().isArray());
+    }
+
+    private static Object getPropertyFromParams(List<Object> params, int propIndex, String propName) {
+        if (propIndex >= params.size()) {
+            return null;
+        }
+        Object o = params.get(propIndex);
+        return (propName == null || propName.equals("<this>")) ? o : InvokerHelper.getProperty(o, propName);
+    }
+
+    static List<Object> updateFromIndexedProperties(List<Object> params, List<Tuple> indexProps) {
+        List<Object> updatedParams = new ArrayList<Object>();
+        for (Tuple tuple : indexProps) {
+            int propIndex = (Integer) tuple.get(0);
+            String propName = (String) tuple.get(1);
+            if (propIndex < 0 || propIndex >= params.size())
+                throw new IllegalArgumentException("Invalid index " + propIndex + " should be in range 1.." + params.size());
+            updatedParams.add(getPropertyFromParams(params, propIndex, propName));
+        }
+        return updatedParams;
     }
 
 }

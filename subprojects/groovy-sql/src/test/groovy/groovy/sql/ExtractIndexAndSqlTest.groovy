@@ -244,4 +244,54 @@ ORDER BY
 
         assert query == ExtractIndexAndSql.from(query).newSql
     }
+
+    void testExpandsPlaceholdersForCollectionParams() {
+        String query = 'select * from FOOD where type in ?'
+        def params = [['cheese', 'beer']]
+
+        String expected = 'select * from FOOD where type in (?,?)'
+
+        assert expected == ExtractIndexAndSql.from(query, params).newSql
+    }
+
+    void testInOperatorExpansionIsCompatibleWhenCombinedWithOldSyntax() {
+        String query = 'select * from FOOD where type in ? and country in (?,?)'
+        def params = [['cheese', 'beer'], 'US', 'UK']
+
+        String expected = 'select * from FOOD where type in (?,?) and country in (?,?)'
+
+        def extract = ExtractIndexAndSql.from(query, params)
+        assert expected == extract.newSql
+        assert ['cheese', 'beer', 'US', 'UK'] == extract.newParams
+    }
+
+    void testInOperatorUsingNamedParameter() {
+        String query = "select * from FOOD where country in ?2.ct and type in ?1.foo and store in ?"
+        def params = [[foo: ['cheese', 'beer', 'wine'], bar: ['a', 'b']], [ct: ['US','FR']], ['one','two']]
+
+        String expected = "select * from FOOD where country in (?,?) and type in (?,?,?) and store in (?,?)"
+
+        def extract = ExtractIndexAndSql.from(query, params)
+        assert expected == extract.newSql
+        assert ['US', 'FR', 'cheese', 'beer', 'wine', 'one', 'two'] == extract.newParams
+    }
+
+    void testHasExpandedPlaceholders() {
+        String shouldExpand = "select * from PERSON where lastname in ?"
+        String shouldNotExpand = "select * from PERSON where lastname = ?"
+
+        assert ExtractIndexAndSql.from(shouldExpand, [['Smith', 'Wilson']]).hasExpandedPlaceholders()
+        assert !ExtractIndexAndSql.from(shouldNotExpand, ['Smith']).hasExpandedPlaceholders()
+    }
+
+    void testEmptyCollectionInParams() {
+        String query = "select * from PERSON where lastname in ?"
+        def params = [[]]
+        String expected = "select * from PERSON where lastname in (?)"
+
+        def extract = ExtractIndexAndSql.from(query, params)
+        assert expected == extract.newSql
+        assert '' == extract.newParams.get(0)
+    }
+
 }
