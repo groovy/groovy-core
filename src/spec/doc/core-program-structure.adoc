@@ -2,10 +2,20 @@
 
 This chapter covers the program structure of the Groovy programming language.
 
-== Package name (TBD)
+== Package name 
+
+Packages organize related classes and interfaces in groups. Groovy files may optionally contain a single `package` declaration. If present the `package` keyword must be the first line of the file followed by the package name.
+
+[source,groovy]
+----
+include::{projectdir}/src/spec/test/ProgramStructureTest.groovy[tags=package_name_example,indent=0]
+----
+<1> The fully qualified name of the `Example` class is `org.example.packagename.Example`
+
+Package names should follow java conventions.
 
 == Imports (TBD)
-
+  
 === Default imports (TBD)
 === Simple import (TBD)
 === Star import (TBD)
