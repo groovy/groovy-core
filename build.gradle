@@ -138,6 +138,7 @@ dependencies {
         exclude(group: 'jmock', module: 'jmock')
     }
     compile files("lib/openbeans-1.0.jar")
+    compile files("lib/pcollections-2.2.0-SNAPSHOT.jar")
     compile "org.fusesource.jansi:jansi:$jansiVersion"
     compile("org.apache.ivy:ivy:$ivyVersion") {
         transitive = false

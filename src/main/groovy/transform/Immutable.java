@@ -72,7 +72,7 @@ import java.lang.annotation.Target;
  * <li>{@code Date}s, {@code Cloneable}s and arrays are defensively copied on the way in (constructor) and out (getters).
  * Arrays and {@code Cloneable} objects use the {@code clone} method. For your own classes,
  * it is up to you to define this method and use deep cloning if appropriate.
- * <li>{@code Collection}s and {@code Map}s are wrapped by immutable wrapper classes (but not deeply cloned!).
+ * <li>{@code Collection}s and {@code Map}s are wrapped by unmodifiable wrapper classes (but not deeply cloned!).
  * Attempts to update them will result in an {@code UnsupportedOperationException}.
  * <li>Fields that are enums or other {@code @Immutable} classes are allowed but for an
  * otherwise possible mutable property type, an error is thrown.
@@ -101,7 +101,7 @@ import java.lang.annotation.Target;
  * it is up to you to define this method and use deep cloning if appropriate.
  * </li>
  * <li>
- * As outlined above, {@code Collection}s and {@code Map}s are wrapped by immutable wrapper classes (but not deeply cloned!).
+ * As outlined above, {@code Collection}s and {@code Map}s are wrapped by unmodifiable wrapper classes (but not deeply cloned!).
  * </li>
  * <li>
  * Currently {@code BigInteger} and {@code BigDecimal} are deemed immutable but see:

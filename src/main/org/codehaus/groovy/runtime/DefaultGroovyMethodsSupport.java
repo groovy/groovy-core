@@ -18,6 +18,7 @@ package org.codehaus.groovy.runtime;
 import groovy.lang.EmptyRange;
 import groovy.lang.IntRange;
 import groovy.lang.Range;
+import groovy.util.immutable.*;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 
 import java.io.Closeable;
@@ -257,5 +258,90 @@ public class DefaultGroovyMethodsSupport {
             }
         }
         return true;
+    }
+
+    /**
+     * If the first object is an unmodifiable object, then wrap the second list to an unmodifiable collection.
+     * If the first object is an immutable collection, then wrap the second list to an immutable collection.
+     */
+    protected static <T> Collection<T> wrapSimilar(Object object, Collection<T> collection) {
+        if (object instanceof ImmutableCollection) {
+            if (object instanceof ImmutableDeque) {
+                return ImmutableCollections.deque(collection);
+            } else if (object instanceof ImmutableListSet) {
+                return ImmutableCollections.listSet(collection);
+            } else if (object instanceof ImmutableSet) {
+                return ImmutableCollections.set(collection);
+            } else {
+                return ImmutableCollections.list(collection);
+            }
+        } else if (isUnmodifiable(object)) {
+            if (object instanceof List) {
+                return Collections.unmodifiableList((List<T>) collection);
+            } else if (object instanceof SortedSet) {
+                return Collections.unmodifiableSortedSet((SortedSet<T>) collection);
+            } else if (object instanceof Set) {
+                return Collections.unmodifiableSet((Set<T>) collection);
+            } else {
+                return Collections.unmodifiableCollection(collection);
+            }
+        } else {
+            return collection;
+        }
+    }
+
+    /**
+     * If the first object is an unmodifiable object, then wrap the second list to an unmodifiable list.
+     * If the first object is an immutable collection, then wrap the second list to an immutable list.
+     */
+    protected static <T> List<T> wrapSimilar(Object object, List<T> list) {
+        if (object instanceof ImmutableCollection) {
+            return ImmutableCollections.list(list);
+        } else if (isUnmodifiable(object)) {
+            return Collections.unmodifiableList(list);
+        } else {
+            return list;
+        }
+    }
+
+    /**
+     * If the first object is an unmodifiable object, then convert the second set to an unmodifiable set.
+     * If the first object is an immutable collection, then convert the second set to an immutable set.
+     */
+    protected static <T> Set<T> wrapSimilar(Object object, Set<T> set) {
+        if (object instanceof ImmutableCollection) {
+            return ImmutableCollections.set(set);
+        } else if (isUnmodifiable(object)) {
+            return Collections.unmodifiableSet(set);
+        } else {
+            return set;
+        }
+    }
+
+    /**
+     * If the first object is an unmodifiable object, then convert the second map to an unmodifiable map.
+     * If the first object is an immutable collection, then convert the second map to an immutable map.
+     */
+    protected static <K, V> Map<K, V> wrapSimilar(Object object, Map<K, V> map) {
+        if (object instanceof ImmutableCollection) {
+            return ImmutableCollections.map(map);
+        } else if (isUnmodifiable(object)) {
+            if (map instanceof SortedMap) {
+                return Collections.unmodifiableSortedMap((SortedMap<K, V>) map);
+            } else {
+                return Collections.unmodifiableMap(map);
+            }
+        } else {
+            return map;
+        }
+    }
+
+    /**
+     * Checks whether the specified object is an unmodifiable view or not.
+     *
+     * @param object an object to check
+     */
+    protected static boolean isUnmodifiable(Object object) {
+        return object.getClass().getName().startsWith("java.util.Collections$Unmodifiable");
     }
 }

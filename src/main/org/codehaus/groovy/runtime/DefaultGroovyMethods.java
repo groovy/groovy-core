@@ -29,6 +29,7 @@ import groovy.util.MapEntry;
 import groovy.util.OrderBy;
 import groovy.util.PermutationGenerator;
 import groovy.util.ProxyGenerator;
+import groovy.util.immutable.*;
 import org.codehaus.groovy.classgen.Verifier;
 import org.codehaus.groovy.reflection.ClassInfo;
 import org.codehaus.groovy.reflection.MixinInMetaClass;
@@ -1060,7 +1061,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
             self.clear();
             self.addAll(answer);
         }
-        return mutate ? self : answer ;
+        return mutate ? self : wrapSimilar(self, answer);
     }
 
     /**
@@ -1288,7 +1289,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
             self.clear();
             self.addAll(answer);
         }
-        return mutate ? self : answer;
+        return mutate ? self : wrapSimilar(self, answer);
     }
 
     /**
@@ -1435,7 +1436,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     public static <T> Collection<T> toUnique(Iterable<T> self, Comparator<T> comparator) {
         Collection<T> result = createSimilarCollection((Collection<T>) self);
         addAll(result, toUnique(self.iterator(), comparator));
-        return result;
+        return wrapSimilar(self, result);
     }
 
     /**
@@ -1992,7 +1993,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
                 answer.add(object);
             }
         }
-        return answer;
+        return wrapSimilar(self, answer);
     }
 
     /**
@@ -2022,7 +2023,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
                 answer.add(element);
             }
         }
-        return answer;
+        return wrapSimilar(self, answer);
     }
 
     /**
@@ -2553,10 +2554,10 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
                 for (int offs = pos; offs < pos + size && offs < selfList.size(); offs++) {
                     element.add(selfList.get(offs));
                 }
-                answer.add( element ) ;
+                answer.add( wrapSimilar(self, element) ) ;
             }
         }
-        return answer ;
+        return wrapSimilar(self, answer);
     }
 
     /**
@@ -2614,7 +2615,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
         for (Iterator iter = InvokerHelper.asIterator(self); iter.hasNext(); ) {
             collector.add(transform.call(iter.next()));
         }
-        return collector;
+        return wrapSimilar(self, collector);
     }
 
     /**
@@ -2663,7 +2664,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
                 break;
             }
         }
-        return collector;
+        return wrapSimilar(self, collector);
     }
 
     /**
@@ -2760,7 +2761,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
                 break;
             }
         }
-        return collector;
+        return wrapSimilar(self, collector);
     }
 
     /**
@@ -2995,7 +2996,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.7.9
      */
     public static <K,V> Map<?, ?> collectEntries(Map<K, V> self, @ClosureParams(MapEntryOrKeyValue.class) Closure<?> transform) {
-        return collectEntries(self, createSimilarMap(self), transform);
+        return wrapSimilar(self, collectEntries(self, createSimilarMap(self), transform));
     }
 
     /**
@@ -3478,7 +3479,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
                 result.add(transformed);
             }
         }
-        return result;
+        return wrapSimilar(self, result);
     }
 
     /**
@@ -3507,7 +3508,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
                 result.add(transformed);
             }
         }
-        return result;
+        return wrapSimilar(self, result);
     }
 
     /**
@@ -3590,7 +3591,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     public static <T> Collection<T> findAll(Collection<T> self, @ClosureParams(FirstParam.FirstGenericType.class) Closure closure) {
         Collection<T> answer = createSimilarCollection(self);
         Iterator<T> iter = self.iterator();
-        return findAll(closure, answer, iter);
+        return wrapSimilar(self, findAll(closure, answer, iter));
     }
 
     /**
@@ -3657,7 +3658,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     public static Collection findAll(Object self, Closure closure) {
         List answer = new ArrayList();
         Iterator iter = InvokerHelper.asIterator(self);
-        return findAll(closure, answer, iter);
+        return wrapSimilar(self, findAll(closure, answer, iter));
     }
 
     /**
@@ -3881,7 +3882,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     public static Collection split(Object self, Closure closure) {
         List accept = new ArrayList();
         List reject = new ArrayList();
-        return split(closure, accept, reject, InvokerHelper.asIterator(self));
+        return split(self, closure, accept, reject, InvokerHelper.asIterator(self));
     }
 
     /**
@@ -3901,10 +3902,11 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
         Collection<T> accept = createSimilarCollection(self);
         Collection<T> reject = createSimilarCollection(self);
         Iterator<T> iter = self.iterator();
-        return split(closure, accept, reject, iter);
+        return split(self, closure, accept, reject, iter);
     }
 
-    private static <T> Collection<Collection<T>> split(Closure closure, Collection<T> accept, Collection<T> reject, Iterator<T> iter) {
+    private static <T> Collection<Collection<T>> split(Object self, Closure closure,
+                                                       Collection<T> accept, Collection<T> reject, Iterator<T> iter) {
         List<Collection<T>> answer = new ArrayList<Collection<T>>();
         BooleanClosureWrapper bcw = new BooleanClosureWrapper(closure);
         while (iter.hasNext()) {
@@ -3915,9 +3917,9 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
                 reject.add(value);
             }
         }
-        answer.add(accept);
-        answer.add(reject);
-        return answer;
+        answer.add(wrapSimilar(self, accept));
+        answer.add(wrapSimilar(self, reject));
+        return wrapSimilar(self, answer);
     }
 
     /**
@@ -4134,7 +4136,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
                 answer.put(entry.getKey(), entry.getValue());
             }
         }
-        return answer;
+        return wrapSimilar(self, answer);
     }
 
     /**
@@ -4464,7 +4466,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
             putAll(target, entries);
             answer.put(key, target);
         }
-        return answer;
+        return wrapSimilar(self, answer);
     }
 
     /**
@@ -5710,7 +5712,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
         List<T> answer = createSimilarList(self, subList.size());
         answer.addAll(subList);
 
-        return answer;
+        return wrapSimilar(self, answer);
     }
 
 
@@ -5795,7 +5797,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.0
      */
     public static <T> List<T> getAt(List<T> self, EmptyRange range) {
-        return createSimilarList(self, 0);
+        return wrapSimilar(self, createSimilarList(self, 0));
     }
 
     /**
@@ -5819,7 +5821,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
                 answer.add(getAt(self, idx));
             }
         }
-        return answer;
+        return wrapSimilar(self, answer);
     }
 
     /**
@@ -5988,6 +5990,26 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.0
      */
     public static <T> T getAt(List<T> self, int idx) {
+        int size = self.size();
+        int i = normaliseIndex(idx, size);
+        if (i < size) {
+            return self.get(i);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Support the subscript operator for an ImmutableListSet.
+     * <pre class="groovyTestCase">def list = [2, "a", 5.3] as ImmutableListSet
+     * assert list[1] == "a"</pre>
+     *
+     * @param self an ImmutableListSet
+     * @param idx  an index
+     * @return the value at the given index
+     * @since 1.0
+     */
+    public static <T> T getAt(ImmutableListSet<T> self, int idx) {
         int size = self.size();
         int i = normaliseIndex(idx, size);
         if (i < size) {
@@ -6310,6 +6332,10 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.5.0
      */
     public static <K, V> Map<K, V> plus(Map<K, V> left, Map<K, V> right) {
+        if (left instanceof ImmutableMap) {
+            return ((ImmutableMap<K, V>) left).plus(right);
+        }
+
         Map<K, V> map = cloneSimilarMap(left);
         map.putAll(right);
         return map;
@@ -6342,7 +6368,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      */
     public static List getAt(Collection coll, String property) {
         List<Object> answer = new ArrayList<Object>(coll.size());
-        return getAtIterable(coll, property, answer);
+        return wrapSimilar(coll, getAtIterable(coll, property, answer));
     }
 
     private static List getAtIterable(Iterable coll, String property, List<Object> answer) {
@@ -6362,15 +6388,38 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     }
 
     /**
+     * A convenience method for creating an unmodifiable map.
+     *
+     * @param self a Map
+     * @return an unmodifiable Map
+     * @see java.util.Collections#unmodifiableMap(java.util.Map)
+     * @since 1.0
+     */
+    public static <K,V> Map<K,V> asUnmodifiable(Map<? extends K, ? extends V> self) {
+        return Collections.unmodifiableMap(self);
+    }
+
+    /**
      * A convenience method for creating an immutable map.
      *
      * @param self a Map
      * @return an immutable Map
-     * @see java.util.Collections#unmodifiableMap(java.util.Map)
-     * @since 1.0
+     * @since 2.4.0
      */
     public static <K,V> Map<K,V> asImmutable(Map<? extends K, ? extends V> self) {
-        return Collections.unmodifiableMap(self);
+        return ImmutableCollections.map(self);
+    }
+
+    /**
+     * A convenience method for creating an unmodifiable sorted map.
+     *
+     * @param self a SortedMap
+     * @return an unmodifiable SortedMap
+     * @see java.util.Collections#unmodifiableSortedMap(java.util.SortedMap)
+     * @since 2.4.0
+     */
+    public static <K,V> SortedMap<K,V> asUnmodifiable(SortedMap<K, ? extends V> self) {
+        return Collections.unmodifiableSortedMap(self);
     }
 
     /**
@@ -6386,27 +6435,67 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     }
 
     /**
-     * A convenience method for creating an immutable list
+     * A convenience method for creating an unmodifiable list
      *
      * @param self a List
-     * @return an immutable List
+     * @return an unmodifiable List
      * @see java.util.Collections#unmodifiableList(java.util.List)
-     * @since 1.0
+     * @since 2.4.0
      */
-    public static <T> List<T> asImmutable(List<? extends T> self) {
+    public static <T> List<T> asUnmodifiable(List<? extends T> self) {
         return Collections.unmodifiableList(self);
     }
 
     /**
      * A convenience method for creating an immutable list.
      *
+     * Since 2.4.0 this method was using {@link java.util.Collections#unmodifiableList(java.util.List)},
+     * but from 2.4.0 this method uses {@link ImmutableCollections#list(Iterable)}.
+     *
+     * @param self a List
+     * @return an immutable List
+     * @since 1.0
+     */
+    public static <T> List<T> asImmutable(List<? extends T> self) {
+        return ImmutableCollections.list(self);
+    }
+
+    /**
+     * A convenience method for creating an unmodifiable set.
+     *
+     * @param self a Set
+     * @return an unmodifiable Set
+     * @see java.util.Collections#unmodifiableSet(java.util.Set)
+     * @since 2.4.0
+     */
+    public static <T> Set<T> asUnmodifiable(Set<? extends T> self) {
+        return Collections.unmodifiableSet(self);
+    }
+
+    /**
+     * A convenience method for creating an immutable set.
+     *
+     * Since 2.4.0 this method was using {@link java.util.Collections#unmodifiableSet(java.util.Set)},
+     * but from 2.4.0 this method uses {@link ImmutableCollections#set(Iterable)}.
+     *
      * @param self a Set
      * @return an immutable Set
-     * @see java.util.Collections#unmodifiableSet(java.util.Set)
      * @since 1.0
      */
     public static <T> Set<T> asImmutable(Set<? extends T> self) {
-        return Collections.unmodifiableSet(self);
+        return ImmutableCollections.set(self);
+    }
+
+    /**
+     * A convenience method for creating an unmodifiable sorted set.
+     *
+     * @param self a SortedSet
+     * @return an unmodifiable SortedSet
+     * @see java.util.Collections#unmodifiableSortedSet(java.util.SortedSet)
+     * @since 2.4.0
+     */
+    public static <T> SortedSet<T> asUnmodifiable(SortedSet<T> self) {
+        return Collections.unmodifiableSortedSet(self);
     }
 
     /**
@@ -6422,24 +6511,44 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     }
 
     /**
-     * A convenience method for creating an immutable Collection.
+     * A convenience method for creating an unmodifiable Collection.
      * <pre class="groovyTestCase">def mutable = [1,2,3]
-     * def immutable = mutable.asImmutable()
+     * def unmodifiable = mutable.asUnmodifiable()
      * mutable &lt;&lt; 4
      * try {
-     *   immutable &lt;&lt; 4
+     *   unmodifiable &lt;&lt; 4
      *   assert false
      * } catch (UnsupportedOperationException) {
      *   assert true
      * }</pre>
      *
      * @param self a Collection
-     * @return an immutable Collection
+     * @return an unmodifiable Collection
      * @see java.util.Collections#unmodifiableCollection(java.util.Collection)
+     * @since 2.4.0
+     */
+    public static <T> Collection<T> asUnmodifiable(Collection<? extends T> self) {
+        return Collections.unmodifiableCollection(self);
+    }
+
+    /**
+     * A convenience method for creating an immutable Collection.
+     *
+     * @param self a Collection
+     * @return an immutable Collection
      * @since 1.5.0
      */
+    @SuppressWarnings("unchecked")
     public static <T> Collection<T> asImmutable(Collection<? extends T> self) {
-        return Collections.unmodifiableCollection(self);
+        if (self instanceof Queue) {
+            return ImmutableCollections.deque(self);
+        } else if (self instanceof Set) {
+            return ImmutableCollections.set(self);
+        } else if (self instanceof List) {
+            return ImmutableCollections.list(self);
+        } else {
+            return Collections.unmodifiableCollection(self);
+        }
     }
 
     /**
@@ -7375,7 +7484,6 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     private static class NumberAwareValueComparator<K, V> implements Comparator<Map.Entry<K, V>> {
         private Comparator<V> delegate = new NumberAwareComparator<V>();
 
-        @Override
         public int compare(Map.Entry<K, V> e1, Map.Entry<K, V> e2) {
             return delegate.compare(e1.getValue(), e2.getValue());
         }
@@ -7501,6 +7609,14 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.6.1
      */
     public static <K, V> Map<K, V> plus(Map<K, V> self, Collection<Map.Entry<K, V>> entries) {
+        if (self instanceof ImmutableMap) {
+            ImmutableMap<K, V> immutableMap = (ImmutableMap<K, V>) self;
+            for (Map.Entry<K, V> entry : entries) {
+                immutableMap = immutableMap.plus(entry.getKey(), entry.getValue());
+            }
+            return immutableMap;
+        }
+
         Map<K, V> map = cloneSimilarMap(self);
         putAll(map, entries);
         return map;
@@ -7735,7 +7851,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
         }
         Collection<T> result = createSimilarCollection(self);
         addAll(result, tail(self.iterator()));
-        return result;
+        return wrapSimilar(self, result);
     }
 
     /**
@@ -7804,7 +7920,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
             result = new ArrayList<T>();
         }
         addAll(result, init(self.iterator()));
-        return result;
+        return wrapSimilar(self, result);
     }
 
     /**
@@ -7950,7 +8066,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     public static <T> Collection<T> take(Iterable<T> self, int num) {
         Collection<T> result = self instanceof Collection ? createSimilarCollection((Collection<T>) self, num < 0 ? 0 : num) : new ArrayList<T>();
         addAll(result, take(self.iterator(), num));
-        return result;
+        return wrapSimilar(self, result);
     }
 
     /**
@@ -8003,7 +8119,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      */
     public static <K, V> Map<K, V> take(Map<K, V> self, int num) {
         if (self.isEmpty() || num <= 0) {
-            return createSimilarMap(self);
+            return wrapSimilar(self, createSimilarMap(self));
         }
         Map<K, V> ret = createSimilarMap(self);
         for (K key : self.keySet()) {
@@ -8012,7 +8128,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
                 break;
             }
         }
-        return ret;
+        return wrapSimilar(self, ret);
     }
 
     /**
@@ -8124,17 +8240,17 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      */
     public static <T> Collection<T> takeRight(Iterable<T> self, int num) {
         if (!self.iterator().hasNext() || num <= 0) {
-            return self instanceof Collection ? createSimilarCollection((Collection<T>) self, 0) : new ArrayList<T>();
+            return wrapSimilar(self, self instanceof Collection ? createSimilarCollection((Collection<T>) self, 0) : new ArrayList<T>());
         }
         Collection<T> selfCol = self instanceof Collection ? (Collection<T>) self : toList(self);
         if (selfCol.size() <= num) {
             Collection<T> ret = createSimilarCollection(selfCol, selfCol.size());
             ret.addAll(selfCol);
-            return ret;
+            return wrapSimilar(self, ret);
         }
         Collection<T> ret = createSimilarCollection(selfCol, num);
         ret.addAll(asList((Iterable<T>) selfCol).subList(selfCol.size() - num, selfCol.size()));
-        return ret;
+        return wrapSimilar(self, ret);
     }
 
     /**
@@ -8174,7 +8290,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     public static <T> Collection<T> drop(Iterable<T> self, int num) {
         Collection<T> result = createSimilarCollection(self);
         addAll(result, drop(self.iterator(), num));
-        return result;
+        return wrapSimilar(self, result);
     }
 
     /**
@@ -8229,7 +8345,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      */
     public static <K, V> Map<K, V> drop(Map<K, V> self, int num) {
         if (self.size() <= num) {
-            return createSimilarMap(self);
+            return wrapSimilar(self, createSimilarMap(self));
         }
         if (num == 0) {
             return cloneSimilarMap(self);
@@ -8240,7 +8356,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
                 ret.put(key, self.get(key));
             }
         }
-        return ret;
+        return wrapSimilar(self, ret);
     }
 
     /**
@@ -8297,7 +8413,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     public static <T> Collection<T> dropRight(Iterable<T> self, int num) {
         Collection<T> selfCol = self instanceof Collection ? (Collection<T>) self : toList(self);
         if (selfCol.size() <= num) {
-            return createSimilarCollection(selfCol, 0);
+            return wrapSimilar(self, createSimilarCollection(selfCol, 0));
         }
         if (num <= 0) {
             Collection<T> ret = createSimilarCollection(selfCol, selfCol.size());
@@ -8306,7 +8422,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
         }
         Collection<T> ret = createSimilarCollection(selfCol, selfCol.size() - num);
         ret.addAll(asList((Iterable<T>)selfCol).subList(0, selfCol.size() - num));
-        return ret;
+        return wrapSimilar(self, ret);
     }
 
     /**
@@ -8419,7 +8535,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     public static <T> Collection<T> takeWhile(Iterable<T> self, @ClosureParams(FirstParam.FirstGenericType.class) Closure condition) {
         Collection<T> result = createSimilarCollection(self);
         addAll(result, takeWhile(self.iterator(), condition));
-        return result;
+        return wrapSimilar(self, result);
     }
 
     /**
@@ -8443,7 +8559,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      */
     public static <K, V> Map<K, V> takeWhile(Map<K, V> self, @ClosureParams(MapEntryOrKeyValue.class) Closure<?> condition) {
         if (self.isEmpty()) {
-            return createSimilarMap(self);
+            return wrapSimilar(self, createSimilarMap(self));
         }
         Map<K, V> ret = createSimilarMap(self);
         BooleanClosureWrapper bcw = new BooleanClosureWrapper(condition);
@@ -8451,7 +8567,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
             if (!bcw.callForMap(entry)) break;
             ret.put(entry.getKey(), entry.getValue());
         }
-        return ret;
+        return wrapSimilar(self, ret);
     }
 
     /**
@@ -8603,7 +8719,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
         Collection<T> selfCol = self instanceof Collection ? (Collection<T>) self : toList(self);
         Collection<T> result = createSimilarCollection(selfCol);
         addAll(result, dropWhile(self.iterator(), condition));
-        return result;
+        return wrapSimilar(self, result);
     }
 
     /**
@@ -8628,7 +8744,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      */
     public static <K, V> Map<K, V> dropWhile(Map<K, V> self, @ClosureParams(MapEntryOrKeyValue.class) Closure<?> condition) {
         if (self.isEmpty()) {
-            return createSimilarMap(self);
+            return wrapSimilar(self, createSimilarMap(self));
         }
         Map<K, V> ret = createSimilarMap(self);
         boolean dropping = true;
@@ -8637,7 +8753,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
             if (dropping && !bcw.callForMap(entry)) dropping = false;
             if (!dropping) ret.put(entry.getKey(), entry.getValue());
         }
-        return ret;
+        return wrapSimilar(self, ret);
     }
 
     /**
@@ -9056,6 +9172,22 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
             stack.addAll(col);
             return (T) stack;
         }
+        if (clazz == ImmutableList.class) {
+            if (col instanceof ImmutableList) return (T) col;
+            return (T) ImmutableCollections.list(col);
+        }
+        if (clazz == ImmutableSet.class) {
+            if (col instanceof ImmutableSet) return (T) col;
+            return (T) ImmutableCollections.set(col);
+        }
+        if (clazz == ImmutableListSet.class) {
+            if (col instanceof ImmutableListSet) return (T) col;
+            return (T) ImmutableCollections.listSet(col);
+        }
+        if (clazz == ImmutableDeque.class) {
+            if (col instanceof ImmutableDeque) return (T) col;
+            return (T) ImmutableCollections.deque(col);
+        }
 
         if (clazz!=String[].class && ReflectionCache.isArray(clazz)) {
             try {
@@ -9105,6 +9237,26 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
         }
         if (clazz == SortedSet.class) {
             return (T) new TreeSet(Arrays.asList(ary));
+        }
+        if (clazz == Queue.class) {
+            return (T) new LinkedList(Arrays.asList(ary));
+        }
+        if (clazz == Stack.class) {
+            final Stack stack = new Stack();
+            stack.addAll(Arrays.asList(ary));
+            return (T) stack;
+        }
+        if (clazz == ImmutableList.class) {
+            return (T) ImmutableCollections.list(Arrays.asList(ary));
+        }
+        if (clazz == ImmutableSet.class) {
+            return (T) ImmutableCollections.set(Arrays.asList(ary));
+        }
+        if (clazz == ImmutableListSet.class) {
+            return (T) ImmutableCollections.listSet(Arrays.asList(ary));
+        }
+        if (clazz == ImmutableDeque.class) {
+            return (T) ImmutableCollections.deque(Arrays.asList(ary));
         }
 
         return asType((Object) ary, clazz);
@@ -9159,6 +9311,11 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      */
     @SuppressWarnings("unchecked")
     public static <T> T asType(Map map, Class<T> clazz) {
+        if (clazz == ImmutableMap.class) {
+            if (map instanceof ImmutableMap) return (T) map;
+            return (T) ImmutableCollections.map(map);
+        }
+
         if (!(clazz.isInstance(map)) && clazz.isInterface() && !Traits.isTrait(clazz)) {
             return (T) Proxy.newProxyInstance(
                     clazz.getClassLoader(),
@@ -9222,7 +9379,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
         while (iter.hasPrevious()) {
             answer.add(iter.previous());
         }
-        return answer;
+        return wrapSimilar(self, answer);
     }
 
     /**
@@ -9360,9 +9517,13 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.5.0
      */
     public static <T> Collection<T> plus(Collection<T> left, Collection<T> right) {
+        if (left instanceof ImmutableCollection) {
+            return ((ImmutableCollection<T>) left).plus(right);
+        }
+
         final Collection<T> answer = cloneSimilarCollection(left, left.size() + right.size());
         answer.addAll(right);
-        return answer;
+        return wrapSimilar(left, answer);
     }
 
     /**
@@ -9426,6 +9587,10 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.8.1
      */
     public static <T> List<T> plus(List<T> self, int index, T[] items) {
+        if (self instanceof ImmutableList) {
+            return ((ImmutableList<T>) self).plusAt(index, Arrays.asList(items));
+        }
+
         return plus(self, index, Arrays.asList(items));
     }
 
@@ -9455,9 +9620,13 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.8.1
      */
     public static <T> List<T> plus(List<T> self, int index, List<T> additions) {
+        if (self instanceof ImmutableList) {
+            return ((ImmutableList<T>) self).plusAt(index, additions);
+        }
+
         final List<T> answer = new ArrayList<T>(self);
         answer.addAll(index, additions);
-        return answer;
+        return wrapSimilar(self, answer);
     }
 
     /**
@@ -9488,9 +9657,13 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.5.0
      */
     public static <T> Collection<T> plus(Collection<T> left, T right) {
+        if (left instanceof ImmutableCollection) {
+            return ((ImmutableCollection<T>) left).plus(right);
+        }
+
         final Collection<T> answer = cloneSimilarCollection(left, left.size() + 1);
         answer.add(right);
-        return answer;
+        return wrapSimilar(left, answer);
     }
 
     /**
@@ -9540,7 +9713,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
         for (int i = 0; i < size; i++) {
             answer.addAll(selfCol);
         }
-        return answer;
+        return wrapSimilar(self, answer);
     }
 
     /**
@@ -9555,7 +9728,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      */
     public static <T> Collection<T> intersect(Collection<T> left, Collection<T> right) {
         if (left.isEmpty() || right.isEmpty())
-            return createSimilarCollection(left, 0);
+            return wrapSimilar(left, createSimilarCollection(left, 0));
 
         if (left.size() < right.size()) {
             Collection<T> swaptemp = left;
@@ -9575,7 +9748,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
             if (pickFrom.contains(t))
                 result.add(t);
         }
-        return result;
+        return wrapSimilar(left, result);
     }
 
     /**
@@ -9614,7 +9787,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
                 }
             }
         }
-        return ansMap;
+        return wrapSimilar(left, ansMap);
     }
 
     /**
@@ -9888,6 +10061,10 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.5.0
      */
     public static <T> Set<T> minus(Set<T> self, Collection<?> removeMe) {
+        if (self instanceof ImmutableSet) {
+            return ((ImmutableSet<T>) self).minus(removeMe);
+        }
+
         Comparator comparator = (self instanceof SortedSet) ? ((SortedSet) self).comparator() : null;
         final Set<T> ansSet = createSimilarSet(self);
         ansSet.addAll(self);
@@ -9901,7 +10078,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
                 }
             }
         }
-        return ansSet;
+        return wrapSimilar(self, ansSet);
     }
 
     /**
@@ -9926,13 +10103,17 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.5.0
      */
     public static <T> Set<T> minus(Set<T> self, Object removeMe) {
+        if (self instanceof ImmutableSet) {
+            return ((ImmutableSet<T>) self).minus(removeMe);
+        }
+
         Comparator comparator = (self instanceof SortedSet) ? ((SortedSet) self).comparator() : null;
         final Set<T> ansSet = createSimilarSet(self);
         for (T t : self) {
             boolean areEqual = (comparator != null)? (comparator.compare(t, removeMe) == 0) : coercedEquals(t, removeMe);
             if (!areEqual) ansSet.add(t);
         }
-        return ansSet;
+        return wrapSimilar(self, ansSet);
     }
 
     /**
@@ -9988,9 +10169,13 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 2.4.0
      */
     public static <T> Collection<T> minus(Collection<T> self, Collection<?> removeMe) {
+        if (self instanceof ImmutableCollection) {
+            return ((ImmutableCollection<T>) self).minus(removeMe);
+        }
+
         Collection<T> ansCollection = createSimilarCollection(self);
         if (self.size() == 0)
-            return ansCollection;
+            return wrapSimilar(self, ansCollection);
         T head = self.iterator().next();
 
         boolean nlgnSort = sameType(new Collection[]{self, removeMe});
@@ -10049,7 +10234,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
             //can't use treeset since the base classes are different
             ansCollection.addAll(tmpAnswer);
         }
-        return ansCollection;
+        return wrapSimilar(self, ansCollection);
     }
 
     /**
@@ -10099,11 +10284,15 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 2.4.0
      */
     public static <T> Collection<T> minus(Iterable<T> self, Object removeMe) {
+        if (self instanceof ImmutableCollection) {
+            return ((ImmutableCollection<T>) self).minus(removeMe);
+        }
+
         Collection<T> ansList = createSimilarCollection(self);
         for (T t : self) {
             if (!coercedEquals(t, removeMe)) ansList.add(t);
         }
-        return ansList;
+        return wrapSimilar(self, ansList);
     }
 
     /**
@@ -10121,6 +10310,89 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     }
 
     /**
+     * Create a new List composed of the elements of the first list minus the specified index element to remove.
+     * <pre class="groovyTestCase">assert ["a", 5, true].minusAt(1) == ["a", true]</pre>
+     *
+     * @param self    an list
+     * @param index   a specified index to remove
+     * @return the resulting List with the specified index element removed
+     * @since 2.4.0
+     */
+    public static <T> List<T> minusAt(List<T> self, int index) {
+        if (self instanceof ImmutableList)
+            return ((ImmutableList<T>) self).minusAt(index);
+
+        if (index < 0 || index >= self.size())
+            throw new IndexOutOfBoundsException();
+
+        List<T> ansList = createSimilarList(self, self.size() - 1);
+        int i = 0;
+        for (T t : self) {
+            if (i++ != index)
+                ansList.add(t);
+        }
+        return wrapSimilar(self, ansList);
+    }
+
+    /**
+     * Create a new object array composed of the elements of the first array minus the specified index element to remove.
+     *
+     * @param self    an object array
+     * @param index   a specified index to remove
+     * @return a new array with the specified index element removed
+     * @since 2.4.0
+     */
+    public static <T> T[] minusAt(T[] self, int index) {
+        if (index < 0 || index >= self.length)
+            throw new ArrayIndexOutOfBoundsException();
+
+        T[] ansArray = createSimilarArray(self, self.length - 1);
+        System.arraycopy(self, 0, ansArray, 0, index);
+        System.arraycopy(self, index + 1, ansArray, index, ansArray.length - index);
+        return ansArray;
+    }
+
+    /**
+     * Create a new List composed of the elements of the first list minus the specified index element to replace.
+     * <pre class="groovyTestCase">assert ["a", 5, true].replaceAt(1, 3) == ["a", 3, true]</pre>
+     *
+     * @param self    an list
+     * @param index   a specified index to remove
+     * @return the resulting List with the specified index element removed
+     * @since 2.4.0
+     */
+    public static <T> List<T> replaceAt(List<T> self, int index, T element) {
+        if (self instanceof ImmutableList)
+            return ((ImmutableList<T>) self).replaceAt(index, element);
+
+        if (index < 0 || index >= self.size())
+            throw new IndexOutOfBoundsException();
+
+        List<T> ansList = createSimilarList(self, self.size());
+        ansList.addAll(self);
+        ansList.set(index, element);
+        return wrapSimilar(self, ansList);
+    }
+
+    /**
+     * Create a new object array composed of the elements of the first array minus the specified index element to replace.
+     *
+     * @param self    an object array
+     * @param index   a specified index to replace
+     * @return a new array with the specified index element replaced
+     * @since 2.4.0
+     */
+    public static <T> T[] replaceAt(T[] self, int index, T element) {
+        if (index < 0 || index >= self.length)
+            throw new ArrayIndexOutOfBoundsException();
+
+        T[] ansArray = createSimilarArray(self, self.length);
+        System.arraycopy(self, 0, ansArray, 0, self.length);
+        ansArray[index] = element;
+        return ansArray;
+    }
+
+    /**
      * Create a Map composed of the entries of the first map minus the
      * entries of the given map.
      *
@@ -10130,6 +10402,10 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.7.4
      */
     public static <K,V> Map<K,V> minus(Map<K,V> self, Map removeMe) {
+        if (self instanceof ImmutableMap) {
+            return ((ImmutableMap<K, V>) self).minus(removeMe);
+        }
+
         final Map<K,V> ansMap = createSimilarMap(self);
         ansMap.putAll(self);
         if (removeMe != null && removeMe.size() > 0) {
@@ -10141,7 +10417,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
                 }
             }
         }
-        return ansMap;
+        return wrapSimilar(self, ansMap);
     }
 
     /**
@@ -10151,7 +10427,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      */
     @Deprecated
     public static Collection<?> flatten(Collection<?> self) {
-        return flatten(self, createSimilarCollection(self));
+        return flatten((Iterable<?>) self);
     }
 
     /**
@@ -10164,7 +10440,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.6.0
      */
     public static Collection<?> flatten(Iterable<?> self) {
-        return flatten(self, createSimilarCollection(self));
+        return wrapSimilar(self, flatten(self, createSimilarCollection(self)));
     }
 
     /**
@@ -10296,7 +10572,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      */
     @Deprecated
     public static <T> Collection<T> flatten(Collection<T> self, Closure<? extends T> flattenUsing) {
-        return flatten(self, createSimilarCollection(self), flattenUsing);
+        return flatten((Iterable<T>) self, flattenUsing);
     }
 
     /**
@@ -10312,7 +10588,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.6.0
      */
     public static <T> Collection<T> flatten(Iterable<T> self, Closure<? extends T> flattenUsing) {
-        return flatten(self, createSimilarCollection(self), flattenUsing);
+        return wrapSimilar(self, flatten(self, createSimilarCollection(self), flattenUsing));
     }
 
     private static <T> Collection<T> flatten(Iterable elements, Collection<T> addTo, Closure<? extends T> flattenUsing) {
@@ -13547,7 +13823,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
                 result.add(count);
             }
         }
-        return result;
+        return wrapSimilar(self, result);
     }
 
     /**
