@@ -15,14 +15,13 @@
  */
 package groovy.json;
 
-import static groovy.json.JsonTokenType.*;
-
 import groovy.io.LineColumnReader;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Iterator;
-import java.util.regex.Pattern;
+
+import static groovy.json.JsonTokenType.*;
 
 /**
  * The lexer reads JSON tokens in a streaming fashion from the underlying reader.
@@ -39,8 +38,6 @@ public class JsonLexer implements Iterator<JsonToken> {
     private static final char UPPER_E  = 'E';
     private static final char ZERO     = '0';
     private static final char NINE     = '9';
-
-    private static final Pattern p = Pattern.compile("\\\\u(\\p{XDigit}{4})");
 
     private LineColumnReader reader;
 

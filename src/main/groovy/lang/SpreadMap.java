@@ -66,10 +66,7 @@ public class SpreadMap extends HashMap {
     }
 
     public boolean equals(Object that) {
-        if (that instanceof SpreadMap) {
-            return equals((SpreadMap) that);
-        }
-        return false;
+        return that instanceof SpreadMap && equals((SpreadMap) that);
     }
 
     public boolean equals(SpreadMap that) {

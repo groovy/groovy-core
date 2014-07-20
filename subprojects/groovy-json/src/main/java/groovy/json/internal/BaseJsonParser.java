@@ -91,7 +91,7 @@ public abstract class BaseJsonParser implements JsonParser {
             charString = "'" + (char) c + "'";
         }
 
-        charString = charString + " with an int value of " + ((int) c);
+        charString = charString + " with an int value of " + c;
         return charString;
     }
 
@@ -138,8 +138,6 @@ public abstract class BaseJsonParser implements JsonParser {
         }
     }
 
-    private final CharBuf builder = CharBuf.create(20);
-
     public Object parse(File file, String charset) {
 
         Reader reader = null;
@@ -178,15 +176,15 @@ public abstract class BaseJsonParser implements JsonParser {
         return c == COMMA || c == CLOSED_CURLY || c == CLOSED_BRACKET;
     }
 
-    protected static final boolean isNumberDigit(int c) {
+    protected static boolean isNumberDigit(int c) {
         return c >= ALPHA_0 && c <= ALPHA_9;
     }
 
-    protected static final boolean isDoubleQuote(int c) {
+    protected static boolean isDoubleQuote(int c) {
         return c == DOUBLE_QUOTE;
     }
 
-    protected static final boolean isEscape(int c) {
+    protected static boolean isEscape(int c) {
         return c == ESCAPE;
     }
 
@@ -221,15 +219,7 @@ public abstract class BaseJsonParser implements JsonParser {
                     break;
                 }
             }
-            if (isEscape(currentChar)) {
-                if (!escape) {
-                    escape = true;
-                } else {
-                    escape = false;
-                }
-            } else {
-                escape = false;
-            }
+            escape = isEscape(currentChar) && !escape;
         }
         return index;
     }

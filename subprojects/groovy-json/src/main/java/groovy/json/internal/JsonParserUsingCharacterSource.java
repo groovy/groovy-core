@@ -96,7 +96,6 @@ public class JsonParserUsingCharacterSource extends BaseJsonParser {
                     break;
                 } else if (ch == ',') {
                     characterSource.nextChar();
-                    continue;
                 } else {
                     complain(
                             "expecting '}' or ',' but got current char " + charDescription(ch));
@@ -114,9 +113,9 @@ public class JsonParserUsingCharacterSource extends BaseJsonParser {
         throw new JsonException(exceptionDetails(complaint));
     }
 
-    private final Object decodeValue() {
+    private Object decodeValue() {
         CharacterSource characterSource = this.characterSource;
-        Object value = null;
+        Object value;
         characterSource.skipWhiteSpace();
 
         switch (characterSource.currentChar()) {
@@ -171,7 +170,7 @@ public class JsonParserUsingCharacterSource extends BaseJsonParser {
         return value;
     }
 
-    private final Object decodeNumber(boolean negative) {
+    private Object decodeNumber(boolean negative) {
         char[] chars = characterSource.readNumber();
         Object value = null;
 
@@ -228,7 +227,7 @@ public class JsonParserUsingCharacterSource extends BaseJsonParser {
 
         char[] chars = characterSource.findNextChar('"', '\\');
 
-        String value = null;
+        String value;
         if (characterSource.hadEscape()) {
             value = builder.decodeJsonString(chars).toString();
             builder.recycle();
@@ -241,7 +240,7 @@ public class JsonParserUsingCharacterSource extends BaseJsonParser {
 
     protected final List decodeJsonArray() {
 
-        ArrayList<Object> list = null;
+        ArrayList<Object> list;
 
         boolean foundEnd = false;
         try {
@@ -262,7 +261,7 @@ public class JsonParserUsingCharacterSource extends BaseJsonParser {
                 return new ArrayList();
             }
 
-            list = new ArrayList();
+            list = new ArrayList<Object>();
 
             do {
 
@@ -278,7 +277,6 @@ public class JsonParserUsingCharacterSource extends BaseJsonParser {
 
                 if (c == COMMA) {
                     characterSource.nextChar();
-                    continue;
                 } else if (c == CLOSED_BRACKET) {
                     foundEnd = true;
                     characterSource.nextChar();

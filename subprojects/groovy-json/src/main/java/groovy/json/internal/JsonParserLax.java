@@ -261,7 +261,7 @@ public class JsonParserLax extends JsonParserCharArray {
 
                 case 't':
                     if (isTrue()) {
-                        return decodeTrue() == true ? ValueContainer.TRUE : ValueContainer.FALSE;
+                        return decodeTrue() ? ValueContainer.TRUE : ValueContainer.FALSE;
                     } else {
                         value = decodeStringLax();
                     }
@@ -269,7 +269,7 @@ public class JsonParserLax extends JsonParserCharArray {
 
                 case 'f':
                     if (isFalse()) {
-                        return decodeFalse() == false ? ValueContainer.FALSE : ValueContainer.TRUE;
+                        return !decodeFalse() ? ValueContainer.FALSE : ValueContainer.TRUE;
                     } else {
                         value = decodeStringLax();
                     }
@@ -407,9 +407,7 @@ public class JsonParserLax extends JsonParserCharArray {
 
         Type type = doubleFloat ? Type.DOUBLE : Type.INTEGER;
 
-        NumberValue value = new NumberValue(chop, type, startIndex, __index, this.charArray);
-
-        return value;
+        return new NumberValue(chop, type, startIndex, __index, this.charArray);
     }
 
     private boolean isNull() {
@@ -452,9 +450,8 @@ public class JsonParserLax extends JsonParserCharArray {
 
     private Value decodeStringLax() {
         int index = __index;
-        char currentChar = charArray[__index];
+        char currentChar;
         final int startIndex = __index;
-        boolean encoded = false;
         char[] charArray = this.charArray;
 
         for (; index < charArray.length; index++) {
@@ -464,7 +461,7 @@ public class JsonParserLax extends JsonParserCharArray {
             else if (currentChar == '\\') break;
         }
 
-        Value value = this.extractLaxString(startIndex, index, encoded, defaultCheckDates);
+        Value value = this.extractLaxString(startIndex, index, false, defaultCheckDates);
 
         __index = index;
         return value;
@@ -497,11 +494,7 @@ public class JsonParserLax extends JsonParserCharArray {
                     }
 
                 case '\\':
-                    if (!escape) {
-                        escape = true;
-                    } else {
-                        escape = false;
-                    }
+                    escape = !escape;
                     encoded = true;
                     continue;
             }
@@ -581,7 +574,7 @@ public class JsonParserLax extends JsonParserCharArray {
 
         if (__currentChar == ']') {
             __index++;
-            return new ValueContainer(new ArrayList());
+            return new ValueContainer(new ArrayList<Object>());
         }
 
         List<Object> list;
@@ -598,7 +591,7 @@ public class JsonParserLax extends JsonParserCharArray {
 
             skipWhiteSpace();
 
-            Object arrayItem = decodeValueInternal();
+            Value arrayItem = decodeValueInternal();
 
             list.add(arrayItem);
 
@@ -608,7 +601,6 @@ public class JsonParserLax extends JsonParserCharArray {
 
             if (c == ',') {
                 __index++;
-                continue;
             } else if (c == ']') {
                 __index++;
                 break;

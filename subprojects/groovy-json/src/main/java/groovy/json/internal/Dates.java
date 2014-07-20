@@ -32,8 +32,7 @@ public class Dates {
         Calendar calendar = Calendar.getInstance();
         calendar.setTimeInMillis(time);
         calendar.setTimeZone(UTC_TIME_ZONE);
-        long utcNow = calendar.getTime().getTime();
-        return utcNow;
+        return calendar.getTime().getTime();
     }
 
     private static Date internalDate(TimeZone tz, int year, int month, int day, int hour, int minute, int second) {
@@ -87,7 +86,7 @@ public class Dates {
 
         try {
             if (isISO8601(charArray, from, to)) {
-                int year = CharScanner.parseIntFromTo(charArray, from + 0, from + 4);
+                int year = CharScanner.parseIntFromTo(charArray, from, from + 4);
                 int month = CharScanner.parseIntFromTo(charArray, from + 5, from + 7);
                 int day = CharScanner.parseIntFromTo(charArray, from + 8, from + 10);
                 int hour = CharScanner.parseIntFromTo(charArray, from + 11, from + 13);
@@ -103,10 +102,7 @@ public class Dates {
 
                 } else {
 
-                    StringBuilder builder = new StringBuilder(9);
-                    builder.append("GMT");
-                    builder.append(charArray, from + 19, 6);
-                    String tzStr = builder.toString();
+                    String tzStr = "GMT" + String.valueOf(charArray, from + 19, 6);
                     tz = TimeZone.getTimeZone(tzStr);
 
                 }
@@ -124,7 +120,7 @@ public class Dates {
     public static Date fromJsonDate(char[] charArray, int from, int to) {
         try {
             if (isJsonDate(charArray, from, to)) {
-                int year = CharScanner.parseIntFromTo(charArray, from + 0, from + 4);
+                int year = CharScanner.parseIntFromTo(charArray, from, from + 4);
                 int month = CharScanner.parseIntFromTo(charArray, from + 5, from + 7);
                 int day = CharScanner.parseIntFromTo(charArray, from + 8, from + 10);
                 int hour = CharScanner.parseIntFromTo(charArray, from + 11, from + 13);
@@ -149,14 +145,14 @@ public class Dates {
     }
 
     public static boolean isISO8601(char[] charArray, int start, int to) {
-        boolean valid = true;
+        boolean valid;
         final int length = to - start;
 
         if (length == SHORT_ISO_8601_TIME_LENGTH) {
-            valid &= (charArray[start + 19] == 'Z');
+            valid = (charArray[start + 19] == 'Z');
 
         } else if (length == LONG_ISO_8601_TIME_LENGTH) {
-            valid &= (charArray[start + 19] == '-' || charArray[start + 19] == '+');
+            valid = (charArray[start + 19] == '-' || charArray[start + 19] == '+');
             valid &= (charArray[start + 22] == ':');
 
         } else {
@@ -180,13 +176,9 @@ public class Dates {
 
         try {
 
-            if (length == JSON_TIME_LENGTH || length == LONG_ISO_8601_TIME_LENGTH
-                    || length == SHORT_ISO_8601_TIME_LENGTH || (length >= 17 && (charArray[start + 16] == ':'))
-                    ) {
-                return true;
-            }
+            return length == JSON_TIME_LENGTH || length == LONG_ISO_8601_TIME_LENGTH
+                    || length == SHORT_ISO_8601_TIME_LENGTH || (length >= 17 && (charArray[start + 16] == ':'));
 
-            return false;
         } catch (Exception ex) {
             ex.printStackTrace();
             return false;
@@ -202,13 +194,13 @@ public class Dates {
             return false;
         }
 
-        valid &= (charArray[start + 19] == '.');
+        valid = (charArray[start + 19] == '.');
 
         if (!valid) {
             return false;
         }
 
-        valid &= (charArray[start + 4] == '-') &&
+        valid = (charArray[start + 4] == '-') &&
                 (charArray[start + 7] == '-') &&
                 (charArray[start + 10] == 'T') &&
                 (charArray[start + 13] == ':') &&

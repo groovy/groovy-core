@@ -72,7 +72,7 @@ public class ValueMapImpl extends AbstractMap<String, Value> implements ValueMap
     /**
      * Get the items for the key.
      *
-     * @param key
+     * @param key key
      * @return the items for the given key
      */
 
@@ -109,7 +109,7 @@ public class ValueMapImpl extends AbstractMap<String, Value> implements ValueMap
     /**
      * Build the map if requested to, it does this lazily.
      */
-    private final void buildIfNeededMap() {
+    private void buildIfNeededMap() {
         if (map == null) {
             map = new HashMap<String, Value>(items.length);
 

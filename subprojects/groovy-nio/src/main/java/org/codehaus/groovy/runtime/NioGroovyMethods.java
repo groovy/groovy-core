@@ -1013,10 +1013,10 @@ public class NioGroovyMethods extends DefaultGroovyMethodsSupport {
         try ( DirectoryStream<Path> stream = Files.newDirectoryStream(self) ) {
 
             final Iterator<Path> itr = stream.iterator();
-            List<Path> files = new LinkedList<Path>();
+            List<Path> files = new LinkedList<>();
             while(itr.hasNext()) { files.add(itr.next()); }
 
-            if (sort != null) files = DefaultGroovyMethods.sort(files, sort);
+            if (sort != null) files = DefaultGroovyMethods.sort((Iterable<Path>) files, sort);
 
             for (Path path : files) {
                 if (Files.isDirectory(path)) {
@@ -1278,7 +1278,7 @@ public class NioGroovyMethods extends DefaultGroovyMethodsSupport {
         if (c == Writable.class) {
             return (T) asWritable(path);
         }
-        return DefaultGroovyMethods.asType((Object) path, c);
+        return DefaultGroovyMethods.asType(path, c);
     }
 
     /**

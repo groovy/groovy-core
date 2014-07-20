@@ -50,7 +50,7 @@ public class LazyValueMap extends AbstractMap<String, Object> implements ValueMa
     /**
      * holds the list of items that we are managing.
      */
-    private Entry<String, Value>[] items;
+    private Entry[] items;
     /**
      * Holds the current number mapping managed by this map.
      */
@@ -200,7 +200,7 @@ public class LazyValueMap extends AbstractMap<String, Object> implements ValueMa
         return map.entrySet();
     }
 
-    private final void buildMap() {
+    private void buildMap() {
 
 
         /** added to avoid hash collision attack. */
@@ -211,7 +211,7 @@ public class LazyValueMap extends AbstractMap<String, Object> implements ValueMa
         }
 
 
-        for ( Entry<String, Value> miv : items ) {
+        for (Entry<String, Value> miv : items) {
             if ( miv == null ) {
                 break;
             }
