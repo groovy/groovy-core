@@ -23,6 +23,7 @@ import com.thoughtworks.qdox.model.Type
 import groovy.text.SimpleTemplateEngine
 import groovy.text.Template
 import groovy.text.TemplateEngine
+import org.codehaus.groovy.cli.CommonsCliGnuParserWrapper
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
 import org.codehaus.groovy.tools.shell.util.Logger
 import org.codehaus.groovy.tools.shell.util.MessageSource
@@ -206,7 +207,7 @@ class DocGenerator {
      * Main entry point.
      */
     static void main(String... args) {
-        def cli = new CliBuilder(usage : 'DocGenerator [options] [sourcefiles]', posix:false)
+        def cli = new CliBuilder(usage : 'DocGenerator [options] [sourcefiles]', parser:new CommonsCliGnuParserWrapper())
         cli.help(longOpt: 'help', messages['cli.option.help.description'])
         cli._(longOpt: 'version', messages['cli.option.version.description'])
         cli.o(longOpt: 'outputDir', args:1, argName: 'path', messages['cli.option.output.dir.description'])

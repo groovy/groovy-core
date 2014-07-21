@@ -1,6 +1,7 @@
 dependencies {
     compile rootProject
     compile project(':groovy-templates')
+    compile project(':groovy-cli')
     testCompile project(':groovy-test')
     compile "com.thoughtworks.qdox:qdox:$qdoxVersion"
 }

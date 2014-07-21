@@ -23,6 +23,7 @@ import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassCodeExpressionTransformer;
+import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
@@ -38,6 +39,7 @@ import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.classgen.VariableScopeVisitor;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.objectweb.asm.Opcodes;
 
 import java.util.Arrays;
@@ -45,6 +47,13 @@ import java.util.Iterator;
 import java.util.List;
 
 import static org.codehaus.groovy.ast.ClassHelper.make;
+import static org.codehaus.groovy.ast.tools.GeneralUtils.assignX;
+import static org.codehaus.groovy.ast.tools.GeneralUtils.block;
+import static org.codehaus.groovy.ast.tools.GeneralUtils.param;
+import static org.codehaus.groovy.ast.tools.GeneralUtils.params;
+import static org.codehaus.groovy.ast.tools.GeneralUtils.propX;
+import static org.codehaus.groovy.ast.tools.GeneralUtils.stmt;
+import static org.codehaus.groovy.ast.tools.GeneralUtils.varX;
 
 /**
  * Handles transformation for the @Field annotation.
@@ -60,6 +69,7 @@ public class FieldASTTransformation extends ClassCodeExpressionTransformer imple
     private static final ClassNode LAZY_TYPE = make(Lazy.class);
     private static final String MY_TYPE_NAME = "@" + MY_TYPE.getNameWithoutPackage();
     private static final ClassNode ASTTRANSFORMCLASS_TYPE = make(GroovyASTTransformationClass.class);
+    static final String MEMBER_ADD_SETTER = "addSetter";
     private SourceUnit sourceUnit;
     private DeclarationExpression candidate;
     private boolean insideScriptBody;
@@ -84,6 +94,7 @@ public class FieldASTTransformation extends ClassCodeExpressionTransformer imple
                 addError("Annotation " + MY_TYPE_NAME + " can only be used within a Script.", parent);
                 return;
             }
+            boolean addSetter = memberHasValue(node, MEMBER_ADD_SETTER, true);
             candidate = de;
             // GROOVY-4548: temp fix to stop CCE until proper support is added
             if (de.isMultipleAssignmentDeclaration()) {
@@ -96,6 +107,12 @@ public class FieldASTTransformation extends ClassCodeExpressionTransformer imple
             fieldNode = new FieldNode(variableName, ve.getModifiers(), ve.getType(), null, de.getRightExpression());
             fieldNode.setSourcePosition(de);
             cNode.addField(fieldNode);
+            if (addSetter) {
+                String setterName = "set" + MetaClassHelper.capitalize(variableName);
+                cNode.addMethod(setterName, ACC_PUBLIC | ACC_SYNTHETIC, ClassHelper.VOID_TYPE, params(param(ve.getType(), variableName)), ClassNode.EMPTY_ARRAY, block(
+                        stmt(assignX(propX(varX("this"), variableName), varX(variableName)))
+                ));
+            }
 
             // GROOVY-4833 : annotations that are not Groovy transforms should be transferred to the generated field
             // GROOVY-6112 : also copy acceptable Groovy transforms
@@ -127,6 +144,11 @@ public class FieldASTTransformation extends ClassCodeExpressionTransformer imple
         // return annotation.isTargetAllowed(AnnotationNode.FIELD_TARGET);
         // instead just don't copy ourselves for now
         return !annotation.getClassNode().equals(MY_TYPE);
+    }
+
+    public boolean memberHasValue(AnnotationNode node, String name, Object value) {
+        final Expression member = node.getMember(name);
+        return member != null && member instanceof ConstantExpression && value.equals(((ConstantExpression) member).getValue());
     }
 
     private boolean notTransform(ClassNode annotationClassNode) {

@@ -1,5 +1,6 @@
 def subprojects = ['groovy-ant',
         'groovy-bsf',
+        'groovy-cli',
         'groovy-console',
         'groovy-docgenerator',
         'groovy-groovydoc',

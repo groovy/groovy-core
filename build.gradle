@@ -92,6 +92,7 @@ configurations {
     examplesRuntime.extendsFrom examplesCompile
     antlr
     spec
+    cli
 }
 
 ext {
@@ -129,8 +130,8 @@ dependencies {
     compile "org.ow2.asm:asm-commons:$asmVersion"
     compile "org.ow2.asm:asm-tree:$asmVersion"
     compile "org.ow2.asm:asm-util:$asmVersion"
+    cli "commons-cli:commons-cli:$commonsCliVersion"
 
-    compile "commons-cli:commons-cli:$commonsCliVersion"
     compile "org.apache.ant:ant:$antVersion"
     compile("com.thoughtworks.xstream:xstream:$xstreamVersion") {
         exclude(group: 'xpp3', module: 'xpp3_min')
@@ -144,7 +145,6 @@ dependencies {
     }
     compile files("${buildDir}/generated-classes")
 
-    compile "commons-cli:commons-cli:$commonsCliVersion"
     compile("com.thoughtworks.xstream:xstream:$xstreamVersion") {
         exclude(group: 'xpp3', module: 'xpp3_min')
         exclude(group: 'junit', module: 'junit')

@@ -1,0 +1,6 @@
+dependencies {
+    compile rootProject
+    compile "commons-cli:commons-cli:$commonsCliVersion"
+    compile "net.sf.jopt-simple:jopt-simple:4.6"
+    testCompile project(':groovy-test')
+}

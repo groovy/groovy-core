@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.tools.groovydoc
 
+import org.codehaus.groovy.cli.CommonsCliGnuParserWrapper
 import org.codehaus.groovy.tools.shell.util.Logger
 import org.codehaus.groovy.tools.shell.util.MessageSource
 import org.codehaus.groovy.tools.shell.IO
@@ -54,7 +55,7 @@ class Main {
         IO io = new IO()
         Logger.io = io
 
-        def cli = new CliBuilder(usage : 'groovydoc [options] [packagenames] [sourcefiles]', writer: io.out, posix:false)
+        def cli = new CliBuilder(usage : 'groovydoc [options] [packagenames] [sourcefiles]', writer: io.out, parser:new CommonsCliGnuParserWrapper())
 
         cli.help(longOpt: 'help', messages['cli.option.help.description'])
         cli._(longOpt: 'version', messages['cli.option.version.description'])

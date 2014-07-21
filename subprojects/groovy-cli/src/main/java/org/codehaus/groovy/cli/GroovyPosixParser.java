@@ -16,6 +16,7 @@
 
 package org.codehaus.groovy.cli;
 
+//import CliParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.Parser;
@@ -35,7 +36,7 @@ import java.util.List;
  * @author John Keyes (john at integralsource.com)
  * @author Paul King (Groovy hacks/fixes)
  */
-public class GroovyPosixParser extends Parser
+public class GroovyPosixParser extends Parser /*implements CliParser*/
 {
     /** holder for flattened tokens */
     private List tokens = new ArrayList();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2013 the original author or authors.
+ * Copyright 2003-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,20 @@
 
 package groovy.util
 
-import org.apache.commons.cli.*
-import org.codehaus.groovy.cli.GroovyPosixParser
+import groovy.cli.CliOptionBuilder
+import groovy.cli.CliOptions
+import groovy.cli.CliParseException
+import groovy.cli.CliParser
+import groovy.cli.CliParserFactory
+import groovy.cli.Option
+import groovy.cli.TypedOption
+import groovy.cli.Unparsed
 import org.codehaus.groovy.runtime.InvokerHelper
+import org.codehaus.groovy.runtime.MetaClassHelper
+
+import java.lang.annotation.Annotation
+import java.lang.reflect.Field
+import java.lang.reflect.Method
 
 /**
  * Provides a builder to assist the processing of command line arguments.
@@ -163,7 +174,7 @@ import org.codehaus.groovy.runtime.InvokerHelper
  *   valueSeparator: char
  * </pre>
  * See {@link org.apache.commons.cli.Option} for the meaning of these properties
- * and {@link CliBuilderTest} for further examples.
+ * and {@code CliBuilderTest} for further examples.
  * <p>
  *
  * @author Dierk Koenig
@@ -179,14 +190,30 @@ class CliBuilder {
     /**
      * Normally set internally but allows you full customisation of the underlying processing engine.
      */
-    CommandLineParser parser = null
+    def parser = null
 
-    /**
-     * To change from the default PosixParser to the GnuParser, set this to false. Ignored if the parser is explicitly set.
-     * @deprecated use the parser option instead with an instance of your preferred parser
-     */
-    @Deprecated
-    Boolean posix = null
+    private CliParser _parser = null
+    Map<String, TypedOption> savedTypeOptions = new HashMap<String, TypedOption>()
+
+    CliParser getParser() {
+        if (_parser == null) {
+            if (parser instanceof CliParser) {
+                _parser = parser
+            } else if (parser instanceof String) {
+                try {
+                    _parser = loader ? CliParserFactory.newParser(loader, parser) : CliParserFactory.newParser(parser)
+                } catch(ignore) {
+                }
+            }
+            if (parser != null && _parser == null) {
+                System.err.println("Incompatible CliParser, ignoring and using default")
+            }
+            if (_parser == null) {
+                _parser = loader ? CliParserFactory.newParser(loader) : CliParserFactory.newParser()
+            }
+        }
+        return _parser
+    }
 
     /**
      * Whether arguments of the form '{@code @}<i>filename</i>' will be expanded into the arguments contained within the file named <i>filename</i> (default true).
@@ -194,9 +221,14 @@ class CliBuilder {
     boolean expandArgumentFiles = true
 
     /**
-     * Normally set internally but can be overridden if you want to customise how the usage message is displayed.
+     * @deprecated - currently ignored
      */
-    HelpFormatter formatter = new HelpFormatter()
+    def formatter = null
+
+    /**
+     * An optional Class Loader to use for loading a custom parser
+     */
+    ClassLoader loader = null
 
     /**
      * Defaults to stdout but you can provide your own PrintWriter if desired.
@@ -222,12 +254,7 @@ class CliBuilder {
     /**
      * Allows customisation of the usage message width.
      */
-    int width = formatter.defaultWidth
-
-    /**
-     * Not normally accessed directly but full access to underlying options if needed.
-     */
-    Options options = new Options()
+    int width = 74
 
     /**
      * Internal method: Detect option specification method calls.
@@ -235,19 +262,126 @@ class CliBuilder {
     def invokeMethod(String name, Object args) {
         if (args instanceof Object[]) {
             if (args.size() == 1 && (args[0] instanceof String || args[0] instanceof GString)) {
-                options.addOption(option(name, [:], args[0]))
+                getParser().addOption(option(name, [:], args[0]))
                 return null
             }
-            if (args.size() == 1 && args[0] instanceof Option && name == 'leftShift') {
-                options.addOption(args[0])
+            if (args.size() == 1 && args[0] instanceof Map && name == 'leftShift') {
+                getParser().addOption(args[0])
                 return null
             }
             if (args.size() == 2 && args[0] instanceof Map) {
-                options.addOption(option(name, args[0], args[1]))
+                getParser().addOption(option(name, args[0], args[1]))
                 return null
             }
         }
         return InvokerHelper.getMetaClass(this).invokeMethod(this, name, args)
+    }
+
+    public <T> T parseFromSpec(Class<T> optionsClass, args) {
+        def p = getParser()
+        addOptionsFromAnnotations(p, optionsClass, false)
+        CliOptions cli = p.parse(args)
+        def options = [:]
+        setOptionsFromAnnotations(cli, optionsClass, options, false)
+        options as T
+    }
+
+    public <T> T parseFromInstance(T options, args) {
+        def p = getParser()
+        addOptionsFromAnnotations(p, options.getClass(), true)
+        CliOptions cli = p.parse(args)
+        setOptionsFromAnnotations(cli, options.getClass(), options, true)
+        options
+    }
+
+    void addOptionsFromAnnotations(CliParser cliParser, Class optionClass, boolean namesAreSetters) {
+        optionClass.methods.findAll{ it.getAnnotation(Option) }.each { Method m ->
+            Annotation annotation = m.getAnnotation(Option)
+            cliParser.addOption(processAddAnnotation(annotation, m, namesAreSetters))
+        }
+        optionClass.declaredFields.findAll{ it.getAnnotation(Option) }.each { Field f ->
+            Annotation annotation = f.getAnnotation(Option)
+            String setterName = "set" + MetaClassHelper.capitalize(f.getName());
+            Method m = optionClass.getMethod(setterName, f.getType())
+            cliParser.addOption(processAddAnnotation(annotation, m, true))
+        }
+    }
+
+    private processAddAnnotation(Option annotation, Method m, boolean namesAreSetters) {
+        String shortName = annotation.shortName()
+        String description = annotation.description()
+        String defaultValue = annotation.defaultValue()
+        char valueSeparator = annotation.valueSeparator()
+        String longName = adjustLongName(annotation.longName(), m, namesAreSetters)
+        CliOptionBuilder builder = CliOptionBuilder.withLongOpt(longName)
+        if (description && !description.isEmpty()) builder.withDescription(description)
+        if (defaultValue && !defaultValue.isEmpty()) builder.withDefaultValue(defaultValue)
+        if (valueSeparator) builder.withValueSeparator(valueSeparator)
+        Class type = namesAreSetters ? (m.parameterTypes.size() > 0 ? m.parameterTypes[0] : null) : m.returnType
+        if (type) {
+            builder.hasArg(type.simpleName.toLowerCase() != 'boolean')
+            builder.withType(type)
+        }
+        def typedOption = shortName && !shortName.isEmpty() ? builder.create(shortName) : builder.create()
+        savedTypeOptions[longName] = typedOption
+        typedOption
+    }
+
+    def setOptionsFromAnnotations(CliOptions cliOptions, Class optionClass, Object t, boolean namesAreSetters) {
+        optionClass.methods.findAll{ it.getAnnotation(Option) }.each { Method m ->
+            Annotation annotation = m.getAnnotation(Option)
+            String longName = adjustLongName(annotation.longName(), m, namesAreSetters)
+            processSetAnnotation(m, t, longName, cliOptions, namesAreSetters)
+        }
+        optionClass.declaredFields.findAll{ it.getAnnotation(Option) }.each { Field f ->
+            Annotation annotation = f.getAnnotation(Option)
+            String setterName = "set" + MetaClassHelper.capitalize(f.getName());
+            Method m = optionClass.getMethod(setterName, f.getType())
+            String longName = adjustLongName(annotation.longName(), m, true)
+            processSetAnnotation(m, t, longName, cliOptions, true)
+        }
+        def remaining = cliOptions.remainingArgs()
+        optionClass.methods.findAll{ it.getAnnotation(Unparsed) }.each { Method m ->
+            processSetRemaining(m, remaining, t, namesAreSetters)
+        }
+        optionClass.declaredFields.findAll{ it.getAnnotation(Unparsed) }.each { Field f ->
+            String setterName = "set" + MetaClassHelper.capitalize(f.getName());
+            Method m = optionClass.getMethod(setterName, f.getType())
+            processSetRemaining(m, remaining, t, namesAreSetters)
+        }
+    }
+
+    private void processSetRemaining(Method m, remaining, Object t, boolean namesAreSetters) {
+        if (namesAreSetters) {
+            m.invoke(t, remaining.toList())
+        } else {
+            String longName = adjustLongName("", m, namesAreSetters)
+            t.put(longName, { -> remaining.toList() })
+        }
+    }
+
+    private void processSetAnnotation(Method m, Object t, String longName, CliOptions cliOptions, boolean namesAreSetters) {
+        if (namesAreSetters) {
+            boolean isFlag = m.parameterTypes.size() > 0 && m.parameterTypes[0].simpleName.toLowerCase() == 'boolean'
+            if (cliOptions.hasOption(longName) || isFlag) {
+                m.invoke(t, [isFlag ? cliOptions.hasOption(longName) : cliOptions.getOptionValue(savedTypeOptions[longName])] as Object[])
+            }
+        } else {
+            boolean isFlag = m.returnType.simpleName.toLowerCase() == 'boolean'
+            t.put(m.getName(), cliOptions.hasOption(longName) ?
+                    { -> isFlag ? true : cliOptions.getOptionValue(savedTypeOptions[longName]) } :
+                    { -> isFlag ? false : null })
+        }
+    }
+
+    private String adjustLongName(String longName, Method m, boolean namesAreSetters) {
+        if (!longName || longName.isEmpty()) {
+            longName = m.getName()
+            if (namesAreSetters && longName.startsWith("set")) {
+                longName = MetaClassHelper.convertPropertyName(longName.substring(3))
+            }
+        }
+        longName
     }
 
     /**
@@ -256,12 +390,9 @@ class CliBuilder {
      */
     OptionAccessor parse(args) {
         if (expandArgumentFiles) args = expandArgumentFiles(args)
-        if (!parser) {
-            parser = posix == null ? new GroovyPosixParser() : posix == true ? new PosixParser() : new GnuParser()
-        }
         try {
-            return new OptionAccessor(parser.parse(options, args as String[], stopAtNonOption))
-        } catch (ParseException pe) {
+            return new OptionAccessor(getParser().parse(args as String[], stopAtNonOption))
+        } catch (CliParseException pe) {
             writer.println("error: " + pe.message)
             usage()
             return null
@@ -272,7 +403,7 @@ class CliBuilder {
      * Print the usage message with writer (default: System.out) and formatter (default: HelpFormatter)
      */
     void usage() {
-        formatter.printHelp(writer, width, usage, header, options, formatter.defaultLeftPad, formatter.defaultDescPad, footer)
+        getParser().displayHelp(writer, width, usage, header, 1, 3, footer)
         writer.flush()
     }
 
@@ -281,15 +412,20 @@ class CliBuilder {
     /**
      * Internal method: How to create an option from the specification.
      */
-    Option option(shortname, Map details, info) {
-        Option option
+    private Map mappedKey = [args: 'numberOfArgs', valueSeparator: 'valueSep']
+    Map<String, Object> option(shortname, Map details, info) {
+        Map<String, Object> option
         if (shortname == '_') {
-            option = OptionBuilder.withDescription(info).withLongOpt(details.longOpt).create()
+            option = CliOptionBuilder.withDescription(info).withLongOpt(details.longOpt).create()
             details.remove('longOpt')
         } else {
-            option = new Option(shortname, info)
+            option = CliOptionBuilder.withDescription(info).create(shortname)
         }
-        details.each { key, value -> option[key] = value }
+        details.each { key, value ->
+            String newKey = key instanceof GString ? newKey.toString() : key
+            newKey = mappedKey.containsKey(newKey) ? mappedKey[newKey] : newKey
+            option[newKey] = value
+        }
         return option
     }
 
@@ -328,9 +464,9 @@ class CliBuilder {
 }
 
 class OptionAccessor {
-    CommandLine inner
+    CliOptions inner
 
-    OptionAccessor(CommandLine inner) {
+    OptionAccessor(CliOptions inner) {
         this.inner = inner
     }
 
@@ -342,7 +478,7 @@ class OptionAccessor {
         def methodname = 'getOptionValue'
         if (name.size() > 1 && name.endsWith('s')) {
             def singularName = name[0..-2]
-            if (hasOption(singularName)) {
+            if (inner.hasOption(singularName)) {
                 name = singularName
                 methodname += 's'
             }
@@ -355,6 +491,6 @@ class OptionAccessor {
     }
 
     List<String> arguments() {
-        inner.args.toList()
+        inner.remainingArgs().toList()
     }
 }

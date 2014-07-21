@@ -15,6 +15,9 @@
  */
 package org.codehaus.groovy.ant;
 
+import groovy.cli.CliOptions;
+import groovy.cli.CliParser;
+import groovy.cli.CliParserFactory;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyResourceLoader;
 
@@ -34,10 +37,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.GroovyInternalPosixParser;
-import org.apache.commons.cli.Options;
 import org.apache.tools.ant.AntClassLoader;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
@@ -1133,12 +1132,9 @@ public class Groovyc extends MatchingTask {
     private void runCompiler(String[] commandLine) {
         // hand crank it so we can add our own compiler configuration
         try {
-            Options options = FileSystemCompiler.createCompilationOptions();
-
-            CommandLineParser cliParser = new GroovyInternalPosixParser();
-
-            CommandLine cli;
-            cli = cliParser.parse(options, commandLine);
+            CliParser cliParser = CliParserFactory.newParser();
+            FileSystemCompiler.createCompilationOptions(cliParser);
+            CliOptions cli = cliParser.parse(commandLine);
 
             configuration = FileSystemCompiler.generateCompilerConfigurationFromOptions(cli);
             configuration.setScriptExtensions(getScriptExtensions());

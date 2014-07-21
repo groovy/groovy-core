@@ -2,6 +2,7 @@ dependencies {
     compile rootProject
     testCompile rootProject.sourceSets.test.runtimeClasspath
     compile project(':groovy-templates')
+    compile project(':groovy-cli')
     testCompile project(':groovy-test')
     testCompile project(':groovy-ant')
     testCompile "org.apache.ant:ant-testutil:$antVersion"
