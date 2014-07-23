@@ -18,6 +18,7 @@ package groovy.text.markup;
 import groovy.lang.Closure;
 import groovy.lang.Writable;
 import groovy.text.Template;
+import org.codehaus.groovy.control.io.NullWriter;
 import org.codehaus.groovy.runtime.ExceptionUtils;
 import org.codehaus.groovy.runtime.ResourceGroovyMethods;
 
@@ -27,6 +28,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -48,7 +50,7 @@ import static groovy.xml.XmlUtil.escapeXml;
  * @author Cedric Champeau
  */
 public abstract class BaseTemplate implements Writable {
-    private final static Map EMPTY_MODEL = Collections.emptyMap();
+    private static final Map EMPTY_MODEL = Collections.emptyMap();
 
     private final Map model;
     private final Map<String,String> modelTypes;
@@ -99,6 +101,19 @@ public abstract class BaseTemplate implements Writable {
         out.write(escapeXml(obj.toString()));
         return this;
     }
+
+    public String stringOf(Closure cl) throws IOException {
+        Writer old = out;
+        StringWriter stringWriter = new StringWriter(32);
+        out = stringWriter;
+        Object result = cl.call();
+        if (result!=null && result!=this) {
+            stringWriter.append(result.toString());
+        }
+        out = old;
+        return stringWriter.toString();
+    }
+
 
     /**
      * Renders the supplied object using its {@link Object#toString} method inside a
@@ -368,7 +383,8 @@ public abstract class BaseTemplate implements Writable {
     /**
      * Imports a template and renders it using the specified model, allowing fine grained composition
      * of templates and layouting. This works similarily to a template include but allows a distinct
-     * model to be used.
+     * model to be used. This version doesn't inherit the model from the parent. If you need model
+     * inheritance, see {@link #layout(java.util.Map, String, boolean)}.
      * @param model model to be passed to the template
      * @param templateName the name of the template to be used as a layout
      * @return this template instance
@@ -376,9 +392,35 @@ public abstract class BaseTemplate implements Writable {
      * @throws ClassNotFoundException
      */
     public Object layout(Map model, String templateName) throws IOException, ClassNotFoundException {
+        return layout(model, templateName, false);
+    }
+
+    /**
+     * Imports a template and renders it using the specified model, allowing fine grained composition of templates and
+     * layouting. This works similarily to a template include but allows a distinct model to be used. If the layout
+     * inherits from the parent model, a new model is created, with the values from the parent model, eventually
+     * overriden with those provided specifically for this layout.
+     *
+     * @param model        model to be passed to the template
+     * @param templateName the name of the template to be used as a layout
+     * @param inheritModel a boolean indicating if we should inherit the parent model
+     * @return this template instance
+     * @throws IOException
+     * @throws ClassNotFoundException
+     */
+    public Object layout(Map model, String templateName, boolean inheritModel) throws IOException, ClassNotFoundException {
+        Map submodel = inheritModel ? forkModel(model) : model;
         URL resource = engine.resolveTemplate(templateName);
-        engine.createTypeCheckedModelTemplate(resource, modelTypes).make(model).writeTo(out);
+        engine.createTypeCheckedModelTemplate(resource, modelTypes).make(submodel).writeTo(out);
         return this;
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map forkModel(Map m) {
+        Map result = new HashMap();
+        result.putAll(model);
+        result.putAll(m);
+        return result;
     }
 
     /**
@@ -417,6 +459,10 @@ public abstract class BaseTemplate implements Writable {
      * @throws IOException
      */
     public Writer writeTo(final Writer out) throws IOException {
+        if (this.out!=null) {
+            // StackOverflow prevention
+            return NullWriter.DEFAULT;
+        }
         try {
             this.out = createWriter(out);
             run();

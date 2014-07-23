@@ -771,9 +771,7 @@ public class NioGroovyMethods extends DefaultGroovyMethodsSupport {
 
         // TODO GroovyDoc doesn't parse this file as our java.g doesn't handle this JDK7 syntax
         try ( DirectoryStream<Path> stream = Files.newDirectoryStream(self) ) {
-            Iterator<Path> itr = stream.iterator();
-            while( itr.hasNext() ) {
-                Path path = itr.next();
+            for (Path path : stream) {
                 if (fileType == FileType.ANY ||
                         (fileType != FileType.FILES && Files.isDirectory(path)) ||
                         (fileType != FileType.DIRECTORIES && Files.isRegularFile(path))) {
@@ -830,9 +828,7 @@ public class NioGroovyMethods extends DefaultGroovyMethodsSupport {
             // throws FileNotFoundException, IllegalArgumentException {
         checkDir(self);
         try ( DirectoryStream<Path> stream = Files.newDirectoryStream(self)) {
-            Iterator<Path> itr = stream.iterator();
-            while ( itr.hasNext() ) {
-                Path path = itr.next();
+            for (Path path : stream) {
                 if (Files.isDirectory(path)) {
                     if (fileType != FileType.FILES) closure.call(path);
                     eachFileRecurse(path, fileType, closure);
@@ -1202,16 +1198,12 @@ public class NioGroovyMethods extends DefaultGroovyMethodsSupport {
         // delete contained files
         try ( DirectoryStream<Path> stream = Files.newDirectoryStream(self) ) {
 
-            Iterator<Path> itr = stream.iterator();
-
-            while (itr.hasNext()) {
-                Path path = itr.next();
+            for (Path path : stream) {
                 if (Files.isDirectory(path)) {
                     if (!deleteDir(path)) {
                         return false;
                     }
-                }
-                else {
+                } else {
                     Files.delete(path);
                 }
             }
@@ -1470,9 +1462,7 @@ public class NioGroovyMethods extends DefaultGroovyMethodsSupport {
         if( append ) {
             return Files.newBufferedWriter(self, Charset.defaultCharset(), CREATE, APPEND);
         }
-        else {
-            return Files.newBufferedWriter(self, Charset.defaultCharset());
-        }
+        return Files.newBufferedWriter(self, Charset.defaultCharset());
     }
 
     /**
@@ -1491,9 +1481,7 @@ public class NioGroovyMethods extends DefaultGroovyMethodsSupport {
         if (append) {
             return Files.newBufferedWriter(self, Charset.forName(charset), CREATE, APPEND);
         }
-        else {
-            return Files.newBufferedWriter(self, Charset.forName(charset) );
-        }
+        return Files.newBufferedWriter(self, Charset.forName(charset) );
     }
 
     /**
@@ -1759,26 +1747,12 @@ public class NioGroovyMethods extends DefaultGroovyMethodsSupport {
     }
 
     /**
-     * Allows this closeable to be used within the closure, ensuring that it
-     * is closed once the closure has been executed and before this method returns.
-     *
-     * @param self the Closeable
-     * @param action the closure taking the Closeable as parameter
-     * @return the value returned by the closure
-     * @throws IOException if an IOException occurs.
+     * #deprecated use the variant in IOGroovyMethods
+     * @see org.codehaus.groovy.runtime.IOGroovyMethods#withCloseable(java.io.Closeable, groovy.lang.Closure)
      * @since 2.3.0
      */
+    @Deprecated
     public static <T> T withCloseable(Closeable self, @ClosureParams(value=SimpleType.class, options="java.io.Closeable") Closure<T> action) throws IOException {
-        try {
-            T result = action.call(self);
-
-            Closeable temp = self;
-            self = null;
-            temp.close();
-
-            return result;
-        } finally {
-            DefaultGroovyMethodsSupport.closeWithWarning(self);
-        }
+        return IOGroovyMethods.withCloseable(self, action);
     }
 }

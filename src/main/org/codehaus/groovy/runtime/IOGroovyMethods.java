@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2013 the original author or authors.
+ * Copyright 2003-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,30 @@ import groovy.io.GroovyPrintWriter;
 import groovy.lang.Closure;
 import groovy.lang.StringWriterIOException;
 import groovy.lang.Writable;
-
 import groovy.transform.stc.ClosureParams;
 import groovy.transform.stc.FromString;
 import groovy.transform.stc.SimpleType;
 import org.codehaus.groovy.runtime.callsite.BooleanClosureWrapper;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.DataInputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.ObjectStreamClass;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.util.Arrays;
 import java.util.Formatter;
 import java.util.Iterator;
@@ -1584,6 +1601,30 @@ public class IOGroovyMethods extends DefaultGroovyMethodsSupport {
     public static void filterLine(InputStream self, Writer writer, String charset, @ClosureParams(value=SimpleType.class, options="java.lang.String") Closure predicate)
             throws IOException {
         filterLine(newReader(self, charset), writer, predicate);
+    }
+
+    /**
+     * Allows this closeable to be used within the closure, ensuring that it
+     * is closed once the closure has been executed and before this method returns.
+     *
+     * @param self the Closeable
+     * @param action the closure taking the Closeable as parameter
+     * @return the value returned by the closure
+     * @throws IOException if an IOException occurs.
+     * @since 2.4.0
+     */
+    public static <T> T withCloseable(Closeable self, @ClosureParams(value=SimpleType.class, options="java.io.Closeable") Closure<T> action) throws IOException {
+        try {
+            T result = action.call(self);
+
+            Closeable temp = self;
+            self = null;
+            temp.close();
+
+            return result;
+        } finally {
+            DefaultGroovyMethodsSupport.closeWithWarning(self);
+        }
     }
 
 }

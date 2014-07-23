@@ -335,7 +335,9 @@ public class StaticCompilationVisitor extends StaticTypeCheckingVisitor {
         };
         boolean exists = super.existsProperty(pexp, checkForReadOnly, receiverMemoizer);
         if (exists) {
-            objectExpression.putNodeMetaData(StaticCompilationMetadataKeys.PROPERTY_OWNER, rType.get());
+            if (objectExpression.getNodeMetaData(StaticCompilationMetadataKeys.PROPERTY_OWNER)==null) {
+                objectExpression.putNodeMetaData(StaticCompilationMetadataKeys.PROPERTY_OWNER, rType.get());
+            }
             if (StaticTypeCheckingSupport.implementsInterfaceOrIsSubclassOf(objectExpressionType, ClassHelper.LIST_TYPE)) {
                 objectExpression.putNodeMetaData(COMPONENT_TYPE, inferComponentType(objectExpressionType, ClassHelper.int_TYPE));
             }
@@ -348,7 +350,7 @@ public class StaticCompilationVisitor extends StaticTypeCheckingVisitor {
         super.visitPropertyExpression(pexp);
         Object dynamic = pexp.getNodeMetaData(StaticTypesMarker.DYNAMIC_RESOLUTION);
         if (dynamic !=null) {
-            pexp.getObjectExpression().putNodeMetaData(StaticTypesMarker.DYNAMIC_RESOLUTION, dynamic);
+            pexp.getObjectExpression().putNodeMetaData(StaticCompilationMetadataKeys.RECEIVER_OF_DYNAMIC_PROPERTY, dynamic);
         }
     }
 }

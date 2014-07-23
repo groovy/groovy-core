@@ -20,6 +20,7 @@ import groovy.text.markup.BaseTemplate
 import groovy.text.markup.MarkupTemplateEngine
 import groovy.text.markup.TagLibAdapter
 import groovy.text.markup.TemplateConfiguration
+import groovy.transform.NotYetImplemented
 
 class MarkupTemplateEngineTest extends GroovyTestCase {
     private Locale locale
@@ -800,6 +801,45 @@ layout 'includes/body.tpl', bodyContents: contents {
         assert rendered.toString() == "<html><head><title>This is the title</title></head><body><div><p>This is the body</p></div></body></html>"
     }
 
+    // GROOVY-6915
+    void testLayoutWithModelInheritance() {
+        def config = new TemplateConfiguration()
+        MarkupTemplateEngine engine = new MarkupTemplateEngine(config)
+        def template = engine.createTemplate '''
+        layout 'includes/body.tpl', bodyContents: contents {
+            div {
+                p('This is the body')
+            }
+        }
+        '''
+
+        StringWriter rendered = new StringWriter()
+        template.make([title:'This is the title']).writeTo(rendered)
+        assert rendered.toString() == "<html><head><title/></head><body><div><p>This is the body</p></div></body></html>"
+
+        template = engine.createTemplate '''
+        layout 'includes/body.tpl', true, bodyContents: contents {
+            div {
+                p('This is the body')
+            }
+        }
+        '''
+        rendered = new StringWriter()
+        template.make([title:'This is the title']).writeTo(rendered)
+        assert rendered.toString() == "<html><head><title>This is the title</title></head><body><div><p>This is the body</p></div></body></html>"
+
+        template = engine.createTemplate '''
+        layout 'includes/body.tpl', true, bodyContents: contents {
+            div {
+                p('This is the body')
+            }
+        }, title: 'This is another title'
+        '''
+        rendered = new StringWriter()
+        template.make([title:'This is the title']).writeTo(rendered)
+        assert rendered.toString() == "<html><head><title>This is another title</title></head><body><div><p>This is the body</p></div></body></html>"
+    }
+
     void testSimplePIRenderedProperly() {
         def config = new TemplateConfiguration()
         config.newLineString=''
@@ -821,6 +861,165 @@ layout 'includes/body.tpl', bodyContents: contents {
         def model = [messages: [new Message(summary: 'summary')]]
         template.make(model).writeTo(rendered)
         assert rendered.toString() == 'summary'
+
+    }
+
+    // GROOVY-6914
+    void testCachingOfTemplateResolver() {
+        int hit = 0
+        int miss = 0
+        def cache = new HashMap<String, URL>() {
+            @Override
+            URL get(final Object key) {
+                URL url = super.get(key)
+                if (url) {
+                    hit++
+                } else {
+                    miss++
+                }
+                url
+            }
+        }
+        def resolver = new MarkupTemplateEngine.CachingTemplateResolver(cache)
+        MarkupTemplateEngine engine = new MarkupTemplateEngine(this.class.classLoader, new TemplateConfiguration(), resolver)
+        def template = engine.createTemplate '''
+            html {
+                body {
+                    include template:'includes/hello.tpl'
+                    include template:'includes/hello.tpl'
+                    include template:'includes/hello.tpl'
+                }
+            }
+        '''
+        StringWriter rendered = new StringWriter()
+        template.make().writeTo(rendered)
+        assert rendered.toString() == '<html><body>Hello from include!Hello from include!Hello from include!</body></html>'
+        assert miss==1
+        assert hit==2
+    }
+
+    void testMarkupInGString() {
+        MarkupTemplateEngine engine = new MarkupTemplateEngine(new TemplateConfiguration())
+
+        def template = engine.createTemplate '''
+        html {
+            body {
+                def test = { p('hg') }
+                def x = "directly ${$test()}"
+                p("This is a p with ${true?$a(href:'link.html','link'):x}")
+                p("This is a p with ${false?$a(href:'link.html','link'):x}")
+            }
+        }
+        '''
+
+        String rendered = template.make()
+        assert rendered == '<html><body><p>This is a p with <a href=\'link.html\'>link</a></p><p>This is a p with directly <p>hg</p></p></body></html>'
+    }
+
+    void testMarkupInGStringUsingStringOf() {
+        MarkupTemplateEngine engine = new MarkupTemplateEngine(new TemplateConfiguration())
+
+        def template = engine.createTemplate '''
+        html {
+            body {
+                def test = { p('hg') }
+                def x = "directly ${stringOf { test()} }"
+                p("This is a p with ${stringOf { true?a(href:'link.html','link'):x} }")
+                p("This is a p with ${stringOf { false?a(href:'link.html','link'):x} }")
+            }
+        }
+        '''
+
+        String rendered = template.make()
+        assert rendered == '<html><body><p>This is a p with <a href=\'link.html\'>link</a></p><p>This is a p with directly <p>hg</p></p></body></html>'
+    }
+
+    void testShouldNotThrowStackOverflow() {
+        MarkupTemplateEngine engine = new MarkupTemplateEngine(new TemplateConfiguration())
+
+        def template = engine.createTemplate '''
+            p("This is an ${strong('error')}")
+        '''
+        String rendered = template.make().writeTo(new StringWriter())
+        assert rendered == '<strong>error</strong><p>This is an </p>'
+
+    }
+
+    // GROOVY-6935
+    void testShouldNotThrowVerifyErrorBecauseOfEqualsInsteadOfSemiColumn() {
+        MarkupTemplateEngine engine = new MarkupTemplateEngine(new TemplateConfiguration())
+
+        def template = engine.createTemplate '''
+            a(href='foo.html', 'link')
+        '''
+        try {
+            template.make().writeTo(new StringWriter())
+            assert false
+        } catch (UnsupportedOperationException e) {
+            assert true
+        }
+        def model = [:]
+        String rendered = template.make(model).writeTo(new StringWriter())
+        assert model.href == 'foo.html'
+        assert rendered == '<a>link</a>'
+    }
+
+    // GROOVY-6939
+    @NotYetImplemented
+    void testShouldNotFailWithDoCallMethod() {
+        MarkupTemplateEngine engine = new MarkupTemplateEngine(new TemplateConfiguration())
+
+        def template = engine.createTemplate '''
+            groups.each { k, v -> li(k) }
+        '''
+        def model = [groups:[a:'Group a',b:'Group b']]
+        String rendered = template.make(model)
+        assert rendered == '<li>a</li><li>b</li>'
+    }
+
+    // GROOVY-6940
+    void testSubscriptOperatorOnModel() {
+        MarkupTemplateEngine engine = new MarkupTemplateEngine(new TemplateConfiguration())
+
+        def template = engine.createTemplate '''
+            yield list[0]
+        '''
+        def model = [list:['Item 1']]
+        String rendered = template.make(model)
+        assert rendered == 'Item 1'
+
+        template = engine.createTemplate '''
+            list[0] = 'Item 2'
+            yield list[0]
+        '''
+        model = [list:['Item 1']]
+        rendered = template.make(model)
+        assert model.list[0] == 'Item 2'
+        assert rendered == 'Item 2'
+
+        template = engine.createTemplate '''
+            def indirect = list
+            indirect[0] = 'Item 4'
+            yield list[0]
+        '''
+        model = [list:['Item 3']]
+        rendered = template.make(model)
+        assert model.list[0] == 'Item 4'
+        assert rendered == 'Item 4'
+
+    }
+
+    // GROOVY-6941
+    void testDynamicPropertyInsideBlock() {
+        MarkupTemplateEngine engine = new MarkupTemplateEngine(new TemplateConfiguration())
+        def template = engine.createTemplate '''
+        div {
+            yield xml.file.name
+        }
+        '''
+        def model = [xml: [file:[name:'test']]]
+        String rendered = template.make(model)
+        assert rendered == '<div>test</div>'
 
     }
 

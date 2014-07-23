@@ -31,6 +31,7 @@ import org.codehaus.groovy.classgen.asm.*;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.codehaus.groovy.syntax.Token;
+import org.codehaus.groovy.transform.sc.StaticCompilationMetadataKeys;
 import org.codehaus.groovy.transform.sc.StaticCompilationVisitor;
 import org.codehaus.groovy.transform.stc.ExtensionMethodNode;
 import org.codehaus.groovy.transform.stc.StaticTypeCheckingSupport;
@@ -390,19 +391,7 @@ public class StaticInvocationWriter extends InvocationWriter {
                     makeCall(origin, receiver, message, arguments, adapter, safe, spreadSafe, implicitThis);
             return;
         }
-        Object implicitReceiver = origin.getNodeMetaData(StaticTypesMarker.IMPLICIT_RECEIVER);
-        if (implicitReceiver !=null && implicitThis) {
-            String[] propertyPath = ((String) implicitReceiver).split("\\.");
-            // GROOVY-6021
-            PropertyExpression pexp = new PropertyExpression(new VariableExpression("this", CLOSURE_TYPE), propertyPath[0]);
-            pexp.setImplicitThis(true);
-            for (int i=1; i<propertyPath.length;i++) {
-                pexp.putNodeMetaData(StaticTypesMarker.INFERRED_TYPE, CLOSURE_TYPE);
-                pexp = new PropertyExpression(pexp, propertyPath[i]);
-            }
-            pexp.putNodeMetaData(StaticTypesMarker.IMPLICIT_RECEIVER, implicitReceiver);
-            origin.removeNodeMetaData(StaticTypesMarker.IMPLICIT_RECEIVER);
-            makeCall(origin, pexp, message, arguments, adapter, safe, spreadSafe, false);
+        if (tryImplicitReceiver(origin, message, arguments, adapter, safe, spreadSafe, implicitThis)) {
             return;
         }
         // if call is spread safe, replace it with a for in loop
@@ -519,6 +508,44 @@ public class StaticInvocationWriter extends InvocationWriter {
         }
     }
 
+    boolean tryImplicitReceiver(final Expression origin, final Expression message, final Expression arguments, final MethodCallerMultiAdapter adapter, final boolean safe, final boolean spreadSafe, final boolean implicitThis) {
+        Object implicitReceiver = origin.getNodeMetaData(StaticTypesMarker.IMPLICIT_RECEIVER);
+        ClassNode propertyOwnerType = origin.getNodeMetaData(StaticCompilationMetadataKeys.PROPERTY_OWNER);
+        if (implicitThis && implicitReceiver==null && origin instanceof MethodCallExpression) {
+            implicitReceiver = ((MethodCallExpression) origin).getObjectExpression().getNodeMetaData(StaticTypesMarker.IMPLICIT_RECEIVER);
+        }
+        if (implicitReceiver !=null && implicitThis) {
+            String[] propertyPath = ((String) implicitReceiver).split("\\.");
+            // GROOVY-6021
+            PropertyExpression pexp = new PropertyExpression(new VariableExpression("this", CLOSURE_TYPE), propertyPath[0]);
+            pexp.setImplicitThis(true);
+            for (int i=1; i<propertyPath.length;i++) {
+                pexp.putNodeMetaData(StaticTypesMarker.INFERRED_TYPE, CLOSURE_TYPE);
+                pexp = new PropertyExpression(pexp, propertyPath[i]);
+            }
+            pexp.putNodeMetaData(StaticTypesMarker.IMPLICIT_RECEIVER, implicitReceiver);
+            if (propertyOwnerType!=null) {
+                pexp.putNodeMetaData(StaticTypesMarker.INFERRED_TYPE, propertyOwnerType);
+            }
+            origin.removeNodeMetaData(StaticTypesMarker.IMPLICIT_RECEIVER);
+            if (origin instanceof PropertyExpression) {
+                PropertyExpression rewritten = new PropertyExpression(
+                        pexp,
+                        ((PropertyExpression) origin).getProperty(),
+                        ((PropertyExpression) origin).isSafe()
+                );
+                rewritten.setSpreadSafe(((PropertyExpression) origin).isSpreadSafe());
+                rewritten.setImplicitThis(false);
+                rewritten.visit(controller.getAcg());
+                rewritten.putNodeMetaData(StaticTypesMarker.INFERRED_TYPE, origin.getNodeMetaData(StaticTypesMarker.INFERRED_TYPE));
+                return true;
+            }
+            makeCall(origin, pexp, message, arguments, adapter, safe, spreadSafe, false);
+            return true;
+        }
+        return false;
+    }
+
     private static void pushZero(final MethodVisitor mv, final ClassNode type) {
         boolean isInt = ClassHelper.int_TYPE.equals(type);
         boolean isShort = ClassHelper.short_TYPE.equals(type);
@@ -579,6 +606,11 @@ public class StaticInvocationWriter extends InvocationWriter {
                         BytecodeHelper.getClassInternalName(type.getName()));
                 controller.getOperandStack().replace(type);
             }
+        }
+
+        @Override
+        public ClassNode getType() {
+            return controller.getTypeChooser().resolveType(receiver, controller.getClassNode());
         }
     }
 

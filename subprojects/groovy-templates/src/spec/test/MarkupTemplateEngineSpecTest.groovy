@@ -691,6 +691,97 @@ layout 'layout-main.tpl',                                   // <1>
         assertRendered()
     }
 
+    void testLayoutWithInheritedModel() {
+        // tag::layout_template_inherit_model[]
+        model = new HashMap<String,Object>();
+        model.put('title','Title from main model');
+        // end::layout_template_inherit_model[]
+
+        templateContents = '''
+// tag::layout_template_inherit[]
+layout 'layout-main.tpl', true,                             // <1>
+    bodyContents: contents { p('This is the body') }
+// end::layout_template_inherit[]
+'''
+        expectedRendered = stripAsciidocMarkup '''
+// tag::layout_expected_2[]
+<html><head><title>Title from main model</title></head><body><p>This is the body</p></body></html>
+// end::layout_expected_2[]
+'''
+        assertRendered()
+
+        templateContents = '''
+// tag::layout_template_inherit_override[]
+layout 'layout-main.tpl', true,                             // <1>
+    title: 'Overriden title',                               // <2>
+    bodyContents: contents { p('This is the body') }
+// end::layout_template_inherit_override[]
+'''
+        expectedRendered = stripAsciidocMarkup '''
+// tag::layout_expected_3[]
+<html><head><title>Overriden title</title></head><body><p>This is the body</p></body></html>
+// end::layout_expected_3[]
+'''
+        assertRendered()
+    }
+
+    void testStringMarkupGotcha() {
+        templateContents = '''
+// tag::gotcha_strings_longversion[]
+p {
+    yield "This is a "
+    a(href:'target.html', "link")
+    yield " to another page"
+}
+// end::gotcha_strings_longversion[]
+'''
+        expectedRendered = stripAsciidocMarkup '''
+// tag::gotcha_strings_longversion_expected[]
+<p>This is a <a href='target.html'>link</a> to another page</p>
+// end::gotcha_strings_longversion_expected[]
+'''
+        assertRendered()
+
+        templateContents = '''
+// tag::gotcha_strings_naive_fail[]
+p {
+    yield "This is a ${a(href:'target.html', "link")} to another page"
+}
+// end::gotcha_strings_naive_fail[]
+'''
+        expectedRendered = stripAsciidocMarkup '''
+// tag::gotcha_strings_naive_fail_expected[]
+<p><a href='target.html'>link</a>This is a  to another page</p>
+// end::gotcha_strings_naive_fail_expected[]
+'''
+        assertRendered()
+
+        templateContents = '''
+// tag::gotcha_strings_stringof[]
+p("This is a ${stringOf {a(href:'target.html', "link")}} to another page")
+// end::gotcha_strings_stringof[]
+'''
+        expectedRendered = stripAsciidocMarkup '''
+// tag::gotcha_strings_stringof_expected[]
+<p>This is a <a href='target.html'>link</a> to another page</p>
+// end::gotcha_strings_stringof_expected[]
+'''
+        assertRendered()
+
+        templateContents = '''
+// tag::gotcha_strings_stringof_dollar[]
+p("This is a ${$a(href:'target.html', "link")} to another page")
+// end::gotcha_strings_stringof_dollar[]
+'''
+        expectedRendered = stripAsciidocMarkup '''
+// tag::gotcha_strings_stringof_dollar_expected[]
+<p>This is a <a href='target.html'>link</a> to another page</p>
+// end::gotcha_strings_stringof_dollar_expected[]
+'''
+        assertRendered()
+
+    }
+
     // tag::page_class[]
     public class Page {
 
