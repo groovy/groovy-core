@@ -1615,7 +1615,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the self Iterable
      * @since 2.3.0
      */
-    public static <T> Iterable<T> eachWithIndex(Iterable<T> self, @ClosureParams(value=FromString.class, options="T,Integer") Closure closure) {
+    public static <T, I extends Iterable<T>> I eachWithIndex(I self, @ClosureParams(value=FromString.class, options="T,Integer") Closure closure) {
         eachWithIndex(self.iterator(), closure);
         return self;
     }
@@ -1630,7 +1630,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the self Iterable
      * @since 2.3.0
      */
-    public static <T> Iterator<T> eachWithIndex(Iterator<T> self, @ClosureParams(value=FromString.class, options="T,Integer") Closure closure) {
+    public static <T, I extends Iterator<T>> I eachWithIndex(I self, @ClosureParams(value=FromString.class, options="T,Integer") Closure closure) {
         final Object[] args = new Object[2];
         int counter = 0;
         while (self.hasNext()) {
@@ -1641,7 +1641,14 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
         return self;
     }
 
-    public static <T> Iterable<T> each(Iterable<T> self, @ClosureParams(FirstParam.FirstGenericType.class) Closure closure) {
+    /**
+     * An each variant for Iterables.
+     *
+     * @param self an Iterable
+     * @param closure a Closure to operate on each item
+     * @return the self Iterable
+     */
+    public static <T, I extends Iterable<T>> I each(I self, @ClosureParams(FirstParam.FirstGenericType.class) Closure closure) {
         each(self.iterator(), closure);
         return self;
     }
@@ -1676,7 +1683,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return returns the self parameter
      * @since 1.5.0
      */
-    public static <K, V> Map<K, V> each(Map<K, V> self, @ClosureParams(MapEntryOrKeyValue.class) Closure closure) {
+    public static <K, V, M extends Map<K, V>> M each(M self, @ClosureParams(MapEntryOrKeyValue.class) Closure closure) {
         for (Map.Entry entry : self.entrySet()) {
             callClosureForMapEntry(closure, entry);
         }
@@ -1697,7 +1704,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @see #each(Map, Closure)
      * @since 1.7.2
      */
-    public static <K, V> Map<K, V> reverseEach(Map<K, V> self, @ClosureParams(MapEntryOrKeyValue.class) Closure closure) {
+    public static <K, V, M extends Map<K, V>> M reverseEach(M self, @ClosureParams(MapEntryOrKeyValue.class) Closure closure) {
         final Iterator<Map.Entry<K, V>> entries = reverse(self.entrySet().iterator());
         while (entries.hasNext()) {
             callClosureForMapEntry(closure, entries.next());
@@ -1723,7 +1730,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the self Object
      * @since 1.5.0
      */
-    public static <K, V> Map<K, V> eachWithIndex(Map<K, V> self, @ClosureParams(value=MapEntryOrKeyValue.class, options="index=true") Closure closure) {
+    public static <K, V, M extends Map<K, V>> M eachWithIndex(M self, @ClosureParams(value=MapEntryOrKeyValue.class, options="index=true") Closure closure) {
         int counter = 0;
         for (Map.Entry entry : self.entrySet()) {
             callClosureForMapEntryAndCounter(closure, entry, counter++);
@@ -1742,7 +1749,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the original list
      * @since 1.5.0
      */
-    public static <T> List<T> reverseEach(List<T> self, @ClosureParams(FirstParam.FirstGenericType.class) Closure closure) {
+    public static <T, L extends List<T>> L reverseEach(L self, @ClosureParams(FirstParam.FirstGenericType.class) Closure closure) {
         each(new ReverseListIterator<T>(self), closure);
         return self;
     }
@@ -1750,7 +1757,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     /**
      * Iterate over each element of the array in the reverse order.
      *
-     * @param self    an Object array
+     * @param self    an array
      * @param closure a closure to which each item is passed
      * @return the original array
      * @since 1.5.2
@@ -2583,7 +2590,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.0
      */
     public static <T> List<T> collect(Object self, Closure<T> transform) {
-        return (List<T>) collect(self, new ArrayList<T>(), transform);
+        return collect(self, new ArrayList<T>(), transform);
     }
 
     /**
@@ -2610,7 +2617,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the collector with all transformed values added to it
      * @since 1.0
      */
-    public static <T> Collection<T> collect(Object self, Collection<T> collector, Closure<? extends T> transform) {
+    public static <T, C extends Collection<T>> C collect(Object self, C collector, Closure<? extends T> transform) {
         for (Iterator iter = InvokerHelper.asIterator(self); iter.hasNext(); ) {
             collector.add(transform.call(iter.next()));
         }
@@ -2628,7 +2635,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.0
      */
     public static <S,T> List<T> collect(Collection<S> self, @ClosureParams(FirstParam.FirstGenericType.class) Closure<T> transform) {
-        return (List<T>) collect(self, new ArrayList<T>(self.size()), transform);
+        return collect(self, new ArrayList<T>(self.size()), transform);
     }
 
     /**
@@ -2656,7 +2663,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the collector with all transformed values added to it
      * @since 1.0
      */
-    public static <T,E> Collection<T> collect(Collection<E> self, Collection<T> collector, @ClosureParams(FirstParam.FirstGenericType.class) Closure<? extends T> transform) {
+    public static <T,C extends Collection<T>> C collect(Collection<?> self, C collector, @ClosureParams(FirstParam.FirstGenericType.class) Closure<? extends T> transform) {
         for (Object item : self) {
             collector.add(transform.call(item));
             if (transform.getDirective() == Closure.DONE) {
@@ -2691,7 +2698,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.8.1
      */
     public static List collectNested(Collection self, Closure transform) {
-        return (List) collectNested((Iterable) self, new ArrayList(self.size()), transform);
+        return collectNested((Iterable) self, new ArrayList(self.size()), transform);
     }
 
     /**
@@ -2708,7 +2715,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 2.2.0
      */
     public static List collectNested(Iterable self, Closure transform) {
-        return (List) collectNested(self, new ArrayList(), transform);
+        return collectNested(self, new ArrayList(), transform);
     }
 
     /**
@@ -2748,7 +2755,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the collector with all transformed values added to it
      * @since 2.2.0
      */
-    public static Collection collectNested(Iterable self, Collection collector, Closure transform) {
+    public static <C extends Collection> C collectNested(Iterable self, C collector, Closure transform) {
         for (Object item : self) {
             if (item instanceof Collection) {
                 Collection c = (Collection) item;
@@ -2769,7 +2776,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.8.1
      */
     @Deprecated
-    public static <T,E> List<T> collectMany(Collection<E> self, @ClosureParams(FirstParam.FirstGenericType.class) Closure<Collection<? extends T>> projection) {
+    public static <T> List<T> collectMany(Collection<?> self, @ClosureParams(FirstParam.FirstGenericType.class) Closure<Collection<? extends T>> projection) {
         return collectMany((Iterable)self, projection);
     }
 
@@ -2779,7 +2786,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.8.5
      */
     @Deprecated
-    public static <T,E> Collection<T> collectMany(Collection<E> self, Collection<T> collector, @ClosureParams(FirstParam.FirstGenericType.class) Closure<Collection<? extends T>> projection) {
+    public static <T> Collection<T> collectMany(Collection<?> self, Collection<T> collector, @ClosureParams(FirstParam.FirstGenericType.class) Closure<Collection<? extends T>> projection) {
         return collectMany((Iterable)self, collector, projection);
     }
 
@@ -2807,8 +2814,8 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @see #sum(java.util.Collection, groovy.lang.Closure)
      * @since 2.2.0
      */
-    public static <T,E> List<T> collectMany(Iterable<E> self, @ClosureParams(FirstParam.FirstGenericType.class) Closure<Collection<? extends T>> projection) {
-        return (List<T>) collectMany(self, new ArrayList<T>(), projection);
+    public static <T> List<T> collectMany(Iterable<?> self, @ClosureParams(FirstParam.FirstGenericType.class) Closure<Collection<? extends T>> projection) {
+        return collectMany(self, new ArrayList<T>(), projection);
     }
 
     /**
@@ -2831,8 +2838,8 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the collector with the projected collections concatenated (flattened) into it
      * @since 2.2.0
      */
-    public static <T,E> Collection<T> collectMany(Iterable<E> self, Collection<T> collector, @ClosureParams(FirstParam.FirstGenericType.class) Closure<Collection<? extends T>> projection) {
-        for (E next : self) {
+    public static <T,C extends Collection<T>> C collectMany(Iterable<?> self, C collector, @ClosureParams(FirstParam.FirstGenericType.class) Closure<Collection<? extends T>> projection) {
+        for (Object next : self) {
             collector.addAll(projection.call(next));
         }
         return collector;
@@ -2854,8 +2861,8 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the collector with the projected collections concatenated (flattened) to it
      * @since 1.8.8
      */
-    public static <T,K,V> Collection<T> collectMany(Map<K, V> self, Collection<T> collector, @ClosureParams(MapEntryOrKeyValue.class) Closure<Collection<? extends T>> projection) {
-        for (Map.Entry<?, ?> entry : self.entrySet()) {
+    public static <T,K,V,C extends Collection<T>> C collectMany(Map<K, V> self, C collector, @ClosureParams(MapEntryOrKeyValue.class) Closure<Collection<? extends T>> projection) {
+        for (Map.Entry<K, V> entry : self.entrySet()) {
             collector.addAll(callClosureForMapEntry(projection, entry));
         }
         return collector;
@@ -2876,7 +2883,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the collector with the projected collections concatenated (flattened) to it
      * @since 1.8.8
      */
-    public static <T,K,V> Collection<T> collectMany(Map<K, V> self, @ClosureParams(MapEntryOrKeyValue.class) Closure<Collection<? extends T>> projection) {
+    public static <T, K, V> Collection<T> collectMany(Map<K, V> self, @ClosureParams(MapEntryOrKeyValue.class) Closure<Collection<? extends T>> projection) {
         return collectMany(self, new ArrayList<T>(), projection);
     }
 
@@ -2889,7 +2896,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * assert squaresAndCubesOfEvens == [4, 8, 16, 64, 36, 216]
      * </pre>
      *
-     * @param self       an object array
+     * @param self       an array
      * @param projection a projecting Closure returning a collection of items
      * @return a list created from the projected collections concatenated (flattened) together
      * @see #sum(Object[], groovy.lang.Closure)
@@ -2932,7 +2939,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the collector with all transformed values added to it
      * @since 1.0
      */
-    public static <T,K,V> Collection<T> collect(Map<K, V> self, Collection<T> collector, @ClosureParams(MapEntryOrKeyValue.class) Closure<? extends T> transform) {
+    public static <T,K,V,C extends Collection<T>> C collect(Map<K, V> self, C collector, @ClosureParams(MapEntryOrKeyValue.class) Closure<? extends T> transform) {
         for (Map.Entry<K, V> entry : self.entrySet()) {
             collector.add(callClosureForMapEntry(transform, entry));
         }
@@ -2950,8 +2957,8 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the resultant list of transformed values
      * @since 1.0
      */
-    public static <T,K,V> List<T> collect(Map<K,V> self, @ClosureParams(MapEntryOrKeyValue.class) Closure<T> transform) {
-        return (List<T>) collect(self, new ArrayList<T>(self.size()), transform);
+    public static <T,K,V> List<T> collect(Map<K,V> self, @ClosureParams(MapEntryOrKeyValue.class) Closure<? extends T> transform) {
+        return collect(self, new ArrayList<T>(self.size()), transform);
     }
 
     /**
@@ -2975,8 +2982,8 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @see #collect(Map, Collection, Closure)
      * @since 1.7.9
      */
-    public static <K, V, S, T> Map<K, V> collectEntries(Map<S, T> self, Map<K, V> collector, @ClosureParams(MapEntryOrKeyValue.class) Closure<?> transform) {
-        for (Map.Entry<S, T> entry : self.entrySet()) {
+    public static <K,T,U,V,M extends Map<T, U>> M collectEntries(Map<K, V> self, M collector, @ClosureParams(MapEntryOrKeyValue.class) Closure<?> transform) {
+        for (Map.Entry<K, V> entry : self.entrySet()) {
             addEntry(collector, callClosureForMapEntry(transform, entry));
         }
         return collector;
@@ -3117,7 +3124,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the collector with all transformed values added to it
      * @since 1.8.7
      */
-    public static <K, V, E> Map<K, V> collectEntries(Iterator<E> self, Map<K, V> collector, @ClosureParams(FirstParam.FirstGenericType.class) Closure<?> transform) {
+    public static <K, V, M extends Map<K, V>> M collectEntries(Iterator<?> self, M collector, @ClosureParams(FirstParam.FirstGenericType.class) Closure<?> transform) {
         while (self.hasNext()) {
             Object next = self.next();
             addEntry(collector, transform.call(next));
@@ -3148,7 +3155,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @see #collectEntries(Iterator, Map, Closure)
      * @since 1.8.7
      */
-    public static <K, V, E> Map<K, V> collectEntries(Iterable<E> self, Map<K, V> collector, @ClosureParams(FirstParam.FirstGenericType.class) Closure<?> transform) {
+    public static <K, V, M extends Map<K, V>> M collectEntries(Iterable<?> self, M collector, @ClosureParams(FirstParam.FirstGenericType.class) Closure<?> transform) {
         return collectEntries(self.iterator(), collector, transform);
     }
 
@@ -3172,7 +3179,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @see #collectEntries(Iterable, Map)
      * @since 1.8.7
      */
-    public static <K, V> Map<K, V> collectEntries(Iterator<?> self, Map<K, V> collector) {
+    public static <K, V, M extends Map<K, V>> M collectEntries(Iterator<?> self, M collector) {
         return collectEntries(self, collector, Closure.IDENTITY);
     }
 
@@ -3186,7 +3193,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @see #collectEntries(Iterator, Map)
      * @since 1.8.7
      */
-    public static <K, V> Map<K, V> collectEntries(Iterable<?> self, Map<K, V> collector) {
+    public static <K, V, M extends Map<K, V>> M collectEntries(Iterable<?> self, M collector) {
         return collectEntries(self.iterator(), collector);
     }
 
@@ -3206,7 +3213,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * throwing away elements after the second one and using null for the key or value for the case of a shortened list.
      * If your collector Map doesn't support null keys or values, you might get a runtime error, e.g. NullPointerException or IllegalArgumentException.
      *
-     * @param self      an Object array
+     * @param self      an array
      * @param collector the Map into which the transformed entries are put
      * @param transform the closure used for transforming, which has an item from self as the parameter and
      *                  should return a Map.Entry, a Map or a two-element list containing the resulting key and value
@@ -3215,20 +3222,20 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.7.9
      */
     @SuppressWarnings("unchecked")
-    public static <K, V, E> Map<K, V> collectEntries(E[] self, Map<K, V> collector, @ClosureParams(FirstParam.Component.class) Closure<?> transform) {
+    public static <K, V, E, M extends Map<K, V>> M collectEntries(E[] self, M collector, @ClosureParams(FirstParam.Component.class) Closure<?> transform) {
         return collectEntries((Iterable)toList(self), collector, transform);
     }
 
     /**
      * A variant of collectEntries using the identity closure as the transform.
      *
-     * @param self      an Object array
+     * @param self      an array
      * @param collector the Map into which the transformed entries are put
      * @return the collector with all transformed values added to it
      * @see #collectEntries(Object[], Map, Closure)
      * @since 1.8.5
      */
-    public static <K, V> Map<K, V> collectEntries(Object[] self, Map<K, V> collector) {
+    public static <K, V, E, M extends Map<K, V>> M collectEntries(E[] self, M collector) {
         return collectEntries(self, collector, Closure.IDENTITY);
     }
 
@@ -3261,12 +3268,12 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     /**
      * A variant of collectEntries using the identity closure as the transform.
      *
-     * @param self      an Object array
-     * @return the collector with all transformed values added to it
+     * @param self      an array
+     * @return a Map of the transformed entries
      * @see #collectEntries(Object[], Closure)
      * @since 1.8.5
      */
-    public static <K, V> Map<K, V> collectEntries(Object[] self) {
+    public static <K, V, E> Map<K, V> collectEntries(E[] self) {
         return collectEntries(self, Closure.IDENTITY);
     }
 
@@ -3526,7 +3533,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      */
     public static <T,K,V> Collection<T> findResults(Map<K, V> self, @ClosureParams(MapEntryOrKeyValue.class) Closure<T> filteringTransform) {
         List<T> result = new ArrayList<T>();
-        for (Map.Entry<?, ?> entry : self.entrySet()) {
+        for (Map.Entry<K, V> entry : self.entrySet()) {
             T transformed = callClosureForMapEntry(filteringTransform, entry);
             if (transformed != null) {
                 result.add(transformed);
@@ -4273,7 +4280,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
         // inject([:]) { a,e -> a << [(e.key): e.value.groupBy(tail)] }
         Map<Object, Map> acc = new LinkedHashMap<Object, Map>();
         for (Map.Entry<Object, List> item : first.entrySet()) {
-            acc.put(item.getKey(), groupBy(item.getValue(), tail));
+            acc.put(item.getKey(), groupBy((Iterable) item.getValue(), tail));
         }
 
         return acc;
@@ -4396,7 +4403,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * Example usage:
      * <pre class="groovyTestCase">assert ([1,2,2,2,3] as Object[]).countBy{ it % 2 } == [1:2, 0:3]</pre>
      *
-     * @param self    an object array to group and count
+     * @param self    an array to group and count
      * @param closure a closure mapping items to the frequency keys
      * @return a new Map grouped by keys with frequency counts
      * @see #countBy(Collection, Closure)
@@ -4616,7 +4623,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     // internal helper method
     protected static <T> T callClosureForMapEntry(Closure<T> closure, Map.Entry entry) {
         if (closure.getMaximumNumberOfParameters() == 2) {
-            return closure.call(new Object[]{entry.getKey(), entry.getValue()});
+            return closure.call(entry.getKey(), entry.getValue());
         }
         return closure.call(entry);
     }
@@ -4624,7 +4631,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     // internal helper method
     protected static <T> T callClosureForLine(Closure<T> closure, String line, int counter) {
         if (closure.getMaximumNumberOfParameters() == 2) {
-            return closure.call(new Object[]{line, counter});
+            return closure.call(line, counter);
         }
         return closure.call(line);
     }
@@ -4632,10 +4639,10 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     // internal helper method
     protected static <T> T callClosureForMapEntryAndCounter(Closure<T> closure, Map.Entry entry, int counter) {
         if (closure.getMaximumNumberOfParameters() == 3) {
-            return closure.call(new Object[]{entry.getKey(), entry.getValue(), counter});
+            return closure.call(entry.getKey(), entry.getValue(), counter);
         }
         if (closure.getMaximumNumberOfParameters() == 2) {
-            return closure.call(new Object[]{entry, counter});
+            return closure.call(entry, counter);
         }
         return closure.call(entry);
     }
@@ -5124,7 +5131,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.5.5
      */
     public static String join(Iterator<Object> self, String separator) {
-        return join(toList(self), separator);
+        return join((Iterable) toList(self), separator);
     }
 
     /**
@@ -5199,7 +5206,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      */
     @Deprecated 
     public static <T> T min(Collection<T> self) {
-        return GroovyCollections.min(self);
+        return GroovyCollections.min((Iterable<T>) self);
     }
 
     /**
@@ -5225,19 +5232,19 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.5.5
      */
     public static <T> T min(Iterator<T> self) {
-        return min(toList(self));
+        return min((Iterable<T>) toList(self));
     }
 
     /**
      * Adds min() method to Object arrays.
      *
-     * @param self an Object array
+     * @param self an array
      * @return the minimum value
      * @see #min(java.util.Collection)
      * @since 1.5.5
      */
     public static <T> T min(T[] self) {
-        return min(toList(self));
+        return min((Iterable<T>) toList(self));
     }
 
     /**
@@ -5289,7 +5296,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     /**
      * Selects the minimum value found from the Object array using the given comparator.
      *
-     * @param self       an Object array
+     * @param self       an array
      * @param comparator a Comparator
      * @return the minimum value
      * @see #min(java.util.Collection, java.util.Comparator)
@@ -5476,7 +5483,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * Comparable (typically an Integer) which is then used for
      * further comparison.
      *
-     * @param self    an Object array
+     * @param self    an array
      * @param closure a Closure used to determine the correct ordering
      * @return the minimum value
      * @see #min(java.util.Collection, groovy.lang.Closure)
@@ -5527,7 +5534,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     /**
      * Adds max() method to Object arrays.
      *
-     * @param self an Object array
+     * @param self an array
      * @return the maximum value
      * @see #max(java.util.Collection)
      * @since 1.5.5
@@ -5632,7 +5639,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * Comparable (typically an Integer) which is then used for
      * further comparison.
      *
-     * @param self    an Object array
+     * @param self    an array
      * @param closure a Closure used to determine the correct ordering
      * @return the maximum value
      * @see #max(java.util.Collection, groovy.lang.Closure)
@@ -5692,7 +5699,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     /**
      * Selects the maximum value found from the Object array using the given comparator.
      *
-     * @param self       an Object array
+     * @param self       an array
      * @param comparator a Comparator
      * @return the maximum value
      * @since 1.5.5
@@ -5865,7 +5872,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     }
 
     /**
-     * Select a List of items from an Object array using a Collection to
+     * Select a List of items from an array using a Collection to
      * identify the indices to be selected.
      *
      * @param self    an Array of Objects
@@ -6597,7 +6604,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     /**
      * Creates a spreadable map from this array.
      * <p>
-     * @param self an object array
+     * @param self an array
      * @return a newly created SpreadMap
      * @see groovy.lang.SpreadMap#SpreadMap(java.lang.Object[])
      * @see #toSpreadMap(java.util.Map)
@@ -7206,7 +7213,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the set
      * @since 1.0
      */
-    public static <T> SortedSet<T> sort(SortedSet<T> self) {
+    public static <T, C extends SortedSet<T>> C sort(C self) {
         return self;
     }
 
@@ -7217,7 +7224,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the map
      * @since 1.8.1
      */
-    public static <K, V> SortedMap<K, V> sort(SortedMap<K, V> self) {
+    public static <K, V, M extends SortedMap<K, V>> M sort(M self) {
         return self;
     }
 
@@ -7522,7 +7529,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the same map, after the items have been added to it.
      * @since 1.6.1
      */
-    public static <K, V> Map<K, V> putAll(Map<K, V> self, Collection<Map.Entry<K, V>> entries) {
+    public static <K, V, M extends Map<K, V>> M putAll(M self, Collection<Map.Entry<K, V>> entries) {
         for (Map.Entry<K, V> entry : entries) {
             self.put(entry.getKey(), entry.getValue());
         }
@@ -7740,7 +7747,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * <pre class="groovyTestCase">def array = [3, 4, 2].toArray()
      * assert array.head() == 3</pre>
      *
-     * @param self an Object array
+     * @param self an array
      * @return the first item from the Object array
      * @throws NoSuchElementException if the array is empty and you try to access the head() item.
      * @since 1.7.3
@@ -7813,7 +7820,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @throws NoSuchElementException if the array is empty and you try to access the tail()
      * @since 1.8.1
      */
-    public static <T> Iterator<T> tail(Iterator<T> self) {
+    public static <T, I extends Iterator<T>> I tail(I self) {
         if (!self.hasNext()) {
             throw new NoSuchElementException("Cannot access tail() for an empty Iterator");
         }
@@ -7910,8 +7917,8 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      *     assert strings.class.componentType == String
      * </pre>
      *
-     * @param self an Object array
-     * @return an Object array without its last element
+     * @param self an array
+     * @return an array without its last element
      * @throws NoSuchElementException if the array is empty and you try to access the init() item.
      * @since 2.4.0
      */
@@ -8305,7 +8312,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return The iterator stepped along by <code>num</code> elements if they exist.
      * @since 1.8.1
      */
-    public static <T> Iterator<T> drop(Iterator<T> self, int num) {
+    public static <T, I extends Iterator<T>> I drop(I self, int num) {
         while (num-- > 0 && self.hasNext()) {
             self.next();
         }
@@ -8436,7 +8443,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
                 break;
             }
         }
-        return take(self, num);
+        return (List<T>) take((Iterable<T>)self, num);
     }
 
     /**
@@ -8620,7 +8627,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
                 break;
             }
         }
-        return drop(self, num);
+        return (List<T>) drop((Iterable<T>) self, num);
     }
 
     /**
@@ -8915,8 +8922,8 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     }
 
     /**
-     * Coerce an Object array to a boolean value.
-     * An Object array is false if the array is of length 0.
+     * Coerce an array to a boolean value.
+     * An array is false if the array is of length 0.
      * and to true otherwise
      *
      * @param array the array
@@ -9296,7 +9303,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
         }
         List<T> items = Arrays.asList(self);
         Collections.reverse(items);
-        System.arraycopy((T[])items.toArray(), 0, self, 0, items.size());
+        System.arraycopy(items.toArray(), 0, self, 0, items.size());
         return self;
     }
 
@@ -9558,7 +9565,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      */
     @Deprecated
     public static <T> Collection<T> multiply(Collection<T> self, Number factor) {
-        return (Collection<T>) multiply((Iterable<T>) self, factor);
+        return multiply((Iterable<T>) self, factor);
     }
 
     /**
@@ -9981,21 +9988,21 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * Create an array composed of the elements of the first array minus the
      * elements of the given Iterable.
      *
-     * @param self     an object array
+     * @param self     an array
      * @param removeMe a Collection of elements to remove
      * @return an array with the supplied elements removed
      * @since 1.5.5
      */
     @SuppressWarnings("unchecked")
     public static <T> T[] minus(T[] self, Iterable removeMe) {
-        return (T[]) minus(toList(self), removeMe).toArray();
+        return (T[]) minus((Iterable<T>) toList(self), removeMe).toArray();
     }
 
     /**
      * Create an array composed of the elements of the first array minus the
      * elements of the given array.
      *
-     * @param self     an object array
+     * @param self     an array
      * @param removeMe an array of elements to remove
      * @return an array with the supplied elements removed
      * @since 1.5.5
@@ -10152,7 +10159,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * Create a new object array composed of the elements of the first array
      * minus the element to remove.
      *
-     * @param self    an object array
+     * @param self    an array
      * @param removeMe an element to remove from the array
      * @return a new array with the operand removed
      * @since 1.5.5
@@ -10394,7 +10401,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return same collection, after the value was added to it.
      * @since 1.0
      */
-    public static <T> Collection<T> leftShift(Collection<T> self, T value) {
+    public static <T, C extends Collection<T>> C leftShift(C self, T value) {
         self.add(value);
         return self;
     }
@@ -10412,7 +10419,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return same collection, after the value was added to it.
      * @since 1.7.1
      */
-    public static <T> BlockingQueue<T> leftShift(BlockingQueue<T> self, T value) throws InterruptedException {
+    public static <T, C extends BlockingQueue<T>> C leftShift(C self, T value) throws InterruptedException {
         self.put(value);
         return self;
     }
@@ -10426,7 +10433,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return same map, after the value has been added to it.
      * @since 1.6.0
      */
-    public static <K, V> Map<K, V> leftShift(Map<K, V> self, Map.Entry<K, V> entry) {
+    public static <K, V, M extends Map<K, V>> M leftShift(M self, Map.Entry<K, V> entry) {
         self.put(entry.getKey(), entry.getValue());
         return self;
     }
@@ -10446,7 +10453,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return same map, after the values have been added to it.
      * @since 1.7.2
      */
-    public static <K, V> Map<K, V> leftShift(Map<K, V> self, Map<K, V> other) {
+    public static <K, V, M extends Map<K, V>> M leftShift(M self, Map<K, V> other) {
         self.putAll(other);
         return self;
     }
@@ -13829,7 +13836,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
             metaClass = ((HandleMetaClass)metaClass).getAdaptee();
 
         if (self instanceof Class) {
-            ((MetaClassRegistryImpl)GroovySystem.getMetaClassRegistry()).setMetaClass((Class) self, metaClass);
+            GroovySystem.getMetaClassRegistry().setMetaClass((Class) self, metaClass);
         } else {
             ((MetaClassRegistryImpl)GroovySystem.getMetaClassRegistry()).setMetaClass(self, metaClass);
         }
@@ -14029,7 +14036,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return itself
      * @since 1.5.0
      */
-    public static <T> Iterator<T> iterator(Iterator<T> self) {
+    public static <T, I extends Iterator<T>> I iterator(I self) {
         return self;
     }
 
@@ -16053,7 +16060,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @see Collections#swap(List, int, int)
      * @since 2.4.0
      */
-    public static <T> List<T> swap(List<T> self, int i, int j) {
+    public static <T, L extends List<T>> L swap(L self, int i, int j) {
         Collections.swap(self, i, j);
         return self;
     }
