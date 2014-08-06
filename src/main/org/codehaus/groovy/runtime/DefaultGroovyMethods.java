@@ -1615,7 +1615,9 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the self Iterable
      * @since 2.3.0
      */
-    public static <T, I extends Iterable<T>> I eachWithIndex(I self, @ClosureParams(value=FromString.class, options="T,Integer") Closure closure) {
+//    GROOVY-7001: breaks tailrec use of eachWithIndex(T,Closure)
+//    public static <T, I extends Iterable<T>> I eachWithIndex(I self, @ClosureParams(value=FromString.class, options="T,Integer") Closure closure) {
+    public static <T> Iterable<T> eachWithIndex(Iterable<T> self, @ClosureParams(value=FromString.class, options="T,Integer") Closure closure) {
         eachWithIndex(self.iterator(), closure);
         return self;
     }
@@ -1630,7 +1632,9 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the self Iterable
      * @since 2.3.0
      */
-    public static <T, I extends Iterator<T>> I eachWithIndex(I self, @ClosureParams(value=FromString.class, options="T,Integer") Closure closure) {
+//    GROOVY-7001: breaks many @CS tests
+//    public static <T, I extends Iterator<T>> I eachWithIndex(I self, @ClosureParams(value=FromString.class, options="T,Integer") Closure closure) {
+    public static <T> Iterator<T> eachWithIndex(Iterator<T> self, @ClosureParams(value=FromString.class, options="T,Integer") Closure closure) {
         final Object[] args = new Object[2];
         int counter = 0;
         while (self.hasNext()) {
@@ -1648,7 +1652,9 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @param closure a Closure to operate on each item
      * @return the self Iterable
      */
-    public static <T, I extends Iterable<T>> I each(I self, @ClosureParams(FirstParam.FirstGenericType.class) Closure closure) {
+//    GROOVY-7001: breaks many @CS tests
+//    public static <T, I extends Iterable<T>> I each(I self, @ClosureParams(FirstParam.FirstGenericType.class) Closure closure) {
+    public static <T> Iterable<T> each(Iterable<T> self, @ClosureParams(FirstParam.FirstGenericType.class) Closure closure) {
         each(self.iterator(), closure);
         return self;
     }
@@ -1683,7 +1689,9 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return returns the self parameter
      * @since 1.5.0
      */
-    public static <K, V, M extends Map<K, V>> M each(M self, @ClosureParams(MapEntryOrKeyValue.class) Closure closure) {
+//    GROOVY-7001: MapEntryOrKeyValue doesn't support this yet
+//    public static <K, V, M extends Map<K, V>> M each(M self, @ClosureParams(MapEntryOrKeyValue.class) Closure closure) {
+    public static <K, V> Map<K, V> each(Map<K, V> self, @ClosureParams(MapEntryOrKeyValue.class) Closure closure) {
         for (Map.Entry entry : self.entrySet()) {
             callClosureForMapEntry(closure, entry);
         }
@@ -1704,7 +1712,9 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @see #each(Map, Closure)
      * @since 1.7.2
      */
-    public static <K, V, M extends Map<K, V>> M reverseEach(M self, @ClosureParams(MapEntryOrKeyValue.class) Closure closure) {
+//    GROOVY-7001: MapEntryOrKeyValue doesn't support this yet
+//    public static <K, V, M extends Map<K, V>> M reverseEach(M self, @ClosureParams(MapEntryOrKeyValue.class) Closure closure) {
+    public static <K, V> Map<K, V> reverseEach(Map<K, V> self, @ClosureParams(MapEntryOrKeyValue.class) Closure closure) {
         final Iterator<Map.Entry<K, V>> entries = reverse(self.entrySet().iterator());
         while (entries.hasNext()) {
             callClosureForMapEntry(closure, entries.next());
@@ -1730,7 +1740,9 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the self Object
      * @since 1.5.0
      */
-    public static <K, V, M extends Map<K, V>> M eachWithIndex(M self, @ClosureParams(value=MapEntryOrKeyValue.class, options="index=true") Closure closure) {
+//    GROOVY-7001: MapEntryOrKeyValue doesn't support this yet
+//    public static <K, V, M extends Map<K, V>> M eachWithIndex(M self, @ClosureParams(value=MapEntryOrKeyValue.class, options="index=true") Closure closure) {
+    public static <K, V> Map<K, V> eachWithIndex(Map<K, V> self, @ClosureParams(value=MapEntryOrKeyValue.class, options="index=true") Closure closure) {
         int counter = 0;
         for (Map.Entry entry : self.entrySet()) {
             callClosureForMapEntryAndCounter(closure, entry, counter++);
@@ -1749,7 +1761,9 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the original list
      * @since 1.5.0
      */
-    public static <T, L extends List<T>> L reverseEach(L self, @ClosureParams(FirstParam.FirstGenericType.class) Closure closure) {
+//    GROOVY-7001: breaks @CS tests
+//    public static <T, L extends List<T>> L reverseEach(L self, @ClosureParams(FirstParam.FirstGenericType.class) Closure closure) {
+    public static <T> List<T> reverseEach(List<T> self, @ClosureParams(FirstParam.FirstGenericType.class) Closure closure) {
         each(new ReverseListIterator<T>(self), closure);
         return self;
     }
@@ -2663,8 +2677,8 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the collector with all transformed values added to it
      * @since 1.0
      */
-    public static <T,C extends Collection<T>> C collect(Collection<?> self, C collector, @ClosureParams(FirstParam.FirstGenericType.class) Closure<? extends T> transform) {
-        for (Object item : self) {
+    public static <T,E,C extends Collection<T>> C collect(Collection<E> self, C collector, @ClosureParams(FirstParam.FirstGenericType.class) Closure<? extends T> transform) {
+        for (E item : self) {
             collector.add(transform.call(item));
             if (transform.getDirective() == Closure.DONE) {
                 break;
@@ -2776,7 +2790,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.8.1
      */
     @Deprecated
-    public static <T> List<T> collectMany(Collection<?> self, @ClosureParams(FirstParam.FirstGenericType.class) Closure<Collection<? extends T>> projection) {
+    public static <T,E> List<T> collectMany(Collection<E> self, @ClosureParams(FirstParam.FirstGenericType.class) Closure<Collection<? extends T>> projection) {
         return collectMany((Iterable)self, projection);
     }
 
@@ -2786,7 +2800,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.8.5
      */
     @Deprecated
-    public static <T> Collection<T> collectMany(Collection<?> self, Collection<T> collector, @ClosureParams(FirstParam.FirstGenericType.class) Closure<Collection<? extends T>> projection) {
+    public static <T,E> Collection<T> collectMany(Collection<E> self, Collection<T> collector, @ClosureParams(FirstParam.FirstGenericType.class) Closure<Collection<? extends T>> projection) {
         return collectMany((Iterable)self, collector, projection);
     }
 
@@ -2814,7 +2828,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @see #sum(java.util.Collection, groovy.lang.Closure)
      * @since 2.2.0
      */
-    public static <T> List<T> collectMany(Iterable<?> self, @ClosureParams(FirstParam.FirstGenericType.class) Closure<Collection<? extends T>> projection) {
+    public static <T,E> List<T> collectMany(Iterable<E> self, @ClosureParams(FirstParam.FirstGenericType.class) Closure<Collection<? extends T>> projection) {
         return collectMany(self, new ArrayList<T>(), projection);
     }
 
@@ -2838,8 +2852,8 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the collector with the projected collections concatenated (flattened) into it
      * @since 2.2.0
      */
-    public static <T,C extends Collection<T>> C collectMany(Iterable<?> self, C collector, @ClosureParams(FirstParam.FirstGenericType.class) Closure<Collection<? extends T>> projection) {
-        for (Object next : self) {
+    public static <T,E,C extends Collection<T>> C collectMany(Iterable<E> self, C collector, @ClosureParams(FirstParam.FirstGenericType.class) Closure<Collection<? extends T>> projection) {
+        for (E next : self) {
             collector.addAll(projection.call(next));
         }
         return collector;
@@ -2883,7 +2897,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the collector with the projected collections concatenated (flattened) to it
      * @since 1.8.8
      */
-    public static <T, K, V> Collection<T> collectMany(Map<K, V> self, @ClosureParams(MapEntryOrKeyValue.class) Closure<Collection<? extends T>> projection) {
+    public static <T,K,V> Collection<T> collectMany(Map<K, V> self, @ClosureParams(MapEntryOrKeyValue.class) Closure<Collection<? extends T>> projection) {
         return collectMany(self, new ArrayList<T>(), projection);
     }
 
@@ -3124,9 +3138,9 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return the collector with all transformed values added to it
      * @since 1.8.7
      */
-    public static <K, V, M extends Map<K, V>> M collectEntries(Iterator<?> self, M collector, @ClosureParams(FirstParam.FirstGenericType.class) Closure<?> transform) {
+    public static <K, V, E, M extends Map<K, V>> M collectEntries(Iterator<E> self, M collector, @ClosureParams(FirstParam.FirstGenericType.class) Closure<?> transform) {
         while (self.hasNext()) {
-            Object next = self.next();
+            E next = self.next();
             addEntry(collector, transform.call(next));
         }
         return collector;
@@ -3155,7 +3169,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @see #collectEntries(Iterator, Map, Closure)
      * @since 1.8.7
      */
-    public static <K, V, M extends Map<K, V>> M collectEntries(Iterable<?> self, M collector, @ClosureParams(FirstParam.FirstGenericType.class) Closure<?> transform) {
+    public static <K, V, E, M extends Map<K, V>> M collectEntries(Iterable<E> self, M collector, @ClosureParams(FirstParam.FirstGenericType.class) Closure<?> transform) {
         return collectEntries(self.iterator(), collector, transform);
     }
 
@@ -3223,7 +3237,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      */
     @SuppressWarnings("unchecked")
     public static <K, V, E, M extends Map<K, V>> M collectEntries(E[] self, M collector, @ClosureParams(FirstParam.Component.class) Closure<?> transform) {
-        return collectEntries((Iterable)toList(self), collector, transform);
+        return (M) collectEntries((Iterable)toList(self), collector, transform);
     }
 
     /**
@@ -10401,7 +10415,9 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @return same collection, after the value was added to it.
      * @since 1.0
      */
-    public static <T, C extends Collection<T>> C leftShift(C self, T value) {
+//    GROOVY-7001: breaks @CS tests
+//    public static <T, C extends Collection<T>> C leftShift(C self, T value) {
+    public static <T> Collection<T> leftShift(Collection<T> self, T value) {
         self.add(value);
         return self;
     }
