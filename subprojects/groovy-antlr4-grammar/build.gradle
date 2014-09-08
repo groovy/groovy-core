@@ -1,4 +1,4 @@
-if (!rootProject.hasProperty('useAntlr4')) return
+//if (!rootProject.hasProperty('useAntlr4')) return
 
 apply plugin: 'me.champeau.gradle.antlr4'
 
@@ -18,9 +18,18 @@ configurations {
    compile.extendsFrom antlr4
 }
 
+dependencies {
+	testCompile 'org.codehaus.groovy:groovy-all:2.2.2'
+	testCompile 'org.spockframework:spock-core:0.7-groovy-2.0'
+}
+
+
 // add the generated source files to the list of java sources
 sourceSets.main.java.srcDirs += antlr4.output
+println("Antlr output is going to $antlr4.output")
 sourceSets.main.java.srcDirs += file(srcMain+'java')
+
+sourceSets.test.groovy.srcDirs = ['test']
 
 sourceSets {
     main {
