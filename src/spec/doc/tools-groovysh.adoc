@@ -588,5 +588,3 @@ stty -icanon min 1 -echo
 groovysh --terminal=unix
 stty icanon echo
 ------------------------
-
-:leveloffset: 2

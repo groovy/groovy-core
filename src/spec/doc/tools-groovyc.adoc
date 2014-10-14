@@ -376,11 +376,7 @@ So it may be used as a complement to <<section-groovyeclipse,the Groovy Eclipse 
 
 [[section-groovyeclipse]]
 
-:leveloffset: 3
-
-include::{projectdir}/{specfolder}/tools-groovyeclipse.adoc[]
-
-:leveloffset: 1
+include::{projectdir}/{specfolder}/tools-groovyeclipse.adoc[leveloffset=+2]
 
 [[section-jointcompilation]]
 === Joint compilation
