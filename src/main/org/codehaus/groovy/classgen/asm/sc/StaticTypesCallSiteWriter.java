@@ -54,7 +54,7 @@ public class StaticTypesCallSiteWriter extends CallSiteWriter implements Opcodes
     private static final MethodNode COLLECTION_SIZE_METHOD = COLLECTION_TYPE.getMethod("size", Parameter.EMPTY_ARRAY);
     private static final MethodNode MAP_GET_METHOD = MAP_TYPE.getMethod("get", new Parameter[] { new Parameter(OBJECT_TYPE, "key")});
 
-    private WriterController controller;
+    private StaticTypesWriterController controller;
 
     public StaticTypesCallSiteWriter(final StaticTypesWriterController controller) {
         super(controller);
@@ -63,10 +63,9 @@ public class StaticTypesCallSiteWriter extends CallSiteWriter implements Opcodes
 
     @Override
     public void generateCallSiteArray() {
-        if (controller instanceof StaticTypesWriterController) {
-            ((StaticTypesWriterController)controller).getRegularCallSiteWriter().generateCallSiteArray();
-        } else {
-            super.generateCallSiteArray();
+        CallSiteWriter regularCallSiteWriter = controller.getRegularCallSiteWriter();
+        if (regularCallSiteWriter.hasCallSiteUse()) {
+            regularCallSiteWriter.generateCallSiteArray();
         }
     }
 
@@ -76,7 +75,7 @@ public class StaticTypesCallSiteWriter extends CallSiteWriter implements Opcodes
 
     @Override
     public void makeGetPropertySite(Expression receiver, final String methodName, final boolean safe, final boolean implicitThis) {
-        Object dynamic = receiver.getNodeMetaData(StaticTypesMarker.DYNAMIC_RESOLUTION);
+        Object dynamic = receiver.getNodeMetaData(StaticCompilationMetadataKeys.RECEIVER_OF_DYNAMIC_PROPERTY);
         if (dynamic !=null) {
             MethodNode target = safe?INVOKERHELPER_GETPROPERTYSAFE_METHOD:INVOKERHELPER_GETPROPERTY_METHOD;
             MethodCallExpression mce = new MethodCallExpression(
@@ -178,6 +177,7 @@ public class StaticTypesCallSiteWriter extends CallSiteWriter implements Opcodes
                 call.setMethodTarget(getterMethod);
                 call.setImplicitThis(false);
                 call.setSourcePosition(receiver);
+                call.setSafe(safe);
                 call.visit(controller.getAcg());
                 return;
             }
@@ -197,6 +197,7 @@ public class StaticTypesCallSiteWriter extends CallSiteWriter implements Opcodes
                 );
                 call.setMethodTarget(getter);
                 call.setImplicitThis(false);
+                call.setSafe(safe);
                 call.setSourcePosition(receiver);
                 call.visit(controller.getAcg());
                 return;

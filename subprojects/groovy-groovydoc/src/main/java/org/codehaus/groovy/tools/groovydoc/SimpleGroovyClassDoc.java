@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2013 the original author or authors.
+ * Copyright 2003-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ import java.util.regex.Pattern;
 public class SimpleGroovyClassDoc extends SimpleGroovyAbstractableElementDoc implements GroovyClassDoc {
 
     public static final Pattern TAG_REGEX = Pattern.compile("(?sm)\\s*@([a-zA-Z.]+)\\s+(.*?)(?=\\s+@)");
+    public static final String DOCROOT_PATTERN2    = "(?m)[{]@docRoot}/";
+    public static final String DOCROOT_PATTERN    = "(?m)[{]@docRoot}";
 
     // group 1: tag name, group 2: tag body
     public static final Pattern LINK_REGEX    = Pattern.compile("(?m)[{]@(link)\\s+([^}]*)}");
@@ -280,7 +282,7 @@ public class SimpleGroovyClassDoc extends SimpleGroovyAbstractableElementDoc imp
 
     private Class getClassOf(String next) {
         try {
-            return Class.forName(next.replace("/", "."));
+            return Class.forName(next.replace("/", "."), false, getClass().getClassLoader());
         } catch (Throwable t) {
             return null;
         }
@@ -604,7 +606,7 @@ public class SimpleGroovyClassDoc extends SimpleGroovyAbstractableElementDoc imp
 
     private Class resolveFromJavaLang(String name) {
         try {
-            return Class.forName("java.lang." + name);
+            return Class.forName("java.lang." + name, false, getClass().getClassLoader());
         } catch (NoClassDefFoundError e) {
             // ignore
         } catch (ClassNotFoundException e) {
@@ -645,7 +647,7 @@ public class SimpleGroovyClassDoc extends SimpleGroovyAbstractableElementDoc imp
             if (candidate != null) {
                 try {
                     // TODO cache these??
-                    return Class.forName(candidate);
+                    return Class.forName(candidate, false, getClass().getClassLoader());
                 } catch (NoClassDefFoundError e) {
                     // ignore
                 } catch (ClassNotFoundException e) {
@@ -660,7 +662,7 @@ public class SimpleGroovyClassDoc extends SimpleGroovyAbstractableElementDoc imp
         String candidate = name.replace('/', '.');
         try {
             // TODO cache these??
-            return Class.forName(candidate);
+            return Class.forName(candidate, false, getClass().getClassLoader());
         } catch (NoClassDefFoundError e) {
             // ignore
         } catch (ClassNotFoundException e) {
@@ -795,6 +797,13 @@ public class SimpleGroovyClassDoc extends SimpleGroovyAbstractableElementDoc imp
 
     public String replaceTags(String comment) {
         String result = comment.replaceAll("(?m)^\\s*\\*", ""); // todo precompile regex
+
+        String relativeRootPath = getRelativeRootPath();
+        if (!relativeRootPath.endsWith("/")) {
+            relativeRootPath += "/";
+        }
+        result = result.replaceAll(DOCROOT_PATTERN2, relativeRootPath);
+        result = result.replaceAll(DOCROOT_PATTERN, relativeRootPath);
 
         // {@link processing hack}
         result = replaceAllTags(result, "", "", LINK_REGEX);

@@ -31,6 +31,7 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
 import org.codehaus.groovy.control.customizers.CompilationCustomizer;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.classgen.asm.BytecodeDumper;
 
 import java.io.File;
 import java.io.IOException;
@@ -44,6 +45,7 @@ import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -55,12 +57,14 @@ import java.util.regex.Pattern;
  */
 public class MarkupTemplateEngine extends TemplateEngine {
 
-    final static ClassNode MARKUPTEMPLATEENGINE_CLASSNODE = ClassHelper.make(MarkupTemplateEngine.class);
-    final static String MODELTYPES_ASTKEY = "MTE.modelTypes";
+    static final ClassNode MARKUPTEMPLATEENGINE_CLASSNODE = ClassHelper.make(MarkupTemplateEngine.class);
+    static final String MODELTYPES_ASTKEY = "MTE.modelTypes";
 
-    private final static Pattern LOCALIZED_RESOURCE_PATTERN = Pattern.compile("(.+?)(?:_([a-z]{2}(?:_[A-Z]{2,3})))?\\.(\\p{Alnum}+)");
+    private static final Pattern LOCALIZED_RESOURCE_PATTERN = Pattern.compile("(.+?)(?:_([a-z]{2}(?:_[A-Z]{2,3})))?\\.(\\p{Alnum}+)");
 
-    private final static AtomicLong counter = new AtomicLong();
+    private static final boolean DEBUG_BYTECODE = Boolean.valueOf(System.getProperty("markuptemplateengine.compiler.debug","false"));
+
+    private static final AtomicLong counter = new AtomicLong();
 
     private final TemplateGroovyClassLoader groovyClassLoader;
     private final CompilerConfiguration compilerConfiguration;
@@ -97,6 +101,9 @@ public class MarkupTemplateEngine extends TemplateEngine {
                 return new TemplateGroovyClassLoader(parentLoader, compilerConfiguration);
             }
         });
+        if (DEBUG_BYTECODE) {
+            compilerConfiguration.setBytecodePostprocessor(BytecodeDumper.STANDARD_ERR);
+        }
         templateResolver = resolver == null ? new DefaultTemplateResolver() : resolver;
         templateResolver.configure(groovyClassLoader, templateConfiguration);
     }
@@ -226,7 +233,7 @@ public class MarkupTemplateEngine extends TemplateEngine {
      * thread local.
      */
     static class TemplateGroovyClassLoader extends GroovyClassLoader {
-        final static ThreadLocal<Map<String, String>> modelTypes = new ThreadLocal<Map<String, String>>();
+        static final ThreadLocal<Map<String, String>> modelTypes = new ThreadLocal<Map<String, String>>();
 
         public TemplateGroovyClassLoader(final ClassLoader parentLoader, final CompilerConfiguration compilerConfiguration) {
             super(parentLoader, compilerConfiguration);
@@ -303,6 +310,56 @@ public class MarkupTemplateEngine extends TemplateEngine {
                 throw new IOException("Unable to load template:" + templatePath);
             }
             return resource;
+        }
+    }
+
+    /**
+     * A template resolver which avoids calling {@link ClassLoader#getResource(String)} if a template path already has
+     * been queried before. This improves performance if caching is enabled in the configuration.
+     */
+    public static class CachingTemplateResolver extends DefaultTemplateResolver {
+        // Those member should stay protected so that subclasses may use different
+        // cache keys as the ones used by this implementation
+        protected final Map<String, URL> cache;
+        protected boolean useCache = false;
+
+        /**
+         * Creates a new caching template resolver. The cache implementation being used depends on
+         * the use of the template engine. If multiple templates can be rendered in parallel, it <b>must</b>
+         * be using a thread-safe cache.
+         * @param cache the backing cache
+         */
+        public CachingTemplateResolver(final Map<String, URL> cache) {
+            this.cache = cache;
+        }
+
+        /**
+         * Creates a new caching template resolver using a concurrent hash map as the backing cache.
+         */
+        public CachingTemplateResolver() {
+            this(new ConcurrentHashMap<String, URL>());
+        }
+
+
+        @Override
+        public void configure(final ClassLoader templateClassLoader, final TemplateConfiguration configuration) {
+            super.configure(templateClassLoader, configuration);
+            useCache = configuration.isCacheTemplates();
+        }
+
+        @Override
+        public URL resolveTemplate(final String templatePath) throws IOException {
+            if (useCache) {
+                URL cachedURL = cache.get(templatePath);
+                if (cachedURL!=null) {
+                    return cachedURL;
+                }
+            }
+            URL url = super.resolveTemplate(templatePath);
+            if (useCache) {
+                cache.put(templatePath, url);
+            }
+            return url;
         }
     }
 

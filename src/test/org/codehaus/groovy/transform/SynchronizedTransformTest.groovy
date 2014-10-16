@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2010 the original author or authors.
+ * Copyright 2008-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,13 @@
  */
 package org.codehaus.groovy.transform
 
-import java.util.concurrent.TimeUnit
+import groovy.transform.CompileStatic
+import groovy.transform.Synchronized
+import org.codehaus.groovy.control.CompilationFailedException
+
 import java.util.concurrent.CountDownLatch
+
+import static java.util.concurrent.TimeUnit.SECONDS
 
 /**
  * @author Paul King
@@ -24,27 +29,97 @@ import java.util.concurrent.CountDownLatch
  */
 class SynchronizedTransformTest extends GroovyTestCase {
 
-    def countReadyLatch = new CountDownLatch(1);
-    def testReadyLatch = new CountDownLatch(1);
+    def countReadyLatch = new CountDownLatch(1)
+    def testReadyLatch = new CountDownLatch(1)
+    CountDownLatch countReadyLatchCS = new CountDownLatch(1)
+    CountDownLatch testReadyLatchCS = new CountDownLatch(1)
 
     void testSynchronized() {
         def c = new Count()
-        Thread.start{
+        Thread.start {
             c.incDec()
         }
         testReadyLatch.countDown()
-        countReadyLatch.await(5, TimeUnit.SECONDS)
+        countReadyLatch.await(5, SECONDS)
         c.incDec()
     }
 
+    void testSynchronizedCustom() {
+        def c = new CountCustom()
+        Thread.start {
+            c.incDec()
+        }
+        testReadyLatch.countDown()
+        countReadyLatch.await(5, SECONDS)
+        c.incDec()
+    }
+
+    void testSynchronizedCS() {
+        def c = new CountCS()
+        Thread.start {
+            c.incDec()
+        }
+        testReadyLatchCS.countDown()
+        countReadyLatchCS.await(5, SECONDS)
+        c.incDec()
+    }
+
+    void testSynchronizedAbstractShouldNotCompile() {
+        def msg = shouldFail CompilationFailedException, '''
+            class Foo {
+                @groovy.transform.Synchronized
+                abstract void bar()
+            }
+        '''
+        assert msg.contains("annotation not allowed on abstract method 'bar'")
+    }
+
+    void testSynchronizedInstanceLockWithStaticMethodShouldNotCompile() {
+        def msg = shouldFail CompilationFailedException, '''
+            class Foo {
+                private mylock = new Object[0]
+                @groovy.transform.Synchronized('mylock')
+                static void bar() {}
+            }
+        '''
+        assert msg.contains("lock field with name 'mylock' must be static for static method 'bar'")
+    }
+
     class Count {
-      private val = 0
-      @groovy.transform.Synchronized
-      void incDec() {
-        assert val == 0; val++; assert val == 1
-        countReadyLatch.countDown()
-        testReadyLatch.await(5, TimeUnit.SECONDS)
-        assert val == 1; val--; assert val == 0
-      }
+        private val = 0
+
+        @Synchronized
+        void incDec() {
+            assert val == 0; val++; assert val == 1
+            countReadyLatch.countDown()
+            testReadyLatch.await(5, SECONDS)
+            assert val == 1; val--; assert val == 0
+        }
+    }
+
+    class CountCustom {
+        private val = 0
+        private mylock = new Object[0]
+
+        @Synchronized('mylock')
+        void incDec() {
+            assert val == 0; val++; assert val == 1
+            countReadyLatch.countDown()
+            testReadyLatch.await(5, SECONDS)
+            assert val == 1; val--; assert val == 0
+        }
+    }
+
+    @CompileStatic
+    class CountCS {
+        private int val = 0
+
+        @Synchronized
+        void incDec() {
+            assert val == 0; val++; assert val == 1
+            countReadyLatchCS.countDown()
+            testReadyLatchCS.await(5, SECONDS)
+            assert val == 1; val--; assert val == 0
+        }
     }
 }

@@ -48,13 +48,13 @@ import static org.codehaus.groovy.syntax.Types.*;
  * Static support methods for {@link StaticTypeCheckingVisitor}.
  */
 public abstract class StaticTypeCheckingSupport {
-    protected final static ClassNode
+    protected static final ClassNode
             Collection_TYPE = makeWithoutCaching(Collection.class);
-    protected final static ClassNode Deprecated_TYPE = makeWithoutCaching(Deprecated.class);
-    protected final static ClassNode Matcher_TYPE = makeWithoutCaching(Matcher.class);
-    protected final static ClassNode ArrayList_TYPE = makeWithoutCaching(ArrayList.class);
-    protected final static ExtensionMethodCache EXTENSION_METHOD_CACHE = new ExtensionMethodCache();
-    protected final static Map<ClassNode, Integer> NUMBER_TYPES = Collections.unmodifiableMap(
+    protected static final ClassNode Deprecated_TYPE = makeWithoutCaching(Deprecated.class);
+    protected static final ClassNode Matcher_TYPE = makeWithoutCaching(Matcher.class);
+    protected static final ClassNode ArrayList_TYPE = makeWithoutCaching(ArrayList.class);
+    protected static final ExtensionMethodCache EXTENSION_METHOD_CACHE = new ExtensionMethodCache();
+    protected static final Map<ClassNode, Integer> NUMBER_TYPES = Collections.unmodifiableMap(
             new HashMap<ClassNode, Integer>() {{
                 put(ClassHelper.byte_TYPE, 0);
                 put(ClassHelper.Byte_TYPE, 0);
@@ -70,7 +70,7 @@ public abstract class StaticTypeCheckingSupport {
                 put(ClassHelper.Double_TYPE, 5);
             }});
 
-    protected final static ClassNode GSTRING_STRING_CLASSNODE = WideningCategories.lowestUpperBound(
+    protected static final ClassNode GSTRING_STRING_CLASSNODE = WideningCategories.lowestUpperBound(
             ClassHelper.STRING_TYPE,
             ClassHelper.GSTRING_TYPE
     );
@@ -79,7 +79,7 @@ public abstract class StaticTypeCheckingSupport {
      * This is for internal use only. When an argument method is null, we cannot determine its type, so
      * we use this one as a wildcard.
      */
-    protected final static ClassNode UNKNOWN_PARAMETER_TYPE = ClassHelper.make("<unknown parameter type>");
+    protected static final ClassNode UNKNOWN_PARAMETER_TYPE = ClassHelper.make("<unknown parameter type>");
 
     /**
      * This comparator is used when we return the list of methods from DGM which name correspond to a given
@@ -837,13 +837,16 @@ public abstract class StaticTypeCheckingSupport {
         if (c.equals(interfaceClass)) return 0;
         ClassNode[] interfaces = c.getInterfaces();
         int max = -1;
-        for (ClassNode anInterface : interfaces) {
+        for (int i = 0; i < interfaces.length; i++) {
+            final ClassNode anInterface = interfaces[i];
             int sub = getMaximumInterfaceDistance(anInterface, interfaceClass);
             // we need to keep the -1 to track the mismatch, a +1
             // by any means could let it look like a direct match
             // we want to add one, because there is an interface between
             // the interface we search for and the interface we are in.
-            if (sub != -1) sub++;
+            if (sub != -1) {
+                sub+=(i+1); // GROOVY-6970: Make sure we can choose between equivalent methods
+            }
             // we are interested in the longest path only
             max = Math.max(max, sub);
         }
@@ -1031,6 +1034,18 @@ public abstract class StaticTypeCheckingSupport {
                         }
                     }
                 }
+            }
+        }
+        if (bestChoices.size()>1) {
+            // GROOVY-6849: prefer extension methods in case of ambiguity
+            List<MethodNode> onlyExtensionMethods = new LinkedList<MethodNode>();
+            for (MethodNode choice : bestChoices) {
+                if (choice instanceof ExtensionMethodNode) {
+                    onlyExtensionMethods.add(choice);
+                }
+            }
+            if (onlyExtensionMethods.size()==1) {
+                return onlyExtensionMethods;
             }
         }
         return bestChoices;
@@ -1832,9 +1847,9 @@ public abstract class StaticTypeCheckingSupport {
                     scanner.scanClasspathModules();
                     cachedMethods = getDGMMethods(modules);
                     origin = new WeakReference<ClassLoader>(loader);
+                    lock.readLock().lock();
                 } finally {
                     lock.writeLock().unlock();
-                    lock.readLock().lock();
                 }
             }
             try {
@@ -2033,5 +2048,27 @@ public abstract class StaticTypeCheckingSupport {
                 && genericsTypes!=null
                 && !genericsTypes[0].isPlaceholder()
                 && !genericsTypes[0].isWildcard();
+    }
+
+    public static List<MethodNode> findSetters(ClassNode cn, String setterName, boolean voidOnly) {
+        List<MethodNode> result = null;
+        for (MethodNode method : cn.getDeclaredMethods(setterName)) {
+            if (setterName.equals(method.getName())
+                    && (!voidOnly || ClassHelper.VOID_TYPE==method.getReturnType())
+                    && method.getParameters().length == 1) {
+                if (result==null) {
+                    result = new LinkedList<MethodNode>();
+                }
+                result.add(method);
+            }
+        }
+        if (result==null) {
+            ClassNode parent = cn.getSuperClass();
+            if (parent != null) {
+                return findSetters(parent, setterName, voidOnly);
+            }
+            return Collections.emptyList();
+        }
+        return result;
     }
 }

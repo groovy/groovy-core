@@ -276,20 +276,20 @@ public class ExpandoMetaClass extends MetaClassImpl implements GroovyObject {
     private final Lock readLock = rwl.readLock();
     private final Lock writeLock = rwl.writeLock();
     
-    final private boolean allowChangesAfterInit;
+    private final boolean allowChangesAfterInit;
     public boolean inRegistry;
     
     private final Set<MetaMethod> inheritedMetaMethods = new HashSet<MetaMethod>();
-    private final Map<String, MetaProperty> beanPropertyCache = new ConcurrentHashMap<String, MetaProperty>();
-    private final Map<String, MetaProperty> staticBeanPropertyCache = new ConcurrentHashMap<String, MetaProperty>();
-    private final Map<MethodKey, MetaMethod> expandoMethods = new ConcurrentHashMap<MethodKey, MetaMethod>();
+    private final Map<String, MetaProperty> beanPropertyCache = new ConcurrentHashMap<String, MetaProperty>(16, 0.75f, 1);
+    private final Map<String, MetaProperty> staticBeanPropertyCache = new ConcurrentHashMap<String, MetaProperty>(16, 0.75f, 1);
+    private final Map<MethodKey, MetaMethod> expandoMethods = new ConcurrentHashMap<MethodKey, MetaMethod>(16, 0.75f, 1);
 
     public Collection getExpandoSubclassMethods() {
         return expandoSubclassMethods.values();
     }
 
-    private final ConcurrentHashMap expandoSubclassMethods = new ConcurrentHashMap();
-    private final Map<String, MetaProperty> expandoProperties = new ConcurrentHashMap<String, MetaProperty>();
+    private final ConcurrentHashMap expandoSubclassMethods = new ConcurrentHashMap(16, 0.75f, 1);
+    private final Map<String, MetaProperty> expandoProperties = new ConcurrentHashMap<String, MetaProperty>(16, 0.75f, 1);
     private ClosureStaticMetaMethod invokeStaticMethodMethod;
     private final Set<MixinInMetaClass> mixinClasses = new LinkedHashSet<MixinInMetaClass>();
 

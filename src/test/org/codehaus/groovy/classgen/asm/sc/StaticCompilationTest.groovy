@@ -1,6 +1,8 @@
 package org.codehaus.groovy.classgen.asm.sc
 
 import org.codehaus.groovy.classgen.asm.AbstractBytecodeTestCase
+import org.codehaus.groovy.control.CompilerConfiguration
+import org.codehaus.groovy.transform.stc.GroovyTypeCheckingExtensionSupport
 
 class StaticCompilationTest extends AbstractBytecodeTestCase {
     void testEmptyMethod() {
@@ -363,7 +365,62 @@ assert o.blah() == 'outer'
 ''').hasStrictSequence([
         'GETFIELD Outer$Inner.this$0',
         'INVOKEVIRTUAL Outer.getOuterProperty',
+        'DUP',
+        'ASTORE',
+        'ALOAD',
+        'ALOAD',
         'INVOKEVIRTUAL Holder.setValue'
 ])
     }
+
+    void testShouldOptimizeBytecodeByAvoidingCreationOfMopMethods() {
+        def shell = new GroovyShell()
+        def clazz = shell.evaluate '''
+            import groovy.transform.TypeCheckingMode
+            import groovy.transform.CompileStatic
+
+            @CompileStatic
+            class A {
+                def doSomething() { 'A' }
+            }
+
+            @CompileStatic
+            class B extends A {
+                def doSomething() { 'B' + super.doSomething() }
+            }
+
+            B
+        '''
+        assert clazz instanceof Class
+        assert clazz.name == 'B'
+        def mopMethods = clazz.declaredMethods.findAll { it.name =~ /(super|this)\$/ }
+        assert mopMethods.empty
+    }
+
+    void testShouldNotOptimizeBytecodeForMopMethodsBecauseOfSkip() {
+        def shell = new GroovyShell()
+        def clazz = shell.evaluate '''
+            import groovy.transform.TypeCheckingMode
+            import groovy.transform.CompileStatic
+
+            @CompileStatic
+            class A {
+                def doSomething() { 'A' }
+            }
+
+            @CompileStatic
+            class B extends A {
+                @CompileStatic(TypeCheckingMode.SKIP)
+                def doSomething() { 'B' + super.doSomething() }
+            }
+
+            B
+        '''
+        assert clazz instanceof Class
+        assert clazz.name == 'B'
+        def mopMethods = clazz.declaredMethods.findAll { it.name =~ /(super|this)\$/ }
+        assert !mopMethods.empty
+    }
+
+
 }

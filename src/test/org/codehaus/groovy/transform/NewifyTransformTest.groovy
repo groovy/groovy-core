@@ -34,6 +34,20 @@ class NewifyTransformTest extends GroovyShellTestCase {
         assertEquals main.field2, 43
     }
 
+    void testNewifyCompileStatic() {
+        def main = evaluate("""
+            @groovy.transform.CompileStatic
+            @Newify() class Main {
+                def field1 = Integer.new(42)
+                @Newify(Integer)
+                def field2 = Integer(43)
+            }
+            new Main()
+        """)
+        assertEquals main.field1, 42
+        assertEquals main.field2, 43
+    }
+
     void testClassLevelNewification() {
         evaluate """
             @Newify class Rubyesque {
@@ -129,5 +143,15 @@ class NewifyTransformTest extends GroovyShellTestCase {
             def t = Branch(Leaf(1), Branch(Branch(Leaf(2), Leaf(3)), Leaf(4)))
             assert t.toString() == 'Branch(Leaf(1), Branch(Branch(Leaf(2), Leaf(3)), Leaf(4)))'
         """
+    }
+
+    void testNewifyInnerClassNode_Groovy6438() {
+        def test = evaluate '''
+            @Newify String test() {
+              new Object() { def x() { String.new('ABC') } }.x()
+            }
+            test()
+        '''
+        assert test == 'ABC'
     }
 }

@@ -25,6 +25,7 @@ import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.asm.*;
+import org.codehaus.groovy.classgen.asm.sc.StaticCompilationMopWriter;
 import org.codehaus.groovy.classgen.asm.sc.StaticTypesTypeChooser;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.transform.stc.StaticTypeCheckingSupport;
@@ -99,17 +100,31 @@ public class StaticCompilationVisitor extends StaticTypeCheckingVisitor {
     @Override
     public void visitClass(final ClassNode node) {
         boolean skip = shouldSkipClassNode(node);
+        if (!skip && !anyMethodSkip(node)) {
+            node.putNodeMetaData(MopWriter.Factory.class, StaticCompilationMopWriter.FACTORY);
+        }
         ClassNode oldCN = classNode;
         classNode = node;
         Iterator<InnerClassNode> innerClasses = classNode.getInnerClasses();
         while (innerClasses.hasNext()) {
             InnerClassNode innerClassNode = innerClasses.next();
-            innerClassNode.putNodeMetaData(STATIC_COMPILE_NODE, !(skip || isSkippedInnerClass(innerClassNode)));
+            boolean innerStaticCompile = !(skip || isSkippedInnerClass(innerClassNode));
+            innerClassNode.putNodeMetaData(STATIC_COMPILE_NODE, innerStaticCompile);
             innerClassNode.putNodeMetaData(WriterControllerFactory.class, node.getNodeMetaData(WriterControllerFactory.class));
+            if (innerStaticCompile && !anyMethodSkip(innerClassNode)) {
+                innerClassNode.putNodeMetaData(MopWriter.Factory.class, StaticCompilationMopWriter.FACTORY);
+            }
         }
         super.visitClass(node);
         addPrivateFieldAndMethodAccessors(node);
         classNode = oldCN;
+    }
+
+    private boolean anyMethodSkip(final ClassNode node) {
+        for (MethodNode methodNode : node.getMethods()) {
+            if (isSkipMode(methodNode)) return true;
+        }
+        return false;
     }
 
     /**
@@ -188,7 +203,7 @@ public class StaticCompilationVisitor extends StaticTypeCheckingVisitor {
     private void addPrivateBridgeMethods(final ClassNode node) {
         Set<ASTNode> accessedMethods = (Set<ASTNode>) node.getNodeMetaData(StaticTypesMarker.PV_METHODS_ACCESS);
         if (accessedMethods==null) return;
-        List<MethodNode> methods = new ArrayList<MethodNode>(node.getMethods());
+        List<MethodNode> methods = new ArrayList<MethodNode>(node.getAllDeclaredMethods());
         Map<MethodNode, MethodNode> privateBridgeMethods = (Map<MethodNode, MethodNode>) node.getNodeMetaData(PRIVATE_BRIDGE_METHODS);
         if (privateBridgeMethods!=null) {
             // private bridge methods already added
@@ -224,7 +239,9 @@ public class StaticCompilationVisitor extends StaticTypeCheckingVisitor {
                 bridge.addAnnotation(new AnnotationNode(COMPILESTATIC_CLASSNODE));
             }
         }
-        node.setNodeMetaData(PRIVATE_BRIDGE_METHODS, privateBridgeMethods);
+        if (!privateBridgeMethods.isEmpty()) {
+            node.setNodeMetaData(PRIVATE_BRIDGE_METHODS, privateBridgeMethods);
+        }
     }
 
     private void memorizeInitialExpressions(final MethodNode node) {
@@ -335,7 +352,9 @@ public class StaticCompilationVisitor extends StaticTypeCheckingVisitor {
         };
         boolean exists = super.existsProperty(pexp, checkForReadOnly, receiverMemoizer);
         if (exists) {
-            objectExpression.putNodeMetaData(StaticCompilationMetadataKeys.PROPERTY_OWNER, rType.get());
+            if (objectExpression.getNodeMetaData(StaticCompilationMetadataKeys.PROPERTY_OWNER)==null) {
+                objectExpression.putNodeMetaData(StaticCompilationMetadataKeys.PROPERTY_OWNER, rType.get());
+            }
             if (StaticTypeCheckingSupport.implementsInterfaceOrIsSubclassOf(objectExpressionType, ClassHelper.LIST_TYPE)) {
                 objectExpression.putNodeMetaData(COMPONENT_TYPE, inferComponentType(objectExpressionType, ClassHelper.int_TYPE));
             }
@@ -348,7 +367,7 @@ public class StaticCompilationVisitor extends StaticTypeCheckingVisitor {
         super.visitPropertyExpression(pexp);
         Object dynamic = pexp.getNodeMetaData(StaticTypesMarker.DYNAMIC_RESOLUTION);
         if (dynamic !=null) {
-            pexp.getObjectExpression().putNodeMetaData(StaticTypesMarker.DYNAMIC_RESOLUTION, dynamic);
+            pexp.getObjectExpression().putNodeMetaData(StaticCompilationMetadataKeys.RECEIVER_OF_DYNAMIC_PROPERTY, dynamic);
         }
     }
 }

@@ -35,8 +35,8 @@ import org.codehaus.groovy.control.SourceUnit;
 import java.util.ArrayList;
 import java.util.List;
 
+import static groovy.transform.Undefined.isUndefined;
 import static org.codehaus.groovy.ast.tools.GeneralUtils.getInstancePropertyFields;
-import static org.codehaus.groovy.transform.stc.StaticTypeCheckingSupport.implementsInterfaceOrIsSubclassOf;
 
 /**
  * Handles generation of code for the {@link Builder} annotation.
@@ -95,8 +95,12 @@ public class BuilderASTTransformation extends AbstractASTTransformation implemen
 
         protected boolean unsupportedAttribute(BuilderASTTransformation transform, AnnotationNode anno, String memberName, String extraMessage) {
             Object memberValue = transform.getMemberValue(anno, memberName);
+            if (memberValue != null && memberValue instanceof String && isUndefined((String) memberValue)) return false;
             if (memberValue == null) {
                 memberValue = transform.getMemberClassValue(anno, memberName);
+                if (memberValue != null && isUndefined((ClassNode) memberValue)) {
+                    memberValue = null;
+                }
             }
             if (memberValue != null) {
                 String message = extraMessage.length() == 0 ? "" : " " + extraMessage;

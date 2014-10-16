@@ -18,23 +18,37 @@ package org.codehaus.groovy.transform.sc.transformers;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.BinaryExpression;
+import org.codehaus.groovy.ast.expr.BooleanExpression;
+import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.DeclarationExpression;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.ListExpression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.PropertyExpression;
+import org.codehaus.groovy.ast.expr.TernaryExpression;
+import org.codehaus.groovy.ast.expr.TupleExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.classgen.asm.sc.StaticPropertyAccessHelper;
 import org.codehaus.groovy.classgen.asm.sc.StaticTypesTypeChooser;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.transform.sc.ListOfExpressionsExpression;
+import org.codehaus.groovy.transform.sc.TemporaryVariableExpression;
 import org.codehaus.groovy.transform.stc.StaticTypeCheckingSupport;
 import org.codehaus.groovy.transform.stc.StaticTypesMarker;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.codehaus.groovy.transform.sc.StaticCompilationMetadataKeys.*;
+import static org.codehaus.groovy.transform.sc.StaticCompilationMetadataKeys.BINARY_EXP_TARGET;
 
 public class BinaryExpressionTransformer {
-    private final static MethodNode COMPARE_TO_METHOD = ClassHelper.COMPARABLE_TYPE.getMethods("compareTo").get(0);
+    private static final MethodNode COMPARE_TO_METHOD = ClassHelper.COMPARABLE_TYPE.getMethods("compareTo").get(0);
 
     private static final ConstantExpression CONSTANT_ZERO = new ConstantExpression(0, true);
     private static final ConstantExpression CONSTANT_MINUS_ONE = new ConstantExpression(-1, true);
@@ -60,6 +74,12 @@ public class BinaryExpressionTransformer {
         int operationType = operation.getType();
         Expression rightExpression = bin.getRightExpression();
         Expression leftExpression = bin.getLeftExpression();
+        if (operationType==Types.EQUAL && leftExpression instanceof PropertyExpression) {
+            MethodNode directMCT = leftExpression.getNodeMetaData(StaticTypesMarker.DIRECT_METHOD_CALL_TARGET);
+            if (directMCT!=null) {
+                return transformPropertyAssignmentToSetterCall((PropertyExpression) leftExpression, rightExpression, directMCT);
+            }
+        }
         if (operationType==Types.COMPARE_EQUAL || operationType == Types.COMPARE_NOT_EQUAL) {
             // let's check if one of the operands is the null constant
             CompareToNullExpression compareToNullExpression = null;
@@ -207,6 +227,21 @@ public class BinaryExpressionTransformer {
             return staticCompilationTransformer.transform(cle);
         }
         return staticCompilationTransformer.superTransform(bin);
+    }
+
+    private Expression transformPropertyAssignmentToSetterCall(final PropertyExpression leftExpression, final Expression rightExpression, final MethodNode directMCT) {
+        // transform "a.x = b" into "def tmp = b; a.setX(tmp); tmp"
+        Expression arg = staticCompilationTransformer.transform(rightExpression);
+        return StaticPropertyAccessHelper.transformToSetterCall(
+                leftExpression.getObjectExpression(),
+                directMCT,
+                arg,
+                false,
+                false,
+                false,
+                true, // to be replaced with a proper test whether a return value should be used or not
+                leftExpression
+        );
     }
 
     protected static boolean isNullConstant(final Expression expression) {

@@ -43,6 +43,7 @@ import org.codehaus.groovy.syntax.RuntimeParserException;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.reflection.ClassInfo;
+import org.codehaus.groovy.transform.trait.Traits;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -77,6 +78,8 @@ public class Verifier implements GroovyClassVisitor, Opcodes {
     public static final String SWAP_INIT = "__$swapInit";
     public static final String INITIAL_EXPRESSION = "INITIAL_EXPRESSION";
 
+    // NOTE: timeStamp constants shouldn't belong to Verifier but kept here
+    // for binary compatibility
     public static final String __TIMESTAMP = "__timeStamp";
     public static final String __TIMESTAMP__ = "__timeStamp__239_neverHappen";
     private static final Parameter[] INVOKE_METHOD_PARAMS = new Parameter[]{
@@ -150,7 +153,8 @@ public class Verifier implements GroovyClassVisitor, Opcodes {
     public void visitClass(final ClassNode node) {
         this.classNode = node;
 
-        if ((classNode.getModifiers() & Opcodes.ACC_INTERFACE) > 0) {
+        if (Traits.isTrait(node) // maybe possible to have this true in joint compilation mode
+                || ((classNode.getModifiers() & Opcodes.ACC_INTERFACE) > 0)) {
             //interfaces have no constructors, but this code expects one,
             //so create a dummy and don't add it to the class node
             ConstructorNode dummy = new ConstructorNode(0, null);
@@ -187,9 +191,6 @@ public class Verifier implements GroovyClassVisitor, Opcodes {
         if (!knownSpecialCase) addGroovyObjectInterfaceAndMethods(node, classInternalName);
 
         addDefaultConstructor(node);
-
-        // add a static timestamp field to the class
-        if (!(node instanceof InnerClassNode)) addTimeStamp(node);
 
         addInitialization(node);
         checkReturnInObjectInitializer(node.getObjectInitializerStatements());
@@ -487,30 +488,8 @@ public class Verifier implements GroovyClassVisitor, Opcodes {
         }
     }
 
+    @Deprecated
     protected void addTimeStamp(ClassNode node) {
-        if (node.getDeclaredField(Verifier.__TIMESTAMP) == null) { // in case if verifier visited the call already
-            FieldNode timeTagField = new FieldNode(
-                    Verifier.__TIMESTAMP,
-                    ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC,
-                    ClassHelper.long_TYPE,
-                    //"",
-                    node,
-                    new ConstantExpression(System.currentTimeMillis()));
-            // alternatively, FieldNode timeTagField = SourceUnit.createFieldNode("public static final long __timeStamp = " + System.currentTimeMillis() + "L");
-            timeTagField.setSynthetic(true);
-            node.addField(timeTagField);
-
-            timeTagField = new FieldNode(
-                    Verifier.__TIMESTAMP__ + String.valueOf(System.currentTimeMillis()),
-                    ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC,
-                    ClassHelper.long_TYPE,
-                    //"",
-                    node,
-                    new ConstantExpression((long) 0));
-            // alternatively, FieldNode timeTagField = SourceUnit.createFieldNode("public static final long __timeStamp = " + System.currentTimeMillis() + "L");
-            timeTagField.setSynthetic(true);
-            node.addField(timeTagField);
-        }
     }
 
     private void checkReturnInObjectInitializer(List init) {
@@ -1427,11 +1406,9 @@ public class Verifier implements GroovyClassVisitor, Opcodes {
         final int mods = Opcodes.ACC_STATIC|Opcodes.ACC_SYNTHETIC| Opcodes.ACC_PUBLIC;
         String name = SWAP_INIT;
         BlockStatement methodCode = new BlockStatement();
-        node.addSyntheticMethod(
-                name, mods, ClassHelper.VOID_TYPE,
-                Parameter.EMPTY_ARRAY, ClassNode.EMPTY_ARRAY, methodCode);
 
         methodCode.addStatement(new SwapInitStatement());
+        boolean swapInitRequired = false;
         for (FieldNode fn : node.getFields()) {
             if (!fn.isStatic() || !fn.isSynthetic() || !fn.getName().startsWith("$const$")) continue;
             if (fn.getInitialExpression()==null) continue;
@@ -1447,9 +1424,16 @@ public class Verifier implements GroovyClassVisitor, Opcodes {
             fn.setInitialValueExpression(null);
             init.setConstantName(null);
             methodCode.addStatement(statement);
+            swapInitRequired = true;
         }
 
-        return true;
+        if (swapInitRequired) {
+            node.addSyntheticMethod(
+                    name, mods, ClassHelper.VOID_TYPE,
+                    Parameter.EMPTY_ARRAY, ClassNode.EMPTY_ARRAY, methodCode);
+        }
+
+        return swapInitRequired;
     }
 
     /**

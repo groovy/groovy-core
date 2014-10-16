@@ -23,13 +23,19 @@
  */
 package groovy.lang;
 
+import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.InnerClassNode;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.classgen.Verifier;
 import org.codehaus.groovy.control.*;
 import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
 
 import java.io.*;
 import java.net.*;
@@ -266,6 +272,9 @@ public class GroovyClassLoader extends URLClassLoader {
         validate(codeSource);
         Class answer;  // Was neither already loaded nor compiling, so compile and add to cache.
         CompilationUnit unit = createCompilationUnit(config, codeSource.getCodeSource());
+        if (recompile!=null && recompile || recompile==null && config.getRecompileGroovySource()) {
+            unit.addFirstPhaseOperation(TimestampAdder.INSTANCE, CompilePhase.CLASS_GENERATION.getPhaseNumber());
+        }
         SourceUnit su = null;
         File file = codeSource.getFile();
         if (file != null) {
@@ -903,7 +912,7 @@ public class GroovyClassLoader extends URLClassLoader {
                     // a URI for the current working directory.
                     // But we use this string match for now so everyone can see it doesn't hurt file-only classpaths.
                     URI newURI;
-                    if (!uriPattern.matcher(path).matches()) {
+                    if (!URI_PATTERN.matcher(path).matches()) {
                         newURI = new File(path).toURI();
                     } else {
                         newURI = new URI(path);
@@ -933,7 +942,7 @@ public class GroovyClassLoader extends URLClassLoader {
     // RFC2396
     // scheme        = alpha *( alpha | digit | "+" | "-" | "." )
     // match URIs but not Windows filenames, e.g.: http://cnn.com but not C:\xxx\file.ext
-    private static final Pattern uriPattern = Pattern.compile("\\p{Alpha}[-+.\\p{Alnum}]*:[^\\\\]*");
+    private static final Pattern URI_PATTERN = Pattern.compile("\\p{Alpha}[-+.\\p{Alnum}]*:[^\\\\]*");
 
     /**
      * <p>Returns all Groovy classes loaded by this class loader.
@@ -960,6 +969,49 @@ public class GroovyClassLoader extends URLClassLoader {
         }
         synchronized (sourceCache) {
             sourceCache.clear();
+        }
+    }
+
+    private static class TimestampAdder extends CompilationUnit.PrimaryClassNodeOperation implements Opcodes {
+        private final static TimestampAdder INSTANCE = new TimestampAdder();
+
+        private TimestampAdder() {}
+
+        protected void addTimeStamp(ClassNode node) {
+            if (node.getDeclaredField(Verifier.__TIMESTAMP) == null) { // in case if verifier visited the call already
+                FieldNode timeTagField = new FieldNode(
+                        Verifier.__TIMESTAMP,
+                        ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC,
+                        ClassHelper.long_TYPE,
+                        //"",
+                        node,
+                        new ConstantExpression(System.currentTimeMillis()));
+                // alternatively, FieldNode timeTagField = SourceUnit.createFieldNode("public static final long __timeStamp = " + System.currentTimeMillis() + "L");
+                timeTagField.setSynthetic(true);
+                node.addField(timeTagField);
+
+                timeTagField = new FieldNode(
+                        Verifier.__TIMESTAMP__ + String.valueOf(System.currentTimeMillis()),
+                        ACC_PUBLIC | ACC_STATIC | ACC_SYNTHETIC,
+                        ClassHelper.long_TYPE,
+                        //"",
+                        node,
+                        new ConstantExpression((long) 0));
+                // alternatively, FieldNode timeTagField = SourceUnit.createFieldNode("public static final long __timeStamp = " + System.currentTimeMillis() + "L");
+                timeTagField.setSynthetic(true);
+                node.addField(timeTagField);
+            }
+        }
+
+        @Override
+        public void call(final SourceUnit source, final GeneratorContext context, final ClassNode classNode) throws CompilationFailedException {
+            if ((classNode.getModifiers() & Opcodes.ACC_INTERFACE) > 0) {
+                // does not apply on interfaces
+                return;
+            }
+            if (!(classNode instanceof InnerClassNode)) {
+                addTimeStamp(classNode);
+            }
         }
     }
 }

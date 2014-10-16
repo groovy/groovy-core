@@ -34,6 +34,7 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 
+import java.lang.reflect.Modifier;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.codehaus.groovy.ast.ClassHelper.*;
@@ -294,8 +295,9 @@ public class StaticTypesBinaryExpressionMultiTypeDispatcher extends BinaryExpres
         TypeChooser typeChooser = controller.getTypeChooser();
         ClassNode receiverType = typeChooser.resolveType(receiver, controller.getClassNode());
         String property = message.getText();
+        boolean isThisExpression = receiver instanceof VariableExpression && ((VariableExpression) receiver).isThisExpression();
         if (isAttribute
-                || ((receiver instanceof VariableExpression && ((VariableExpression) receiver).isThisExpression()) &&
+                || (isThisExpression &&
                     receiverType.getDeclaredField(property)!=null)) {
             ClassNode current = receiverType;
             FieldNode fn = null;
@@ -329,33 +331,42 @@ public class StaticTypesBinaryExpressionMultiTypeDispatcher extends BinaryExpres
                 operandStack.remove(fn.isStatic()?1:2);
                 return true;
             }
-        } else {
+        }
+        if (!isAttribute) {
             String setter = "set" + MetaClassHelper.capitalize(property);
             MethodNode setterMethod = receiverType.getSetterMethod(setter);
-            if (setterMethod == null) {
+            ClassNode declaringClass = setterMethod!=null?setterMethod.getDeclaringClass():null;
+            if (isThisExpression && declaringClass!=null && declaringClass.equals(controller.getClassNode())) {
+                // this.x = ... shouldn't use a setter if in the same class
+                setterMethod = null;
+            } else if (setterMethod == null) {
                 PropertyNode propertyNode = receiverType.getProperty(property);
                 if (propertyNode != null) {
-                    setterMethod = new MethodNode(
-                            setter,
-                            ACC_PUBLIC,
-                            ClassHelper.VOID_TYPE,
-                            new Parameter[]{new Parameter(propertyNode.getOriginType(), "value")},
-                            ClassNode.EMPTY_ARRAY,
-                            EmptyStatement.INSTANCE
-                    );
-                    setterMethod.setDeclaringClass(receiverType);
+                    int mods = propertyNode.getModifiers();
+                    if (!Modifier.isFinal(mods)) {
+                        setterMethod = new MethodNode(
+                                setter,
+                                ACC_PUBLIC,
+                                ClassHelper.VOID_TYPE,
+                                new Parameter[]{new Parameter(propertyNode.getOriginType(), "value")},
+                                ClassNode.EMPTY_ARRAY,
+                                EmptyStatement.INSTANCE
+                        );
+                        setterMethod.setDeclaringClass(receiverType);
+                    }
                 }
             }
             if (setterMethod != null) {
-                MethodCallExpression call = new MethodCallExpression(
+                Expression call = StaticPropertyAccessHelper.transformToSetterCall(
                         receiver,
-                        setter,
-                        arguments
+                        setterMethod,
+                        arguments,
+                        implicitThis,
+                        safe,
+                        spreadSafe,
+                        true, // to be replaced with a proper test whether a return value should be used or not
+                        message
                 );
-                call.setImplicitThis(implicitThis);
-                call.setSafe(safe);
-                call.setSpreadSafe(spreadSafe);
-                call.setMethodTarget(setterMethod);
                 call.visit(controller.getAcg());
                 return true;
             }
@@ -414,7 +425,11 @@ public class StaticTypesBinaryExpressionMultiTypeDispatcher extends BinaryExpres
             );
             mce.setSourcePosition(parent);
             visitor.visitMethodCallExpression(mce);
+            OperandStack operandStack = controller.getOperandStack();
+            int height = operandStack.getStackLength();
             mce.visit(controller.getAcg());
+            operandStack.pop();
+            operandStack.remove(operandStack.getStackLength()-height);
             // return value of assignment
             rhsValueLoader.visit(controller.getAcg());
         }

@@ -15,9 +15,9 @@ buildscript {
     }
 
     dependencies {
-        classpath 'org.asciidoctor:asciidoctor-gradle-plugin:0.7.0'
-        classpath 'net.saliman:gradle-cobertura-plugin:1.1.2'
+        classpath 'org.asciidoctor:asciidoctor-gradle-plugin:0.7.3'
         classpath 'org.jfrog.buildinfo:build-info-extractor-gradle:2.2.3'
+        classpath 'me.champeau.gradle:japicmp-gradle-plugin:0.1.0'
     }
 }
 
@@ -433,6 +433,7 @@ apply from: 'gradle/upload.gradle'
 apply from: 'gradle/idea.gradle'
 apply from: 'gradle/eclipse.gradle'
 apply from: 'gradle/codehaus.gradle'
+apply from: 'gradle/quality.gradle'
 // If a local configuration file for tweaking the build is present, apply it
 if (file('user.gradle').exists()) {
     apply from: 'user.gradle'

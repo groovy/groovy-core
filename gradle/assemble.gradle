@@ -133,6 +133,7 @@ allprojects {
         classifier = jar.classifier
         includeEmptyDirs = false
         def target = new File("${archivePath}.tmp")
+        def targetTmp = new File("${archivePath}.tmp.1.tmp")
 
         doFirst {
             from zipTree(target)
@@ -147,7 +148,7 @@ allprojects {
             def gradleProject = project
             ant {
                 taskdef name: 'jarjar', classname: 'com.tonicsystems.jarjar.JarJarTask', classpath: rootProject.configurations.tools.asPath
-                jarjar(jarfile: target) {
+                jarjar(jarfile: targetTmp) {
                     zipfileset(
                             src: jar.archivePath,
                             excludes: keepUntouched)
@@ -155,7 +156,7 @@ allprojects {
                     // only groovy core will include the dependencies repackaged
                     if (isRoot) {
                         configurations.runtime.files.findAll { file ->
-                            ['antlr', 'asm', 'commons-cli', 'openbeans'].any {
+                            ['antlr', 'asm', 'commons-cli'].any {
                                 file.name.startsWith(it)
                             } && ['asm-attr', 'asm-util', 'asm-analysis'].every { !file.name.startsWith(it) }
                         }.each { jarjarFile ->
@@ -175,13 +176,14 @@ allprojects {
             manifest = osgiManifest {
                 symbolicName = gradleProject.name
                 instruction 'Import-Package', '*;resolution:=optional'
-                classesDir = target
+                classesDir = targetTmp
             }
             manifest(manifestSpec)
 
             def manifestPath = "${temporaryDir}/META-INF/MANIFEST.MF"
             manifest.writeTo(manifestPath)
 
+            ant.copy(file: targetTmp, tofile: target)
             ant.jar(destfile: target, update: true, manifest: manifestPath) {
                 zipfileset(
                         src: jar.archivePath,
@@ -191,6 +193,7 @@ allprojects {
         }
         doLast {
             target.delete()
+            ant.delete(file: targetTmp, quiet: true, deleteonexit: true)
         }
     }
 
@@ -205,6 +208,7 @@ allprojects {
             classifier = jar.classifier ? "${jar.classifier}grooid" : 'grooid'
             includeEmptyDirs = false
             def target = new File("${archivePath}.tmp")
+            boolean isRootProject = project==rootProject
 
             doFirst {
                 from zipTree(target)
@@ -212,7 +216,9 @@ allprojects {
                     taskdef name: 'jarjar', classname: 'com.tonicsystems.jarjar.JarJarTask', classpath: rootProject.configurations.tools.asPath
                     jarjar(jarfile: target) {
                         zipfileset(src: jarjar.archivePath)
-
+                        if (isRootProject) {
+                            zipfileset(src: rootProject.configurations.runtime.files.find { it.name.startsWith('openbeans') })
+                        }
                         rule pattern: 'com.googlecode.openbeans.**', result: 'groovyjarjaropenbeans.@1'
                         rule pattern: 'org.apache.harmony.beans.**', result: 'groovyjarjarharmonybeans.@1'
                         rule pattern: 'java.beans.**', result: 'groovyjarjaropenbeans.@1'
@@ -310,9 +316,10 @@ task jarAll(type: Jar, dependsOn: replaceJarWithJarJar) {
         }
         logger.info 'Packaging with jarjar'
 
+        def archivePathTmp = new File("${archivePath}.1.tmp")
         ant {
             taskdef name: 'jarjar', classname: 'com.tonicsystems.jarjar.JarJarTask', classpath: configurations.tools.asPath
-            jarjar(jarfile: archivePath, manifest: "$owner.ext.metaInfDir/MANIFEST.MF") {
+            jarjar(jarfile: archivePathTmp, manifest: "$owner.ext.metaInfDir/MANIFEST.MF") {
                 zipfileset(dir: "$owner.ext.metaInfDir", prefix: 'META-INF', excludes: 'META-INF')
                 zipfileset(src: jar.archivePath)
                 moduleJars().each {
@@ -324,16 +331,18 @@ task jarAll(type: Jar, dependsOn: replaceJarWithJarJar) {
         manifest = osgiManifest {
             symbolicName = 'groovy-all'
             instruction 'Import-Package', '*;resolution:=optional'
-            classesDir = archivePath
+            classesDir = archivePathTmp
         }
         manifest groovyOsgiManifest
         manifestPath = "${temporaryDir}/META-INF/MANIFEST.MF"
         manifest.writeTo(manifestPath)
 
         ant {
+            copy(file: archivePathTmp, tofile: archivePath)
             jar(destfile: archivePath, update:true, manifest: manifestPath) {
                 zipfileset(src: jar.archivePath)
             }
+            delete(file: archivePathTmp, quiet: true, deleteonexit: true)
         }
     }
 }

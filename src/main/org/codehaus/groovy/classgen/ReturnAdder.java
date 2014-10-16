@@ -31,7 +31,7 @@ import java.util.ArrayList;
  */
 public class ReturnAdder {
 
-    private final static ReturnStatementListener DEFAULT_LISTENER = new ReturnStatementListener() {
+    private static final ReturnStatementListener DEFAULT_LISTENER = new ReturnStatementListener() {
         public void returnStatementAdded(final ReturnStatement returnStatement) {
         }
     };
@@ -148,6 +148,20 @@ public class ReturnAdder {
 
         if (statement instanceof TryCatchStatement) {
             TryCatchStatement trys = (TryCatchStatement) statement;
+            final boolean[] missesReturn = new boolean[1];
+            new ReturnAdder(new ReturnStatementListener() {
+                @Override
+                public void returnStatementAdded(ReturnStatement returnStatement) {
+                    missesReturn[0] = true;
+                }
+            }).addReturnsIfNeeded(trys.getFinallyStatement(), scope);
+            boolean hasFinally = !(trys.getFinallyStatement() instanceof EmptyStatement);
+
+            // if there is no missing return in the finally block and the block exists
+            // there is nothing to do
+            if (hasFinally && !missesReturn[0]) return trys;
+
+            // add returns to try and catch blocks
             final Statement tryStatement = addReturnsIfNeeded(trys.getTryStatement(), scope);
             if (doAdd) trys.setTryStatement(tryStatement);
             final int len = trys.getCatchStatements().size();
@@ -243,7 +257,7 @@ public class ReturnAdder {
     /**
      * Implement this method in order to be notified whenever a return statement is generated.
      */
-    public static interface ReturnStatementListener {
+    public interface ReturnStatementListener {
         void returnStatementAdded(ReturnStatement returnStatement);
     }
 }

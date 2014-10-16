@@ -1295,5 +1295,77 @@ println someInt
     assert o.test() == 'ok'
     '''
     }
+
+    // GROOVY-6876
+    void testSetterOfPrimitiveType() {
+        assertScript '''
+            class Foo {
+                long bar
+                def method() {
+                    setBar(-1L)
+                    bar
+                }
+            }
+            assert new Foo().method() == -1L
+            '''
+
+        assertScript '''
+            class Foo {
+                long bar
+                def method(Long v) {
+                    setBar(v)
+                    bar
+                }
+            }
+            assert new Foo().method(-1L) == -1L
+        '''
+
+        assertScript '''
+            class Foo {
+                long rankOrderingOrId
+                void setRankOrderingOrId(long rankOrderingOrId) {
+                    this.rankOrderingOrId = rankOrderingOrId < 0 ? -1 : rankOrderingOrId
+                }
+            }
+            def f = new Foo()
+            f.setRankOrderingOrId(1L)
+            assert f.getRankOrderingOrId() == 1L
+            assert f.rankOrderingOrId == 1L
+            f.rankOrderingOrId = 2L
+            assert f.getRankOrderingOrId() == 2L
+            assert f.rankOrderingOrId == 2L
+        '''
+    }
+
+    // GROOVY-6921
+    void testSubscriptOnClosureSharedVariable() {
+        assertScript '''
+            def versionRanges = [['1.7', 3]]
+            def versions = versionRanges.collect { versionRange -> (0..versionRange[1]).collect { "${versionRange[0]}.${it}" } }.flatten()
+            assert versions == ['1.7.0','1.7.1','1.7.2','1.7.3']
+        '''
+    }
+
+    // GROOVY-6924
+    void testShouldNotThrowIncompatibleClassChangeError() {
+        try {
+            assertScript '''import org.codehaus.groovy.classgen.asm.sc.Groovy6924Support
+            class Test {
+                static void foo() {
+                    Groovy6924Support bean = new Groovy6924Support()
+                    bean.with {
+                        foo = 'foo'
+                        bar = 'bar'
+                    }
+                    String val = "$bean.foo and $bean.bar"
+                    assert val == 'foo and bar'
+                }
+            }
+            Test.foo()
+        '''
+        } finally {
+            assert astTrees['Test$_foo_closure1'][1].contains('INVOKEVIRTUAL org/codehaus/groovy/classgen/asm/sc/Groovy6924Support.setFoo (Ljava/lang/String;)V')
+        }
+    }
 }
 

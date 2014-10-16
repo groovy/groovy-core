@@ -18,6 +18,7 @@ package org.codehaus.groovy.classgen.asm;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.codehaus.groovy.GroovyBugError;
 import org.codehaus.groovy.ast.ASTNode;
@@ -52,9 +53,9 @@ import static org.objectweb.asm.Opcodes.*;
 
 public class ClosureWriter {
 
-    protected static interface UseExistingReference {}
+    protected interface UseExistingReference {}
 
-    private final HashMap<Expression,ClassNode> closureClassMap;
+    private final Map<Expression,ClassNode> closureClassMap;
     private final WriterController controller;
     private final WriterControllerFactory factory;
 
@@ -166,7 +167,7 @@ public class ClosureWriter {
         ClassNode classNode = controller.getClassNode();
         ClassNode outerClass = controller.getOutermostClass();
         MethodNode methodNode = controller.getMethodNode();
-        String name = outerClass.getName() + "$"
+        String name = classNode.getName() + "$"
                 + controller.getContext().getNextClosureInnerName(outerClass, classNode, methodNode); // add a more informative name
         boolean staticMethodOrInStaticClass = controller.isStaticMethod() || classNode.isStaticClass();
 

@@ -39,6 +39,17 @@ class SingletonTransformTest extends GroovyShellTestCase {
         assert "Hello, World!" == res
     }
 
+    void testSingletonCompileStatic() {
+        def res = evaluate("""
+            @Singleton @groovy.transform.CompileStatic
+            class X {
+                def getHello () { "Hello, World!" }
+            }
+            X.instance.hello
+        """)
+        assert "Hello, World!" == res
+    }
+
     void testLazySingleton() {
         def res = evaluate("""
             @Singleton(lazy=true)
@@ -119,7 +130,7 @@ class SingletonTransformTest extends GroovyShellTestCase {
             class $className { }
         """)
 
-        int modifiers = clazz.getDeclaredField(propertyName).modifiers //should be public final static for non-lazy singleton
+        int modifiers = clazz.getDeclaredField(propertyName).modifiers //should be public static final for non-lazy singleton
         int flags = Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL
         assert (modifiers & flags) == flags
 

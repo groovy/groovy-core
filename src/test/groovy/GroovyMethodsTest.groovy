@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2012 the original author or authors.
+ * Copyright 2003-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import org.codehaus.groovy.util.StringUtil
  * @author Mike Dillon
  * @author Tim Yates
  * @author Dinko Srkoc
+ * @author Yu Kobayashi
  */
 class GroovyMethodsTest extends GroovyTestCase {
     void testCollect() {
@@ -62,11 +63,11 @@ class GroovyMethodsTest extends GroovyTestCase {
         assert animals.elements()*.size() == [3, 3]
     }
 
-    void testCollectAll() {
+    void testCollectNested() {
         def animalLists= [["ant", "mouse", "elephant"], ["deer", "monkey"]]
         assert animalLists*.size() == [3, 2]
         assert animalLists.collect{ it.size() } == [3, 2]
-        assert animalLists.collectAll{ it.size() } == [[3, 5, 8], [4, 6]]
+        assert animalLists.collectNested{ it.size() } == [[3, 5, 8], [4, 6]]
     }
 
     void testAsCoercion() {
@@ -432,13 +433,93 @@ class GroovyMethodsTest extends GroovyTestCase {
         assert !('d' in list)
     }
 
-    void testFirstLastHeadTailForLists() {
+    void testFirstLastHeadTailInitForLists() {
         def list = ['a', 'b', 'c']
         assert 'a' == list.first()
-        assert 'c' == list.last()
         assert 'a' == list.head()
+        assert 'c' == list.last()
         assert ['b', 'c'] == list.tail()
+        assert ['a', 'b'] == list.init()
         assert list.size() == 3
+
+        list = []
+        shouldFail(NoSuchElementException) {
+            list.first()
+        }
+        shouldFail(NoSuchElementException) {
+            list.head()
+        }
+        shouldFail(NoSuchElementException) {
+            list.last()
+        }
+        shouldFail(NoSuchElementException) {
+            list.tail()
+        }
+        shouldFail(NoSuchElementException) {
+            list.init()
+        }
+        assert list.size() == 0
+    }
+
+    void testFirstLastHeadTailInitForIterables() {
+        int a
+        Iterable iterable = { [ hasNext:{ a < 6 }, next:{ a++ } ] as Iterator } as Iterable
+
+        a = 1
+        assert 1 == iterable.first()
+        a = 1
+        assert 1 == iterable.head()
+        a = 1
+        assert 5 == iterable.last()
+        a = 1
+        assert [2, 3, 4, 5] == iterable.tail()
+        a = 1
+        assert [1, 2, 3, 4] == iterable.init()
+
+        iterable = { [ hasNext:{ false }, next:{ 1 } ] as Iterator } as Iterable
+        shouldFail(NoSuchElementException) {
+            iterable.first()
+        }
+        shouldFail(NoSuchElementException) {
+            iterable.head()
+        }
+        shouldFail(NoSuchElementException) {
+            iterable.last()
+        }
+        shouldFail(NoSuchElementException) {
+            iterable.init()
+        }
+        shouldFail(NoSuchElementException) {
+            iterable.tail()
+        }
+    }
+
+    void testFirstLastHeadTailInitForArrays() {
+        String[] ary = ['a', 'b', 'c'] as String[]
+        assert 'a' == ary.first()
+        assert 'a' == ary.head()
+        assert 'c' == ary.last()
+        assert ['b', 'c'] == ary.tail()
+        assert ['a', 'b'] == ary.init()
+        assert ary.length == 3
+
+        ary = [] as String[]
+        shouldFail(NoSuchElementException) {
+            ary.first()
+        }
+        shouldFail(NoSuchElementException) {
+            ary.head()
+        }
+        shouldFail(NoSuchElementException) {
+            ary.last()
+        }
+        shouldFail(NoSuchElementException) {
+            ary.tail()
+        }
+        shouldFail(NoSuchElementException) {
+            ary.init()
+        }
+        assert ary.length == 0
     }
 
     void testPushPopForLists() {
@@ -455,12 +536,30 @@ class GroovyMethodsTest extends GroovyTestCase {
         assert !('d' in array)
     }
 
-    void testMax() {
+    void testMaxForIterable() {
         assert [-5, -3, -1, 0, 2, 4].max {it * it} == -5
+        assert ['be', 'happy', null].max{ it == 'be' ? null : "" + it } == null
+        assert ['be', 'happy', null].max{ it == 'happy' ? null : "" + it } == null
+        assert ['happy', null, 'birthday'].max{ ("" + it).size() } == 'birthday'
+        assert ['be', null].max{ ("" + it).size() } == null
+        assert [null, 'result'].max{ "" + it } == 'result'
+        def nums = [42, 35, 17, 100]
+        assert [].max{ it } == null
+        assert nums.max{ it } == 100
+        assert nums.max{ null } in nums
+        assert nums.max{ it.toString().toList()*.toInteger().sum() } == 35
     }
 
-    void testMin() {
+    void testMinForIterable() {
         assert [-5, -3, -1, 0, 2, 4].min {it * it} == 0
+        assert ['be', 'happy', null].min{ it == 'happy' ? null : "" + it } == 'happy'
+        assert ['happy', null, 'birthday'].min{ ("" + it).size() } == null
+        assert [null, 'result'].min{ "" + it } == null
+        def nums = [42, 35, 17, 100]
+        assert [].min{ it } == null
+        assert nums.min{ it } == 17
+        assert nums.min{ null } in nums 
+        assert nums.min{ it.toString().toList()*.toInteger().sum() } == 100
     }
 
     void testSort() {
@@ -468,11 +567,11 @@ class GroovyMethodsTest extends GroovyTestCase {
     }
 
     void testMaxForIterator() {
-        assert [-5, -3, -1, 0, 2, 4].collect{ it * it }.iterator().max() == 25
+        assert [-5, -3, -1, 0, 2, 4].collect { it * it }.iterator().max() == 25
     }
 
     void testMinForIterator() {
-        assert [-5, -3, -1, 0, 2, 4].collect{ it * it }.iterator().min() == 0
+        assert [-5, -3, -1, 0, 2, 4].collect { it * it }.iterator().min() == 0
     }
 
     void testMinForObjectArray() {
@@ -901,10 +1000,49 @@ class GroovyMethodsTest extends GroovyTestCase {
         assert items == [2, 4]
     }
 
-    void testPermutations() {
+    void testPermutationsForLists() {
         def items = [1, 2, 3]
         assert items.permutations() == [[1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], [3, 2, 1]] as Set
         items = "frog".toList()
+        def ans = [] as Set
+        items.eachPermutation {
+            ans << it
+        }
+        assert ans == [
+                ['f', 'r', 'o', 'g'],
+                ['f', 'r', 'g', 'o'],
+                ['f', 'o', 'r', 'g'],
+                ['f', 'o', 'g', 'r'],
+                ['f', 'g', 'r', 'o'],
+                ['f', 'g', 'o', 'r'],
+                ['r', 'f', 'o', 'g'],
+                ['r', 'f', 'g', 'o'],
+                ['r', 'o', 'f', 'g'],
+                ['r', 'o', 'g', 'f'],
+                ['r', 'g', 'f', 'o'],
+                ['r', 'g', 'o', 'f'],
+                ['o', 'r', 'f', 'g'],
+                ['o', 'r', 'g', 'f'],
+                ['o', 'f', 'r', 'g'],
+                ['o', 'f', 'g', 'r'],
+                ['o', 'g', 'r', 'f'],
+                ['o', 'g', 'f', 'r'],
+                ['g', 'r', 'o', 'f'],
+                ['g', 'r', 'f', 'o'],
+                ['g', 'o', 'r', 'f'],
+                ['g', 'o', 'f', 'r'],
+                ['g', 'f', 'r', 'o'],
+                ['g', 'f', 'o', 'r'],
+        ] as Set
+    }
+
+    void testPermutationsForIterables() {
+        int a = 1
+        Iterable items = { [ hasNext:{ a <= 3 }, next:{ a++ } ] as Iterator } as Iterable
+        assert items.permutations() == [[1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], [3, 2, 1]] as Set
+
+        a = 0
+        items = { [ hasNext:{ a <= 3 }, next:{ "frog"[a++] } ] as Iterator } as Iterable
         def ans = [] as Set
         items.eachPermutation {
             ans << it
@@ -985,6 +1123,11 @@ class GroovyMethodsTest extends GroovyTestCase {
             assert it.take(  0 ) == []
             assert it.take(  2 ) == [ 1, 2 ]
             assert it.take(  4 ) == [ 1, 2, 3 ]
+
+            assert it.takeRight( -1 ) == []
+            assert it.takeRight(  0 ) == []
+            assert it.takeRight(  2 ) == [ 2, 3 ]
+            assert it.takeRight(  4 ) == [ 1, 2, 3 ]
         }
     }
 
@@ -995,6 +1138,11 @@ class GroovyMethodsTest extends GroovyTestCase {
         assert items.take(  0 ) == [] as String[]
         assert items.take(  2 ) == [ 'ant', 'bee' ] as String[]
         assert items.take(  4 ) == [ 'ant', 'bee', 'cat' ] as String[]
+
+        assert items.takeRight( -1 ) == [] as String[]
+        assert items.takeRight(  0 ) == [] as String[]
+        assert items.takeRight(  2 ) == [ 'bee', 'cat' ] as String[]
+        assert items.takeRight(  4 ) == [ 'ant', 'bee', 'cat' ] as String[]
     }
 
     void testMapTake() {
@@ -1019,6 +1167,32 @@ class GroovyMethodsTest extends GroovyTestCase {
         assert items.take(  0 ).collect { it } == []
         assert items.take(  2 ).collect { it } == [ 1, 2 ]
         assert items.take(  4 ).collect { it } == [ 3, 4, 5, 6 ]
+    }
+
+    void testWellBehavedIteratorsForInfiniteStreams() {
+        int a = 1
+        def infiniterator = [ hasNext:{ true }, next:{ a++ } ] as Iterator
+        assert infiniterator.drop(3).dropWhile{ it < 9 }.toUnique{ it % 100 }.init().tail().take(3).toList() == [10, 11, 12]
+    }
+
+    void testIterableTake() {
+        int a = 1
+        Iterable items = { [ hasNext:{ true }, next:{ a++ } ] as Iterator } as Iterable
+
+        assert items.take( -1 ).collect { it } == []
+        assert items.take(  0 ).collect { it } == []
+        assert items.take(  2 ).collect { it } == [ 1, 2 ]
+        assert items.take(  4 ).collect { it } == [ 3, 4, 5, 6 ]
+
+        items = { [ hasNext:{ a < 6 }, next:{ a++ } ] as Iterator } as Iterable
+
+        assert items.takeRight( -1 ).collect { it } == []
+        a = 1
+        assert items.takeRight(  0 ).collect { it } == []
+        a = 1
+        assert items.takeRight(  2 ).collect { it } == [ 4, 5 ]
+        a = 1
+        assert items.takeRight(  4 ).collect { it } == [ 2, 3, 4, 5 ]
     }
 
     void testCharSequenceTake() {
@@ -1049,6 +1223,11 @@ class GroovyMethodsTest extends GroovyTestCase {
             assert it.drop(  0 ) == [ 1, 2, 3 ]
             assert it.drop(  2 ) == [ 3 ]
             assert it.drop(  4 ) == []
+
+            assert it.dropRight( -1 ) == [ 1, 2, 3 ]
+            assert it.dropRight(  0 ) == [ 1, 2, 3 ]
+            assert it.dropRight(  2 ) == [ 1 ]
+            assert it.dropRight(  4 ) == []
         }
     }
 
@@ -1059,6 +1238,11 @@ class GroovyMethodsTest extends GroovyTestCase {
         assert items.drop(  4 ) == [] as String[]
         assert items.drop(  0 ) == [ 'ant', 'bee', 'cat' ] as String[]
         assert items.drop( -1 ) == [ 'ant', 'bee', 'cat' ] as String[]
+
+        assert items.dropRight(  2 ) == [ 'ant' ] as String[]
+        assert items.dropRight(  4 ) == [] as String[]
+        assert items.dropRight(  0 ) == [ 'ant', 'bee', 'cat' ] as String[]
+        assert items.dropRight( -1 ) == [ 'ant', 'bee', 'cat' ] as String[]
     }
 
     void testMapDrop() {
@@ -1088,6 +1272,28 @@ class GroovyMethodsTest extends GroovyTestCase {
         assert items.drop( 5 ).collect { it } == []
     }
 
+    void testIterableDrop() {
+        int a = 1
+        Iterable items = { [ hasNext:{ a < 6 }, next:{ a++ } ] as Iterator } as Iterable
+
+        assert items.drop( 0 ).collect { it } == [ 1, 2, 3, 4, 5 ]
+        a = 1
+        assert items.drop( 2 ).collect { it } == [ 3, 4, 5 ]
+        a = 1
+        assert items.drop( 4 ).collect { it } == [ 5 ]
+        a = 1
+        assert items.drop( 5 ).collect { it } == []
+
+        a = 1
+        assert items.dropRight( 0 ).collect { it } == [ 1, 2, 3, 4, 5 ]
+        a = 1
+        assert items.dropRight( 2 ).collect { it } == [ 1, 2, 3 ]
+        a = 1
+        assert items.dropRight( 4 ).collect { it } == [ 1 ]
+        a = 1
+        assert items.dropRight( 5 ).collect { it } == []
+    }
+
     void testCharSequenceDrop() {
         def data = [ 'groovy',      // String
                      "${'groovy'}", // GString
@@ -1105,6 +1311,7 @@ class GroovyMethodsTest extends GroovyTestCase {
     }
 
     void testTakeDropClassSymmetry() {
+        int a
         // NOTES:
         // - Cannot test plain HashMap, as Groovy will always default to a LinkedHashMap
         //   See org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport.java:183
@@ -1121,13 +1328,33 @@ class GroovyMethodsTest extends GroovyTestCase {
           (java.util.Hashtable)     : new Hashtable( [ a:1, b:2, c:3 ] ),
           // Iterators
           (java.util.Iterator)      : [ hasNext:{ true }, next:{ 'groovy' } ] as Iterator,
+          // Iterables
+          (java.lang.Iterable)      : { [ hasNext:{ a < 6 }, next:{ a++ } ] as Iterator } as Iterable,
           // CharSequences
           (java.lang.String)        : new String( 'groovy' ),
           (java.nio.CharBuffer)     : java.nio.CharBuffer.wrap( 'groovy' ),
         ]
         data.each { Class clazz, object ->
+            a = 1
             assert clazz.isInstance( object.take( 5 ) )
+            a = 1
             assert clazz.isInstance( object.drop( 5 ) )
+        }
+
+        data = [
+          // Lists
+          (java.util.ArrayList)     : new ArrayList( [ 1, 2, 3 ] ),
+          (java.util.LinkedList)    : new LinkedList( [ 1, 2, 3 ] ),
+          (java.util.Stack)         : new Stack() {{ addAll( [ 1, 2, 3 ] ) }},
+          (java.util.Vector)        : new Vector( [ 1, 2, 3 ] ),
+          // Iterables
+          (java.lang.Iterable)      : { [ hasNext:{ a < 6 }, next:{ a++ } ] as Iterator } as Iterable,
+        ]
+        data.each { Class clazz, object ->
+            a = 1
+            assert clazz.isInstance( object.takeRight( 5 ) )
+            a = 1
+            assert clazz.isInstance( object.dropRight( 5 ) )
         }
     }
 
@@ -1161,6 +1388,53 @@ class GroovyMethodsTest extends GroovyTestCase {
         assert !chars.contains('b' as char)
     }
 
+    void testContainsForArrays() {
+        String[] vowels = ['a', 'e', 'i', 'o', 'u']
+        assert vowels.contains('u')
+        assert !vowels.contains('x')
+    }
+
+    void testContainsForLists() {
+        List vowels = ['a', 'e', 'i', 'o', 'u']
+        assert vowels.contains('u')
+        assert !vowels.contains('x')
+    }
+
+    void testContainsForIterables() {
+        int a
+        Iterable iterable = { [hasNext: { a < 6 }, next: { a++ }] as Iterator } as Iterable
+
+        a = 1
+        assert iterable.contains(5)
+        a = 1
+        assert !iterable.contains(6)
+
+        iterable = { [hasNext: { a < 6 }, next: { a++; null }] as Iterator } as Iterable
+        a = 1
+        assert iterable.contains(null)
+        a = 1
+        assert !iterable.contains("a")
+    }
+
+    void testContainsAllForLists() {
+        List vowels = ['a', 'e', 'i', 'o', 'u']
+        assert vowels.containsAll([] as String[])
+        assert vowels.containsAll(['e', 'u'] as String[])
+        assert !vowels.containsAll(['a', 'x'] as String[])
+    }
+
+    void testContainsAllForIterables() {
+        int a
+        Iterable iterable = { [hasNext: { a < 6 }, next: { a++ }] as Iterator } as Iterable
+
+        a = 1
+        assert iterable.containsAll([] as int[])
+        a = 1
+        assert iterable.containsAll([2, 5] as int[])
+        a = 1
+        assert !iterable.containsAll([1, 6] as int[])
+    }
+
     void testCollectEntriesIterator() {
         def items = ['a', 'bb', 'ccc'].iterator()
         def map = items.collectEntries { [it, it.size()] }
@@ -1173,10 +1447,13 @@ class GroovyMethodsTest extends GroovyTestCase {
         assert map == [a: 'A', b: 'B', c: 'C']
     }
 
-    void testArrayContains() {
-        String[] vowels = ['a', 'e', 'i', 'o', 'u']
-        assert vowels.contains('u')
-        assert !vowels.contains('x')
+    void testCollectEntriesListFallbackCases() {
+        assert [[[1,'a'], [2,'b'], [3]].collectEntries(),
+                [[1,'a'], [2,'b'], []].collectEntries(),
+                [[1,'a'], [2,'b'], [3, 'c', 42]].collectEntries()] == [[1:'a', 2:'b', 3:null], [1:'a', 2:'b', (null):null], [1:'a', 2:'b', 3:'c']]
+        shouldFail(NullPointerException) {
+            [[1, 'a'], [3]].collectEntries(new Hashtable())
+        }
     }
 
     void testListTakeWhile() {
@@ -1220,6 +1497,243 @@ class GroovyMethodsTest extends GroovyTestCase {
             assert it.takeWhile{ it == '' }.toString() == ''
             assert it.takeWhile{ it != 'v' }.toString() == 'groo'
             assert it.takeWhile{ it }.toString() == 'groovy'
+        }
+    }
+
+    void testInjectWithoutIntialValue() {
+        int a = 1
+        def data = [
+                new ArrayList([1, 2, 3]),
+                new LinkedList([1, 2, 3]),
+                new Stack() {{ addAll([1, 2, 3]) }},
+                new Vector([1, 2, 3]),
+                [1, 2, 3] as int[],
+                { [hasNext: { a <= 3 }, next: { a++ }] as Iterator } as Iterable,
+        ]
+        data.each {
+            assert it.inject { int acc, int val -> acc + val } == 6
+        }
+    }
+
+    void testInjectWithIntialValue() {
+        int a = 1
+        def data = [
+                new ArrayList(["a", "aa", "aaa"]),
+                new LinkedList(["a", "aa", "aaa"]),
+                new Stack() {{ addAll(["a", "aa", "aaa"]) }},
+                new Vector(["a", "aa", "aaa"]),
+                ["a", "aa", "aaa"] as String[],
+                { [hasNext: { a <= 3 }, next: { "a" * (a++) }] as Iterator } as Iterable,
+        ]
+        data.each {
+            assert it.inject(10) { int acc, String val -> acc + val.length() } == 16
+        }
+    }
+
+    void testIntersectForLists() {
+        assert [] == [].intersect([4, 5, 6, 7, 8])
+        assert [] == [1, 2, 3, 4, 5].intersect([])
+        assert [4, 5] == [1, 2, 3, 4, 5].intersect([4, 5, 6, 7, 8])
+    }
+
+    void testIntersectForIterables() {
+        int a = 1, b = 4
+        Iterable iterableA = { [ hasNext:{ a <= 5 }, next:{ a++ } ] as Iterator } as Iterable
+        Iterable iterableB = { [ hasNext:{ b <= 8 }, next:{ b++ } ] as Iterator } as Iterable
+        Iterable iterableEmpty = { [ hasNext:{ false }, next:{ 0 } ] as Iterator } as Iterable
+
+        assert [] == iterableEmpty.intersect(iterableB)
+        assert [] == iterableA.intersect(iterableEmpty)
+        a = 1
+        b = 4
+        assert [4, 5] == iterableA.intersect(iterableB)
+    }
+
+    void testDisjointForLists() {
+        assert [].disjoint([])
+        assert [].disjoint([4, 5, 6, 7, 8])
+        assert [1, 2, 3, 4, 5].disjoint([])
+        assert ![1, 2, 3, 4, 5].disjoint([4, 5, 6, 7, 8])
+        assert [1, 2, 3].disjoint([4, 5, 6, 7, 8])
+    }
+
+    void testDisjointForIterables() {
+        int a = 1, b = 4
+        Iterable iterableA = { [ hasNext:{ a <= 5 }, next:{ a++ } ] as Iterator } as Iterable
+        Iterable iterableB = { [ hasNext:{ b <= 8 }, next:{ b++ } ] as Iterator } as Iterable
+        Iterable iterableEmpty = { [ hasNext:{ false }, next:{0 } ] as Iterator } as Iterable
+
+        assert iterableEmpty.disjoint(iterableB)
+        assert iterableA.disjoint(iterableEmpty)
+        a = 1
+        b = 4
+        assert !iterableA.disjoint(iterableB)
+        a = 1
+        b = 6
+        assert iterableA.disjoint(iterableB)
+    }
+
+    void testAsCollectionForIterables() {
+        int a = 1
+        Iterable iterable = { [ hasNext:{ a <= 3 }, next:{ a++ } ] as Iterator } as Iterable
+        assert [1, 2, 3] == iterable.asCollection()
+    }
+
+    void testToSetForIterables() {
+        int a = 1
+        Iterable iterable = { [ hasNext:{ a <= 3 }, next:{ a++ } ] as Iterator } as Iterable
+        assert ([1, 2, 3] as Set) == iterable.toSet()
+    }
+
+    void testToSpreadMapForArrays() {
+        def spreadMap = ([1, 2, 3, 4] as Integer[]).toSpreadMap()
+        assert 2 == spreadMap.size()
+        assert 2 == spreadMap[1]
+        assert 4 == spreadMap[3]
+        assert !spreadMap.containsKey(5)
+    }
+
+    void testToSpreadMapForLists() {
+        def spreadMap = [1, 2, 3, 4].toSpreadMap()
+        assert 2 == spreadMap.size()
+        assert 2 == spreadMap[1]
+        assert 4 == spreadMap[3]
+        assert !spreadMap.containsKey(5)
+    }
+
+    void testToSpreadMapForIterables() {
+        int a = 1
+        Iterable iterable = { [ hasNext:{ a <= 4 }, next:{ a++ } ] as Iterator } as Iterable
+        def spreadMap = iterable.toSpreadMap()
+        assert 2 == spreadMap.size()
+        assert 2 == spreadMap[1]
+        assert 4 == spreadMap[3]
+        assert !spreadMap.containsKey(5)
+    }
+
+    void testPlusMinusClassSymmetryForCollections() {
+        int a
+        def data = [
+                // Lists
+                (java.util.ArrayList)     : new ArrayList( [ 1, 2, 3 ] ),
+                (java.util.LinkedList)    : new LinkedList( [ 1, 2, 3 ] ),
+                (java.util.Stack)         : new Stack() {{ addAll( [ 1, 2, 3 ] ) }},
+                (java.util.Vector)        : new Vector( [ 1, 2, 3 ] ),
+                // Sets
+                (java.util.HashSet)       : new HashSet( [ 1, 2, 3 ] ),
+                // Iterables
+                (java.util.Collection)    : { [ hasNext:{ a <= 3 }, next:{ a++ } ] as Iterator } as Iterable,
+        ]
+        data.each { Class clazz, object ->
+            a = 1
+            assert clazz.isInstance( object + 1 )
+            a = 1
+            assert clazz.isInstance( object - 1 )
+            a = 1
+            assert clazz.isInstance( object + [1, 2] )
+            a = 1
+            assert clazz.isInstance( object - [1, 2] )
+        }
+    }
+
+    void testPlusForLists() {
+        assert [1, 2, 3] == [1, 2] + 3
+
+        int a = 3
+        Iterable iterable = { [ hasNext:{ a <= 4 }, next:{ a++ } ] as Iterator } as Iterable
+        assert [1, 2, 3, 4] == [1, 2] + iterable
+
+        assert [1, 2, 3, 4] == [1, 2] + [3, 4]
+    }
+
+    void testPlusForIterables() {
+        int a, b
+        Iterable iterableA = { [ hasNext:{ a <= 2 }, next:{ a++ } ] as Iterator } as Iterable
+        Iterable iterableB = { [ hasNext:{ b <= 4 }, next:{ b++ } ] as Iterator } as Iterable
+        Iterable iterableEmpty = { [ hasNext:{ false }, next:{ 0 } ] as Iterator } as Iterable
+
+        assert [1] == iterableEmpty + 1
+        a = 1
+        assert [1, 2] == iterableEmpty + iterableA
+        assert [1, 2] == iterableEmpty + [1, 2]
+
+        // Iterable.plus(Object)
+        a = 1
+        assert [1, 2, 3] == iterableA + 3
+
+        // Iterable.plus(Iterable)
+        a = 1
+        b = 3
+        assert [1, 2, 3, 4] == iterableA + iterableB
+
+        // Iterable.plus(List)
+        a = 1
+        assert [1, 2, 3, 4] == iterableA + [3, 4]
+    }
+
+    void testMinusForIterables() {
+        int a, b
+        Iterable iterableA = { [ hasNext:{ a <= 2 }, next:{ a++ } ] as Iterator } as Iterable
+        Iterable iterableB = { [ hasNext:{ b <= 4 }, next:{ b++ } ] as Iterator } as Iterable
+        Iterable iterableEmpty = { [ hasNext:{ false }, next:{ 0 } ] as Iterator } as Iterable
+
+        assert [] == iterableEmpty - 1
+        a =1
+        assert [] == iterableEmpty - iterableA
+        a =1
+        assert [1, 2] ==iterableA - iterableEmpty
+        assert [] == iterableEmpty - [1, 2]
+
+        // Iterable.minus(Object)
+        a = 1
+        assert [2] == iterableA - 1
+
+        // Iterable.minus(Iterable)
+        a = 1
+        b = 3
+        assert [3, 4] == iterableB - iterableA
+
+        // Iterable.minus(List)
+        b = 3
+        assert [3, 4] == iterableB - [1, 2]
+    }
+
+    void testMultiplyForLists() {
+        assert [] == [] * 3
+        assert [1, 2, 1, 2, 1, 2] == [1, 2] * 3
+    }
+
+    void testMultiplyForIterables() {
+        Iterable iterableEmpty = { [ hasNext:{ false }, next:{ 0 } ] as Iterator } as Iterable
+        assert [] == iterableEmpty * 3
+
+        int a = 1
+        Iterable iterable = { [ hasNext:{ a <= 2 }, next:{ a++ } ] as Iterator } as Iterable
+        assert [1, 2, 1, 2, 1, 2] == iterable * 3
+    }
+
+    void testSwap() {
+        assert [1, 2, 3, 4] == [1, 2, 3, 4].swap(0, 0).swap(1, 1)
+
+        assert [1, 3, 4, 2] == [1, 2, 3, 4].swap(1, 2).swap(2, 3)
+        assert (["a", "c", "d", "b"] as String[]) == (["a", "b", "c", "d"] as String[]).swap(1, 2).swap(2, 3)
+        assert ([false, true, true, false] as boolean[]) == ([false, false, true, true] as boolean[]).swap(1, 2).swap(2, 3)
+        assert ([1, 3, 4, 2] as byte[]) == ([1, 2, 3, 4] as byte[]).swap(1, 2).swap(2, 3)
+        assert ([1, 3, 4, 2] as char[]) == ([1, 2, 3, 4] as char[]).swap(1, 2).swap(2, 3)
+        assert ([1, 3, 4, 2] as double[]) == ([1, 2, 3, 4] as double[]).swap(1, 2).swap(2, 3)
+        assert ([1, 3, 4, 2] as float[]) == ([1, 2, 3, 4] as float[]).swap(1, 2).swap(2, 3)
+        assert ([1, 3, 4, 2] as int[]) == ([1, 2, 3, 4] as int[]).swap(1, 2).swap(2, 3)
+        assert ([1, 3, 4, 2] as long[]) == ([1, 2, 3, 4] as long[]).swap(1, 2).swap(2, 3)
+        assert ([1, 3, 4, 2] as short[]) == ([1, 2, 3, 4] as short[]).swap(1, 2).swap(2, 3)
+
+        shouldFail(IndexOutOfBoundsException) {
+            [].swap(1, 2)
+        }
+        shouldFail(ArrayIndexOutOfBoundsException) {
+            ([] as String[]).swap(1, 2)
+        }
+        shouldFail(ArrayIndexOutOfBoundsException) {
+            ([] as int[]).swap(1, 2)
         }
     }
 }
