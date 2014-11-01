@@ -115,6 +115,7 @@ import java.util.regex.Pattern;
  * @author Dinko Srkoc
  * @author Andre Steingress
  * @author Yu Kobayashi
+ * @author Maciej Ziarko 
  */
 public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
 
@@ -16278,5 +16279,42 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
         self[i] = self[j];
         self[j] = tmp;
         return self;
+    }
+
+    /**
+     * Checks whether integer is divisible by specified denominator.
+     * Both arguments are treated as long integers.
+     * 
+     * @param self integer representing numerator
+     * @param other non-zero integer representing denominator
+     * @return true when self is divisible by denominator, false otherwise
+     */
+    public static boolean isDivisibleBy(Number self, Number other) {
+        long numerator = self.longValue();
+        long denominator = other.longValue();
+        if (denominator == 0L) {
+            throw new IllegalArgumentException("Denominator cannot be equal to zero.");
+        }
+        return numerator % denominator == 0L;
+    }
+
+    /**
+     * Checks whether integer is even.
+     * 
+     * @param self integer to be checked
+     * @return true when integer is even, false when integer is odd
+     */
+    public static boolean isEven(Number self) {
+        return isDivisibleBy(self, 2L);  
+    }
+
+    /**
+     * Checks whether integer is odd.
+     *
+     * @param self integer to be checked
+     * @return true when integer is odd, false when integer is even
+     */
+    public static boolean isOdd(Number self) {
+        return !isEven(self);
     }
 }

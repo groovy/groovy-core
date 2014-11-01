@@ -31,6 +31,7 @@ import org.codehaus.groovy.util.StringUtil
  * @author Tim Yates
  * @author Dinko Srkoc
  * @author Yu Kobayashi
+ * @author Maciej Ziarko
  */
 class GroovyMethodsTest extends GroovyTestCase {
     void testCollect() {
@@ -1734,6 +1735,47 @@ class GroovyMethodsTest extends GroovyTestCase {
         }
         shouldFail(ArrayIndexOutOfBoundsException) {
             ([] as int[]).swap(1, 2)
+        }
+    }
+    
+    void testIsOdd() {
+        assert !0.isOdd()
+        assert 1.isOdd()
+        assert !2.isOdd()
+        assert 3.isOdd()
+        assert 13.isOdd()
+        assert 145.isOdd()
+        assert Long.MAX_VALUE.isOdd()
+        assert (-33).isOdd()
+        assert !(-32).isOdd()
+    }
+    
+    void testIsEven() {
+        assert 0.isEven()
+        assert !1.isEven()
+        assert 2.isEven()
+        assert !3.isEven()
+        assert !13.isEven()
+        assert !145.isEven()
+        assert 146.isEven()
+        assert !Long.MAX_VALUE.isEven()
+        assert !(-33).isEven()
+        assert (-32).isEven()
+    }
+    
+    void testIsDivisible() {
+        assert 28.isDivisibleBy(14)
+        assert 28.isDivisibleBy(7)
+        assert 128.isDivisibleBy(32)
+        assert !130.isDivisibleBy(32)
+        assert !256.isDivisibleBy(3)
+        assert (Long.MAX_VALUE - 1).isDivisibleBy(2)
+        assert (-100).isDivisibleBy(50)
+        assert (-100).isDivisibleBy(-50)
+        assert 100.isDivisibleBy(-50)
+
+        shouldFail(IllegalArgumentException) {
+            300.isDivisibleBy(0)
         }
     }
 }
