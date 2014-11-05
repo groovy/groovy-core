@@ -16282,12 +16282,12 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     }
 
     /**
-     * Checks whether integer is divisible by specified denominator.
-     * Both arguments are treated as long integers.
+     * Checks whether number is divisible by specified denominator.
+     * Both arguments are converted (truncated) to long integers.
      * 
-     * @param self integer representing numerator
-     * @param other non-zero integer representing denominator
-     * @return true when self is divisible by denominator, false otherwise
+     * @param self number representing numerator
+     * @param other non-zero number representing denominator
+     * @return true when number is divisible by denominator, false otherwise
      */
     public static boolean isDivisibleBy(Number self, Number other) {
         long numerator = self.longValue();
@@ -16299,20 +16299,22 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     }
 
     /**
-     * Checks whether integer is even.
+     * Checks whether number is even.
+     * When invoked on float/double the value is truncated in the first place.
      * 
-     * @param self integer to be checked
-     * @return true when integer is even, false when integer is odd
+     * @param self number to be checked
+     * @return true when number is even, false when number is odd
      */
     public static boolean isEven(Number self) {
         return isDivisibleBy(self, 2L);  
     }
 
     /**
-     * Checks whether integer is odd.
+     * Checks whether number is odd.
+     * When invoked on float/double the value is truncated in the first place.
      *
-     * @param self integer to be checked
-     * @return true when integer is odd, false when integer is even
+     * @param self number to be checked
+     * @return true when number is odd, false when number is even
      */
     public static boolean isOdd(Number self) {
         return !isEven(self);
