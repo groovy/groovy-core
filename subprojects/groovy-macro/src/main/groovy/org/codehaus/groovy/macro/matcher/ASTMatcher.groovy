@@ -16,14 +16,23 @@
 package org.codehaus.groovy.macro.matcher
 
 import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.ast.*
 import org.codehaus.groovy.ast.expr.*
-import org.codehaus.groovy.ast.stmt.*
+import org.codehaus.groovy.ast.stmt.BlockStatement
+import org.codehaus.groovy.ast.stmt.ExpressionStatement
+import org.codehaus.groovy.ast.stmt.ForStatement
+import org.codehaus.groovy.ast.stmt.IfStatement
+import org.codehaus.groovy.ast.stmt.Statement
+import org.codehaus.groovy.ast.stmt.WhileStatement
 import org.codehaus.groovy.classgen.BytecodeExpression
 import org.codehaus.groovy.control.SourceUnit
+import org.codehaus.groovy.macro.matcher.internal.MatchingConstraintsBuilder
 
 @CompileStatic
-class ASTMatcher extends ClassCodeVisitorSupport {
+class ASTMatcher extends ContextualClassCodeVisitor {
+
+    public static final String WILDCARD = "_";
 
     private Object current = null
     private boolean match = true
@@ -55,6 +64,19 @@ class ASTMatcher extends ClassCodeVisitorSupport {
         matcher.match
     }
 
+    private boolean failIfNot(boolean value) {
+        match = match && value
+    }
+
+    private static boolean matchByName(String patternText, String nodeText) {
+        return nodeText.equals(patternText) || WILDCARD.equals(patternText);
+    }
+
+    private static boolean isWildcardExpression(Object exp) {
+        return (exp instanceof VariableExpression && WILDCARD.equals(exp.getName())
+            || (exp instanceof ConstantExpression && WILDCARD.equals(exp.getValue())));
+    }
+
     /**
      * Locates all nodes in the given AST which match the pattern AST.
      * This operation can cost a lot, because it tries to match a sub-tree
@@ -70,57 +92,125 @@ class ASTMatcher extends ClassCodeVisitorSupport {
         finder.matches
     }
 
-    private void doWithNode(Class expectedClass, Object next, Closure cl) {
-        if (match && (next==null || expectedClass.isAssignableFrom(next.class))) {
-            Object old = current
-            current = next
-            cl()
-            current = old
+    private void storeContraints(ASTNode src) {
+        def constraints = src.getNodeMetaData(MatchingConstraints)
+        if (constraints) {
+            treeContext.putUserdata(MatchingConstraints, constraints)
+        }
+    }
+
+    public <T> T ifConstraint(T defaultValue, @DelegatesTo(MatchingConstraints) Closure<T> code) {
+        def constraints = (List<MatchingConstraints>) treeContext.getUserdata(MatchingConstraints, true)
+        if (constraints) {
+            def clone = (Closure<T>) code.clone()
+            clone.resolveStrategy = Closure.DELEGATE_FIRST
+            clone.delegate = constraints[0]
+            clone()
         } else {
-            match = false
+            defaultValue
+        }
+    }
+
+    private String findPlaceholder(Object exp) {
+        ifConstraint(null) {
+            if ((exp instanceof VariableExpression && placeholders.contains(exp.name))) {
+                return exp.name
+            } else if ((exp instanceof ConstantExpression && placeholders.contains(exp.value))) {
+                return exp.value
+            } else {
+                null
+            }
+        }
+    }
+
+    private void doWithNode(Object patternNode, Object foundNode, Closure cl) {
+        Class expectedClass = patternNode?patternNode.class:Object
+        if (expectedClass == null) {
+            expectedClass = Object
+        }
+
+        boolean doPush = treeContext.node!=foundNode && foundNode instanceof ASTNode
+        if (doPush) {
+            pushContext((ASTNode)foundNode)
+            if (patternNode instanceof ASTNode) {
+                storeContraints(patternNode)
+            }
+        }
+
+        if (!isWildcardExpression(patternNode)) {
+            String placeholder = findPlaceholder(patternNode)
+            if (placeholder) {
+                def alreadySeenAST = treeContext.getUserdata("placeholder_$placeholder", true)
+                if (alreadySeenAST==null) {
+                    treeContext.parent.putUserdata("placeholder_$placeholder", foundNode)
+                } else {
+                    // during the tree inspection, placeholder already found
+                    // so we need to check that they are identical
+                    failIfNot(matches((ASTNode)alreadySeenAST[0], (ASTNode)foundNode))
+                }
+            } else if (match && (foundNode == null || expectedClass.isAssignableFrom(foundNode.class))) {
+                Object old = current
+                current = foundNode
+                cl()
+                current = old
+            } else {
+                failIfNot(false)
+            }
+        }
+        if (doPush) {
+            popContext()
         }
     }
 
     @Override
     public void visitClass(final ClassNode node) {
-        doWithNode(ClassNode, current) {
+        doWithNode(node, current) {
             visitAnnotations(node)
-        }
-        doWithNode(PackageNode, ((ClassNode) current).package) {
-            visitPackage(node.package)
-        }
-        doWithNode(ModuleNode, ((ClassNode) current).module) {
-            visitImports(node.module)
-        }
-        doWithNode(ClassNode, current) {
+            doWithNode(node.package, ((ClassNode) current).package) {
+                visitPackage(node.package)
+            }
+            doWithNode(node.module, ((ClassNode) current).module) {
+                visitImports(node.module)
+            }
+
             def cur = (ClassNode) current
+            failIfNot(cur.superClass==node.superClass)
+
+            def intfs = node.interfaces
+            def curIntfs = cur.interfaces
+            failIfNot(intfs.length == curIntfs.length)
+            if (intfs.length == curIntfs.length) {
+                for (int i = 0; i < intfs.length && match; i++) {
+                    failIfNot(intfs[i] == curIntfs[i])
+                }
+            }
             def nodeProps = node.properties
             def curProps = cur.properties
             if (nodeProps.size() == curProps.size()) {
                 def iter = curProps.iterator()
                 // now let's visit the contents of the class
                 for (PropertyNode pn : nodeProps) {
-                    doWithNode(pn.class, iter.next()) {
+                    doWithNode(pn, iter.next()) {
                         visitProperty(pn)
                     }
                 }
 
                 def nodeFields = node.fields
                 def curFields = cur.fields
-                if (nodeFields.size()==curFields.size()) {
+                if (nodeFields.size() == curFields.size()) {
                     iter = curFields.iterator()
                     for (FieldNode fn : nodeFields) {
-                        doWithNode(fn.class, iter.next()) {
+                        doWithNode(fn, iter.next()) {
                             visitField(fn)
                         }
                     }
 
                     def nodeConstructors = node.declaredConstructors
                     def curConstructors = cur.declaredConstructors
-                    if (nodeConstructors.size()==curConstructors.size()) {
+                    if (nodeConstructors.size() == curConstructors.size()) {
                         iter = curConstructors.iterator()
                         for (ConstructorNode cn : nodeConstructors) {
-                            doWithNode(cn.class, iter.next()) {
+                            doWithNode(cn, iter.next()) {
                                 visitConstructor(cn)
                             }
                         }
@@ -130,7 +220,7 @@ class ASTMatcher extends ClassCodeVisitorSupport {
                         if (nodeMethods.size() == curMethods.size()) {
                             iter = curMethods.iterator()
                             for (MethodNode mn : nodeMethods) {
-                                doWithNode(mn.class, iter.next()) {
+                                doWithNode(mn, iter.next()) {
                                     visitMethod(mn)
                                 }
                             }
@@ -138,27 +228,24 @@ class ASTMatcher extends ClassCodeVisitorSupport {
                         }
                     }
                 }
-
-
-                return
             }
-            match = false
+            failIfNot(matchByName(cur.name, node.name))
         }
     }
 
     @Override
     protected void visitObjectInitializerStatements(final ClassNode node) {
-        doWithNode(ClassNode, current) {
-            def initializers = ((ClassNode)current).objectInitializerStatements
-            if (initializers.size()==node.objectInitializerStatements.size()) {
+        doWithNode(node, current) {
+            def initializers = ((ClassNode) current).objectInitializerStatements
+            if (initializers.size() == node.objectInitializerStatements.size()) {
                 def iterator = initializers.iterator()
                 for (Statement element : node.objectInitializerStatements) {
-                    doWithNode(element.class, iterator.next()) {
+                    doWithNode(element, iterator.next()) {
                         element.visit(this)
                     }
                 }
             } else {
-                match = false
+                failIfNot(false)
             }
         }
     }
@@ -166,7 +253,7 @@ class ASTMatcher extends ClassCodeVisitorSupport {
     @Override
     public void visitPackage(final PackageNode node) {
         if (node) {
-            doWithNode(node.class, current) {
+            doWithNode(node, current) {
                 visitAnnotations(node)
                 node.visit(this)
             }
@@ -176,59 +263,57 @@ class ASTMatcher extends ClassCodeVisitorSupport {
     @Override
     public void visitImports(final ModuleNode node) {
         if (node) {
-            doWithNode(ModuleNode, current) {
+            doWithNode(node, current) {
                 ModuleNode module = (ModuleNode) current
                 def imports = module.imports
                 if (imports.size() == node.imports.size()) {
                     def iter = imports.iterator()
                     for (ImportNode importNode : node.imports) {
-                        doWithNode(importNode.class, iter.next()) {
+                        doWithNode(importNode, iter.next()) {
                             visitAnnotations(importNode)
                             importNode.visit(this)
                         }
                     }
                 } else {
-                    match = false
+                    failIfNot(false)
                     return
                 }
                 imports = module.starImports
                 if (imports.size() == node.starImports.size()) {
                     def iter = imports.iterator()
                     for (ImportNode importNode : node.starImports) {
-                        doWithNode(importNode.class, iter.next()) {
+                        doWithNode(importNode, iter.next()) {
                             visitAnnotations(importNode)
                             importNode.visit(this)
                         }
                     }
                 } else {
-                    match = false
+                    failIfNot(false)
                     return
                 }
                 imports = module.staticImports
                 if (imports.size() == node.staticImports.size()) {
                     def iter = imports.values().iterator()
                     for (ImportNode importNode : node.staticImports.values()) {
-                        doWithNode(importNode.class, iter.next()) {
+                        doWithNode(importNode, iter.next()) {
                             visitAnnotations(importNode)
                             importNode.visit(this)
                         }
                     }
                 } else {
-                    match = false
-                    return
+                    failIfNot(false)
                 }
                 imports = module.staticStarImports
                 if (imports.size() == node.staticStarImports.size()) {
                     def iter = imports.values().iterator()
                     for (ImportNode importNode : node.staticStarImports.values()) {
-                        doWithNode(importNode.class, iter.next()) {
+                        doWithNode(importNode, iter.next()) {
                             visitAnnotations(importNode)
                             importNode.visit(this)
                         }
                     }
                 } else {
-                    match = false
-                    return
+                    failIfNot(false)
                 }
             }
         }
@@ -236,43 +321,43 @@ class ASTMatcher extends ClassCodeVisitorSupport {
 
     @Override
     public void visitAnnotations(final AnnotatedNode node) {
-        doWithNode(AnnotatedNode, current) {
+        doWithNode(node, current) {
             List<AnnotationNode> refAnnotations = node.annotations
             AnnotatedNode cur = (AnnotatedNode) current
             List<AnnotationNode> curAnnotations = cur.annotations
-            if (refAnnotations.size()!=curAnnotations.size()) {
-                match = false
+            if (refAnnotations.size() != curAnnotations.size()) {
+                failIfNot(false)
                 return
             }
             if (refAnnotations.empty) return
             def iter = curAnnotations.iterator()
             for (AnnotationNode an : refAnnotations) {
                 AnnotationNode curNext = iter.next()
+
                 // skip built-in properties
                 if (an.builtIn) {
                     if (!curNext.builtIn) {
-                        match = false
-                        return
+                        failIfNot(false)
                     }
                     continue
                 }
-
+                failIfNot(an.classNode==curNext.classNode)
                 def refEntrySet = an.members.entrySet()
                 def curEntrySet = curNext.members.entrySet()
-                if (refEntrySet.size()==curEntrySet.size()) {
+                if (refEntrySet.size() == curEntrySet.size()) {
                     def entryIt = curEntrySet.iterator()
                     for (Map.Entry<String, Expression> member : refEntrySet) {
                         def next = entryIt.next()
-                        if (next.key==member.key) {
-                            doWithNode(member.value.class, next.value) {
+                        if (next.key == member.key) {
+                            doWithNode(member.value, next.value) {
                                 member.value.visit(this)
                             }
                         } else {
-                            match = false
+                            failIfNot(false)
                         }
                     }
                 } else {
-                    match = false
+                    failIfNot(false)
                 }
             }
         }
@@ -280,7 +365,7 @@ class ASTMatcher extends ClassCodeVisitorSupport {
 
     @Override
     protected void visitClassCodeContainer(final Statement code) {
-        doWithNode(Statement, current) {
+        doWithNode(code, current) {
             if (code) {
                 code.visit(this)
             }
@@ -288,75 +373,76 @@ class ASTMatcher extends ClassCodeVisitorSupport {
     }
 
     @Override
+    @CompileStatic(TypeCheckingMode.SKIP)
     public void visitDeclarationExpression(final DeclarationExpression expression) {
-        doWithNode(DeclarationExpression, current) {
+        doWithNode(expression, current) {
             super.visitDeclarationExpression(expression)
         }
     }
 
     @Override
     protected void visitConstructorOrMethod(final MethodNode node, final boolean isConstructor) {
-        doWithNode(MethodNode, current) {
+        doWithNode(node, current) {
             visitAnnotations(node)
             def cur = (MethodNode) current
-            doWithNode(Statement, cur.code) {
+            doWithNode(node.code, cur.code) {
                 visitClassCodeContainer(node.code)
             }
             def params = node.parameters
             def curParams = cur.parameters
-            if (params.length==curParams.length) {
+            if (params.length == curParams.length) {
                 params.eachWithIndex { Parameter entry, int i ->
-                    doWithNode(entry.class, curParams[i]) {
+                    doWithNode(entry, curParams[i]) {
                         visitAnnotations(entry)
                     }
                 }
             } else {
-                match = false
+                failIfNot(false)
             }
         }
     }
 
     @Override
     public void visitField(final FieldNode node) {
-        doWithNode(FieldNode, current) {
+        doWithNode(node, current) {
             visitAnnotations(node)
             def fieldNode = (FieldNode) current
-            if (fieldNode.name==node.name) {
-                Expression init = node.initialExpression
+            failIfNot(matchByName(node.name, fieldNode.name))
+            failIfNot(fieldNode.originType == node.originType)
+            failIfNot(fieldNode.modifiers == node.modifiers)
 
-                Expression curInit = fieldNode.initialExpression
-                if (init) {
-                    if (curInit) {
-                        doWithNode(init.class, curInit) {
-                            init.visit(this)
-                        }
-                    } else {
-                        match = false
+            Expression init = node.initialExpression
+
+            Expression curInit = fieldNode.initialExpression
+            if (init) {
+                if (curInit) {
+                    doWithNode(init, curInit) {
+                        init.visit(this)
                     }
-                } else if (curInit) {
-                    match = false
+                } else {
+                    failIfNot(false)
                 }
-            } else {
-                match = false
+            } else if (curInit) {
+                failIfNot(false)
             }
         }
     }
 
     @Override
     public void visitProperty(final PropertyNode node) {
-        doWithNode(PropertyNode, current) {
+        doWithNode(node, current) {
             PropertyNode pNode = (PropertyNode) current
             visitAnnotations(node)
 
             Statement statement = node.getterBlock
             Statement curStatement = pNode.getterBlock
-            doWithNode(statement.class, curStatement) {
+            doWithNode(statement, curStatement) {
                 visitClassCodeContainer(statement)
             }
 
             statement = node.setterBlock
             curStatement = pNode.setterBlock
-            doWithNode(statement.class, curStatement) {
+            doWithNode(statement, curStatement) {
                 visitClassCodeContainer(statement)
             }
 
@@ -364,59 +450,60 @@ class ASTMatcher extends ClassCodeVisitorSupport {
             Expression curInit = pNode.initialExpression
             if (init) {
                 if (curInit) {
-                    doWithNode(init.class, curInit) {
+                    doWithNode(init, curInit) {
                         init.visit(this)
                     }
                 } else {
-                    match = false
+                    failIfNot(false)
                 }
             } else if (curInit) {
-                match = false
+                failIfNot(false)
             }
         }
     }
 
     @Override
     void visitExpressionStatement(final ExpressionStatement statement) {
-        visitStatement(statement)
-        doWithNode(statement.expression.class, ((ExpressionStatement)current).expression) {
+        doWithNode(statement.expression, ((ExpressionStatement) current).expression) {
+            visitStatement(statement)
             statement.expression.visit(this)
         }
     }
 
     @Override
     public void visitBlockStatement(BlockStatement block) {
-        doWithNode(BlockStatement, current) {
+        doWithNode(block, current) {
             def statements = ((BlockStatement) current).statements
-            if (statements.size()==block.statements.size()) {
+            if (statements.size() == block.statements.size()) {
                 def iter = statements.iterator()
                 for (Statement statement : block.statements) {
-                    doWithNode(statement.class, iter.next()) {
+                    doWithNode(statement, iter.next()) {
                         statement.visit(this)
                     }
                 }
             } else {
-                match = false
+                failIfNot(false)
             }
         }
     }
 
     @Override
     public void visitMethodCallExpression(final MethodCallExpression call) {
-        doWithNode(MethodCallExpression, current) {
+        doWithNode(call, current) {
             def mce = (MethodCallExpression) current
-            doWithNode(call.objectExpression.class, mce.objectExpression) {
+            doWithNode(call.objectExpression, mce.objectExpression) {
                 call.objectExpression.visit(this)
             }
-            doWithNode(call.method.class, mce.method) {
+            doWithNode(call.method, mce.method) {
                 call.method.visit(this)
             }
-            doWithNode(call.arguments.class, mce.arguments) {
+            doWithNode(call.arguments, mce.arguments) {
                 call.arguments.visit(this)
             }
-            match = match && (call.methodAsString==mce.methodAsString) &&
-                    (call.safe==mce.safe) &&
-                    (call.spreadSafe == mce.spreadSafe)
+            failIfNot(matchByName(call.methodAsString, mce.methodAsString) &&
+                    (call.safe == mce.safe) &&
+                    (call.spreadSafe == mce.spreadSafe) &&
+                    (call.implicitThis == mce.implicitThis))
         }
     }
 
@@ -427,66 +514,92 @@ class ASTMatcher extends ClassCodeVisitorSupport {
 
     @Override
     public void visitConstructorCallExpression(final ConstructorCallExpression call) {
-        doWithNode(call.arguments.class, ((ConstructorCallExpression)call).arguments) {
-            call.arguments.visit(this)
+        doWithNode(call, current) {
+            def cur = (ConstructorCallExpression) current
+            doWithNode(call.arguments, cur.arguments) {
+                call.arguments.visit(this)
+                failIfNot(call.type == cur.type)
+            }
         }
     }
 
     @Override
     public void visitBinaryExpression(final BinaryExpression expression) {
-        doWithNode(BinaryExpression, current) {
+        doWithNode(expression, current) {
             def bin = (BinaryExpression) current
             def leftExpression = expression.getLeftExpression()
-            doWithNode(leftExpression.class, bin.leftExpression) {
+            doWithNode(leftExpression, bin.leftExpression) {
                 leftExpression.visit(this)
             }
             def rightExpression = expression.getRightExpression()
-            doWithNode(rightExpression.class, bin.rightExpression) {
+            doWithNode(rightExpression, bin.rightExpression) {
                 rightExpression.visit(this)
             }
-            if (bin.operation.type!=expression.operation.type) {
-                match = false
+            if (bin.operation.type != expression.operation.type) {
+                failIfNot(ifConstraint(false) {
+                    if (tokenPredicate) {
+                        tokenPredicate.apply(bin.operation)
+                    } else {
+                        false
+                    }
+                })
             }
+            failIfNot(ifConstraint(true) {
+                if (eventually) {
+                    eventually.apply(treeContext)
+                } else {
+                    true
+                }
+            })
         }
     }
 
     @Override
     public void visitTernaryExpression(final TernaryExpression expression) {
-        doWithNode(TernaryExpression, current) {
+        doWithNode(expression, current) {
             TernaryExpression te = (TernaryExpression) current
-            doWithNode(BooleanExpression, te.booleanExpression) {
+            doWithNode(expression.booleanExpression, te.booleanExpression) {
                 expression.booleanExpression.visit(this)
             }
             def trueExpression = expression.trueExpression
-            doWithNode(trueExpression.class, te.trueExpression) {
+            doWithNode(trueExpression, te.trueExpression) {
                 trueExpression.visit(this)
             }
             def falseExpression = expression.falseExpression
-            doWithNode(falseExpression.class, te.falseExpression) {
+            doWithNode(falseExpression, te.falseExpression) {
                 falseExpression.visit(this)
             }
         }
     }
 
     @Override
-    public void visitShortTernaryExpression(final ElvisOperatorExpression expression) {
-        super.visitShortTernaryExpression(expression);
-    }
-
-    @Override
     public void visitPostfixExpression(final PostfixExpression expression) {
-        super.visitPostfixExpression(expression);
+        doWithNode(expression, current) {
+            def origExpr = expression.expression
+            def curExpr = (PostfixExpression) current
+            doWithNode(origExpr, curExpr.expression) {
+                origExpr.visit(this)
+                failIfNot(expression.operation.type == curExpr.operation.type)
+            }
+        }
     }
 
     @Override
     public void visitPrefixExpression(final PrefixExpression expression) {
-        super.visitPrefixExpression(expression);
+        doWithNode(expression, current) {
+            def origExpr = expression.expression
+            def curExpr = (PrefixExpression) current
+            doWithNode(origExpr, curExpr.expression) {
+                origExpr.visit(this)
+                failIfNot(expression.operation.type == curExpr.operation.type)
+            }
+        }
     }
 
     @Override
     public void visitBooleanExpression(final BooleanExpression expression) {
-        doWithNode(BooleanExpression, current) {
-            doWithNode(expression.expression.class, ((BooleanExpression)current).expression) {
+        doWithNode(expression, current) {
+            doWithNode(expression.expression, ((BooleanExpression) current).expression) {
                 expression.expression.visit(this)
             }
         }
@@ -494,18 +607,53 @@ class ASTMatcher extends ClassCodeVisitorSupport {
 
     @Override
     public void visitNotExpression(final NotExpression expression) {
-        super.visitNotExpression(expression);
+        doWithNode(expression, current) {
+            def expr = expression.expression
+            def cur = ((NotExpression) current).expression
+            doWithNode(expr, cur) {
+                expr.visit(this)
+            }
+        }
     }
 
     @Override
     public void visitClosureExpression(final ClosureExpression expression) {
-        super.visitClosureExpression(expression);
+        doWithNode(expression, current) {
+            def code = expression.code
+            def cl = (ClosureExpression) current
+            doWithNode(code, cl.code) {
+                code.visit(this)
+                checkParameters(expression.parameters, cl.parameters)
+            }
+        }
+    }
+
+    private void checkParameters(Parameter[] nodeParams, Parameter[] curParams) {
+        if (nodeParams == null && curParams != null || nodeParams != null && curParams == null) {
+            failIfNot(false)
+            return
+        }
+        if (nodeParams) {
+            if (curParams.length == nodeParams.length) {
+                for (int i = 0; i < nodeParams.length && match; i++) {
+                    def n = nodeParams[i]
+                    def c = curParams[i]
+                    doWithNode(n, c) {
+                        failIfNot(matchByName(n.name, c.name) &&
+                                (n.originType == c.originType) &&
+                                (n.type == c.originType))
+                    }
+                }
+            } else {
+                failIfNot(false)
+            }
+        }
     }
 
     @Override
     public void visitTupleExpression(final TupleExpression expression) {
-        doWithNode(TupleExpression, current) {
-            doWithNode(List, ((TupleExpression) current).expressions) {
+        doWithNode(expression, current) {
+            doWithNode(expression.expressions, ((TupleExpression) current).expressions) {
                 visitListOfExpressions(expression.expressions)
             }
         }
@@ -513,32 +661,85 @@ class ASTMatcher extends ClassCodeVisitorSupport {
 
     @Override
     public void visitListExpression(final ListExpression expression) {
-        super.visitListExpression(expression);
+        doWithNode(expression, current) {
+            def exprs = expression.expressions
+            doWithNode(exprs, ((ListExpression) current).expressions) {
+                visitListOfExpressions(exprs)
+            }
+        }
     }
 
     @Override
     public void visitArrayExpression(final ArrayExpression expression) {
-        super.visitArrayExpression(expression);
+        doWithNode(expression, current) {
+            def expressions = expression.expressions
+            def size = expression.sizeExpression
+            def cur = (ArrayExpression) current
+            def curExprs = cur.expressions
+            def curSize = cur.sizeExpression
+            doWithNode(expressions, curExprs) {
+                visitListOfExpressions(expressions)
+            }
+            doWithNode(size, curSize) {
+                visitListOfExpressions(size)
+            }
+            failIfNot(expression.elementType == cur.elementType)
+        }
     }
 
     @Override
     public void visitMapExpression(final MapExpression expression) {
-        super.visitMapExpression(expression);
+        doWithNode(expression, current) {
+            def entries = expression.mapEntryExpressions
+            def curEntries = ((MapExpression) current).mapEntryExpressions
+            doWithNode(entries, curEntries) {
+                visitListOfExpressions(entries)
+            }
+        }
     }
 
     @Override
     public void visitMapEntryExpression(final MapEntryExpression expression) {
-        super.visitMapEntryExpression(expression);
+        doWithNode(expression, current) {
+            def key = expression.keyExpression
+            def value = expression.valueExpression
+            def cur = (MapEntryExpression) current
+            def curKey = cur.keyExpression
+            def curValue = cur.valueExpression
+            doWithNode(key, curKey) {
+                key.visit(this)
+            }
+            doWithNode(value, curValue) {
+                value.visit(this)
+            }
+        }
     }
 
     @Override
     public void visitRangeExpression(final RangeExpression expression) {
-        super.visitRangeExpression(expression);
+        doWithNode(expression, current) {
+            def from = expression.from
+            def to = expression.to
+            def cur = (RangeExpression) current
+            def curFrom = cur.from
+            def curTo = cur.to
+            doWithNode(from, curFrom) {
+                from.visit(this)
+            }
+            doWithNode(to, curTo) {
+                to.visit(this)
+            }
+        }
     }
 
     @Override
     public void visitSpreadExpression(final SpreadExpression expression) {
-        super.visitSpreadExpression(expression);
+        doWithNode(expression, current) {
+            def expr = expression.expression
+            doWithNode(expr, ((SpreadExpression) current).expression) {
+                expr.visit(this)
+            }
+        }
     }
 
     @Override
@@ -548,54 +749,125 @@ class ASTMatcher extends ClassCodeVisitorSupport {
 
     @Override
     public void visitMethodPointerExpression(final MethodPointerExpression expression) {
-        super.visitMethodPointerExpression(expression);
+        doWithNode(expression, current) {
+            def cur = (MethodPointerExpression) current
+            def expr = expression.expression
+            def methodName = expression.methodName
+            def curExpr = cur.expression
+            def curName = cur.methodName
+            doWithNode(expr, curExpr) {
+                expr.visit(this)
+            }
+            doWithNode(methodName, curName) {
+                methodName.visit(this)
+            }
+        }
     }
 
     @Override
     public void visitUnaryMinusExpression(final UnaryMinusExpression expression) {
-        super.visitUnaryMinusExpression(expression);
+        doWithNode(expression, current) {
+            def expr = expression.expression
+            doWithNode(expr, ((UnaryMinusExpression) current).expression) {
+                expr.visit(this)
+            }
+        }
     }
 
     @Override
     public void visitUnaryPlusExpression(final UnaryPlusExpression expression) {
-        super.visitUnaryPlusExpression(expression);
+        doWithNode(expression, current) {
+            def expr = expression.expression
+            doWithNode(expr, ((UnaryPlusExpression) current).expression) {
+                expr.visit(this)
+            }
+        }
     }
 
     @Override
     public void visitBitwiseNegationExpression(final BitwiseNegationExpression expression) {
-        super.visitBitwiseNegationExpression(expression);
+        doWithNode(expression, current) {
+            def expr = expression.expression
+            doWithNode(expr, ((BitwiseNegationExpression) current).expression) {
+                expr.visit(this)
+            }
+        }
     }
 
     @Override
     public void visitCastExpression(final CastExpression expression) {
-        super.visitCastExpression(expression);
+        doWithNode(expression, current) {
+            def expr = expression.expression
+            doWithNode(expr, ((CastExpression) current).expression) {
+                expr.visit(this)
+            }
+            failIfNot(expression.type == ((CastExpression) current).type)
+        }
     }
 
     @Override
+    @CompileStatic(TypeCheckingMode.SKIP)
     public void visitConstantExpression(final ConstantExpression expression) {
-        super.visitConstantExpression(expression);
+        doWithNode(expression, current) {
+            def cur = (ConstantExpression) current
+            super.visitConstantExpression(expression)
+            failIfNot((expression.type == cur.type) &&
+                    (expression.value == cur.value))
+        }
     }
 
     @Override
+    @CompileStatic(TypeCheckingMode.SKIP)
     public void visitClassExpression(final ClassExpression expression) {
-        super.visitClassExpression(expression);
+        doWithNode(expression, current) {
+            super.visitClassExpression(expression)
+            def cexp = (ClassExpression) current
+            failIfNot(cexp.type == expression.type)
+        }
     }
 
     @Override
     public void visitVariableExpression(final VariableExpression expression) {
-        doWithNode(VariableExpression, current) {
-            match = expression.name == ((VariableExpression) current).name
+        doWithNode(expression, current) {
+            def curVar = (VariableExpression) current
+            failIfNot(matchByName(expression.name, curVar.name) &&
+                    (expression.type == curVar.type) &&
+                    (expression.originType == curVar.originType))
         }
     }
 
     @Override
     public void visitPropertyExpression(final PropertyExpression expression) {
-        super.visitPropertyExpression(expression);
+        doWithNode(expression, current) {
+            def currentPexp = (PropertyExpression) current
+            doWithNode(expression.objectExpression, currentPexp.objectExpression) {
+                expression.objectExpression.visit(this)
+            }
+            doWithNode(expression.property, currentPexp.property) {
+                expression.property.visit(this)
+            }
+            failIfNot((expression.propertyAsString == currentPexp.propertyAsString) &&
+                    (expression.implicitThis == currentPexp.implicitThis) &&
+                    (expression.safe == currentPexp.safe) &&
+                    (expression.spreadSafe == currentPexp.spreadSafe))
+        }
     }
 
     @Override
     public void visitAttributeExpression(final AttributeExpression expression) {
-        super.visitAttributeExpression(expression);
+        doWithNode(expression, current) {
+            def currentPexp = (AttributeExpression) current
+            doWithNode(expression.objectExpression, currentPexp.objectExpression) {
+                expression.objectExpression.visit(this)
+            }
+            doWithNode(expression.property, currentPexp.property) {
+                expression.property.visit(this)
+            }
+            failIfNot((expression.propertyAsString == currentPexp.propertyAsString) &&
+                    (expression.implicitThis == currentPexp.implicitThis) &&
+                    (expression.safe == currentPexp.safe) &&
+                    (expression.spreadSafe == currentPexp.spreadSafe))
+        }
     }
 
     @Override
@@ -605,26 +877,34 @@ class ASTMatcher extends ClassCodeVisitorSupport {
 
     @Override
     public void visitGStringExpression(final GStringExpression expression) {
-        super.visitGStringExpression(expression);
+        doWithNode(expression, current) {
+            def cur = (GStringExpression) current
+            def strings = expression.strings
+            def values = expression.values
+            def curStrings = cur.strings
+            def curValues = cur.values
+            doWithNode(strings, curStrings) {
+                visitListOfExpressions(strings)
+            }
+            doWithNode(values, curValues) {
+                visitListOfExpressions(values)
+            }
+        }
     }
 
     @Override
     protected void visitListOfExpressions(final List<? extends Expression> list) {
         if (list == null) return;
-        def iter = ((List<Expression>) current).iterator()
+        def currentExprs = (List<Expression>) current
+        if (currentExprs.size() != list.size()) {
+            failIfNot(false)
+            return
+        }
+        def iter = currentExprs.iterator()
         for (Expression expression : list) {
             def next = iter.next()
-            if (expression instanceof SpreadExpression) {
-                doWithNode(SpreadExpression, next) {
-                    Expression spread = ((SpreadExpression) expression).getExpression()
-                    doWithNode(Expression, ((SpreadExpression)current).expression) {
-                        spread.visit(this)
-                    }
-                }
-            } else {
-                doWithNode(Expression, next) {
-                    expression.visit(this)
-                }
+            doWithNode(expression, next) {
+                expression.visit(this)
             }
         }
     }
@@ -636,11 +916,90 @@ class ASTMatcher extends ClassCodeVisitorSupport {
 
     @Override
     public void visitClosureListExpression(final ClosureListExpression cle) {
-        super.visitClosureListExpression(cle);
+        doWithNode(cle, current) {
+            def exprs = cle.expressions
+            doWithNode(exprs, ((ClosureListExpression)current).expressions) {
+                visitListOfExpressions(exprs)
+            }
+        }
     }
 
     @Override
     public void visitBytecodeExpression(final BytecodeExpression cle) {
         super.visitBytecodeExpression(cle);
+    }
+
+    @Override
+    void visitIfElse(final IfStatement ifElse) {
+        doWithNode(ifElse, current) {
+            visitStatement(ifElse)
+            def cur = (IfStatement) current
+            def bool = ifElse.booleanExpression
+            def ifBlock = ifElse.ifBlock
+            def elseBlock = ifElse.elseBlock
+            doWithNode(bool, cur.booleanExpression) {
+                bool.visit(this)
+            }
+            doWithNode(ifBlock, cur.ifBlock) {
+                ifBlock.visit(this)
+            }
+            failIfNot(elseBlock && cur.elseBlock || !elseBlock && !cur.elseBlock)
+            doWithNode(elseBlock, cur.elseBlock) {
+                elseBlock.visit(this)
+            }
+        }
+    }
+
+    @Override
+    void visitForLoop(final ForStatement forLoop) {
+        doWithNode(forLoop, current) {
+            visitStatement(forLoop)
+            def cur = (ForStatement) current
+            def col = forLoop.collectionExpression
+            def block = forLoop.loopBlock
+            doWithNode(col, cur.collectionExpression) {
+                col.visit(this)
+            }
+            doWithNode(block, cur.loopBlock) {
+                block.visit(this)
+            }
+        }
+    }
+
+    @Override
+    void visitWhileLoop(final WhileStatement loop) {
+        doWithNode(loop, current) {
+            visitStatement(loop)
+            def cur = (WhileStatement) current
+            def bool = loop.booleanExpression
+            def block = loop.loopBlock
+            doWithNode(bool, cur.booleanExpression) {
+                bool.visit(this)
+            }
+            doWithNode(block, cur.loopBlock) {
+                block.visit(this)
+            }
+        }
+    }
+
+    /**
+     * // todo: experimental!
+     *
+     * Annotates an AST node with matching contraints. This method should be called
+     * on an AST intended to be used as a pattern only. It will put node metadata on
+     * the AST node allowing customized behavior in pattern matching.
+     *
+     * @param pattern a pattern AST
+     * @param constraintsSpec a closure specification of matching constraints
+     * @return the same pattern, annotated with constraints
+     */
+    public static ASTNode withConstraints(
+            final ASTNode pattern,
+            final @DelegatesTo(value=MatchingConstraintsBuilder, strategy=Closure.DELEGATE_ONLY) Closure constraintsSpec) {
+        def builder = new MatchingConstraintsBuilder()
+        def constraints = builder.build(constraintsSpec)
+        pattern.putNodeMetaData(MatchingConstraints, constraints)
+
+        pattern
     }
 }
