@@ -151,6 +151,42 @@ class ListTest extends GroovyTestCase {
         assert l1 - l2 == ["wrer", 3, 3, "wrewer", 4, 5]
     }
 
+    void testMinusAt() {
+        shouldFail(IndexOutOfBoundsException) {
+            [1, 2].minusAt(-1)
+        }
+        shouldFail(IndexOutOfBoundsException) {
+            [1, 2].minusAt(2)
+        }
+        shouldFail(ArrayIndexOutOfBoundsException) {
+            ([1, 2] as Integer[]).minusAt(-1)
+        }
+        shouldFail(ArrayIndexOutOfBoundsException) {
+            ([1, 2] as Integer[]).minusAt(2)
+        }
+
+        assert [1, 3] == [1, 2, 3].minusAt(1)
+        assert Arrays.equals([1, 3] as Integer[], ([1, 2, 3] as Integer[]).minusAt(1))
+    }
+
+    void testReplaceAt() {
+        shouldFail(IndexOutOfBoundsException) {
+            [1, 2].replaceAt(-1, 0)
+        }
+        shouldFail(IndexOutOfBoundsException) {
+            [1, 2].replaceAt(2, 0)
+        }
+        shouldFail(ArrayIndexOutOfBoundsException) {
+            ([1, 2] as Integer[]).replaceAt(-1, 0)
+        }
+        shouldFail(ArrayIndexOutOfBoundsException) {
+            ([1, 2] as Integer[]).replaceAt(2, 0)
+        }
+
+        assert [1, 5, 3] == [1, 2, 3].replaceAt(1, 5)
+        assert Arrays.equals([1, 5, 3] as Integer[], ([1, 2, 3] as Integer[]).replaceAt(1, 5))
+    }
+
     void testMinusEmptyCollection() {
         // GROOVY-790
         def list = [1, 1]

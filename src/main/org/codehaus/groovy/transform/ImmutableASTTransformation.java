@@ -289,7 +289,7 @@ public class ImmutableASTTransformation extends AbstractASTTransformation {
                         createIfInstanceOfAsImmutableS(fieldExpr, SET_CLASSNODE,
                                 createIfInstanceOfAsImmutableS(fieldExpr, MAP_CLASSNODE,
                                         createIfInstanceOfAsImmutableS(fieldExpr, ClassHelper.LIST_TYPE,
-                                                createAsImmutableX(fieldExpr, COLLECTION_TYPE))
+                                                createAsUnmodifiableX(fieldExpr, COLLECTION_TYPE))
                                 )
                         )
                 )
@@ -297,11 +297,11 @@ public class ImmutableASTTransformation extends AbstractASTTransformation {
     }
 
     private Expression createIfInstanceOfAsImmutableS(Expression expr, ClassNode type, Expression elseStatement) {
-        return ternaryX(isInstanceOfX(expr, type), createAsImmutableX(expr, type), elseStatement);
+        return ternaryX(isInstanceOfX(expr, type), createAsUnmodifiableX(expr, type), elseStatement);
     }
 
-    private Expression createAsImmutableX(final Expression expr, final ClassNode type) {
-        return callX(DGM_TYPE, "asImmutable", castX(type, expr));
+    private Expression createAsUnmodifiableX(final Expression expr, final ClassNode type) {
+        return callX(DGM_TYPE, "asUnmodifiable", castX(type, expr));
     }
 
     private Expression cloneArrayOrCloneableExpr(Expression fieldExpr, ClassNode type) {
@@ -691,7 +691,7 @@ public class ImmutableASTTransformation extends AbstractASTTransformation {
     @SuppressWarnings("Unchecked")
     public static Object checkImmutable(String className, String fieldName, Object field) {
         if (field == null || field instanceof Enum || inImmutableList(field.getClass().getName())) return field;
-        if (field instanceof Collection) return DefaultGroovyMethods.asImmutable((Collection) field);
+        if (field instanceof Collection) return DefaultGroovyMethods.asUnmodifiable((Collection) field);
         if (field.getClass().getAnnotation(MY_CLASS) != null) return field;
         final String typeName = field.getClass().getName();
         throw new RuntimeException(createErrorMessage(className, fieldName, typeName, "constructing"));
@@ -714,7 +714,7 @@ public class ImmutableASTTransformation extends AbstractASTTransformation {
                 declaredField = clazz.getDeclaredField(fieldName);
                 Class<?> fieldType = declaredField.getType();
                 if (Collection.class.isAssignableFrom(fieldType)) {
-                    return DefaultGroovyMethods.asImmutable((Collection) field);
+                    return DefaultGroovyMethods.asUnmodifiable((Collection) field);
                 }
                 // potentially allow Collection coercion for a constructor
                 if (fieldType.getAnnotation(MY_CLASS) != null) return field;
