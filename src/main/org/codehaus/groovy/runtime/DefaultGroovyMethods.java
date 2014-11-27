@@ -5371,9 +5371,10 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      */
     public static <E,T, U extends T, V extends T> T inject(Iterator<E> self, U initialValue, @ClosureParams(value=FromString.class,options="U,E") Closure<V> closure) {
         T value = initialValue;
-        Object[] params = new Object[2];
         while (self.hasNext()) {
             Object item = self.next();
+
+            Object[] params = new Object[2];
             params[0] = value;
             params[1] = item;
             value = closure.call(params);
@@ -5454,9 +5455,10 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 1.5.0
      */
     public static <E, T, U extends T, V extends T> T inject(E[] self, U initialValue, @ClosureParams(value=FromString.class,options="U,E") Closure<V> closure) {
-        Object[] params = new Object[2];
         T value = initialValue;
         for (Object next : self) {
+            Object[] params = new Object[2];
+
             params[0] = value;
             params[1] = next;
             value = closure.call(params);
