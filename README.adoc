@@ -13,7 +13,7 @@ The Groovy development team
 
 [.left.text-left]
 image::http://groovy.codehaus.org/images/groovy-logo.png[]
-{groovy-lang-org}[Groovy] is an agile and dynamic language for the Java Virtual Machine. It builds upon the strengths of Java, but has additional power features inspired by languages like Python, Ruby and Smalltalk.
+{groovy-www}[Groovy] is an agile and dynamic language for the Java Virtual Machine. It builds upon the strengths of Java, but has additional power features inspired by languages like Python, Ruby and Smalltalk.
 
 Groovy makes modern programming features available to Java developers with almost-zero learning curve as well as supports Domain-Specific Languages and other compact syntax so your code becomes easy to read and maintain.
 
