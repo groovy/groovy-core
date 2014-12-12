@@ -642,7 +642,7 @@ class TreeNodeBuildingNodeOperation extends PrimaryClassNodeOperation {
     }
 
     protected void visitListOfExpressions(List<? extends Expression> list) {
-        list.each { Expression node ->
+        list?.each { Expression node ->
             if (node instanceof NamedArgumentListExpression ) {
                 addNode(node, NamedArgumentListExpression, { it.visit(this) })
             } else {

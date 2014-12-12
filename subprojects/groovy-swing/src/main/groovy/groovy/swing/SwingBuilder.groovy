@@ -500,7 +500,7 @@ public class SwingBuilder extends FactoryBuilderSupport {
 
     public static clientPropertyAttributeDelegate(def builder, def node, def attributes) {
         def clientPropertyMap = attributes.remove("clientProperties")
-        clientPropertyMap.each { key, value ->
+        clientPropertyMap?.each { key, value ->
            node.putClientProperty key, value
         }
         attributes.findAll { it.key =~ /clientProperty(\w)/ }.each { key, value ->

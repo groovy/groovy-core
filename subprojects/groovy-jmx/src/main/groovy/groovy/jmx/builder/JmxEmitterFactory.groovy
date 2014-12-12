@@ -69,7 +69,7 @@ class JmxEmitterFactory extends AbstractFactory {
             throw new JmxBuilderException("Listeners must be provided as a list [listener1,...,listenerN]")
         }
 
-        listeners.each {l ->
+        listeners?.each {l ->
             def listener = l
             try {
                 if (listener instanceof String) {

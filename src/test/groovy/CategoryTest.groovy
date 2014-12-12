@@ -140,8 +140,10 @@ class CategoryTest extends GroovyTestCase {
         // before to ensure for example indy will do the right things as well, 
         // since indy may need more than one call here.
         assertScript """
+            import org.codehaus.groovy.runtime.NullObject
             class Cat {
-              public static findAll(Integer x, Closure cl) {1}   
+              public static findAll(Integer x, Closure cl) {1}
+              public static findAll(NullObject x, Closure cl) {2}
             }
 
              def foo(x) {
@@ -152,7 +154,7 @@ class CategoryTest extends GroovyTestCase {
                  assert foo(1) == 1
                  assert foo(1) == 1
                  assert foo(1) == 1
-                 assert foo(null) == []
+                 assert foo(null) == 2
                  assert foo(1) == 1
                  assert foo(1) == 1
                  assert foo(1) == 1

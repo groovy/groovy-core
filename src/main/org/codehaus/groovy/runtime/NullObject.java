@@ -105,7 +105,7 @@ public class NullObject extends GroovyObjectSupport {
      * @return an iterator for an empty list
      */
     public Iterator iterator() {
-        return Collections.EMPTY_LIST.iterator();
+        throw new NullPointerException("Cannot create Iterator for null");
     }
 
     /**

@@ -60,7 +60,7 @@ class JmxBeanInfoManager {
         def operations = JmxOperationInfoManager.getOperationInfosFromMap(map.operations) ?: []
 
         //generate setters/getters operations for found attribs
-        attributes.each {info ->
+        attributes?.each {info ->
             MetaProperty prop = object.metaClass.getMetaProperty(JmxBuilderTools.uncapitalize(info.name))
             if (prop && info.isReadable()) {
                 operations << JmxOperationInfoManager.createGetterOperationInfoFromProperty(prop)

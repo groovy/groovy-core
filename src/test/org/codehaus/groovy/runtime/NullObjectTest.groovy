@@ -74,6 +74,22 @@ class NullObjectTest extends GroovyTestCase {
         }
         assert a == 2
     }
+
+    void testIterator() {
+        shouldFail (NullPointerException) {
+            null.iterator()
+        }
+        shouldFail (NullPointerException) {
+            null.every{}
+        }
+        shouldFail (NullPointerException) {
+            null.each{}
+        }
+        shouldFail (NullPointerException) {
+            null.findAll{}
+        }
+        assert [null].flatten() == [null]
+    }
 }
 
 class MyCategory {
