@@ -2102,7 +2102,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     public static <K, V> Map<K, V> each(Map<K, V> self, @ClosureParams(MapEntryOrKeyValue.class) Closure closure) {
         for (Map.Entry entry : self.entrySet()) {
             callClosureForMapEntry(closure, entry);
-    }
+        }
         return self;
     }
 
