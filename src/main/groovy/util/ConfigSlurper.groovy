@@ -284,6 +284,8 @@ class ConfigSlurper {
         script.run()
 
         config.merge(overrides)
+        
+        GroovySystem.metaClassRegistry.removeMetaClass(script.class)
 
         return config
     }
