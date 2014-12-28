@@ -60,6 +60,10 @@ public class ExternalizeVerifierASTTransformation extends AbstractASTTransformat
             boolean includeFields = memberHasValue(anno, "includeFields", true);
             boolean checkPropertyTypes = memberHasValue(anno, "checkPropertyTypes", true);
             List<String> excludes = getMemberList(anno, "excludes");
+            boolean checkPropertyNames = !memberHasValue(anno, "checkPropertyNames", false);
+            if (checkPropertyNames) {
+                if (!checkPropertyList(cNode, excludes, "excludes", anno, MY_TYPE_NAME, includeFields)) return;
+            }
             List<FieldNode> list = getInstancePropertyFields(cNode);
             if (includeFields) {
                 list.addAll(getInstanceNonPropertyFields(cNode));

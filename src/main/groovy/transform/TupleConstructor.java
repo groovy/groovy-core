@@ -111,4 +111,9 @@ public @interface TupleConstructor {
      * whether existing constructors exist. It is up to you to avoid creating duplicate constructors.
      */
     boolean force() default false;
+
+    /**
+     * Validate property/field names in includes or excludes list actually exist.
+     */
+    boolean checkPropertyNames() default true;
 }

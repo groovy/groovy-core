@@ -64,4 +64,9 @@ public @interface Sortable {
      * Must not be used if 'includes' is used.
      */
     String[] excludes() default {};
+
+    /**
+     * Validate property/field names in includes or excludes list actually exist.
+     */
+    boolean checkPropertyNames() default true;
 }

@@ -133,7 +133,56 @@ class SortableTransformTest extends CompilableTestSupport {
               Integer born
             }
         '''
-        assert message.contains("Error during @Sortable processing: tried to include unknown property 'middle'")
+        assert message.contains("Error during @Sortable processing: 'includes' property 'middle' does not exist.")
+    }
+
+    void testBadExclude() {
+        def message = shouldFail '''
+            @groovy.transform.Sortable(excludes='first,middle') class Person {
+              String first
+              String last
+              Integer born
+            }
+        '''
+        assert message.contains("Error during @Sortable processing: 'excludes' property 'middle' does not exist.")
+    }
+
+    // If property names are not checked, and an invalid property is given in 'includes',
+    // the property is not included.
+    void testIncludesWithInvalidPropertyWithoutCheckIgnoresProperty() {
+        assertScript '''
+            @groovy.transform.Sortable(includes='first,middle', checkPropertyNames=false) class Person {
+              String first
+              String last
+              Integer born
+            }
+            def people = [
+              new Person(first: "Groovy", last: "Strachan"),
+              new Person(first: "Java", last: "Strachan"),
+              new Person(first: "Groovy", last: "McWhirter"),
+              new Person(first: "Java", last: "Gosling"),
+            ]
+            assert people.sort(false)*.first == ["Groovy", "Groovy", "Java", "Java"]
+        '''
+    }
+
+    // If property names are not checked, and an invalid property is given in 'excludes',
+    // the property is not excluded.
+    void testExcludesWithInvalidPropertyWithoutCheckIgnoresProperty() {
+        assertScript '''
+            @groovy.transform.Sortable(excludes='first,middle', checkPropertyNames=false) class Person {
+              String first
+              String last
+              Integer born
+            }
+            def people = [
+              new Person(first: "Groovy", last: "Strachan"),
+              new Person(first: "Java", last: "Strachan"),
+              new Person(first: "Groovy", last: "McWhirter"),
+              new Person(first: "Java", last: "Gosling")
+            ]
+            assert people.sort(false)*.last == ["Gosling", "McWhirter", "Strachan", "Strachan"]
+        '''
     }
 
     void testBadPropertyType() {

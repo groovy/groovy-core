@@ -581,4 +581,88 @@ class CanonicalTransformTest extends GroovyShellTestCase {
         """
     }
 
+    void testIncludesAndExcludesTogetherResultsInError() {
+        def message = shouldFail {
+            evaluate("""
+                    import groovy.transform.Canonical
+
+                    @Canonical(includes='surName', excludes='surName')
+                    class Person {
+                        String surName
+                    }
+
+                    new Person(surName: "Doe").toString()
+                """)
+        }
+        assert message.contains("Error during @Canonical processing: Only one of 'includes' and 'excludes' should be supplied not both.")
+    }
+
+    // Original behavior: If property names are not checked, and an invalid property name is given in 'includes',
+    // the property is not included.
+    void testIncludesWithInvalidPropertyWithoutCheckIgnoresProperty() {
+        def toString = evaluate("""
+                import groovy.transform.Canonical
+
+                @Canonical(includes='sirName', checkPropertyNames=false)
+                class Person {
+                    String surName
+                }
+
+                new Person(surName: "Doe").toString()
+            """)
+
+        assert toString == "Person()"
+    }
+
+    // Original behavior: If property names are not checked, and an invalid property name is given in 'excludes',
+    // the property is not excluded.
+    void testExcludesWithInvalidPropertyWithoutCheckIgnoresProperty() {
+        def toString = evaluate("""
+                import groovy.transform.Canonical
+
+                @Canonical(excludes='sirName', checkPropertyNames=false)
+                class Person {
+                    String firstName
+                    String surName
+                }
+
+                new Person(firstName: "John", surName: "Doe").toString()
+            """)
+
+        assert toString == "Person(John, Doe)"
+    }
+
+    void testIncludesWithInvalidPropertyNameResultsInError() {
+        def message = shouldFail {
+            evaluate("""
+                    import groovy.transform.Canonical
+
+                    @Canonical(includes='sirName')
+                    class Person {
+                        String surName
+                    }
+
+                    new Person(surName: "Doe").toString()
+                """)
+        }
+        assert message.contains("Error during @Canonical processing: 'includes' property 'sirName' does not exist.")
+    }
+
+    void testExcludesWithInvalidPropertyNameResultsInError() {
+        def message = shouldFail {
+            evaluate("""
+                    import groovy.transform.Canonical
+
+                    @Canonical(excludes='sirName')
+                    class Person {
+                        String firstName
+                        String surName
+                    }
+
+                    new Person(firstName: "John", surName: "Doe").toString()
+                """)
+        }
+        assert message.contains("Error during @Canonical processing: 'excludes' property 'sirName' does not exist.")
+    }
+
 }

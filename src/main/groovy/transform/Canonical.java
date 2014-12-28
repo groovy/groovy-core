@@ -126,4 +126,9 @@ public @interface Canonical {
      * the value of this attribute can be overridden within the more specific annotation.
      */
     String[] includes() default {};
+
+    /**
+     * Validate property/field names in includes or excludes list actually exist.
+     */
+    boolean checkPropertyNames() default true;
 }

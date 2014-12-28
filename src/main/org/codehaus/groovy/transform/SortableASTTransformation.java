@@ -79,7 +79,12 @@ public class SortableASTTransformation extends AbstractASTTransformation {
     private void createSortable(AnnotationNode annotation, ClassNode classNode) {
         List<String> includes = getMemberList(annotation, "includes");
         List<String> excludes = getMemberList(annotation, "excludes");
+        boolean checkPropertyNames = !memberHasValue(annotation, "checkPropertyNames", false);
         if (!checkIncludeExclude(annotation, excludes, includes, MY_TYPE_NAME)) return;
+        if (checkPropertyNames) {
+            if (!checkPropertyList(classNode, includes, "includes", annotation, MY_TYPE_NAME, false)) return;
+            if (!checkPropertyList(classNode, excludes, "excludes", annotation, MY_TYPE_NAME, false)) return;
+        }
         if (classNode.isInterface()) {
             addError(MY_TYPE_NAME + " cannot be applied to interface " + classNode.getName(), annotation);
         }
@@ -195,9 +200,9 @@ public class SortableASTTransformation extends AbstractASTTransformation {
                     !includes.isEmpty() && !includes.contains(propertyName)) continue;
             properties.add(property);
         }
-        for (String name : includes) {
-            checkKnownProperty(annotation, name, properties);
-        }
+//        for (String name : includes) {
+//            checkKnownProperty(annotation, name, properties);
+//        }
         for (PropertyNode pNode : properties) {
             checkComparable(pNode);
         }
@@ -220,13 +225,13 @@ public class SortableASTTransformation extends AbstractASTTransformation {
                 pNode.getName() + "' must be Comparable", pNode);
     }
 
-    private void checkKnownProperty(AnnotationNode annotation, String name, List<PropertyNode> properties) {
-        for (PropertyNode pNode: properties) {
-            if (name.equals(pNode.getName())) {
-                return;
-            }
-        }
-        addError("Error during " + MY_TYPE_NAME + " processing: tried to include unknown property '" +
-                name + "'", annotation);
-    }
+//    private void checkKnownProperty(AnnotationNode annotation, String name, List<PropertyNode> properties) {
+//        for (PropertyNode pNode: properties) {
+//            if (name.equals(pNode.getName())) {
+//                return;
+//            }
+//        }
+//        addError("Error during " + MY_TYPE_NAME + " processing: tried to include unknown property '" +
+//                name + "'", annotation);
+//    }
 }

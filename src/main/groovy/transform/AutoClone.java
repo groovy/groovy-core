@@ -275,4 +275,9 @@ public @interface AutoClone {
      * Style to use when cloning.
      */
     AutoCloneStyle style() default AutoCloneStyle.CLONE;
+
+    /**
+     * Validate property/field names in excludes list actually exist.
+     */
+    boolean checkPropertyNames() default true;
 }
