@@ -200,9 +200,6 @@ public class SortableASTTransformation extends AbstractASTTransformation {
                     !includes.isEmpty() && !includes.contains(propertyName)) continue;
             properties.add(property);
         }
-//        for (String name : includes) {
-//            checkKnownProperty(annotation, name, properties);
-//        }
         for (PropertyNode pNode : properties) {
             checkComparable(pNode);
         }
@@ -225,13 +222,4 @@ public class SortableASTTransformation extends AbstractASTTransformation {
                 pNode.getName() + "' must be Comparable", pNode);
     }
 
-//    private void checkKnownProperty(AnnotationNode annotation, String name, List<PropertyNode> properties) {
-//        for (PropertyNode pNode: properties) {
-//            if (name.equals(pNode.getName())) {
-//                return;
-//            }
-//        }
-//        addError("Error during " + MY_TYPE_NAME + " processing: tried to include unknown property '" +
-//                name + "'", annotation);
-//    }
 }
