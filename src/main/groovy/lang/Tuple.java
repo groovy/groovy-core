@@ -26,7 +26,7 @@ import java.util.List;
 public class Tuple extends AbstractTuple {
     private final Object[] contents;
 
-    public Tuple(Object[] contents) {
+    public Tuple(Object... contents) {
         if (contents == null) throw new NullPointerException();
         this.contents = contents;
     }
