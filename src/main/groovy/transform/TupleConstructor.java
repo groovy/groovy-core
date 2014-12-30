@@ -1,5 +1,5 @@
 /*
- * Copyright 2008-2013 the original author or authors.
+ * Copyright 2008-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,4 +111,23 @@ public @interface TupleConstructor {
      * whether existing constructors exist. It is up to you to avoid creating duplicate constructors.
      */
     boolean force() default false;
+
+    /**
+     * Used to set whether default value processing is enabled (the default) or disabled.
+     *
+     * By default, every constructor parameter is given a default value. This value will
+     * be Java's default for primitive types (zero or false) and null for Objects, unless
+     * an initial value is given when declaring the property or field. A consequence of
+     * this design is that you can leave off parameters from the right if the default
+     * value will suffice. As far as Java interoperability is concerned, Groovy will
+     * create additional constructors under the covers representing the constructors
+     * with parameters left off, all the way from the constructor with all arguments
+     * to the no-arg constructor.
+     *
+     * However, when set to false, default values are not allowed for properties and fields.
+     * Only the constructor containing all arguments will be provided.
+     * In particular, a no-arg constructor won't be provided and since this is currently
+     * used by Groovy when using named-arguments, the named-argument style won't be available.
+     */
+    boolean defaults() default true;
 }
