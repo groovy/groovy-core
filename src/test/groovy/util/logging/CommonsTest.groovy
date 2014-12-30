@@ -41,6 +41,83 @@ class CommonsTest extends GroovyTestCase {
                     Modifier.isFinal(field.getModifiers())
         }
     }
+    
+    void testExplicitPrivateFinalStaticLogFieldAppears() {
+        Class clazz = new GroovyClassLoader().parseClass('''
+              @groovy.util.logging.Commons(access='private')
+              class MyClass {
+              } ''')
+
+        assert clazz.declaredFields.find { Field field ->
+            field.name == "log" &&
+                    Modifier.isPrivate(field.getModifiers()) && 
+                    Modifier.isStatic(field.getModifiers()) &&
+                    Modifier.isTransient(field.getModifiers()) &&
+                    Modifier.isFinal(field.getModifiers())
+        }
+    }
+    
+    void testPackagePrivateFinalStaticLogFieldAppears() {
+        Class clazz = new GroovyClassLoader().parseClass('''
+              @groovy.util.logging.Commons(access='package-private')
+              class MyClass {
+              } ''')
+
+        assert clazz.declaredFields.find { Field field ->
+            field.name == "log" &&
+                    !Modifier.isPrivate(field.getModifiers()) && 
+                    !Modifier.isProtected(field.getModifiers()) && 
+                    !Modifier.isPublic(field.getModifiers()) && 
+                    Modifier.isStatic(field.getModifiers()) &&
+                    Modifier.isTransient(field.getModifiers()) &&
+                    Modifier.isFinal(field.getModifiers())
+        }
+    }
+    
+    void testProtectedFinalStaticLogFieldAppears() {
+        Class clazz = new GroovyClassLoader().parseClass('''
+              @groovy.util.logging.Commons(access='protected')
+              class MyClass {
+              } ''')
+
+        assert clazz.declaredFields.find { Field field ->
+            field.name == "log" &&
+                    Modifier.isProtected(field.getModifiers()) &&
+                    Modifier.isStatic(field.getModifiers()) &&
+                    Modifier.isTransient(field.getModifiers()) &&
+                    Modifier.isFinal(field.getModifiers())
+        }
+    }
+    
+    void testPublicFinalStaticLogFieldAppears() {
+        Class clazz = new GroovyClassLoader().parseClass('''
+              @groovy.util.logging.Commons(access='public')
+              class MyClass {
+              } ''')
+
+        assert clazz.declaredFields.find { Field field ->
+            field.name == "log" &&
+                    Modifier.isPublic(field.getModifiers()) &&
+                    Modifier.isStatic(field.getModifiers()) &&
+                    Modifier.isTransient(field.getModifiers()) &&
+                    Modifier.isFinal(field.getModifiers())
+        }
+    }
+    
+    void testUnknownAccessPrivateFinalStaticLogFieldAppears() {
+        Class clazz = new GroovyClassLoader().parseClass('''
+              @groovy.util.logging.Commons(access='unknown')
+              class MyClass {
+              } ''')
+
+        assert clazz.declaredFields.find { Field field ->
+            field.name == "log" &&
+                    Modifier.isPrivate(field.getModifiers()) && 
+                    Modifier.isStatic(field.getModifiers()) &&
+                    Modifier.isTransient(field.getModifiers()) &&
+                    Modifier.isFinal(field.getModifiers())
+        }
+    }
 
     void testPrivateFinalStaticNamedLogFieldAppears() {
         Class clazz = new GroovyClassLoader().parseClass('''

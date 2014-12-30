@@ -40,6 +40,7 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import org.objectweb.asm.Opcodes;
 
 /**
  * This class provides an AST Transformation to add a log field to a class.
@@ -62,9 +63,12 @@ public class LogASTTransformation extends AbstractASTTransformation implements C
      * It will be replaced by the fully qualified class name of the annotated class.
      */
     public static final String DEFAULT_CATEGORY_NAME = "##default-category-name##";
-
+    
+    public static final String DEFAULT_ACCESS_MODIFIER = "private";
+    
     private CompilationUnit compilationUnit;
-
+    
+    @Override
     public void visit(ASTNode[] nodes, final SourceUnit source) {
         init(nodes, source);
         AnnotatedNode targetClass = (AnnotatedNode) nodes[1];
@@ -77,6 +81,8 @@ public class LogASTTransformation extends AbstractASTTransformation implements C
         final String logFieldName = lookupLogFieldName(logAnnotation);
 
         final String categoryName = lookupCategoryName(logAnnotation);
+        
+        final int logFieldModifiers = lookupLogFieldModifiers(logAnnotation);
 
         if (!(targetClass instanceof ClassNode))
             throw new GroovyBugError("Class annotation " + logAnnotation.getClassNode().getName() + " annotated no Class, this must not happen.");
@@ -91,6 +97,7 @@ public class LogASTTransformation extends AbstractASTTransformation implements C
                 return source;
             }
 
+            @Override
             public Expression transform(Expression exp) {
                 if (exp == null) return null;
                 if (exp instanceof MethodCallExpression) {
@@ -107,7 +114,7 @@ public class LogASTTransformation extends AbstractASTTransformation implements C
                 } else if (logField != null && !Modifier.isPrivate(logField.getModifiers())) {
                     addError("Class annotated with Log annotation cannot have log field declared because the field exists in the parent class: " + logField.getOwner().getName(), logField);
                 } else {
-                    logNode = loggingStrategy.addLoggerFieldToClass(node, logFieldName, categoryName);
+                    logNode = loggingStrategy.addLoggerFieldToClass(node, logFieldName, categoryName, logFieldModifiers);
                 }
                 super.visitClass(node);
             }
@@ -174,6 +181,21 @@ public class LogASTTransformation extends AbstractASTTransformation implements C
         }
         return DEFAULT_CATEGORY_NAME;
     }
+    
+    private int lookupLogFieldModifiers(AnnotationNode logAnnotation) {
+        Expression member = logAnnotation.getMember("access");
+        int modifiers = Opcodes.ACC_FINAL | Opcodes.ACC_TRANSIENT | Opcodes.ACC_STATIC;
+        if (member != null && member.getText() != null) {
+            if ("public".equals(member.getText())) {
+                return modifiers | Opcodes.ACC_PUBLIC;
+            } else if ("protected".equals(member.getText())) {
+                return modifiers | Opcodes.ACC_PROTECTED;
+            } else if ("package-private".equals(member.getText())) {
+                return modifiers;
+            }
+        }
+        return modifiers | Opcodes.ACC_PRIVATE;
+    }
 
     private LoggingStrategy createLoggingStrategy(AnnotationNode logAnnotation, GroovyClassLoader loader) {
 
@@ -227,12 +249,13 @@ public class LogASTTransformation extends AbstractASTTransformation implements C
          * In this method, you are given a ClassNode, a field name and a category name, and you must add a new Field
          * onto the class. Return the result of the ClassNode.addField operations.
          *
-         * @param classNode    the class that was originally annotated with the Log transformation.
-         * @param fieldName    the name of the logger field
-         * @param categoryName the name of the logging category
+         * @param classNode         the class that was originally annotated with the Log transformation.
+         * @param fieldName         the name of the logger field
+         * @param categoryName      the name of the logging category
+         * @param fieldModifiers    the modifiers (private, final, et. al.) of the logger field
          * @return the FieldNode instance that was created and added to the class
          */
-        FieldNode addLoggerFieldToClass(ClassNode classNode, String fieldName, String categoryName);
+        FieldNode addLoggerFieldToClass(ClassNode classNode, String fieldName, String categoryName, int fieldModifiers);
 
         boolean isLoggingMethod(String methodName);
 
@@ -252,6 +275,7 @@ public class LogASTTransformation extends AbstractASTTransformation implements C
             this(null);
         }
 
+        @Override
         public String getCategoryName(ClassNode classNode, String categoryName) {
             if (categoryName.equals(DEFAULT_CATEGORY_NAME)) {
                 return classNode.getName();
@@ -269,6 +293,7 @@ public class LogASTTransformation extends AbstractASTTransformation implements C
         }
     }
 
+    @Override
     public void setCompilationUnit(final CompilationUnit unit) {
         this.compilationUnit = unit;
     }

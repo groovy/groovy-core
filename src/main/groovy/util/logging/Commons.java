@@ -21,7 +21,6 @@ import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.transform.GroovyASTTransformationClass;
 import org.codehaus.groovy.transform.LogASTTransformation;
-import org.objectweb.asm.Opcodes;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -58,6 +57,7 @@ import java.util.Locale;
 public @interface Commons {
     String value() default "log";
     String category() default LogASTTransformation.DEFAULT_CATEGORY_NAME;
+    String access() default LogASTTransformation.DEFAULT_ACCESS_MODIFIER;
     Class<? extends LogASTTransformation.LoggingStrategy> loggingStrategy() default CommonsLoggingStrategy.class;
 
     public  static class CommonsLoggingStrategy extends LogASTTransformation.AbstractLoggingStrategy {
@@ -69,9 +69,10 @@ public @interface Commons {
             super(loader);
         }
 
-        public FieldNode addLoggerFieldToClass(ClassNode classNode, String logFieldName, String categoryName) {
+        @Override
+        public FieldNode addLoggerFieldToClass(ClassNode classNode, String logFieldName, String categoryName, int fieldModifiers) {
             return classNode.addField(logFieldName,
-                    Opcodes.ACC_FINAL | Opcodes.ACC_TRANSIENT | Opcodes.ACC_STATIC | Opcodes.ACC_PRIVATE,
+                    fieldModifiers,
                     classNode(LOGGER_NAME),
                     new MethodCallExpression(
                             new ClassExpression(classNode(LOGGERFACTORY_NAME)),
@@ -79,10 +80,12 @@ public @interface Commons {
                             new ConstantExpression(getCategoryName(classNode, categoryName))));
         }
 
+        @Override
         public boolean isLoggingMethod(String methodName) {
             return methodName.matches("fatal|error|warn|info|debug|trace");
         }
 
+        @Override
         public Expression wrapLoggingMethodCall(Expression logVariable, String methodName, Expression originalExpression) {
             MethodCallExpression condition = new MethodCallExpression(
                     logVariable,

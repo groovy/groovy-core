@@ -23,7 +23,6 @@ import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.transform.GroovyASTTransformationClass;
 import org.codehaus.groovy.transform.LogASTTransformation;
 import org.codehaus.groovy.transform.LogASTTransformation.LoggingStrategy;
-import org.objectweb.asm.Opcodes;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -66,6 +65,7 @@ import java.util.Locale;
 public @interface Log {
     String value() default "log";
     String category() default LogASTTransformation.DEFAULT_CATEGORY_NAME;
+    String access() default LogASTTransformation.DEFAULT_ACCESS_MODIFIER;
     Class<? extends LoggingStrategy> loggingStrategy() default JavaUtilLoggingStrategy.class;
 
     /**
@@ -80,9 +80,10 @@ public @interface Log {
             super(loader);
         }
 
-        public FieldNode addLoggerFieldToClass(ClassNode classNode, String logFieldName, String categoryName) {
+        @Override
+        public FieldNode addLoggerFieldToClass(ClassNode classNode, String logFieldName, String categoryName, int fieldModifiers) {
             return classNode.addField(logFieldName,
-                        Opcodes.ACC_FINAL | Opcodes.ACC_TRANSIENT | Opcodes.ACC_STATIC | Opcodes.ACC_PRIVATE,
+                        fieldModifiers,
                         LOGGER_CLASSNODE,
                         new MethodCallExpression(
                                 new ClassExpression(LOGGER_CLASSNODE),
@@ -90,10 +91,12 @@ public @interface Log {
                                 new ConstantExpression(getCategoryName(classNode, categoryName))));
         }
 
+        @Override
         public boolean isLoggingMethod(String methodName) {
             return methodName.matches("severe|warning|info|fine|finer|finest");
         }
 
+        @Override
         public Expression wrapLoggingMethodCall(Expression logVariable, String methodName, Expression originalExpression) {
             AttributeExpression logLevelExpression = new AttributeExpression(
                     new ClassExpression(LEVEL_CLASSNODE),
