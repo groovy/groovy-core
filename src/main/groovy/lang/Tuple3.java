@@ -17,17 +17,19 @@
 package groovy.lang;
 
 /**
- * Represents a list of 2 typed Objects.
+ * Represents a list of 3 typed Objects.
  *
  * @since 2.4.0
  */
-public class Tuple2<T1, T2> extends AbstractTuple {
+public class Tuple3<T1, T2, T3> extends AbstractTuple {
     private final T1 first;
     private final T2 second;
+    private final T3 third;
 
-    public Tuple2(T1 first, T2 second) {
+    public Tuple3(T1 first, T2 second, T3 third) {
         this.first = first;
         this.second = second;
+        this.third = third;
     }
 
     public Object get(int index) {
@@ -36,13 +38,15 @@ public class Tuple2<T1, T2> extends AbstractTuple {
                 return first;
             case 1:
                 return second;
+            case 2:
+                return third;
             default:
                 throw new IndexOutOfBoundsException();
         }
     }
 
     public int size() {
-        return 2;
+        return 3;
     }
 
     public T1 getFirst() {
@@ -51,5 +55,9 @@ public class Tuple2<T1, T2> extends AbstractTuple {
 
     public T2 getSecond() {
         return second;
+    }
+
+    public T3 getThird() {
+        return third;
     }
 }

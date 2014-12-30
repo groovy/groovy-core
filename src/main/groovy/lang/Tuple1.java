@@ -17,39 +17,31 @@
 package groovy.lang;
 
 /**
- * Represents a list of 2 typed Objects.
+ * Represents a list of 1 typed Object.
  *
  * @since 2.4.0
  */
-public class Tuple2<T1, T2> extends AbstractTuple {
+public class Tuple1<T1> extends AbstractTuple {
     private final T1 first;
-    private final T2 second;
 
-    public Tuple2(T1 first, T2 second) {
+    public Tuple1(T1 first) {
         this.first = first;
-        this.second = second;
     }
 
     public Object get(int index) {
         switch (index) {
             case 0:
                 return first;
-            case 1:
-                return second;
             default:
                 throw new IndexOutOfBoundsException();
         }
     }
 
     public int size() {
-        return 2;
+        return 1;
     }
 
     public T1 getFirst() {
         return first;
-    }
-
-    public T2 getSecond() {
-        return second;
     }
 }
