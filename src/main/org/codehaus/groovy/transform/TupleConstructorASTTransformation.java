@@ -107,12 +107,17 @@ public class TupleConstructorASTTransformation extends AbstractASTTransformation
             boolean force = memberHasValue(anno, "force", true);
             List<String> excludes = getMemberList(anno, "excludes");
             List<String> includes = getMemberList(anno, "includes");
+            boolean checkPropertyNames = !memberHasValue(anno, "checkPropertyNames", false);
             if (hasAnnotation(cNode, CanonicalASTTransformation.MY_TYPE)) {
                 AnnotationNode canonical = cNode.getAnnotations(CanonicalASTTransformation.MY_TYPE).get(0);
                 if (excludes == null || excludes.isEmpty()) excludes = getMemberList(canonical, "excludes");
                 if (includes == null || includes.isEmpty()) includes = getMemberList(canonical, "includes");
             }
             if (!checkIncludeExclude(anno, excludes, includes, MY_TYPE_NAME)) return;
+            if (checkPropertyNames) {
+                if (!checkPropertyList(cNode, includes, "includes", anno, MY_TYPE_NAME, includeFields)) return;
+                if (!checkPropertyList(cNode, excludes, "excludes", anno, MY_TYPE_NAME, includeFields)) return;
+            }
             createConstructor(cNode, includeFields, includeProperties, includeSuperFields, includeSuperProperties, callSuper, force, excludes, includes);
         }
     }

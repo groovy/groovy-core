@@ -175,4 +175,8 @@ public @interface ToString {
      */
     boolean cache() default false;
 
+    /**
+     * Validate property/field names in includes or excludes list actually exist.
+     */
+    boolean checkPropertyNames() default true;
 }

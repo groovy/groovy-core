@@ -913,4 +913,36 @@ class ImmutableTransformTest extends GroovyShellTestCase {
         assert result.size() == 2
         assert result.first == [ 'tim', 'tim' ]
     }
+
+    // Original behavior: If property names are not checked, and an invalid property is given in 'knownImmutables',
+    // the property is ignored.
+    void testKnownImmutablesWithInvalidPropertyWithoutCheckIgnoresProperty() {
+        assertScript """
+                import groovy.transform.Immutable
+
+                @Immutable(knownImmutables=['sirName'], checkPropertyNames=false)
+                class Person {
+                    String surName
+                }
+
+                new Person(surName: "Doe")
+            """
+    }
+
+    void testKnownImmutablesWithInvalidPropertyNameResultsInError() {
+        def message = shouldFail {
+            evaluate("""
+                    import groovy.transform.Immutable
+
+                    @Immutable(knownImmutables=['sirName'])
+                    class Person {
+                        String surName
+                    }
+
+                    new Person(surName: "Doe")
+                """)
+        }
+        assert message.contains("Error during @Immutable processing: 'knownImmutables' property 'sirName' does not exist.")
+    }
+
 }

@@ -199,4 +199,9 @@ public @interface Immutable {
      * @since 2.2.0
      */
     boolean copyWith() default false;
+
+    /**
+     * Validate property/field names in knownImmutables list actually exist.
+     */
+    boolean checkPropertyNames() default true;
 }

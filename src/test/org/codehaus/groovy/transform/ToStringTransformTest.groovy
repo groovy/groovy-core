@@ -19,7 +19,7 @@ package org.codehaus.groovy.transform
  * @author Andre Steingress
  */
 class ToStringTransformTest extends GroovyShellTestCase {
-    
+
     void testSimpleToString() {
         def toString = evaluate("""
             import groovy.transform.ToString
@@ -261,7 +261,7 @@ class ToStringTransformTest extends GroovyShellTestCase {
 
         assert toString == 'Tree(val:foo, left:(this), right:(this))'
     }
-    
+
     void testIncludePackage() {
         def toString = evaluate("""
                 package my.company
@@ -275,7 +275,7 @@ class ToStringTransformTest extends GroovyShellTestCase {
             """)
 
         assertEquals("my.company.Person()", toString)
-        
+
         toString = evaluate("""
                 package my.company
 
@@ -288,18 +288,119 @@ class ToStringTransformTest extends GroovyShellTestCase {
             """)
 
         assertEquals("my.company.Person()", toString)
-        
+
         toString = evaluate("""
                 package my.company
-                
+
                 import groovy.transform.ToString
-                
+
                 @ToString(includePackage = false)
                 class Person {}
-                
+
                 new Person().toString()
             """)
-                
+
         assertEquals("Person()", toString)
     }
+
+    void testIncludeSuperWithoutSuperClassResultsInError() {
+        def message = shouldFail {
+            evaluate("""
+                    import groovy.transform.ToString
+
+                    @ToString(includeSuper=true)
+                    class Person {
+                        String surName
+                    }
+
+                    new Person(surName: "Doe").toString()
+                """)
+        }
+        assert message.contains("Error during @ToString processing: includeSuper=true but 'Person' has no super class.")
+    }
+
+    void testIncludesAndExcludesTogetherResultsInError() {
+        def message = shouldFail {
+            evaluate("""
+                    import groovy.transform.ToString
+
+                    @ToString(includes='surName', excludes='surName')
+                    class Person {
+                        String surName
+                    }
+
+                    new Person(surName: "Doe").toString()
+                """)
+        }
+        assert message.contains("Error during @ToString processing: Only one of 'includes' and 'excludes' should be supplied not both.")
+    }
+
+    // Original behavior: If property names are not checked, and an invalid property name is given in 'includes',
+    // the property is not included.
+    void testIncludesWithInvalidPropertyWithoutCheckIgnoresProperty() {
+        def toString = evaluate("""
+                import groovy.transform.ToString
+
+                @ToString(includes='sirName', checkPropertyNames=false)
+                class Person {
+                    String surName
+                }
+
+                new Person(surName: "Doe").toString()
+            """)
+
+        assertEquals("Person()", toString)
+    }
+
+    // Original behavior: If property names are not checked, and an invalid property is given in 'excludes',
+    // the property is not excluded.
+    void testExcludesWithInvalidPropertyWithoutCheckIgnoresProperty() {
+        def toString = evaluate("""
+                import groovy.transform.ToString
+
+                @ToString(excludes='sirName', checkPropertyNames=false)
+                class Person {
+                    String firstName
+                    String surName
+                }
+
+                new Person(firstName: "John", surName: "Doe").toString()
+            """)
+
+        assertEquals("Person(John, Doe)", toString)
+    }
+
+    void testIncludesWithInvalidPropertyNameResultsInError() {
+        def message = shouldFail {
+            evaluate("""
+                    import groovy.transform.ToString
+
+                    @ToString(includes='sirName')
+                    class Person {
+                        String surName
+                    }
+
+                    new Person(surName: "Doe").toString()
+                """)
+        }
+        assert message.contains("Error during @ToString processing: 'includes' property 'sirName' does not exist.")
+    }
+
+    void testExcludesWithInvalidPropertyNameResultsInError() {
+        def message = shouldFail {
+            evaluate("""
+                    import groovy.transform.ToString
+
+                    @ToString(excludes='sirName')
+                    class Person {
+                        String firstName
+                        String surName
+                    }
+
+                    new Person(firstName: "John", surName: "Doe").toString()
+                """)
+        }
+        assert message.contains("Error during @ToString processing: 'excludes' property 'sirName' does not exist.")
+    }
+
 }

@@ -57,4 +57,9 @@ public @interface ExternalizeVerifier {
      * but you can't turn on strict checking.
      */
     boolean checkPropertyTypes() default false;
+
+    /**
+     * Validate property/field names in excludes list actually exist.
+     */
+    boolean checkPropertyNames() default true;
 }

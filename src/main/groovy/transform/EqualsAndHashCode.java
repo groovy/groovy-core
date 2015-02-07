@@ -233,4 +233,9 @@ public @interface EqualsAndHashCode {
      * Generate a canEqual method to be used by equals.
      */
     boolean useCanEqual() default true;
+
+    /**
+     * Validate property/field names in includes or excludes list actually exist.
+     */
+    boolean checkPropertyNames() default true;
 }
