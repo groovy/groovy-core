@@ -412,7 +412,7 @@ public class XmlNodePrinter {
         }
     }
 
-    protected class NamespaceContext {
+    protected static class NamespaceContext {
         private final Map<String, String> namespaceMap;
 
         public NamespaceContext() {

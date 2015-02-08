@@ -3810,7 +3810,7 @@ public class MetaClassImpl implements MetaClass, MutableMetaClass {
         }
     };
 
-    class MethodIndex extends Index {
+    static class MethodIndex extends Index {
         public MethodIndex(boolean b) {
             super(false);
         }
