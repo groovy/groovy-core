@@ -103,7 +103,39 @@ Abstract classes are commonly compared to interfaces. But there are at least two
 
 === Constructors (Michael Schuenck)
 
+Constructors are special methods used to initialize an object with a specific state. As in normal methods, it is possible for a class to declare more than one constructor. In Groovy there are two ways to invoke constructors: with positional parameters or named parameters. The former one is like we invoke Java constructors, while the second way allows one to specify the parameter names when invonking the constructor.
+
+==== Positional argument constructor
+
+To create an object by using positional argument constructors, the respective class needs to declare each of the constructors it allows being called. A side effect of this is that, once at least one constructor is declared, the class can only be instatiated by having one of its constructors called. It is worth noting that, in this case, there is no way to create that class with named parameters.
+
+There is three forms of using a declared constructor. The first one is the normal Java way, with the `new` keyword. The others rely on coercion of lists into the desired types. In this case, it is possible to coerce with the `as` keyword and by statically typing the variable.
+
+[source,groovy]
+----
+include::{projectdir}/src/spec/test/ClassTest.groovy[tags=constructor_positional_parameters,indent=0]
+----
+<1> Constructor declaration
+<2> Constructor invocation, classic Java way
+<3> Constructor usage, using coercion with `as` keyword
+<4> Constructor usage, using coercion in assignment
+
+
 ==== Named argument constructor (Michael Schuenck)
+
+If no constructor is declared, it is possible to create objects by passing parameters in the form of property/value pairs. This can be in handy in cases where one wants to allow several combinations of parameters. Otherwise, by using traditional positional parameters it would be necessary to declare all possible constructors.
+
+[source,groovy]
+----
+include::{projectdir}/src/spec/test/ClassTest.groovy[tags=constructor_named_parameters,indent=0]
+----
+<1> No constructor declared
+<2> No parameters given in the instantiation
+<3> `name` parameter given in the instantiation
+<4> `age` parameter given in the instantiation
+<5> `name` and `age` parameters given in the instantiation
+
+It is important to highlight, however, that this approach gives more power to the constructor caller, while imposes a major responsibility to it. Thus, if a restriction is needed, one can just declare one or more construtors, and the instantiation by named parameters will no longer be available.
 
 === Methods (Michael Schuenck)
 

@@ -75,6 +75,37 @@ abstract class Abstract {         //<1>
 }
 // end::abstract_class[]
 
+// tag::constructor_positional_parameters[]
+class PersonConstructor {
+    String name
+    Integer age
+
+    PersonConstructor(name, age) {          //<1>
+        this.name = name
+        this.age = age
+    }
+}
+
+def person1 = new PersonConstructor('Marie', 1)  //<2>
+def person2 = ['Marie', 2] as PersonConstructor  //<3>
+PersonConstructor person3 = ['Marie', 3]         //<4>
+// end::constructor_positional_parameters[]
+assert person1.name == 'Marie'
+assert person2.name == 'Marie'
+assert person3.name == 'Marie'
+
+// tag::constructor_named_parameters[]
+class PersonWOConstructor {                                  //<1>
+    String name
+    Integer age
+}
+
+def person4 = new PersonWOConstructor()                      //<2>
+def person5 = new PersonWOConstructor(name: 'Marie')         //<3>
+def person6 = new PersonWOConstructor(age: 1)                //<4>
+def person7 = new PersonWOConstructor(name: 'Marie', age: 2) //<5>
+// end::constructor_named_parameters[]
+assert person4.name == null
 
 assert p != null
 '''
