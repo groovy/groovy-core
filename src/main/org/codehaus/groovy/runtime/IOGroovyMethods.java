@@ -20,6 +20,8 @@ import groovy.lang.Closure;
 import groovy.lang.StringWriterIOException;
 import groovy.lang.Writable;
 import groovy.transform.stc.ClosureParams;
+import groovy.transform.stc.FirstParam;
+
 import groovy.transform.stc.FromString;
 import groovy.transform.stc.SimpleType;
 import org.codehaus.groovy.runtime.callsite.BooleanClosureWrapper;
@@ -1146,7 +1148,7 @@ public class IOGroovyMethods extends DefaultGroovyMethodsSupport {
      * @throws IOException if an IOException occurs.
      * @since 1.5.2
      */
-    public static <T> T withWriter(Writer writer, @ClosureParams(value=SimpleType.class, options="java.io.Writer") Closure<T> closure) throws IOException {
+    public static <T> T withWriter(Writer writer, @ClosureParams(FirstParam.class) Closure<T> closure) throws IOException {
         try {
             T result = closure.call(writer);
 
@@ -1174,7 +1176,7 @@ public class IOGroovyMethods extends DefaultGroovyMethodsSupport {
      * @throws IOException if an IOException occurs.
      * @since 1.5.2
      */
-    public static <T> T withReader(Reader reader, @ClosureParams(value=SimpleType.class, options="java.io.Reader") Closure<T> closure) throws IOException {
+    public static <T> T withReader(Reader reader, @ClosureParams(FirstParam.class) Closure<T> closure) throws IOException {
         try {
             T result = closure.call(reader);
 
@@ -1198,7 +1200,7 @@ public class IOGroovyMethods extends DefaultGroovyMethodsSupport {
      * @throws IOException if an IOException occurs.
      * @since 1.5.2
      */
-    public static <T> T withStream(InputStream stream, @ClosureParams(value=SimpleType.class, options="java.io.InputStream") Closure<T> closure) throws IOException {
+    public static <T> T withStream(InputStream stream, @ClosureParams(FirstParam.class) Closure<T> closure) throws IOException {
         try {
             T result = closure.call(stream);
 
@@ -1310,7 +1312,7 @@ public class IOGroovyMethods extends DefaultGroovyMethodsSupport {
      * @throws IOException if an IOException occurs.
      * @since 1.5.2
      */
-    public static <T> T withStream(OutputStream os, @ClosureParams(value=SimpleType.class, options="java.io.OutputStream") Closure<T> closure) throws IOException {
+    public static <T> T withStream(OutputStream os, @ClosureParams(FirstParam.class) Closure<T> closure) throws IOException {
         try {
             T result = closure.call(os);
             os.flush();
@@ -1391,7 +1393,7 @@ public class IOGroovyMethods extends DefaultGroovyMethodsSupport {
      * @throws IOException if an IOException occurs.
      * @since 1.5.0
      */
-    public static void transformChar(Reader self, Writer writer, @ClosureParams(value=SimpleType.class, options="java.lang.String") Closure closure) throws IOException {
+    public static void transformChar(Reader self, Writer writer, @ClosureParams(value=SimpleType.class, options="java.lang.String") Closure<String> closure) throws IOException {
         int c;
         try {
             char[] chars = new char[1];
@@ -1425,7 +1427,7 @@ public class IOGroovyMethods extends DefaultGroovyMethodsSupport {
      * @throws IOException if an IOException occurs.
      * @since 1.0
      */
-    public static void transformLine(Reader reader, Writer writer, @ClosureParams(value=SimpleType.class, options="java.lang.String") Closure closure) throws IOException {
+    public static void transformLine(Reader reader, Writer writer, @ClosureParams(value=SimpleType.class, options="java.lang.String") Closure<String> closure) throws IOException {
         BufferedReader br = new BufferedReader(reader);
         BufferedWriter bw = new BufferedWriter(writer);
         String line;
@@ -1613,7 +1615,7 @@ public class IOGroovyMethods extends DefaultGroovyMethodsSupport {
      * @throws IOException if an IOException occurs.
      * @since 2.4.0
      */
-    public static <T> T withCloseable(Closeable self, @ClosureParams(value=SimpleType.class, options="java.io.Closeable") Closure<T> action) throws IOException {
+    public static <T> T withCloseable(Closeable self, @ClosureParams(FirstParam.class) Closure<T> action) throws IOException {
         try {
             T result = action.call(self);
 
