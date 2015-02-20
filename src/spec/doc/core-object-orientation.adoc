@@ -221,10 +221,10 @@ include::{projectdir}/src/spec/test/objectorientation/MethodsTest.groovy[tags=va
 ==== Method selection algorithm (TBD)
 ==== Exception declaration (TBD)
 
-=== Fields and properties (Michael Schuenck)
+=== Fields and properties (TBD)
 
-==== Fields (Michael Schuenck)
-==== Properties (Michael Schuenck)
+==== Fields (TBD)
+==== Properties (TBD)
 
 === Inheritance (TBD)
 
