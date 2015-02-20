@@ -20,8 +20,10 @@ class MethodsTests extends GroovyTestCase {
     void testMethodDefinition() {
         assertScript '''
             // tag::method_definition[]
-            def someMethod() { 'method called' }
-            String anotherMethod() { 'also called' }
+            def someMethod() { 'method called' }                           //<1>
+            String anotherMethod() { 'another method called' }             //<2>
+            def thirdMethod(param1) { "$param1 passed" }                   //<3>
+            static String fourthMethod(String param1) { "$param1 passed" } //<4>
             // end::method_definition[]
         '''
     }
