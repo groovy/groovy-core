@@ -29,6 +29,7 @@ import groovy.util.MapEntry;
 import groovy.util.OrderBy;
 import groovy.util.PermutationGenerator;
 import groovy.util.ProxyGenerator;
+import groovy.util.function.*;
 import org.codehaus.groovy.classgen.Verifier;
 import org.codehaus.groovy.reflection.ClassInfo;
 import org.codehaus.groovy.reflection.MixinInMetaClass;
@@ -6297,6 +6298,160 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     }
 
     /**
+     * Adds min() method to byte arrays.
+     * <pre class="groovyTestCase">assert 1 as byte == ([1, 2, 3] as byte[]).min()</pre>
+     *
+     * @param self an array
+     * @return the minimum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static byte min(byte[] self) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        byte minV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            byte v = self[i];
+            if (minV > v) {
+                minV = v;
+            }
+        }
+        return minV;
+    }
+
+    /**
+     * Adds min() method to short arrays.
+     * <pre class="groovyTestCase">assert 1 as short == ([1, 2, 3] as short[]).min()</pre>
+     *
+     * @param self an array
+     * @return the minimum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static short min(short[] self) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        short minV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            short v = self[i];
+            if (minV > v) {
+                minV = v;
+            }
+        }
+        return minV;
+    }
+
+    /**
+     * Adds min() method to int arrays.
+     * <pre class="groovyTestCase">assert 1 == ([1, 2, 3] as int[]).min()</pre>
+     *
+     * @param self an array
+     * @return the minimum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static int min(int[] self) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        int minV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            int v = self[i];
+            if (minV > v) {
+                minV = v;
+            }
+        }
+        return minV;
+    }
+
+    /**
+     * Adds min() method to long arrays.
+     * <pre class="groovyTestCase">assert 1L == ([1, 2, 3] as long[]).min()</pre>
+     *
+     * @param self an array
+     * @return the minimum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static long min(long[] self) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        long minV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            long v = self[i];
+            if (minV > v) {
+                minV = v;
+            }
+        }
+        return minV;
+    }
+
+    /**
+     * Adds min() method to char arrays.
+     * <pre class="groovyTestCase">assert 1 as char == ([1, 2, 3] as char[]).min()</pre>
+     *
+     * @param self an array
+     * @return the minimum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static char min(char[] self) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        char minV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            char v = self[i];
+            if (minV > v) {
+                minV = v;
+            }
+        }
+        return minV;
+    }
+
+    /**
+     * Adds min() method to float arrays.
+     * <pre class="groovyTestCase">assert 1f == ([1, 2, 3] as float[]).min()</pre>
+     *
+     * @param self an array
+     * @return the minimum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static float min(float[] self) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        float minV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            float v = self[i];
+            if (minV > v) {
+                minV = v;
+            }
+        }
+        return minV;
+    }
+
+    /**
+     * Adds min() method to double arrays.
+     * <pre class="groovyTestCase">assert 1d == ([1, 2, 3] as double[]).min()</pre>
+     *
+     * @param self an array
+     * @return the minimum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static double min(double[] self) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        double minV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            double v = self[i];
+            if (minV > v) {
+                minV = v;
+            }
+        }
+        return minV;
+    }
+
+    /**
      * Selects the minimum value found from the Iterator using the given comparator.
      *
      * @param self       an Iterator
@@ -6421,6 +6576,167 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      */
     public static <K, V> Map.Entry<K, V> min(Map<K, V> self, @ClosureParams(value=FromString.class, options={"Map.Entry<K,V>", "Map.Entry<K,V>,Map.Entry<K,V>"}) Closure closure) {
         return min((Iterable<Map.Entry<K, V>>)self.entrySet(), closure);
+    }
+
+    /**
+     * Selects the minimum value found from the array using the given comparator.
+     * <pre class="groovyTestCase">assert -1 as byte == ([-1, -2, -3] as byte[]).minCompare { a, b -> -a <=> -b }</pre>
+     *
+     * @param self       an array
+     * @param comparator a ByteComparator
+     * @return the minimum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static byte minCompare(byte[] self, ByteComparator comparator) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        byte minV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            byte v = self[i];
+            if (comparator.compare(minV, v) > 0) {
+                minV = v;
+            }
+        }
+        return minV;
+    }
+
+    /**
+     * Selects the minimum value found from the array using the given comparator.
+     * <pre class="groovyTestCase">assert -1 as short == ([-1, -2, -3] as short[]).minCompare { a, b -> -a <=> -b }</pre>
+     *
+     * @param self       an array
+     * @param comparator a ShortComparator
+     * @return the minimum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static short minCompare(short[] self, ShortComparator comparator) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        short minV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            short v = self[i];
+            if (comparator.compare(minV, v) > 0) {
+                minV = v;
+            }
+        }
+        return minV;
+    }
+
+    /**
+     * Selects the minimum value found from the array using the given comparator.
+     * <pre class="groovyTestCase">assert -1 == ([-1, -2, -3] as int[]).minCompare { a, b -> -a <=> -b }</pre>
+     *
+     * @param self       an array
+     * @param comparator a IntComparator
+     * @return the minimum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static int minCompare(int[] self, IntComparator comparator) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        int minV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            int v = self[i];
+            if (comparator.compare(minV, v) > 0) {
+                minV = v;
+            }
+        }
+        return minV;
+    }
+
+    /**
+     * Selects the minimum value found from the array using the given comparator.
+     * <pre class="groovyTestCase">assert -1L == ([-1, -2, -3] as long[]).minCompare { a, b -> -a <=> -b }</pre>
+     *
+     * @param self       an array
+     * @param comparator a LongComparator
+     * @return the minimum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static long minCompare(long[] self, LongComparator comparator) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        long minV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            long v = self[i];
+            if (comparator.compare(minV, v) > 0) {
+                minV = v;
+            }
+        }
+        return minV;
+    }
+
+    /**
+     * Selects the minimum value found from the array using the given comparator.
+     * <pre class="groovyTestCase">assert 3 as char == ([1, 2, 3] as char[]).minCompare { a, b -> b <=> a }</pre>
+     *
+     * @param self       an array
+     * @param comparator a CharComparator
+     * @return the minimum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static char minCompare(char[] self, CharComparator comparator) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        char minV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            char v = self[i];
+            if (comparator.compare(minV, v) > 0) {
+                minV = v;
+            }
+        }
+        return minV;
+    }
+
+    /**
+     * Selects the minimum value found from the array using the given comparator.
+     * <pre class="groovyTestCase">assert -1f == ([-1, -2, -3] as float[]).minCompare { a, b -> -a <=> -b }</pre>
+     *
+     * @param self       an array
+     * @param comparator a FloatComparator
+     * @return the minimum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static float minCompare(float[] self, FloatComparator comparator) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        float minV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            float v = self[i];
+            if (comparator.compare(minV, v) > 0) {
+                minV = v;
+            }
+        }
+        return minV;
+    }
+
+    /**
+     * Selects the minimum value found from the array using the given comparator.
+     * <pre class="groovyTestCase">assert -1d == ([-1, -2, -3] as double[]).minCompare { a, b -> -a <=> -b }</pre>
+     *
+     * @param self       an array
+     * @param comparator a DoubleComparator
+     * @return the minimum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static double minCompare(double[] self, DoubleComparator comparator) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        double minV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            double v = self[i];
+            if (comparator.compare(minV, v) > 0) {
+                minV = v;
+            }
+        }
+        return minV;
     }
 
     /**
@@ -6557,6 +6873,160 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      */
     public static <T> T max(T[] self) {
         return max((Iterable<T>)toList(self));
+    }
+
+    /**
+     * Adds max() method to byte arrays.
+     * <pre class="groovyTestCase">assert 3 as byte == ([1, 2, 3] as byte[]).max()</pre>
+     *
+     * @param self an array
+     * @return the maximum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static byte max(byte[] self) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        byte maxV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            byte v = self[i];
+            if (maxV < v) {
+                maxV = v;
+            }
+        }
+        return maxV;
+    }
+
+    /**
+     * Adds max() method to short arrays.
+     * <pre class="groovyTestCase">assert 3 as short == ([1, 2, 3] as short[]).max()</pre>
+     *
+     * @param self an array
+     * @return the maximum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static short max(short[] self) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        short maxV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            short v = self[i];
+            if (maxV < v) {
+                maxV = v;
+            }
+        }
+        return maxV;
+    }
+
+    /**
+     * Adds max() method to int arrays.
+     * <pre class="groovyTestCase">assert 3 == ([1, 2, 3] as int[]).max()</pre>
+     *
+     * @param self an array
+     * @return the maximum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static int max(int[] self) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        int maxV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            int v = self[i];
+            if (maxV < v) {
+                maxV = v;
+            }
+        }
+        return maxV;
+    }
+
+    /**
+     * Adds max() method to long arrays.
+     * <pre class="groovyTestCase">assert 3L == ([1, 2, 3] as long[]).max()</pre>
+     *
+     * @param self an array
+     * @return the maximum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static long max(long[] self) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        long maxV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            long v = self[i];
+            if (maxV < v) {
+                maxV = v;
+            }
+        }
+        return maxV;
+    }
+
+    /**
+     * Adds max() method to char arrays.
+     * <pre class="groovyTestCase">assert 3 as char == ([1, 2, 3] as char[]).max()</pre>
+     *
+     * @param self an array
+     * @return the maximum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static char max(char[] self) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        char maxV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            char v = self[i];
+            if (maxV < v) {
+                maxV = v;
+            }
+        }
+        return maxV;
+    }
+
+    /**
+     * Adds max() method to float arrays.
+     * <pre class="groovyTestCase">assert 3f == ([1, 2, 3] as float[]).max()</pre>
+     *
+     * @param self an array
+     * @return the maximum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static float max(float[] self) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        float maxV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            float v = self[i];
+            if (maxV < v) {
+                maxV = v;
+            }
+        }
+        return maxV;
+    }
+
+    /**
+     * Adds max() method to double arrays.
+     * <pre class="groovyTestCase">assert 3d == ([1, 2, 3] as double[]).max()</pre>
+     *
+     * @param self an array
+     * @return the maximum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static double max(double[] self) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        double maxV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            double v = self[i];
+            if (maxV < v) {
+                maxV = v;
+            }
+        }
+        return maxV;
     }
 
     /**
@@ -6722,6 +7192,167 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      */
     public static <T> T max(T[] self, Comparator<T> comparator) {
         return max((Iterable<T>)toList(self), comparator);
+    }
+
+    /**
+     * Selects the maximum value found from the array using the given comparator.
+     * <pre class="groovyTestCase">assert -3 as byte == ([-1, -2, -3] as byte[]).maxCompare { a, b -> -a <=> -b }</pre>
+     *
+     * @param self       an array
+     * @param comparator a ByteComparator
+     * @return the maximum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static byte maxCompare(byte[] self, ByteComparator comparator) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        byte maxV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            byte v = self[i];
+            if (comparator.compare(maxV, v) < 0) {
+                maxV = v;
+            }
+        }
+        return maxV;
+    }
+
+    /**
+     * Selects the maximum value found from the array using the given comparator.
+     * <pre class="groovyTestCase">assert -3 as short == ([-1, -2, -3] as short[]).maxCompare { a, b -> -a <=> -b }</pre>
+     *
+     * @param self       an array
+     * @param comparator a ShortComparator
+     * @return the maximum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static short maxCompare(short[] self, ShortComparator comparator) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        short maxV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            short v = self[i];
+            if (comparator.compare(maxV, v) < 0) {
+                maxV = v;
+            }
+        }
+        return maxV;
+    }
+
+    /**
+     * Selects the maximum value found from the array using the given comparator.
+     * <pre class="groovyTestCase">assert -3 == ([-1, -2, -3] as int[]).maxCompare { a, b -> -a <=> -b }</pre>
+     *
+     * @param self       an array
+     * @param comparator a IntComparator
+     * @return the maximum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static int maxCompare(int[] self, IntComparator comparator) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        int maxV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            int v = self[i];
+            if (comparator.compare(maxV, v) < 0) {
+                maxV = v;
+            }
+        }
+        return maxV;
+    }
+
+    /**
+     * Selects the maximum value found from the array using the given comparator.
+     * <pre class="groovyTestCase">assert -3L == ([-1, -2, -3] as long[]).maxCompare { a, b -> -a <=> -b }</pre>
+     *
+     * @param self       an array
+     * @param comparator a LongComparator
+     * @return the maximum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static long maxCompare(long[] self, LongComparator comparator) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        long maxV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            long v = self[i];
+            if (comparator.compare(maxV, v) < 0) {
+                maxV = v;
+            }
+        }
+        return maxV;
+    }
+
+    /**
+     * Selects the maximum value found from the array using the given comparator.
+     * <pre class="groovyTestCase">assert 1 as char == ([1, 2, 3] as char[]).maxCompare { a, b -> b <=> a }</pre>
+     *
+     * @param self       an array
+     * @param comparator a CharComparator
+     * @return the maximum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static char maxCompare(char[] self, CharComparator comparator) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        char maxV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            char v = self[i];
+            if (comparator.compare(maxV, v) < 0) {
+                maxV = v;
+            }
+        }
+        return maxV;
+    }
+
+    /**
+     * Selects the maximum value found from the array using the given comparator.
+     * <pre class="groovyTestCase">assert -3f == ([-1, -2, -3] as float[]).maxCompare { a, b -> -a <=> -b }</pre>
+     *
+     * @param self       an array
+     * @param comparator a ByteComparator
+     * @return the maximum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static float maxCompare(float[] self, FloatComparator comparator) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        float maxV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            float v = self[i];
+            if (comparator.compare(maxV, v) < 0) {
+                maxV = v;
+            }
+        }
+        return maxV;
+    }
+
+    /**
+     * Selects the maximum value found from the array using the given comparator.
+     * <pre class="groovyTestCase">assert -3d == ([-1, -2, -3] as double[]).maxCompare { a, b -> -a <=> -b }</pre>
+     *
+     * @param self       an array
+     * @param comparator a DoubleComparator
+     * @return the maximum value
+     * @throws NoSuchElementException if the array is empty
+     * @since 2.4.2
+     */
+    public static double maxCompare(double[] self, DoubleComparator comparator) {
+        if (self.length == 0) throw new NoSuchElementException("length is 0");
+
+        double maxV = self[0];
+        for (int i = 1; i < self.length; i++) {
+            double v = self[i];
+            if (comparator.compare(maxV, v) < 0) {
+                maxV = v;
+            }
+        }
+        return maxV;
     }
 
     /**

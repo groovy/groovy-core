@@ -487,4 +487,140 @@ class ArrayTest extends GroovyTestCase {
         assert ((float) 10) == a6.sum(4)
         assert ((double) 10) == a7.sum(4)
     }
+
+    void testMin() {
+        def a1 = [-3, -2, -1] as byte[]
+        def a2 = [-3, -2, -1] as short[]
+        def a3 = [-3, -2, -1] as int[]
+        def a4 = [-3, -2, -1] as long[]
+        def a5 = [3, 2, 1] as char[]
+        def a6 = [-3, -2, -1] as float[]
+        def a7 = [-3, -2, -1] as double[]
+
+        assert -3 as byte == a1.min()
+        assert -3 as short == a2.min()
+        assert -3 == a3.min()
+        assert -3L == a4.min()
+        assert 1 as char == a5.min()
+        assert -3f == a6.min()
+        assert -3d == a7.min()
+
+        assert a1.min() instanceof Byte
+        assert a2.min() instanceof Short
+        assert a3.min() instanceof Integer
+        assert a4.min() instanceof Long
+        assert a5.min() instanceof Character
+        assert a6.min() instanceof Float
+        assert a7.min() instanceof Double
+
+        shouldFail { ([] as byte[]).min() }
+        shouldFail { ([] as short[]).min() }
+        shouldFail { ([] as int[]).min() }
+        shouldFail { ([] as long[]).min() }
+        shouldFail { ([] as char[]).min() }
+        shouldFail { ([] as float[]).min() }
+        shouldFail { ([] as double[]).min() }
+    }
+
+    void testMinCompare() {
+        def a1 = [-3, -2, -1] as byte[]
+        def a2 = [-3, -2, -1] as short[]
+        def a3 = [-3, -2, -1] as int[]
+        def a4 = [-3, -2, -1] as long[]
+        def a5 = [3, 2, 1] as char[]
+        def a6 = [-3, -2, -1] as float[]
+        def a7 = [-3, -2, -1] as double[]
+
+        assert -1 as byte == a1.minCompare { byte a, byte b -> -a <=> -b }
+        assert -1 as short == a2.minCompare { short a, short b -> -a <=> -b }
+        assert -1 == a3.minCompare { int a, int b -> -a <=> -b }
+        assert -1L == a4.minCompare { long a, long b -> -a <=> -b }
+        assert 3 as char == a5.minCompare { char a, char b -> b <=> a }
+        assert -1f == a6.minCompare { float a, float b -> -a <=> -b }
+        assert -1d == a7.minCompare { double a, double b -> -a <=> -b }
+
+        assert a1.minCompare { byte a, byte b -> -a <=> -b } instanceof Byte
+        assert a2.minCompare { short a, short b -> -a <=> -b } instanceof Short
+        assert a3.minCompare { int a, int b -> -a <=> -b } instanceof Integer
+        assert a4.minCompare { long a, long b -> -a <=> -b } instanceof Long
+        assert a5.minCompare { char a, char b -> b <=> a } instanceof Character
+        assert a6.minCompare { float a, float b -> -a <=> -b } instanceof Float
+        assert a7.minCompare { double a, double b -> -a <=> -b } instanceof Double
+
+        shouldFail { ([] as byte[]).minCompare { a, b -> a <=> b } }
+        shouldFail { ([] as short[]).minCompare { a, b -> a <=> b } }
+        shouldFail { ([] as int[]).minCompare { a, b -> a <=> b } }
+        shouldFail { ([] as long[]).minCompare { a, b -> a <=> b } }
+        shouldFail { ([] as char[]).minCompare { a, b -> a <=> b } }
+        shouldFail { ([] as float[]).minCompare { a, b -> a <=> b } }
+        shouldFail { ([] as double[]).minCompare { a, b -> a <=> b } }
+    }
+
+    void testMax() {
+        def a1 = [-3, -2, -1] as byte[]
+        def a2 = [-3, -2, -1] as short[]
+        def a3 = [-3, -2, -1] as int[]
+        def a4 = [-3, -2, -1] as long[]
+        def a5 = [3, 2, 1] as char[]
+        def a6 = [-3, -2, -1] as float[]
+        def a7 = [-3, -2, -1] as double[]
+
+        assert -1 as byte == a1.max()
+        assert -1 as short == a2.max()
+        assert -1 == a3.max()
+        assert -1L == a4.max()
+        assert 3 as char == a5.max()
+        assert -1f == a6.max()
+        assert -1d == a7.max()
+
+        assert a1.max() instanceof Byte
+        assert a2.max() instanceof Short
+        assert a3.max() instanceof Integer
+        assert a4.max() instanceof Long
+        assert a5.max() instanceof Character
+        assert a6.max() instanceof Float
+        assert a7.max() instanceof Double
+
+        shouldFail { ([] as byte[]).max() }
+        shouldFail { ([] as short[]).max() }
+        shouldFail { ([] as int[]).max() }
+        shouldFail { ([] as long[]).max() }
+        shouldFail { ([] as char[]).max() }
+        shouldFail { ([] as float[]).max() }
+        shouldFail { ([] as double[]).max() }
+    }
+
+    void testMaxCompare() {
+        def a1 = [-3, -2, -1] as byte[]
+        def a2 = [-3, -2, -1] as short[]
+        def a3 = [-3, -2, -1] as int[]
+        def a4 = [-3, -2, -1] as long[]
+        def a5 = [3, 2, 1] as char[]
+        def a6 = [-3, -2, -1] as float[]
+        def a7 = [-3, -2, -1] as double[]
+
+        assert -3 as byte == a1.maxCompare { byte a, byte b -> -a <=> -b }
+        assert -3 as short == a2.maxCompare { short a, short b -> -a <=> -b }
+        assert -3 == a3.maxCompare { int a, int b -> -a <=> -b }
+        assert -3L == a4.maxCompare { long a, long b -> -a <=> -b }
+        assert 1 as char == a5.maxCompare { char a, char b -> b <=> a }
+        assert -3f == a6.maxCompare { float a, float b -> -a <=> -b }
+        assert -3d == a7.maxCompare { double a, double b -> -a <=> -b }
+
+        assert a1.maxCompare { byte a, byte b -> -a <=> -b } instanceof Byte
+        assert a2.maxCompare { short a, short b -> -a <=> -b } instanceof Short
+        assert a3.maxCompare { int a, int b -> -a <=> -b } instanceof Integer
+        assert a4.maxCompare { long a, long b -> -a <=> -b } instanceof Long
+        assert a5.maxCompare { char a, char b -> b <=> a } instanceof Character
+        assert a6.maxCompare { float a, float b -> -a <=> -b } instanceof Float
+        assert a7.maxCompare { double a, double b -> -a <=> -b } instanceof Double
+
+        shouldFail { ([] as byte[]).maxCompare { a, b -> a <=> b } }
+        shouldFail { ([] as short[]).maxCompare { a, b -> a <=> b } }
+        shouldFail { ([] as int[]).maxCompare { a, b -> a <=> b } }
+        shouldFail { ([] as long[]).maxCompare { a, b -> a <=> b } }
+        shouldFail { ([] as char[]).maxCompare { a, b -> a <=> b } }
+        shouldFail { ([] as float[]).maxCompare { a, b -> a <=> b } }
+        shouldFail { ([] as double[]).maxCompare { a, b -> a <=> b } }
+    }
 }
