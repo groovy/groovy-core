@@ -85,7 +85,7 @@ class FileTreeBuilderTest extends GroovyTestCase {
 
     void testCall() {
         File s1=null,s2=null,f1=null,f2=null
-        builder {
+        assert tmpDir == builder {
             s1=dir('sub1') {
                 f1=file('foo.txt','foo')
             }
@@ -116,5 +116,25 @@ class FileTreeBuilderTest extends GroovyTestCase {
             assert it.exists()
             assert it.getText('utf-8') == 'foo'
         }
+    }
+
+    void testBaseDirAfterStructure() {
+        assert tmpDir == builder {
+            'file1.txt'('file 1')
+            'file2.txt'('file 2')
+            bin {
+                'file3.bin'('file 3')
+            }
+        }
+    }
+
+    void testResourceGroovyMethodFileTreeBuilderCreationBaseDir() {
+        File tmpDir = File.createTempDir()
+        tmpDir == tmpDir.fileTree().baseDir
+    }
+
+    void testResourceGroovyMethodFileTreeBuilderMkFileTree() {
+        File tmpDir = File.createTempDir()
+        tmpDir == tmpDir.mkFileTree { }
     }
 }
