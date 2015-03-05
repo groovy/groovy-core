@@ -71,7 +71,7 @@ import java.util.Map;
  *        }
  *     }
  * </code></pre>
- * @since 2.5.0
+ * @since 2.4.2
  * @author Cédric Champeau
  * @author Simon Buettner
  */

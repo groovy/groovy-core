@@ -20,6 +20,7 @@ import groovy.io.FileType;
 import groovy.io.FileVisitResult;
 import groovy.io.GroovyPrintWriter;
 import groovy.lang.Closure;
+import groovy.lang.DelegatesTo;
 import groovy.lang.MetaClass;
 import groovy.lang.Writable;
 import groovy.transform.stc.ClosureParams;
@@ -2460,7 +2461,7 @@ public class ResourceGroovyMethods extends DefaultGroovyMethodsSupport {
 	 * @param self the <code>File</code>
 	 * @return a <code>FileTreeBuilder</code> with the <code>File</code> as the baseDir.
 	 * @see groovy.util.FileTreeBuilder#FileTreeBuilder(java.io.File)
-	 * @since 2.5.0
+	 * @since 2.4.2
 	 */
 	public static FileTreeBuilder fileTree(File self) {
 		return new FileTreeBuilder(self);
@@ -2472,9 +2473,9 @@ public class ResourceGroovyMethods extends DefaultGroovyMethodsSupport {
 	 * @param spec  the <code>Closure</code> the <code>FileTreeBuilder</code> uses as the specification for the file tree creation.
 	 * @return The same <code>File</code> used as the base directory.
 	 * @see groovy.util.FileTreeBuilder#call(groovy.lang.Closure closure)
-	 * @since 2.5.0
+	 * @since 2.4.2
 	 */
-	public static File mkFileTree(File self, Closure spec) {
+	public static File mkFileTree(File self, @DelegatesTo(value = FileTreeBuilder.class, strategy = Closure.DELEGATE_FIRST) Closure spec) {
 		return new FileTreeBuilder(self).call(spec);
 	}
 }
