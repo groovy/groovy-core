@@ -20,9 +20,13 @@ class NioGroovyMethodsTest extends Specification {
         def str = 'Hello world!'
         Path path = Files.createTempFile('test-size', null)
         Files.copy( new ByteArrayInputStream(str.getBytes()), path, StandardCopyOption.REPLACE_EXISTING )
-
         then:
         path.size() == str.size()
+
+        when:
+        Files.deleteIfExists(path)
+        then:
+        path.size() == 0    // no exception is thrown
 
         cleanup:
         Files.deleteIfExists(path)

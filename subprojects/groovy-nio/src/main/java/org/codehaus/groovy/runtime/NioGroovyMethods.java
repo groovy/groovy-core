@@ -41,6 +41,7 @@ import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -116,7 +117,12 @@ public class NioGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 2.3.0
      */
     public static long size(Path self) throws IOException {
-        return Files.size(self);
+        try {
+            return Files.size(self);
+        }
+        catch( NoSuchFileException e ) {
+            return 0;
+        }
     }
 
     /**
