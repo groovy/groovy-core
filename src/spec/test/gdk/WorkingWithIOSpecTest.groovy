@@ -326,6 +326,7 @@ Fin.''')
                 def p = "rm -f foo.tmp".execute([], tmpDir)
                 p.consumeProcessOutput()
                 // end::consumeoutput[]
+                p.waitFor()
                 assert !file.exists()
             }
 

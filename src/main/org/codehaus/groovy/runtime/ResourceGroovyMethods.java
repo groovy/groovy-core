@@ -20,6 +20,7 @@ import groovy.io.FileType;
 import groovy.io.FileVisitResult;
 import groovy.io.GroovyPrintWriter;
 import groovy.lang.Closure;
+import groovy.lang.DelegatesTo;
 import groovy.lang.MetaClass;
 import groovy.lang.Writable;
 import groovy.transform.stc.ClosureParams;
@@ -27,6 +28,7 @@ import groovy.transform.stc.FromString;
 import groovy.transform.stc.SimpleType;
 import groovy.util.CharsetToolkit;
 
+import groovy.util.FileTreeBuilder;
 import org.codehaus.groovy.runtime.callsite.BooleanReturningMethodInvoker;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 
@@ -88,6 +90,7 @@ import static org.codehaus.groovy.runtime.DefaultGroovyMethods.get;
  * @author Tim Yates
  * @author Dinko Srkoc
  * @author Sergei Egorov
+ * @author Simon Buettner
  */
 public class ResourceGroovyMethods extends DefaultGroovyMethodsSupport {
 
@@ -2452,4 +2455,27 @@ public class ResourceGroovyMethods extends DefaultGroovyMethodsSupport {
         }
         return buffer.toString();
     }
+
+	/**
+	 * Creates a new <code>FileTreeBuilder</code> using the <code>File</code> as the base directoy.
+	 * @param self the <code>File</code>
+	 * @return a <code>FileTreeBuilder</code> with the <code>File</code> as the baseDir.
+	 * @see groovy.util.FileTreeBuilder#FileTreeBuilder(java.io.File)
+	 * @since 2.4.2
+	 */
+	public static FileTreeBuilder fileTree(File self) {
+		return new FileTreeBuilder(self);
+	}
+
+	/**
+	 * Executes a new <code>FileTreeBuilder</code> using the File as the base directory and the closure as the specification.
+	 * @param self  the <code>File</code>
+	 * @param spec  the <code>Closure</code> the <code>FileTreeBuilder</code> uses as the specification for the file tree creation.
+	 * @return The same <code>File</code> used as the base directory.
+	 * @see groovy.util.FileTreeBuilder#call(groovy.lang.Closure closure)
+	 * @since 2.4.2
+	 */
+	public static File mkFileTree(File self, @DelegatesTo(value = FileTreeBuilder.class, strategy = Closure.DELEGATE_FIRST) Closure spec) {
+		return new FileTreeBuilder(self).call(spec);
+	}
 }
