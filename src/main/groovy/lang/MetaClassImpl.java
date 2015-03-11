@@ -123,6 +123,8 @@ public class MetaClassImpl implements MetaClass, MutableMetaClass {
     private static final MetaMethod[] EMPTY = new MetaMethod[0];
     private static final MetaMethod AMBIGUOUS_LISTENER_METHOD = new DummyMetaMethod();
 
+    private static boolean skipPropertyLookupInHierarchy = false;
+
     protected final Class theClass;
     protected final CachedClass theCachedClass;
     protected final boolean isGroovyObject;
@@ -3482,6 +3484,8 @@ public class MetaClassImpl implements MetaClass, MutableMetaClass {
     }
 
     protected MetaBeanProperty findPropertyInClassHierarchy(String propertyName, CachedClass theClass) {
+        if (skipPropertyLookupInHierarchy && this.getClass()==MetaClassImpl.class) return null;
+
         MetaBeanProperty property= null;
         if (theClass == null)
             return null;
@@ -3805,6 +3809,11 @@ public class MetaClassImpl implements MetaClass, MutableMetaClass {
             return SingleKeyHashMap.copy(new SingleKeyHashMap(false), (SingleKeyHashMap) value, NAME_INDEX_COPIER);
         }
     };
+
+
+    public static void setAllowPropertyLookupInHierarchy(boolean allow) {
+        skipPropertyLookupInHierarchy = !allow;
+    }
 
     class MethodIndex extends Index {
         public MethodIndex(boolean b) {
