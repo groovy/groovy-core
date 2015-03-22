@@ -261,7 +261,30 @@ class ToStringTransformTest extends GroovyShellTestCase {
 
         assert toString == 'Tree(val:foo, left:(this), right:(this))'
     }
-    
+
+
+    void testCircularReferenceSingleClass2Levels()  {
+
+        def toString = evaluate("""
+            import groovy.transform.*
+
+            @ToString(includeFields=true, includeNames=true, handleCycles=true) class A {
+                String val
+                A next
+            }
+
+            def a1 = new A(val:'a1', next:null)
+            def a2 = new A(val:'a2', next:a1)
+            a1.next = a2
+
+            a1.toString()
+        """)
+
+        assert toString == 'A(val:a1, next:A(val:a2, next:A(...)))'
+    }
+
+
+
     void testIncludePackage() {
         def toString = evaluate("""
                 package my.company

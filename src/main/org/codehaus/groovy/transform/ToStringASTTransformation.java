@@ -31,6 +31,7 @@ import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
+import org.codehaus.groovy.ast.stmt.TryCatchStatement;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -39,26 +40,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static org.codehaus.groovy.ast.ClassHelper.make;
-import static org.codehaus.groovy.ast.tools.GeneralUtils.args;
-import static org.codehaus.groovy.ast.tools.GeneralUtils.assignS;
-import static org.codehaus.groovy.ast.tools.GeneralUtils.callX;
-import static org.codehaus.groovy.ast.tools.GeneralUtils.callSuperX;
-import static org.codehaus.groovy.ast.tools.GeneralUtils.constX;
-import static org.codehaus.groovy.ast.tools.GeneralUtils.ctorX;
-import static org.codehaus.groovy.ast.tools.GeneralUtils.declS;
-import static org.codehaus.groovy.ast.tools.GeneralUtils.equalsNullX;
-import static org.codehaus.groovy.ast.tools.GeneralUtils.getAllProperties;
-import static org.codehaus.groovy.ast.tools.GeneralUtils.getInstanceNonPropertyFields;
-import static org.codehaus.groovy.ast.tools.GeneralUtils.getInstanceProperties;
-import static org.codehaus.groovy.ast.tools.GeneralUtils.hasDeclaredMethod;
-import static org.codehaus.groovy.ast.tools.GeneralUtils.sameX;
-import static org.codehaus.groovy.ast.tools.GeneralUtils.ifElseS;
-import static org.codehaus.groovy.ast.tools.GeneralUtils.ifS;
-import static org.codehaus.groovy.ast.tools.GeneralUtils.notNullX;
-import static org.codehaus.groovy.ast.tools.GeneralUtils.returnS;
-import static org.codehaus.groovy.ast.tools.GeneralUtils.stmt;
-import static org.codehaus.groovy.ast.tools.GeneralUtils.varX;
+import static org.codehaus.groovy.ast.ClassHelper.*;
+import static org.codehaus.groovy.ast.tools.GeneralUtils.*;
 
 /**
  * Handles generation of code for the @ToString annotation.
@@ -73,6 +56,8 @@ public class ToStringASTTransformation extends AbstractASTTransformation {
     static final ClassNode MY_TYPE = make(MY_CLASS);
     static final String MY_TYPE_NAME = "@" + MY_TYPE.getNameWithoutPackage();
     private static final ClassNode STRINGBUILDER_TYPE = make(StringBuilder.class);
+    // FIXME not sure it's the right thing to exclude generics here but otherwise i get "A transform used a generics containing ClassNode" error
+    private static final ClassNode THREADLOCAL_TYPE = make(ThreadLocal.class, false);
     private static final ClassNode INVOKER_TYPE = make(InvokerHelper.class);
 
     public void visit(ASTNode[] nodes, SourceUnit source) {
@@ -96,6 +81,7 @@ public class ToStringASTTransformation extends AbstractASTTransformation {
             List<String> includes = getMemberList(anno, "includes");
             boolean ignoreNulls = memberHasValue(anno, "ignoreNulls", true);
             boolean includePackage = !memberHasValue(anno, "includePackage", false);
+            boolean handleCycles = memberHasValue(anno, "handleCycles", true);
 
             if (hasAnnotation(cNode, CanonicalASTTransformation.MY_TYPE)) {
                 AnnotationNode canonical = cNode.getAnnotations(CanonicalASTTransformation.MY_TYPE).get(0);
@@ -103,7 +89,7 @@ public class ToStringASTTransformation extends AbstractASTTransformation {
                 if (includes == null || includes.isEmpty()) includes = getMemberList(canonical, "includes");
             }
             if (!checkIncludeExclude(anno, excludes, includes, MY_TYPE_NAME)) return;
-            createToString(cNode, includeSuper, includeFields, excludes, includes, includeNames, ignoreNulls, includePackage, cacheToString, includeSuperProperties);
+            createToString(cNode, includeSuper, includeFields, excludes, includes, includeNames, ignoreNulls, includePackage, cacheToString, includeSuperProperties, handleCycles);
         }
     }
 
@@ -120,10 +106,14 @@ public class ToStringASTTransformation extends AbstractASTTransformation {
     }
 
     public static void createToString(ClassNode cNode, boolean includeSuper, boolean includeFields, List<String> excludes, List<String> includes, boolean includeNames, boolean ignoreNulls, boolean includePackage, boolean cache) {
-        createToString(cNode, includeSuper, includeFields, excludes, includes, includeNames, ignoreNulls, includePackage, false, false);
+        createToString(cNode, includeSuper, includeFields, excludes, includes, includeNames, ignoreNulls, includePackage, cache, false);
     }
 
     public static void createToString(ClassNode cNode, boolean includeSuper, boolean includeFields, List<String> excludes, List<String> includes, boolean includeNames, boolean ignoreNulls, boolean includePackage, boolean cache, boolean includeSuperProperties) {
+        createToString(cNode, includeSuper, includeFields, excludes, includes, includeNames, ignoreNulls, includePackage, cache, includeSuperProperties, false);
+    }
+
+    public static void createToString(ClassNode cNode, boolean includeSuper, boolean includeFields, List<String> excludes, List<String> includes, boolean includeNames, boolean ignoreNulls, boolean includePackage, boolean cache, boolean includeSuperProperties, boolean handleCycles) {
         // make a public method if none exists otherwise try a private method with leading underscore
         boolean hasExistingToString = hasDeclaredMethod(cNode, "toString", 0);
         if (hasExistingToString && hasDeclaredMethod(cNode, "_toString", 0)) return;
@@ -135,11 +125,11 @@ public class ToStringASTTransformation extends AbstractASTTransformation {
             final Expression savedToString = varX(cacheField);
             body.addStatement(ifS(
                     equalsNullX(savedToString),
-                    assignS(savedToString, calculateToStringStatements(cNode, includeSuper, includeFields, excludes, includes, includeNames, ignoreNulls, includePackage, includeSuperProperties, body))
+                    assignS(savedToString, calculateToStringStatements(cNode, includeSuper, includeFields, excludes, includes, includeNames, ignoreNulls, includePackage, includeSuperProperties, handleCycles, body))
             ));
             tempToString = savedToString;
         } else {
-            tempToString = calculateToStringStatements(cNode, includeSuper, includeFields, excludes, includes, includeNames, ignoreNulls, includePackage, includeSuperProperties, body);
+            tempToString = calculateToStringStatements(cNode, includeSuper, includeFields, excludes, includes, includeNames, ignoreNulls, includePackage, includeSuperProperties, handleCycles, body);
         }
         body.addStatement(returnS(tempToString));
 
@@ -147,18 +137,70 @@ public class ToStringASTTransformation extends AbstractASTTransformation {
                 ClassHelper.STRING_TYPE, Parameter.EMPTY_ARRAY, ClassNode.EMPTY_ARRAY, body));
     }
 
-    private static Expression calculateToStringStatements(ClassNode cNode, boolean includeSuper, boolean includeFields, List<String> excludes, List<String> includes, boolean includeNames, boolean ignoreNulls, boolean includePackage, boolean includeSuperProperties, BlockStatement body) {
+    private static Expression calculateToStringStatements(ClassNode cNode, boolean includeSuper, boolean includeFields, List<String> excludes, List<String> includes, boolean includeNames, boolean ignoreNulls, boolean includePackage, boolean includeSuperProperties, boolean handleCycles, BlockStatement body) {
+
         // def _result = new StringBuilder()
         final Expression result = varX("_result");
         body.addStatement(declS(result, ctorX(STRINGBUILDER_TYPE)));
 
+        String className = (includePackage) ? cNode.getName() : cNode.getNameWithoutPackage();
+
+
+        if (handleCycles) {
+            // private ThreadLocal $to$string$generating = new ThreadLocal();
+            final FieldNode callCounterField = cNode.addField("$to$string$callCounter", ACC_PRIVATE | ACC_SYNTHETIC, THREADLOCAL_TYPE, ctorX(THREADLOCAL_TYPE));
+
+            // if (!((Boolean)$to$string$generating.get())) { /* initialAppendStatements */ } else { /* reenteringAppendStatements */ }
+            final VariableExpression callCounter = varX(callCounterField);
+            TryCatchStatement initialAppendStatements = createInitialAppendStatements(cNode, includeSuper, includeFields, excludes, includes, includeNames, ignoreNulls, includeSuperProperties, result, className, callCounter);
+            BlockStatement reenteringAppendStatements = createSubsequentAppendStatements(callCounter, result, className);
+            body.addStatement
+                    (ifElseS(equalsNullX(threadLocalGetX(callCounter)),
+                            initialAppendStatements,
+                            reenteringAppendStatements
+                    ));
+
+        } else {
+            appendClassContextStatements(cNode, includeSuper, includeFields, excludes, includes, includeNames, ignoreNulls, includeSuperProperties, body, result, className);
+        }
+        // wrap up
+        MethodCallExpression toString = callX(result, "toString");
+        toString.setImplicitThis(false);
+        return toString;
+    }
+
+    // Generates the append statements for initial call to toString
+    // try { $to$string$generating.set(0); _result.append(XXX).../* append class content*/} finally {$to$string$generating.remove()}
+    private static TryCatchStatement createInitialAppendStatements(ClassNode cNode, boolean includeSuper, boolean includeFields, List<String> excludes, List<String> includes, boolean includeNames, boolean ignoreNulls, boolean includeSuperProperties, Expression result, String className, VariableExpression generatingThreadLocal) {
+        BlockStatement tryBlock = new BlockStatement();
+        tryBlock.addStatement(threadLocalSetS(generatingThreadLocal, constX(0)));
+        appendClassContextStatements(cNode, includeSuper, includeFields, excludes, includes, includeNames, ignoreNulls, includeSuperProperties, tryBlock, result, className);
+
+        return new TryCatchStatement(
+                tryBlock,
+                threadLocalRemoveS(generatingThreadLocal));
+    }
+
+    private static BlockStatement createSubsequentAppendStatements(VariableExpression callCounter, Expression result, String className) {
+        BlockStatement block = new BlockStatement();
+
+        block.addStatement(threadLocalSetS(callCounter, plusX(castX(Integer_TYPE, threadLocalGetX(callCounter)), constX(1))));
+
+        // append <class_name>(...)
+        block.addStatement(appendS(result, constX(className)));
+        block.addStatement(appendS(result, constX("(...)")));
+        return block;
+    }
+
+    private static void appendClassContextStatements(ClassNode cNode, boolean includeSuper, boolean includeFields, List<String> excludes, List<String> includes, boolean includeNames, boolean ignoreNulls, boolean includeSuperProperties, BlockStatement block, Expression result, String className) {
+
+        // append <class_name>(
+        block.addStatement(appendS(result, constX(className + "(")));
+
         // def $toStringFirst = true
         final VariableExpression first = varX("$toStringFirst");
-        body.addStatement(declS(first, constX(Boolean.TRUE)));
+        block.addStatement(declS(first, constX(Boolean.TRUE)));
 
-        // <class_name>(
-        String className = (includePackage) ? cNode.getName() : cNode.getNameWithoutPackage();
-        body.addStatement(appendS(result, constX(className + "(")));
 
         // append properties
         List<PropertyNode> pList;
@@ -176,7 +218,7 @@ public class ToStringASTTransformation extends AbstractASTTransformation {
         for (PropertyNode pNode : pList) {
             if (shouldSkip(pNode.getName(), excludes, includes)) continue;
             Expression getter = callX(INVOKER_TYPE, "getProperty", args(varX("this"), constX(pNode.getName())));
-            appendValue(body, result, first, getter, pNode.getName(), includeNames, ignoreNulls);
+            appendValue(block, result, first, getter, pNode.getName(), includeNames, ignoreNulls);
         }
 
         // append fields if needed
@@ -185,23 +227,20 @@ public class ToStringASTTransformation extends AbstractASTTransformation {
             fList.addAll(getInstanceNonPropertyFields(cNode));
             for (FieldNode fNode : fList) {
                 if (shouldSkip(fNode.getName(), excludes, includes)) continue;
-                appendValue(body, result, first, varX(fNode), fNode.getName(), includeNames, ignoreNulls);
+                appendValue(block, result, first, varX(fNode), fNode.getName(), includeNames, ignoreNulls);
             }
         }
 
         // append super if needed
         if (includeSuper) {
-            appendCommaIfNotFirst(body, result, first);
-            appendPrefix(body, result, "super", includeNames);
+            appendCommaIfNotFirst(block, result, first);
+            appendPrefix(block, result, "super", includeNames);
             // not through MOP to avoid infinite recursion
-            body.addStatement(appendS(result, callSuperX("toString")));
+            block.addStatement(appendS(result, callSuperX("toString")));
         }
 
-        // wrap up
-        body.addStatement(appendS(result, constX(")")));
-        MethodCallExpression toString = callX(result, "toString");
-        toString.setImplicitThis(false);
-        return toString;
+
+        block.addStatement(appendS(result, constX(")")));
     }
 
     private static void appendValue(BlockStatement body, Expression result, VariableExpression first, Expression value, String name, boolean includeNames, boolean ignoreNulls) {
@@ -239,4 +278,24 @@ public class ToStringASTTransformation extends AbstractASTTransformation {
         append.setImplicitThis(false);
         return stmt(append);
     }
+
+    private static Statement threadLocalSetS(Expression threadLocal, Expression value) {
+        MethodCallExpression set = callX(threadLocal, "set", args(value));
+        set.setImplicitThis(false);
+        return stmt(set);
+    }
+
+    private static Statement threadLocalRemoveS(Expression threadLocal) {
+        MethodCallExpression set = callX(threadLocal, "remove");
+        set.setImplicitThis(false);
+        return stmt(set);
+    }
+
+
+    private static Expression threadLocalGetX(Expression threadLocal) {
+        MethodCallExpression getX = callX(threadLocal, "get");
+        getX.setImplicitThis(false);
+        return getX;
+    }
+
 }

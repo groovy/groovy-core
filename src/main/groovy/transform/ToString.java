@@ -175,4 +175,11 @@ public @interface ToString {
      */
     boolean cache() default false;
 
+    /**
+     * Whether to handle cycles in the toString generation.
+     * Without this option toString can lead to stack overflow.
+     * FIXME since TBD
+     */
+    boolean handleCycles() default false;
+
 }
