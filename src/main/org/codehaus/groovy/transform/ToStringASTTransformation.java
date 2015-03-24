@@ -161,7 +161,7 @@ public class ToStringASTTransformation extends AbstractASTTransformation {
                     ));
 
         } else {
-            appendClassContextStatements(cNode, includeSuper, includeFields, excludes, includes, includeNames, ignoreNulls, includeSuperProperties, body, result, className);
+            appendClassContentStatements(cNode, includeSuper, includeFields, excludes, includes, includeNames, ignoreNulls, includeSuperProperties, body, result, className);
         }
         // wrap up
         MethodCallExpression toString = callX(result, "toString");
@@ -174,7 +174,7 @@ public class ToStringASTTransformation extends AbstractASTTransformation {
     private static TryCatchStatement createInitialAppendStatements(ClassNode cNode, boolean includeSuper, boolean includeFields, List<String> excludes, List<String> includes, boolean includeNames, boolean ignoreNulls, boolean includeSuperProperties, Expression result, String className, VariableExpression generatingThreadLocal) {
         BlockStatement tryBlock = new BlockStatement();
         tryBlock.addStatement(threadLocalSetS(generatingThreadLocal, constX(0)));
-        appendClassContextStatements(cNode, includeSuper, includeFields, excludes, includes, includeNames, ignoreNulls, includeSuperProperties, tryBlock, result, className);
+        appendClassContentStatements(cNode, includeSuper, includeFields, excludes, includes, includeNames, ignoreNulls, includeSuperProperties, tryBlock, result, className);
 
         return new TryCatchStatement(
                 tryBlock,
@@ -192,7 +192,7 @@ public class ToStringASTTransformation extends AbstractASTTransformation {
         return block;
     }
 
-    private static void appendClassContextStatements(ClassNode cNode, boolean includeSuper, boolean includeFields, List<String> excludes, List<String> includes, boolean includeNames, boolean ignoreNulls, boolean includeSuperProperties, BlockStatement block, Expression result, String className) {
+    private static void appendClassContentStatements(ClassNode cNode, boolean includeSuper, boolean includeFields, List<String> excludes, List<String> includes, boolean includeNames, boolean ignoreNulls, boolean includeSuperProperties, BlockStatement block, Expression result, String className) {
 
         // append <class_name>(
         block.addStatement(appendS(result, constX(className + "(")));
