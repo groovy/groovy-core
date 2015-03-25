@@ -530,6 +530,17 @@ class GroovyMethodsTest extends GroovyTestCase {
         assert list.size() == 3
     }
 
+    void testPushPopForDeque_Groovy4181_Groovy6396() {
+        String[] x = "1/2/3/".split("/")
+        LinkedList <String> stack1 = new LinkedList<String>(Arrays.asList(x))
+        assert stack1.pop() == '1'
+
+        Deque stack2 = new LinkedList()
+        stack2.push(1)
+        stack2.push(2)
+        assert stack2.peek() == 2
+    }
+
     void testInForArrays() {
         String[] array = ['a', 'b', 'c']
         assert 'b' in array

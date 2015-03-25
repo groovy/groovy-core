@@ -8791,6 +8791,17 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     }
 
     /**
+     * Pops an element from the stack represented by this deque.
+     *
+     * @return the element at the front of this deque
+     * @see java.util.Deque#pop()
+     * @since 2.3.0
+     */
+    public static <T> T pop(Deque<T> self) {
+        return self.pop();
+    }
+
+    /**
      * Provides an easy way to append multiple Map.Entry values to a Map.
      *
      * @param self    a Map
@@ -8839,6 +8850,16 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      */
     public static <T> boolean push(List<T> self, T value) {
         return self.add(value);
+    }
+
+    /**
+     * Pushes an element onto the stack represented by this deque.
+     *
+     * @see java.util.Deque#push(Object)
+     * @since 2.3.0
+     */
+    public static <T> void push(Deque<T> self, T value) {
+        self.push(value);
     }
 
     /**

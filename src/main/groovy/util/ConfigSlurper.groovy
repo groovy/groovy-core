@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2013 the original author or authors.
+ * Copyright 2003-2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -239,7 +239,7 @@ class ConfigSlurper {
                         } finally {
                             currentConditionalBlock.push(conditionalBlockKey)
                         }
-                        stack.pop()
+                        stack.removeLast()
                     }
                 } else {
                     def co
@@ -252,7 +252,7 @@ class ConfigSlurper {
                     assignName.call(name, co)
                     pushStack.call(co)
                     args[0].call()
-                    stack.pop()
+                    stack.removeLast()
                 }
             } else if (args.length == 2 && args[1] instanceof Closure) {
                 try {
