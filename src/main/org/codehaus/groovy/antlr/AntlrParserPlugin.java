@@ -1,5 +1,5 @@
 /*
- * Copyright 2003-2013 the original author or authors.
+ * Copyright 2003-2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -100,6 +100,7 @@ public class AntlrParserPlugin extends ASTHelper implements ParserPlugin, Groovy
     private int innerClassCounter = 1;
     private boolean enumConstantBeingDef = false;
     private boolean forStatementBeingDef = false;
+    private boolean annotationBeingDef = false;
     private boolean firstParamIsVarArg = false;
     private boolean firstParam = false;
 
@@ -1222,6 +1223,7 @@ public class AntlrParserPlugin extends ASTHelper implements ParserPlugin, Groovy
     }
 
     protected AnnotationNode annotation(AST annotationNode) {
+        annotationBeingDef = true;
         AST node = annotationNode.getFirstChild();
         String name = qualifiedName(node);
         AnnotationNode annotatedNode = new AnnotationNode(ClassHelper.make(name));
@@ -1240,6 +1242,7 @@ public class AntlrParserPlugin extends ASTHelper implements ParserPlugin, Groovy
                 break;
             }
         }
+        annotationBeingDef = false;
         return annotatedNode;
     }
 
@@ -2486,7 +2489,9 @@ public class AntlrParserPlugin extends ASTHelper implements ParserPlugin, Groovy
         // if node text is found to be "super"/"this" when a method call is being processed, it is a 
         // call like this(..)/super(..) after the first statement, which shouldn't be allowed. GROOVY-2836
         if (selector.getText().equals("this") || selector.getText().equals("super")) {
-            throw new ASTRuntimeException(elist, "Constructor call must be the first statement in a constructor.");
+            if (!(annotationBeingDef && selector.getText().equals("super"))) {
+                throw new ASTRuntimeException(elist, "Constructor call must be the first statement in a constructor.");
+            }
         }
 
         Expression arguments = arguments(elist);
