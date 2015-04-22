@@ -1,3 +1,8 @@
 = Groovy
 
-PLEASE NOTE: This repository is not used anymore. The current groovy code is here: https://github.com/apache/incubator-groovy
+[NOTE]
+This repository is not used anymore. 
+The current groovy code is here: https://github.com/apache/incubator-groovy
+
+[NOTE]
+To contribute pull requests to the Apache Github mirror for the Groovy project: https://github.com/apache/incubator-groovy
