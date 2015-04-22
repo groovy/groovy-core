@@ -6,4 +6,4 @@ The current groovy code is here: https://git-wip-us.apache.org/repos/asf?p=incub
 You can access it via this git URL: git://git.apache.org/incubator-groovy.git
 
 [NOTE]
-To contribute pull requests to the Apache Github mirror for the Groovy project: https://github.com/apache/incubator-groovy
+To contribute pull requests use the Apache Github mirror for the Groovy project: https://github.com/apache/incubator-groovy
