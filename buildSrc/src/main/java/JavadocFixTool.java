@@ -192,7 +192,7 @@ public class JavadocFixTool {
     /*
      * Lazily initialize the readme document, reading it from README file inside the jar
      */
-    public static void initReadme() {
+    public static synchronized void initReadme() {
         try {
             InputStream readmeStream = JavadocFixTool.class.getResourceAsStream("/README");
             if (readmeStream != null) {
