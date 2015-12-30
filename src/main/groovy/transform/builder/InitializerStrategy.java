@@ -157,7 +157,7 @@ public class InitializerStrategy extends BuilderASTTransformation.AbstractBuilde
     }
 
     private void createBuilderForAnnotatedMethod(BuilderASTTransformation transform, MethodNode mNode, AnnotationNode anno, boolean useSetters) {
-        if (transform.getMemberValue(anno, "includes") != null || transform.getMemberValue(anno, "includes") != null) {
+        if (transform.getMemberValue(anno, "includes") != null || transform.getMemberValue(anno, "excludes") != null) {
             transform.addError("Error during " + BuilderASTTransformation.MY_TYPE_NAME +
                     " processing: includes/excludes only allowed on classes", anno);
         }
