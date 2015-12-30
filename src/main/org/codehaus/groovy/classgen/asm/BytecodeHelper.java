@@ -281,9 +281,6 @@ public class BytecodeHelper implements Opcodes {
             return name;
         }
 
-        if (name == null) {
-            return "java.lang.Object;";
-        }
 
         if (name.startsWith("[")) {
             return name.replace('/', '.');
