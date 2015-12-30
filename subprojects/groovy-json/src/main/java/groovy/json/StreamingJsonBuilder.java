@@ -312,7 +312,7 @@ public class StreamingJsonBuilder extends GroovyObjectSupport {
                         writer.write(":");
                         writer.write(JsonOutput.toJson(entry.getValue()));
                     }
-                    StreamingJsonDelegate.cloneDelegateAndGetContent(writer, (Closure) arr[1], map.size() == 0);
+                    StreamingJsonDelegate.cloneDelegateAndGetContent(writer, (Closure) arr[1], map.isEmpty());
                     writer.write("}}");
                 } else if (StreamingJsonDelegate.isCollectionWithClosure(arr)) {
                     writer.write("{");

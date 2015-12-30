@@ -356,7 +356,7 @@ public abstract class TraitComposer {
             }
         }
         if (!modified) return oldTypes;
-        if (l.size()==0) return null;
+        if (l.isEmpty()) return null;
         return l.toArray(new GenericsType[l.size()]);
     }
 
