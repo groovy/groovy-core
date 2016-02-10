@@ -332,7 +332,7 @@ public class GrabAnnotationTransformation extends ClassCodeVisitorSupport implem
                             addError("Attribute \"" + s + "\" has value " + member.getText() + " but should be an inline constant in @" + node.getClassNode().getNameWithoutPackage() + " annotations", node);
                             continue grabAnnotationLoop;
                         }
-                        if (node.getMember(s) != null) {
+                        if (member != null && node.getMember(s) != null) {
                             grabMap.put(s, ((ConstantExpression)member).getValue());
                         }
                     }

@@ -3979,7 +3979,7 @@ public class Sql {
                         boolean validBinding = true;
                         if (i < strings.length - 1) {
                             String nextText = strings[i + 1];
-                            if ((text.endsWith("\"") || text.endsWith("'")) && (nextText.startsWith("'") || nextText.startsWith("\""))) {
+                            if ((text != null && (text.endsWith("\"") || text.endsWith("'"))) && (nextText.startsWith("'") || nextText.startsWith("\""))) {
                                 if (!warned) {
                                     LOG.warning("In Groovy SQL please do not use quotes around dynamic expressions " +
                                             "(which start with $) as this means we cannot use a JDBC PreparedStatement " +
