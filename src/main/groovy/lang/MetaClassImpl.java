@@ -2314,7 +2314,7 @@ public class MetaClassImpl implements MetaClass, MutableMetaClass {
                 } else {
                     result = new MetaBeanProperty(propertyName, propertyType, getterMethod, setterMethod);
                 }
-            } else if (getter && !setter) {
+            } else if (getter /*&& !setter*/) {    // setter is unset
                 if (getterMethod == null) {
                     result = metaField;
                 } else {
@@ -2322,7 +2322,7 @@ public class MetaClassImpl implements MetaClass, MutableMetaClass {
                     if (field) newmp.setField(metaField);
                     result = newmp;
                 }
-            } else if (setter && !getter) {
+            } else if (setter /*&& !getter*/) {    // getter is unset
                 if (setterMethod == null) {
                     result = metaField;
                 } else {

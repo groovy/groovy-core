@@ -1423,7 +1423,7 @@ public class StaticTypeCheckingVisitor extends ClassCodeVisitorSupport {
             MethodNode mn = (MethodNode) member;
             isStatic = mn.isStatic();
         }
-        if (staticOnly && !isStatic) return null;
+        if (/*staticOnly && */!isStatic) return null;   // staticOnly is set
         return member;
     }
 

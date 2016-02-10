@@ -299,13 +299,12 @@ public class ObservableList implements List {
         }
 
         List values = new ArrayList();
-        if (c != null) {
-            for (Object element : c) {
-                if (delegate.contains(element)) {
-                    values.add(element);
-                }
+        for (Object element : c) {
+            if (delegate.contains(element)) {
+                values.add(element);
             }
         }
+
 
         int oldSize = size();
         boolean success = delegate.removeAll(c);
@@ -323,11 +322,9 @@ public class ObservableList implements List {
         }
 
         List values = new ArrayList();
-        if (c != null) {
-            for (Object element : delegate) {
-                if (!c.contains(element)) {
-                    values.add(element);
-                }
+        for (Object element : delegate) {
+            if (!c.contains(element)) {
+                values.add(element);
             }
         }
 
