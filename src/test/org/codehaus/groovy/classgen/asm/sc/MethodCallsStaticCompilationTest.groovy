@@ -180,6 +180,30 @@ import groovy.transform.TypeCheckingMode//import org.codehaus.groovy.classgen.as
         ''', 'Cannot call private constructor'
     }
 
+    // GROOVY-6468
+    void testPrivateOuterClassConstructor() {
+        assertClass '''
+            class Foo {
+                private Foo(){}
+                class Bar {
+                    def foo() { new Foo() }
+                }
+            }
+        '''
+    }
+
+    // GROOVY-6468
+    void testPrivateInnerClassConstructor() {
+        assertClass '''
+            class Foo {
+                class Bar {
+                    private Bar(){}
+                }
+                def foo() { new Bar() }
+            }
+        '''
+    }
+
     // GROOVY-7063
     void testCallToProtectedMethodFromClosureInSubclassAndDifferentPackage() {
         assertScript ''' import org.codehaus.groovy.classgen.asm.sc.MethodCallsStaticCompilationTest.Base

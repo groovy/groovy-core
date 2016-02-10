@@ -45,6 +45,7 @@ import org.codehaus.groovy.transform.stc.StaticTypesMarker;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -130,7 +131,7 @@ public class StaticInvocationWriter extends InvocationWriter {
         if (cn.isPrivate()) {
             ClassNode classNode = controller.getClassNode();
             ClassNode declaringClass = cn.getDeclaringClass();
-            if (declaringClass != classNode) {
+            if (!isAccessibleFrom(declaringClass, classNode)) {
                 controller.getSourceUnit().addError(new SyntaxException("Cannot call private constructor for " + declaringClass.toString(false) +
                             " from class " + classNode.toString(false), call.getLineNumber(), call.getColumnNumber(), mn.getLastLineNumber(), call.getLastColumnNumber()));
             }
@@ -142,6 +143,30 @@ public class StaticInvocationWriter extends InvocationWriter {
         loadArguments(args.getExpressions(), cn.getParameters());
         finnishConstructorCall(cn, ownerDescriptor, controller.getOperandStack().getStackLength() - before);
 
+    }
+
+    private boolean isAccessibleFrom(ClassNode declaringClass, ClassNode classNode) {
+        if (classNode == null)
+            return false;
+
+        if (declaringClass == classNode) // Same class
+            return true;
+
+        // Call from inner to outer.
+        if (isAccessibleFrom(declaringClass, classNode.getOuterClass()))
+            return true;
+
+        // Call from outer to inner
+        Iterator<InnerClassNode> innerClasses = classNode.getInnerClasses();
+        while (innerClasses.hasNext()) {
+            ClassNode innerClass = innerClasses.next();
+            if (isAccessibleFrom(declaringClass, innerClass))
+                return true;
+        }
+
+        // Should we also care about inheritance?
+        // Smth like call a private constructor of superclass's protected inner class.
+        return false;
     }
 
     @Override
