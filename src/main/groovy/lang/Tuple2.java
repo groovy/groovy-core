@@ -20,6 +20,8 @@ package groovy.lang;
 
 /**
  * Represents a list of 2 typed Objects.
+ *
+ * @since 2.4.0
  */
 public class Tuple2<T1, T2> extends Tuple {
     public Tuple2(T1 first, T2 second) {
