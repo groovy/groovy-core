@@ -176,7 +176,7 @@ public class TextUndoManager extends UndoManager {
 
     }
 
-    private class StructuredEdit extends CompoundEdit {
+    private static class StructuredEdit extends CompoundEdit {
 
         private long editedTime;
 

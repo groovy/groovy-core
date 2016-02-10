@@ -4480,7 +4480,7 @@ public class Sql {
     // command pattern implementation classes
     //-------------------------------------------------------------------------
 
-    private abstract class AbstractStatementCommand {
+    private abstract static class AbstractStatementCommand {
         /**
          * Execute the command that's defined by the subclass following
          * the Command pattern.  Specialized parameters are held in the command instances.
