@@ -135,7 +135,7 @@ class MapTest extends GroovyTestCase {
         assert map1 == control
 
         map1 = [a:1, b:2]
-        map1.putAll(map3.entrySet().collect{ [it.value, it.key] as MapEntry })
+        map1.putAll(map3.entrySet().toList().collect{ [it.value, it.key] as MapEntry })
         assert map1 == control
 
         map1 = [a:1, b:2]
@@ -155,7 +155,7 @@ class MapTest extends GroovyTestCase {
         assert control == map1 + map2.entrySet()
         assert map1 == [a:1, b:2]
 
-        assert control == map1 + map3.entrySet().collect{ [it.value, it.key] as MapEntry }
+        assert control == map1 + map3.entrySet().toList().collect{ [it.value, it.key] as MapEntry }
         assert map1 == [a:1, b:2]
 
         map1 = [a:1, b:2]

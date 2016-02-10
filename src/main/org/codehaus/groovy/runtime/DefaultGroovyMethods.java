@@ -3141,6 +3141,50 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
     }
 
     /**
+     * Iterates through this Set transforming each value into a new value using the <code>transform</code> closure
+     * and adding it to the supplied <code>collector</code>.
+     * <pre class="groovyTestCase">assert [1,2,3] as HashSet == [2,4,5,6].collect { (int)(it / 2) }</pre>
+     *
+     * @param self      a set
+     * @param collector the Set to which the transformed values are added
+     * @param transform the closure used to transform each item of the collection
+     * @return the collector with all transformed values added to it
+     */
+    public static <T,E> Set<T> collect(Set<E> self, Set<T> collector, @ClosureParams(FirstParam.FirstGenericType.class) Closure<? extends T> transform) {
+        return collectSet(self, collector, transform);
+    }
+
+    /**
+     * Iterates through this set transforming each entry into a new value using the <code>transform</code> closure
+     * returning a list of transformed values.
+     * <pre class="groovyTestCase">assert [1,2,3] as Set == [2,4,5,6].collect { (int) (it / 2) }</pre>
+     *
+     * @param self      a set
+     * @param transform the closure used to transform each item of the collection
+     * @return a List of the transformed values
+     */
+    public static <T,E> Set<T> collect(Set<E> self, @ClosureParams(FirstParam.FirstGenericType.class) Closure<? extends T> transform) {
+        return collectSet(self, DefaultGroovyMethods.<T>defaultSet(), transform);
+    }
+
+    /**
+     * Iterates through this set transforming each entry into a new value using Closure.IDENTITY
+     * as a transformer, basically returning a set of items copied from the original collection.
+     * <pre class="groovyTestCase">assert [1,2,3] as Set == ([1,2,3] as Set).collect()</pre>
+     *
+     * @param self    a set
+     * @return a Set of the transformed values
+     * @see Closure#IDENTITY
+     */
+    public static <T,E> Set<T> collect(Set<E> self) {
+        return collectSet(self, DefaultGroovyMethods.<T>defaultSet(), Closure.IDENTITY);
+    }
+
+    private static <A> Set<A> defaultSet() {
+        return new LinkedHashSet<A>();
+    }
+
+    /**
      * Iterates through this collection transforming each entry into a new value using Closure.IDENTITY
      * as a transformer, basically returning a list of items copied from the original collection.
      * <pre class="groovyTestCase">assert [1,2,3] == [1,2,3].collect()</pre>
@@ -4670,7 +4714,7 @@ public class DefaultGroovyMethods extends DefaultGroovyMethodsSupport {
      * @since 2.2.0
      */
     public static <T,V> List<V> permutations(Iterable<T> self, Closure<V> function) {
-        return collect(permutations(self),function);
+        return collect((Collection) permutations(self),function);
     }
 
     /**
