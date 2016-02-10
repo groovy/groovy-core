@@ -1,0 +1,113 @@
+/*
+ * Copyright 2003-2014 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.codehaus.groovy.runtime;
+
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.nio.file.StandardOpenOption.CREATE;
+import static org.codehaus.groovy.runtime.DefaultGroovyMethods.get;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.io.Writer;
+import java.io.Closeable;
+import java.net.URI;
+import java.nio.charset.Charset;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import groovy.io.FileType;
+import groovy.io.FileVisitResult;
+import groovy.io.GroovyPrintWriter;
+import groovy.lang.Closure;
+import groovy.lang.MetaClass;
+import groovy.lang.Writable;
+import groovy.transform.stc.ClosureParams;
+import groovy.transform.stc.FromString;
+import groovy.transform.stc.SimpleType;
+import org.codehaus.groovy.runtime.callsite.BooleanReturningMethodInvoker;
+import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
+
+/**
+ * This class defines new groovy methods for Readers, Writers, InputStreams and
+ * OutputStreams which appear on normal JDK classes inside the Groovy environment.
+ * Static methods are used with the first parameter being the destination class,
+ * i.e. <code>public static T eachLine(InputStream self, Closure c)</code>
+ * provides a <code>eachLine(Closure c)</code> method for <code>InputStream</code>.
+ * <p/>
+ * NOTE: While this class contains many 'public' static methods, it is
+ * primarily regarded as an internal class (its internal package name
+ * suggests this also). We value backwards compatibility of these
+ * methods when used within Groovy but value less backwards compatibility
+ * at the Java method call level. I.e. future versions of Groovy may
+ * remove or move a method call in this file but would normally
+ * aim to keep the method available from within Groovy.
+ *
+ * @author <a href="mailto:james@coredevelopers.net">James Strachan</a>
+ * @author Jeremy Rayner
+ * @author Sam Pullara
+ * @author Rod Cope
+ * @author Guillaume Laforge
+ * @author John Wilson
+ * @author Hein Meling
+ * @author Dierk Koenig
+ * @author Pilho Kim
+ * @author Marc Guillemot
+ * @author Russel Winder
+ * @author bing ran
+ * @author Jochen Theodorou
+ * @author Paul King
+ * @author Michael Baehr
+ * @author Joachim Baumann
+ * @author Alex Tkachman
+ * @author Ted Naleid
+ * @author Brad Long
+ * @author Jim Jagielski
+ * @author Rodolfo Velasco
+ * @author jeremi Joslin
+ * @author Hamlet D'Arcy
+ * @author Cedric Champeau
+ * @author Tim Yates
+ * @author Dinko Srkoc
+ * @author Paolo Di Tommaso <paolo.ditommaso@gmail.com>
+ */
+
+public class OptionalGroovyMethods extends DefaultGroovyMethodsSupport {
+    public static void hello(String self) {
+        System.out.println("hello"+self);
+    }
+}

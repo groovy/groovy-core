@@ -18,6 +18,10 @@ def subprojects = ['groovy-ant',
 if(JavaVersion.current().isJava7Compatible()) {
     subprojects << 'groovy-nio'
 }
+
+if(JavaVersion.current().isJava8Compatible()) {
+    subprojects << 'groovy-optional'
+}
  
 include(subprojects as String[])
         
