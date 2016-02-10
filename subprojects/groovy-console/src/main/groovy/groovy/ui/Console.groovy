@@ -766,13 +766,14 @@ options:
     def finishNormal(Object result) {
         // Take down the wait/cancel dialog
         history[-1].result = result
-        if (result != null) {
-            statusLabel.text = 'Execution complete.'
-            appendOutputNl('Result: ', promptStyle)
-            def obj = (visualizeScriptResults
-                ? OutputTransforms.transformResult(result, shell.getContext()._outputTransforms)
-                : result.toString())
+        statusLabel.text = 'Execution complete.'
 
+        if (!visualizeScriptResults)
+            return
+
+        if (result != null) {
+            appendOutputNl('Result: ', promptStyle)
+            def obj = OutputTransforms.transformResult(result, shell.getContext()._outputTransforms)
             // multi-methods are magical!
             appendOutput(obj, resultStyle)
         } else {
