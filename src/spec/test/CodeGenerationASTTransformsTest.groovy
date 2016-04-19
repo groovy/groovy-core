@@ -277,6 +277,41 @@ assert p1.hashCode() != p2.hashCode()
 // end::equalshashcode_example_super[]
 
 '''
+
+        assertScript '''
+// tag::equalshashcode_example_includeFields[]
+import groovy.transform.EqualsAndHashCode
+@EqualsAndHashCode(includeFields=true)
+class Person {
+    String firstName
+    String lastName
+    private int age
+}
+
+def p1 = new Person(firstName: 'Bob', lastName: 'Nicholson', age:42)
+def p2 = new Person(firstName: 'Bob', lastName: 'Nicholson')
+assert p1 != p2
+assert p1.hashCode() != p2.hashCode()
+// end::equalshashcode_example_includeFields[]
+
+'''
+
+        assertScript '''
+// tag::equalshashcode_example_cache[]
+import groovy.transform.EqualsAndHashCode
+@EqualsAndHashCode(cache=true)
+class Person {
+    String firstName
+    String lastName
+}
+
+def p1 = new Person(firstName: 'Bob', lastName: 'Nicholson')
+def p2 = new Person(firstName: 'Bob', lastName: 'Nicholson')
+assert p1 == p2
+assert p1.hashCode() == p2.hashCode()
+// end::equalshashcode_example_cache[]
+
+'''
     }
 
     void testTupleConstructor() {
