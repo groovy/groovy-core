@@ -27,7 +27,7 @@ ext.licenseSpec = copySpec {
     from 'config/build'
     from(zipTree(configurations.compile.fileCollection { it.name.startsWith 'commons-cli' }.singleFile).matching {
         include 'META-INF/LICENSE.txt'
-    }) {
+    }.filter{ it.isFile() }) { // TODO: remove filter when GRADLE-2900 is fixed
         eachFile { details ->
             details.path = details.path - 'META-INF'
             details.name = 'CLI-LICENSE.txt'
