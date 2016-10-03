@@ -22,6 +22,7 @@ import groovy.lang.GString;
 import org.codehaus.groovy.reflection.CachedClass;
 import org.codehaus.groovy.reflection.ClassInfo;
 import org.codehaus.groovy.reflection.ReflectionCache;
+import org.codehaus.groovy.runtime.InvokerHelper;
 
 /**
  * @author Alex.Tkachman
@@ -45,6 +46,6 @@ public class StringCachedClass extends CachedClass {
     }
 
     public Object coerceArgument(Object argument) {
-        return argument instanceof GString ? argument.toString() : argument;
+        return argument instanceof GString ? InvokerHelper.invokeMethod(argument, "toString", null) : argument;
     }
 }
