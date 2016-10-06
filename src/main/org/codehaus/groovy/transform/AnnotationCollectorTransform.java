@@ -79,7 +79,7 @@ public class AnnotationCollectorTransform {
                 if (an.getClassNode().getName().equals(AnnotationCollector.class.getName())) {
                     collector = an;
                     break;
-                };
+                }
             }
             if (collector==null) return;
             
