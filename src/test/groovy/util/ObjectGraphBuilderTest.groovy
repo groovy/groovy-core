@@ -335,6 +335,24 @@ class ObjectGraphBuilderTest extends GroovyTestCase {
       reflectionBuilder = new ObjectGraphBuilder()
       reflectionBuilder.classNameResolver = [ name: 'reflection', root: "groovy.util" ]
    }
+
+   void testGroovy6185() {
+      builder.newInstanceResolver = { klass, value, attributes ->
+          if (klass.simpleName == 'Company' && value instanceof String) {
+              klass.newInstance(name: value)
+          } else {
+              klass.newInstance()
+          }
+      }
+
+      def expected = new Company(name: 'ACME', employees: [])
+      def actual = builder.company('ACME', employees: [])
+      assert actual != null
+      //assert actual.class == Company
+      assert actual.name == expected.name
+      assert actual.address == expected.address
+      assert actual.employees == expected.employees
+   }
 }
 
 class Company {
