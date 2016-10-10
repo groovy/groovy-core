@@ -355,6 +355,10 @@ public class ConfigObject extends GroovyObjectSupport implements Writable, Map, 
         return delegateMap.entrySet();
     }
 
+    public String toString() {
+        return delegateMap.toString();
+    }
+
     /**
      * Returns a shallow copy of this ConfigObject, keys and configuration entries are not cloned.
      * @return a shallow copy of this ConfigObject
