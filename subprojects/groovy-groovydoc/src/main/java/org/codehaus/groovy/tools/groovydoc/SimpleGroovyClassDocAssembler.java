@@ -262,8 +262,51 @@ public class SimpleGroovyClassDocAssembler extends VisitorAdapter implements Gro
                 }
             }
             SimpleGroovyMethodDoc currentMethodDoc = createMethod(t, currentClassDoc);
-            currentClassDoc.add(currentMethodDoc);
+
+
+            if(!isIgnorePackageFieldsMethods(t, currentClassDoc))
+                currentClassDoc.add(currentMethodDoc);
         }
+    }
+
+
+    private List<String> getAnnotationName(GroovySourceAST t, SimpleGroovyProgramElementDoc node) {
+
+        GroovySourceAST modifiers = t.childOfType(MODIFIERS);
+
+        List<GroovySourceAST> annotations = null ;
+        if(modifiers != null)
+            annotations =  modifiers.childrenOfType(ANNOTATION);
+
+
+        List<String> annotationNames = null;
+        if(annotations != null) {
+            annotationNames = new ArrayList<String>();
+            for (GroovySourceAST annotation : annotations) {
+                GroovySourceAST classNode = annotation.childOfType(IDENT);
+                if (classNode != null) {
+                    annotationNames.add(extractName(classNode));
+                }
+            }
+        }
+
+        return annotationNames;
+    }
+
+
+    private boolean isIgnorePackageFieldsMethods(GroovySourceAST t, SimpleGroovyClassDoc currentClassDoc)
+    {
+        boolean ignoreProctectedFields = false;
+        if(getAnnotationName(t,currentClassDoc) != null && getAnnotationName(t, currentClassDoc).contains("PackageScope")) {
+
+            if ((this.properties.getProperty("publicScope") != null && this.properties.getProperty("publicScope").equalsIgnoreCase("true")))
+            {
+                ignoreProctectedFields = true;
+            }
+
+        }
+
+        return ignoreProctectedFields;
     }
 
     private SimpleGroovyMethodDoc createMethod(GroovySourceAST t, SimpleGroovyClassDoc currentClassDoc) {
@@ -312,6 +355,7 @@ public class SimpleGroovyClassDocAssembler extends VisitorAdapter implements Gro
                 currentFieldDoc.setPublic(true);
             }
             if (defaultText != null) {
+                
                 currentFieldDoc.setConstantValueExpression(defaultText);
                 String orig = currentFieldDoc.getRawCommentText();
                 currentFieldDoc.setRawCommentText(orig + "\n* @default " + defaultText);
@@ -341,17 +385,24 @@ public class SimpleGroovyClassDocAssembler extends VisitorAdapter implements Gro
         if (visit == OPENING_VISIT && !insideAnonymousInnerClass() && isFieldDefinition()) {
             SimpleGroovyClassDoc currentClassDoc = getCurrentClassDoc();
             if (currentClassDoc != null) {
+
                 String fieldName = getIdentFor(t);
                 currentFieldDoc = new SimpleGroovyFieldDoc(fieldName, currentClassDoc);
                 currentFieldDoc.setRawCommentText(getJavaDocCommentsBeforeNode(t));
                 boolean isProp = processModifiers(t, currentFieldDoc);
                 currentFieldDoc.setType(new SimpleGroovyType(getTypeOrDefault(t)));
                 processAnnotations(t, currentFieldDoc);
-                if (isProp) {
-                    currentClassDoc.addProperty(currentFieldDoc);
-                } else {
-                    currentClassDoc.add(currentFieldDoc);
+
+
+                if(!isIgnorePackageFieldsMethods(t, currentClassDoc))
+                {
+                    if (isProp) {
+                        currentClassDoc.addProperty(currentFieldDoc);
+                    } else {
+                        currentClassDoc.add(currentFieldDoc);
+                    }
                 }
+
             }
         }
     }
@@ -458,6 +509,8 @@ public class SimpleGroovyClassDocAssembler extends VisitorAdapter implements Gro
             node.addAnnotationRef(new SimpleGroovyAnnotationRef(extractName(classNode), getChildTextFromSource(t).trim()));
         }
     }
+
+
 
     private void addAnnotationRef(SimpleGroovyParameter node, GroovySourceAST t) {
         GroovySourceAST classNode = t.childOfType(IDENT);
