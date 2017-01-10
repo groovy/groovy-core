@@ -245,6 +245,22 @@ class ToStringTransformTest extends GroovyShellTestCase {
         assertEquals("Person()", toString)
     }
 
+    void testPseudoProperties()  {
+        def toString = evaluate('''
+            import groovy.transform.ToString
+
+            @ToString(excludes='last', includeNames=true)
+            class Person {
+                private String _first
+                String last, title
+                void setFirst(String first) { this._first = first }
+                String getFull() { "$_first $last" }
+            }
+            new Person(first: 'John', last: 'Smith', title: 'Mr').toString()
+        ''')
+        assertEquals("Person(title:Mr, full:John Smith)", toString)
+    }
+
     void testSelfReference()  {
 
         def toString = evaluate("""

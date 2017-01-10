@@ -34,6 +34,7 @@ import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
+import org.codehaus.groovy.ast.tools.BeanUtils;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -146,22 +147,10 @@ public class ToStringASTTransformation extends AbstractASTTransformation {
         body.addStatement(appendS(result, constX(className + "(")));
 
         // append properties
-        List<PropertyNode> pList;
-        if (includeSuperProperties) {
-            pList = getAllProperties(cNode);
-            Iterator<PropertyNode> pIterator = pList.iterator();
-            while (pIterator.hasNext()) {
-                if (pIterator.next().isStatic()) {
-                    pIterator.remove();
-                }
-            }
-        } else {
-            pList = getInstanceProperties(cNode);
-        }
+        List<PropertyNode> pList = BeanUtils.getAllProperties(cNode, includeSuperProperties, false, true);
         for (PropertyNode pNode : pList) {
             if (shouldSkip(pNode.getName(), excludes, includes)) continue;
             Expression getter = getterX(cNode, pNode);
-
             appendValue(body, result, first, getter, pNode.getName(), includeNames, ignoreNulls);
         }
 
