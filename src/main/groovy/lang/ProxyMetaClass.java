@@ -235,10 +235,13 @@ public class ProxyMetaClass extends MetaClassImpl implements AdaptingMetaClass {
             return howToInvoke.call();
         }
         Object result = interceptor.beforeInvoke(object, methodName, arguments);
-        if (interceptor.doInvoke()) {
-            result = howToInvoke.call();
+        try {
+            if (interceptor.doInvoke()) {
+                result = howToInvoke.call();
+            }
+        } finally {
+            result = interceptor.afterInvoke(object, methodName, arguments, result);
         }
-        result = interceptor.afterInvoke(object, methodName, arguments, result);
         return result;
     }
 }
