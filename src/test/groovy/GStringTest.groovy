@@ -40,6 +40,18 @@ class GStringTest extends GroovyTestCase {
         assert 'FooBar' == g
     }
 
+    void testGStringTransitive() {
+        def w = 'world'
+        def str1 = "Hello $w"
+        str1 += "!"
+        def str2 = "Hello $w!"
+        def str3 = 'Hello world!'
+
+        assert str1 == str3
+        assert str2 == str3
+        assert str1 == str2
+    }
+
     void testWithOneVariable() {
         def name = "Bob"
         def teststr = "hello Bob how are you?"

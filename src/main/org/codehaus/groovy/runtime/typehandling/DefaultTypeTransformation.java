@@ -578,8 +578,8 @@ public class DefaultTypeTransformation {
             else if (left instanceof String && right instanceof Character) {
                 return ((String) left).compareTo(right.toString());
             }
-            else if (left instanceof String && right instanceof GString) {
-                return ((String) left).compareTo(right.toString());
+            else if (left instanceof CharSequence && right instanceof CharSequence) {
+                return (left.toString()).compareTo(right.toString());
             }
             if (!equalityCheckOnly || left.getClass().isAssignableFrom(right.getClass())
                     || (right.getClass() != Object.class && right.getClass().isAssignableFrom(left.getClass())) //GROOVY-4046
