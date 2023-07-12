@@ -399,7 +399,8 @@ public class GroovyScriptEngineImpl
 
     // generate a unique name for top-level Script classes
     private synchronized String generateScriptName() {
-        return "Script" + (++counter) + ".groovy";
+        String prefix = (String) ctx.getAttribute("#jsr223.groovy.engine.script.name.prefix", ScriptContext.ENGINE_SCOPE);
+        return (prefix == null ? '' : prefix + "_") + "Script" + (++counter) + ".groovy";
     }
 
     @SuppressWarnings("unchecked")
