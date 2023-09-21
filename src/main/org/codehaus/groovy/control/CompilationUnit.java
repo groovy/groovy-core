@@ -457,7 +457,7 @@ public class CompilationUnit extends ProcessingUnit {
      * Adds a ClassNode directly to the unit (ie. without source).
      * WARNING: the source is needed for error reporting, using
      * this method without setting a SourceUnit will cause
-     * NullPinterExceptions
+     * NullPointerExceptions
      */
     public void addClassNode(ClassNode node) {
         ModuleNode module = new ModuleNode(this.ast);
