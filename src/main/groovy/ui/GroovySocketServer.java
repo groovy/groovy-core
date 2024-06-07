@@ -169,7 +169,7 @@ public class GroovySocketServer implements Runnable {
         }
     }
     
-    class GroovyClientConnection implements Runnable {
+    static class GroovyClientConnection implements Runnable {
         private Script script;
         private Socket socket;
         private BufferedReader reader;
