@@ -18,22 +18,18 @@
  */
 package groovy.lang;
 
-import java.util.AbstractList;
 import java.util.List;
-
-import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 
 /**
  * Represents a list of Objects.
- * 
+ *
  * @author <a href="mailto:james@coredevelopers.net">James Strachan</a>
  * @version $Revision$
  */
-public class Tuple extends AbstractList {
+public class Tuple extends AbstractTuple {
     private final Object[] contents;
-    private int hashCode;
 
-    public Tuple(Object[] contents) {
+    public Tuple(Object... contents) {
         if (contents == null) throw new NullPointerException();
         this.contents = contents;
     }
@@ -44,36 +40,6 @@ public class Tuple extends AbstractList {
 
     public int size() {
         return contents.length;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || !(o instanceof Tuple)) return false;
-
-        Tuple that = (Tuple) o;
-        if (size() != that.size()) return false;
-        for (int i = 0; i < contents.length; i++) {
-            if (!DefaultTypeTransformation.compareEqual(contents[i], that.contents[i])) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        if (hashCode == 0) {
-            for (int i = 0; i < contents.length; i++ ) {
-                Object value = contents[i];
-                int hash = (value != null) ? value.hashCode() : 0xbabe;
-                hashCode ^= hash;
-            }
-            if (hashCode == 0) {
-                hashCode = 0xbabe;
-            }
-        }
-        return hashCode;
     }
 
     @Override
