@@ -378,6 +378,13 @@ class AstSpecificationCompiler implements GroovyInterceptable {
     }
 
     /**
+     * Creates an ImportNode.
+     */
+    void importNode(ClassNode target, String alias = null) {
+        expression << new ImportNode(target, alias)
+    }
+
+    /**
      * Creates a CatchStatement.
      */
     void catchStatement(@DelegatesTo(AstSpecificationCompiler) Closure argBlock) {
@@ -650,6 +657,13 @@ class AstSpecificationCompiler implements GroovyInterceptable {
     }
 
     /**
+     * Creates a ClassExpression.
+     */
+    void classExpression(ClassNode type) {
+        expression << new ClassExpression(type)
+    }
+
+    /**
      * Creates a UnaryMinusExpression
      */
     void unaryMinus(@DelegatesTo(AstSpecificationCompiler) Closure argBlock) {
@@ -743,11 +757,46 @@ class AstSpecificationCompiler implements GroovyInterceptable {
     }
 
     /**
+     * Creates a Parameter.
+     */
+    void parameter(String name, Class type, @DelegatesTo(AstSpecificationCompiler) Closure argBlock = null) {
+        if (argBlock) {
+            captureAndCreateNode("Parameter", argBlock) {
+                new Parameter(ClassHelper.make(type), name, expression[0])
+            }
+        } else {
+            expression << (new Parameter(ClassHelper.make(type), name))
+        }
+    }
+
+    /**
+     * Creates a Parameter.
+     */
+    void parameter(String name, ClassNode type, @DelegatesTo(AstSpecificationCompiler) Closure argBlock = null) {
+        if (argBlock) {
+            captureAndCreateNode("Parameter", argBlock) {
+                new Parameter(type, name, expression[0])
+            }
+        } else {
+            expression << (new Parameter(type, name))
+        }
+    }
+
+    /**
      * Creates an ArrayExpression.
      */
     void array(Class type, @DelegatesTo(AstSpecificationCompiler) Closure argBlock) {
         captureAndCreateNode("ArrayExpression", argBlock) {
             new ArrayExpression(ClassHelper.make(type), new ArrayList(expression))
+        }
+    }
+
+    /**
+     * Creates an ArrayExpression.
+     */
+    void array(ClassNode type, @DelegatesTo(AstSpecificationCompiler) Closure argBlock) {
+        captureAndCreateNode("ArrayExpression", argBlock) {
+            new ArrayExpression(type, new ArrayList(expression))
         }
     }
 
@@ -758,6 +807,19 @@ class AstSpecificationCompiler implements GroovyInterceptable {
         if (argBlock) {
             captureAndCreateNode("GenericsType", argBlock) {
                 new GenericsType(ClassHelper.make(type), expression[0] as ClassNode[], expression[1])
+            }
+        } else {
+            expression << new GenericsType(ClassHelper.make(type))
+        }
+    }
+
+    /**
+     * Creates a GenericsType.
+     */
+    void genericsType(ClassNode type, @DelegatesTo(AstSpecificationCompiler) Closure argBlock = null) {
+        if (argBlock) {
+            captureAndCreateNode("GenericsType", argBlock) {
+                new GenericsType(type, expression[0] as ClassNode[], expression[1])
             }
         } else {
             expression << new GenericsType(ClassHelper.make(type))
@@ -776,6 +838,13 @@ class AstSpecificationCompiler implements GroovyInterceptable {
      */
     void lowerBound(Class target) {
         expression << ClassHelper.make(target)
+    }
+
+    /**
+     * Create lowerBound ClassNode.
+     */
+    void lowerBound(ClassNode target) {
+        expression << target
     }
 
     /**
@@ -813,6 +882,24 @@ class AstSpecificationCompiler implements GroovyInterceptable {
             }
         } else {
             expression << new AnnotationNode(ClassHelper.make(target))
+        }
+    }
+
+    /**
+     * Creates an AnnotationNode.
+     */
+    void annotation(ClassNode target, @DelegatesTo(AstSpecificationCompiler) Closure argBlock = null) {
+        if (argBlock) {
+            //todo: add better error handling
+            captureAndCreateNode("ArgumentListExpression", argBlock) {
+                def node = new AnnotationNode(target)
+                expression?.each {
+                    node.addMember(it[0], it[1])
+                }
+                node
+            }
+        } else {
+            expression << new AnnotationNode(target)
         }
     }
 
@@ -927,6 +1014,20 @@ class AstSpecificationCompiler implements GroovyInterceptable {
     }
 
     /**
+     * Creates a MethodNode.
+     */
+    void method(String name, int modifiers, ClassNode returnType, @DelegatesTo(AstSpecificationCompiler) Closure argBlock) {
+        captureAndCreateNode("MethodNode", argBlock) {
+            //todo: enforce contract
+            def result = new MethodNode(name, modifiers, returnType, expression[0], expression[1], expression[2])
+            if (expression[3]) {
+                result.addAnnotations(new ArrayList(expression[3]))
+            }
+            result
+        }
+    }
+
+    /**
      * Creates a token.
      */
     void token(String value) {
@@ -999,6 +1100,28 @@ class AstSpecificationCompiler implements GroovyInterceptable {
     }
 
     /**
+     * Creates a FieldNode.
+     */
+    void fieldNode(String name, int modifiers, ClassNode type, ClassNode owner, @DelegatesTo(AstSpecificationCompiler) Closure argBlock) {
+        captureAndCreateNode("FieldNode", argBlock) {
+            def annotations = null
+            if (expression.size() > 1) {
+                annotations = expression[1]
+                expression.remove(1)
+            }
+            expression.add(0, owner)
+            expression.add(0, type)
+            expression.add(0, modifiers)
+            expression.add(0, name)
+            def result = new FieldNode(*enforceConstraints('fieldNode', [String, Integer, ClassNode, ClassNode, Expression]))
+            if (annotations) {
+                result.addAnnotations(new ArrayList(annotations))
+            }
+            result
+        }
+    }
+
+    /**
      * Creates an inner class.
      */
     void innerClass(String name, int modifiers, @DelegatesTo(AstSpecificationCompiler) Closure argBlock) {
@@ -1038,12 +1161,46 @@ class AstSpecificationCompiler implements GroovyInterceptable {
     }
 
     /**
+     * Creates a PropertyNode.
+     */
+    void propertyNode(String name, int modifiers, ClassNode type, ClassNode owner, @DelegatesTo(AstSpecificationCompiler) Closure argBlock) {
+        //todo: improve error handling?
+        captureAndCreateNode("PropertyNode", argBlock) {
+            def annotations = null
+            // check if the last expression looks like annotations
+            if (List.isAssignableFrom(expression[-1].getClass())) {
+                annotations = expression[-1]
+                expression.remove(expression.size() - 1)
+            }
+            def result = new PropertyNode(name, modifiers, type, owner,
+                    expression[0],  // initial value (possibly null)
+                    expression[1],  // getter block (possibly null)
+                    expression[2])  // setter block (possibly null)
+            if (annotations) {
+                result.addAnnotations(new ArrayList(annotations))
+            }
+            result
+        }
+    }
+
+    /**
      * Creates a StaticMethodCallExpression.
      */
     void staticMethodCall(Class target, String name, @DelegatesTo(AstSpecificationCompiler) Closure argBlock) {
         captureAndCreateNode("StaticMethodCallExpression", argBlock) {
             expression.add(0, name)
             expression.add(0, ClassHelper.make(target))
+            new StaticMethodCallExpression(*enforceConstraints('staticMethodCall', [ClassNode, String, Expression]))
+        }
+    }
+
+    /**
+     * Creates a StaticMethodCallExpression.
+     */
+    void staticMethodCall(ClassNode target, String name, @DelegatesTo(AstSpecificationCompiler) Closure argBlock) {
+        captureAndCreateNode("StaticMethodCallExpression", argBlock) {
+            expression.add(0, name)
+            expression.add(0, target)
             new StaticMethodCallExpression(*enforceConstraints('staticMethodCall', [ClassNode, String, Expression]))
         }
     }
