@@ -42,6 +42,22 @@ class SetTest extends GroovyTestCase {
         assert flat == [3, 4, 5, 6, 7, 46, 78, "erer"] as Set
     }
 
+    void testCollect() {
+        def s1 = [1, 1, 2] as Set
+        assert(s1 instanceof Set)
+        def s2 = s1.collect {
+            (it + 1).toString()
+        }
+        assert(s2 == ["2", "3"] as Set)
+        def s3 = s1.collect {
+            s1
+        }
+        assert(s3 == [[1, 2] as Set] as Set)
+        s3.each {
+            assert(it instanceof Set)
+        }
+    }
+
     void testFlattenSetOfMapsWithClosure() {
         Set orig = [[a:1, b:2], [c:3, d:4]] as Set
         def flat = orig.flatten{ it instanceof Map ? it.values() : it }

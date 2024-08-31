@@ -18,9 +18,12 @@
  */
 package org.codehaus.groovy.runtime;
 
+import groovy.lang.Closure;
 import groovy.lang.EmptyRange;
 import groovy.lang.IntRange;
 import groovy.lang.Range;
+import groovy.transform.stc.ClosureParams;
+import groovy.transform.stc.FirstParam;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 
 import java.io.Closeable;
@@ -130,6 +133,10 @@ public class DefaultGroovyMethodsSupport {
             }
         }
         return null;
+    }
+
+    protected static <T,E> Set<T> collectSet(Set<E> self, Set<T> collector, @ClosureParams(FirstParam.FirstGenericType.class) Closure<? extends T> transform) {
+        return (Set<T>) DefaultGroovyMethods.collect((Collection) self, collector, transform);
     }
 
     protected static Collection createSimilarOrDefaultCollection(Object object) {
